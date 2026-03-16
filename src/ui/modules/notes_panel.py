@@ -1,5 +1,15 @@
-"""Notes module UI — markdown editor with file tree, search, word count, and folder support."""
+"""Notes/Obsidian module UI — vault browser, markdown editor, REST API integration.
 
+This panel serves as a middleman for Obsidian vaults:
+- Browse and edit markdown files from a configured vault path
+- Sync vault files between computers via the mesh sync engine
+- Optionally connect to Obsidian's Local REST API to create/read notes
+- Falls back to the built-in notes directory if no vault is configured
+"""
+
+import json
+import logging
+import threading
 from pathlib import Path
 
 from PyQt6.QtCore import Qt, QTimer
@@ -7,24 +17,165 @@ from PyQt6.QtWidgets import (
     QWidget, QVBoxLayout, QHBoxLayout, QSplitter,
     QListWidget, QListWidgetItem, QPlainTextEdit,
     QLineEdit, QPushButton, QLabel, QMessageBox, QInputDialog,
-    QFrame,
+    QFrame, QFileDialog, QTabWidget,
 )
 
+from src.config import load_config, save_config
 from src.data.notes_store import NotesStore, Note
+
+logger = logging.getLogger(__name__)
+
+
+class ObsidianAPI:
+    """Minimal client for the Obsidian Local REST API plugin."""
+
+    def __init__(self, base_url: str, api_key: str):
+        self.base_url = base_url.rstrip("/")
+        self.api_key = api_key
+
+    def _headers(self) -> dict:
+        return {
+            "Authorization": f"Bearer {self.api_key}",
+            "Content-Type": "application/json",
+        }
+
+    def is_available(self) -> bool:
+        try:
+            import urllib.request
+            req = urllib.request.Request(
+                f"{self.base_url}/", headers=self._headers(), method="GET",
+            )
+            with urllib.request.urlopen(req, timeout=3) as resp:
+                return resp.status == 200
+        except Exception:
+            return False
+
+    def list_files(self, folder: str = "/") -> list[str]:
+        try:
+            import urllib.request
+            req = urllib.request.Request(
+                f"{self.base_url}/vault{folder}",
+                headers=self._headers(), method="GET",
+            )
+            with urllib.request.urlopen(req, timeout=5) as resp:
+                data = json.loads(resp.read().decode())
+                return data.get("files", [])
+        except Exception as e:
+            logger.warning(f"Obsidian API list_files failed: {e}")
+            return []
+
+    def read_note(self, path: str) -> str:
+        try:
+            import urllib.request
+            encoded_path = urllib.parse.quote(path, safe="/")
+            headers = self._headers()
+            headers["Accept"] = "text/markdown"
+            req = urllib.request.Request(
+                f"{self.base_url}/vault/{encoded_path}",
+                headers=headers, method="GET",
+            )
+            with urllib.request.urlopen(req, timeout=5) as resp:
+                return resp.read().decode("utf-8")
+        except Exception as e:
+            logger.warning(f"Obsidian API read failed: {e}")
+            return ""
+
+    def create_note(self, path: str, content: str) -> bool:
+        try:
+            import urllib.request
+            encoded_path = urllib.parse.quote(path, safe="/")
+            headers = self._headers()
+            headers["Content-Type"] = "text/markdown"
+            req = urllib.request.Request(
+                f"{self.base_url}/vault/{encoded_path}",
+                data=content.encode("utf-8"),
+                headers=headers, method="PUT",
+            )
+            with urllib.request.urlopen(req, timeout=5) as resp:
+                return resp.status in (200, 201, 204)
+        except Exception as e:
+            logger.warning(f"Obsidian API create failed: {e}")
+            return False
+
+    def append_note(self, path: str, content: str) -> bool:
+        try:
+            import urllib.request
+            encoded_path = urllib.parse.quote(path, safe="/")
+            headers = self._headers()
+            headers["Content-Type"] = "text/markdown"
+            req = urllib.request.Request(
+                f"{self.base_url}/vault/{encoded_path}",
+                data=content.encode("utf-8"),
+                headers=headers, method="POST",
+            )
+            with urllib.request.urlopen(req, timeout=5) as resp:
+                return resp.status in (200, 201, 204)
+        except Exception as e:
+            logger.warning(f"Obsidian API append failed: {e}")
+            return False
+
+    def open_in_obsidian(self, path: str):
+        """Open a note in the Obsidian desktop app via URI scheme."""
+        import subprocess
+        import sys
+        vault_name = ""
+        cfg = load_config()
+        vault_path = cfg.get("obsidian_vault_path", "")
+        if vault_path:
+            vault_name = Path(vault_path).name
+        uri = f"obsidian://open?vault={vault_name}&file={path}"
+        try:
+            if sys.platform == "win32":
+                subprocess.Popen(["start", uri], shell=True)
+            elif sys.platform == "darwin":
+                subprocess.Popen(["open", uri])
+            else:
+                subprocess.Popen(["xdg-open", uri])
+        except Exception as e:
+            logger.warning(f"Failed to open Obsidian: {e}")
 
 
 class NotesPanel(QWidget):
 
     def __init__(self, parent=None):
         super().__init__(parent)
-        self.store = NotesStore()
+        self.cfg = load_config()
+        self._init_store()
         self.current_note_path: str | None = None
         self._save_timer = QTimer(self)
         self._save_timer.setSingleShot(True)
-        self._save_timer.setInterval(500)  # debounce saves by 500ms
+        self._save_timer.setInterval(500)
         self._save_timer.timeout.connect(self._save_current)
+        self._obsidian_api: ObsidianAPI | None = None
+        self._obsidian_status = "not configured"
         self._build_ui()
         self._refresh_list()
+        self._init_obsidian_api()
+
+    def _init_store(self):
+        vault = self.cfg.get("obsidian_vault_path", "")
+        if vault and Path(vault).exists():
+            self.store = NotesStore(notes_dir=Path(vault))
+            self._mode = "vault"
+        else:
+            self.store = NotesStore()
+            self._mode = "builtin"
+
+    def _init_obsidian_api(self):
+        api_key = self.cfg.get("obsidian_api_key", "")
+        api_url = self.cfg.get("obsidian_api_url", "http://127.0.0.1:27123")
+        if api_key:
+            self._obsidian_api = ObsidianAPI(api_url, api_key)
+            # Check availability in background
+            def check():
+                if self._obsidian_api and self._obsidian_api.is_available():
+                    self._obsidian_status = "connected"
+                else:
+                    self._obsidian_status = "unreachable"
+                self._update_status_label()
+            threading.Thread(target=check, daemon=True).start()
+        else:
+            self._obsidian_status = "no API key"
 
     def _build_ui(self):
         layout = QHBoxLayout(self)
@@ -32,35 +183,77 @@ class NotesPanel(QWidget):
 
         splitter = QSplitter(Qt.Orientation.Horizontal)
 
-        # ── Left sidebar: search + note list ──────────
+        # ── Left sidebar ─────────────────────────────
         sidebar = QWidget()
         sidebar_layout = QVBoxLayout(sidebar)
-        sidebar_layout.setContentsMargins(12, 12, 6, 12)
-        sidebar_layout.setSpacing(8)
+        sidebar_layout.setContentsMargins(8, 8, 4, 8)
+        sidebar_layout.setSpacing(6)
 
+        # Header with vault info
+        header = QHBoxLayout()
         title = QLabel("Notes")
         title.setObjectName("sectionTitle")
-        sidebar_layout.addWidget(title)
+        header.addWidget(title)
+        header.addStretch()
 
+        self.vault_badge = QLabel("")
+        self.vault_badge.setObjectName("subtitle")
+        header.addWidget(self.vault_badge)
+        sidebar_layout.addLayout(header)
+
+        # Obsidian status row
+        obs_row = QHBoxLayout()
+        obs_row.setSpacing(4)
+        self.obsidian_status_label = QLabel("")
+        self.obsidian_status_label.setObjectName("subtitle")
+        obs_row.addWidget(self.obsidian_status_label)
+        obs_row.addStretch()
+
+        set_vault_btn = QPushButton("Set Vault")
+        set_vault_btn.setObjectName("secondary")
+        set_vault_btn.setFixedHeight(22)
+        set_vault_btn.setStyleSheet("font-size: 10px; padding: 2px 6px;")
+        set_vault_btn.clicked.connect(self._set_vault_path)
+        obs_row.addWidget(set_vault_btn)
+
+        api_btn = QPushButton("API")
+        api_btn.setObjectName("secondary")
+        api_btn.setFixedHeight(22)
+        api_btn.setStyleSheet("font-size: 10px; padding: 2px 6px;")
+        api_btn.setToolTip("Configure Obsidian REST API")
+        api_btn.clicked.connect(self._configure_api)
+        obs_row.addWidget(api_btn)
+
+        sidebar_layout.addLayout(obs_row)
+
+        # Search
         self.search_box = QLineEdit()
         self.search_box.setPlaceholderText("Search notes...")
         self.search_box.setClearButtonEnabled(True)
         self.search_box.textChanged.connect(self._on_search)
         sidebar_layout.addWidget(self.search_box)
 
+        # Buttons
         btn_row = QHBoxLayout()
-        btn_row.setSpacing(6)
+        btn_row.setSpacing(4)
         self.btn_new = QPushButton("+ Note")
-        self.btn_new.setToolTip("Create a new note")
         self.btn_new.clicked.connect(self._new_note)
         self.btn_folder = QPushButton("+ Folder")
         self.btn_folder.setObjectName("secondary")
-        self.btn_folder.setToolTip("Create a new folder")
         self.btn_folder.clicked.connect(self._new_folder)
         btn_row.addWidget(self.btn_new)
         btn_row.addWidget(self.btn_folder)
+
+        if self._obsidian_api:
+            api_note_btn = QPushButton("+ via API")
+            api_note_btn.setObjectName("secondary")
+            api_note_btn.setToolTip("Create note via Obsidian REST API")
+            api_note_btn.clicked.connect(self._create_via_api)
+            btn_row.addWidget(api_note_btn)
+
         sidebar_layout.addLayout(btn_row)
 
+        # Note list
         self.note_list = QListWidget()
         self.note_list.currentItemChanged.connect(self._on_note_selected)
         sidebar_layout.addWidget(self.note_list, 1)
@@ -69,11 +262,11 @@ class NotesPanel(QWidget):
         self.note_count_label.setObjectName("subtitle")
         sidebar_layout.addWidget(self.note_count_label)
 
-        # ── Right side: editor ────────────────────────
+        # ── Right side: editor ───────────────────────
         editor_widget = QWidget()
         editor_layout = QVBoxLayout(editor_widget)
-        editor_layout.setContentsMargins(6, 12, 12, 12)
-        editor_layout.setSpacing(6)
+        editor_layout.setContentsMargins(4, 8, 8, 8)
+        editor_layout.setSpacing(4)
 
         # Title bar
         title_row = QHBoxLayout()
@@ -81,16 +274,21 @@ class NotesPanel(QWidget):
         self.note_title_label.setObjectName("sectionTitle")
         title_row.addWidget(self.note_title_label, 1)
 
+        self.btn_open_obsidian = QPushButton("Open in Obsidian")
+        self.btn_open_obsidian.setObjectName("secondary")
+        self.btn_open_obsidian.setToolTip("Open this note in the Obsidian app")
+        self.btn_open_obsidian.clicked.connect(self._open_in_obsidian)
+        self.btn_open_obsidian.setVisible(False)
+        title_row.addWidget(self.btn_open_obsidian)
+
         self.btn_rename = QPushButton("Rename")
         self.btn_rename.setObjectName("secondary")
-        self.btn_rename.setToolTip("Rename this note")
         self.btn_rename.clicked.connect(self._rename_note)
         self.btn_rename.setVisible(False)
         title_row.addWidget(self.btn_rename)
 
         self.btn_delete = QPushButton("Delete")
         self.btn_delete.setObjectName("destructive")
-        self.btn_delete.setToolTip("Delete this note permanently")
         self.btn_delete.clicked.connect(self._delete_note)
         self.btn_delete.setVisible(False)
         title_row.addWidget(self.btn_delete)
@@ -108,12 +306,11 @@ class NotesPanel(QWidget):
         self.editor.textChanged.connect(self._on_text_changed)
         editor_layout.addWidget(self.editor, 1)
 
-        # Footer: tags + word count
+        # Footer
         footer = QHBoxLayout()
         self.tag_label = QLabel("")
         self.tag_label.setObjectName("subtitle")
         footer.addWidget(self.tag_label, 1)
-
         self.word_count_label = QLabel("")
         self.word_count_label.setObjectName("subtitle")
         self.word_count_label.setAlignment(Qt.AlignmentFlag.AlignRight)
@@ -122,11 +319,101 @@ class NotesPanel(QWidget):
 
         splitter.addWidget(sidebar)
         splitter.addWidget(editor_widget)
-        splitter.setSizes([260, 540])
+        splitter.setSizes([240, 540])
         splitter.setStretchFactor(0, 0)
         splitter.setStretchFactor(1, 1)
 
         layout.addWidget(splitter)
+        self._update_status_label()
+
+    def _update_status_label(self):
+        if self._mode == "vault":
+            vault_path = self.cfg.get("obsidian_vault_path", "")
+            vault_name = Path(vault_path).name if vault_path else "?"
+            self.vault_badge.setText(f"Vault: {vault_name}")
+        else:
+            self.vault_badge.setText("Built-in notes")
+
+        obs_text = f"Obsidian API: {self._obsidian_status}"
+        self.obsidian_status_label.setText(obs_text)
+
+    # ── Vault / API configuration ──────────────────────
+
+    def _set_vault_path(self):
+        current = self.cfg.get("obsidian_vault_path", "")
+        path = QFileDialog.getExistingDirectory(
+            self, "Select Obsidian Vault Folder", current,
+        )
+        if path:
+            self.cfg["obsidian_vault_path"] = path
+            self.cfg["obsidian_sync_enabled"] = True
+            save_config(self.cfg)
+            self._init_store()
+            self._refresh_list()
+            self._update_status_label()
+            QMessageBox.information(
+                self, "Vault Set",
+                f"Obsidian vault set to:\n{path}\n\n"
+                "Notes will now sync from this folder.",
+            )
+
+    def _configure_api(self):
+        current_key = self.cfg.get("obsidian_api_key", "")
+        current_url = self.cfg.get("obsidian_api_url", "http://127.0.0.1:27123")
+
+        key, ok = QInputDialog.getText(
+            self, "Obsidian REST API Key",
+            "Enter the API key from the Obsidian Local REST API plugin:\n"
+            "(Leave blank to disable API integration)",
+            text=current_key,
+        )
+        if ok:
+            url, ok2 = QInputDialog.getText(
+                self, "Obsidian REST API URL",
+                "API base URL (default: http://127.0.0.1:27123):",
+                text=current_url,
+            )
+            if ok2:
+                self.cfg["obsidian_api_key"] = key.strip()
+                self.cfg["obsidian_api_url"] = url.strip() or "http://127.0.0.1:27123"
+                save_config(self.cfg)
+                self._init_obsidian_api()
+                self._update_status_label()
+
+    def _create_via_api(self):
+        if not self._obsidian_api:
+            QMessageBox.warning(self, "No API", "Obsidian REST API not configured.")
+            return
+        name, ok = QInputDialog.getText(self, "Create via API", "Note name (without .md):")
+        if ok and name.strip():
+            path = f"{name.strip()}.md"
+            content = f"# {name.strip()}\n\n"
+            if self._obsidian_api.create_note(path, content):
+                # Also save locally so it shows up immediately
+                self._refresh_list()
+                QMessageBox.information(self, "Created", f"Note '{path}' created via API.")
+            else:
+                QMessageBox.warning(self, "Failed", "Could not create note via API.")
+
+    def _open_in_obsidian(self):
+        if self.current_note_path and self._obsidian_api:
+            self._obsidian_api.open_in_obsidian(self.current_note_path)
+        elif self.current_note_path:
+            # Try URI scheme directly
+            import subprocess, sys
+            vault_path = self.cfg.get("obsidian_vault_path", "")
+            vault_name = Path(vault_path).name if vault_path else ""
+            note_path = self.current_note_path.replace(".md", "")
+            uri = f"obsidian://open?vault={vault_name}&file={note_path}"
+            try:
+                if sys.platform == "win32":
+                    subprocess.Popen(["start", uri], shell=True)
+                elif sys.platform == "darwin":
+                    subprocess.Popen(["open", uri])
+                else:
+                    subprocess.Popen(["xdg-open", uri])
+            except Exception:
+                pass
 
     # ── List management ────────────────────────────────
 
@@ -145,8 +432,7 @@ class NotesPanel(QWidget):
 
     def _on_search(self, query: str):
         if query.strip():
-            results = self.store.search(query)
-            self._refresh_list(results)
+            self._refresh_list(self.store.search(query))
         else:
             self._refresh_list()
 
@@ -168,6 +454,8 @@ class NotesPanel(QWidget):
             self._update_footer(note)
             self.btn_rename.setVisible(True)
             self.btn_delete.setVisible(True)
+            # Show "Open in Obsidian" if vault mode
+            self.btn_open_obsidian.setVisible(self._mode == "vault")
 
     def _clear_editor(self):
         self.current_note_path = None
@@ -179,11 +467,12 @@ class NotesPanel(QWidget):
         self.word_count_label.setText("")
         self.btn_rename.setVisible(False)
         self.btn_delete.setVisible(False)
+        self.btn_open_obsidian.setVisible(False)
 
     # ── Editing ────────────────────────────────────────
 
     def _on_text_changed(self):
-        self._save_timer.start()  # debounced auto-save
+        self._save_timer.start()
         text = self.editor.toPlainText()
         words = len(text.split()) if text.strip() else 0
         chars = len(text)
@@ -226,7 +515,6 @@ class NotesPanel(QWidget):
             safe_name = name.strip().replace("/", "-").replace("\\", "-")
             folder_path = self.store.root / safe_name
             folder_path.mkdir(parents=True, exist_ok=True)
-            # Create a starter note in the folder
             note_name, ok2 = QInputDialog.getText(
                 self, "First Note", f"Note name in '{safe_name}/' (without .md):",
             )
@@ -251,7 +539,6 @@ class NotesPanel(QWidget):
         if ok and new_name.strip() and new_name.strip() != current_name:
             safe_name = new_name.strip().replace("/", "-").replace("\\", "-")
             new_rel = old_path.parent / f"{safe_name}.md"
-            # Read content, delete old, save new
             note = self.store.get_note(self.current_note_path)
             if note:
                 content = note.content

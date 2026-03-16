@@ -393,9 +393,11 @@ class SyncEngine(QThread):
         try:
             events = [dict(r) for r in conn.execute("SELECT * FROM events").fetchall()]
             transactions = [dict(r) for r in conn.execute("SELECT * FROM transactions").fetchall()]
+            todos = [dict(r) for r in conn.execute("SELECT * FROM todos").fetchall()]
         finally:
             conn.close()
 
+        # Gather notes from configured notes dir
         notes = []
         notes_dir = Path(load_config().get("notes_dir", str(NOTES_DIR)))
         if notes_dir.exists():
@@ -405,7 +407,23 @@ class SyncEngine(QThread):
                 content = md.read_text(encoding="utf-8")
                 notes.append({"path": rel, "mtime": mtime, "content": content})
 
-        return {"events": events, "transactions": transactions, "notes": notes}
+        # Gather Obsidian vault files if configured
+        vault_notes = []
+        cfg = load_config()
+        vault_path = cfg.get("obsidian_vault_path", "")
+        if vault_path:
+            vault_dir = Path(vault_path)
+            if vault_dir.exists():
+                for md in vault_dir.rglob("*.md"):
+                    rel = str(md.relative_to(vault_dir))
+                    mtime = md.stat().st_mtime
+                    content = md.read_text(encoding="utf-8")
+                    vault_notes.append({"path": rel, "mtime": mtime, "content": content})
+
+        return {
+            "events": events, "transactions": transactions,
+            "todos": todos, "notes": notes, "vault_notes": vault_notes,
+        }
 
     def _merge_remote_data(self, remote: dict) -> int:
         """Merge remote data. Returns count of changes applied."""
@@ -451,6 +469,27 @@ class SyncEngine(QThread):
                     )
                     changes += 1
 
+            # Merge todos
+            for rt in remote.get("todos", []):
+                local = conn.execute(
+                    "SELECT updated_at FROM todos WHERE id=?", (rt["id"],)
+                ).fetchone()
+                if local is None or rt["updated_at"] > local["updated_at"]:
+                    conn.execute(
+                        """INSERT INTO todos (id, title, done, priority, due_date,
+                           category, notes, created_at, updated_at, deleted)
+                           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                           ON CONFLICT(id) DO UPDATE SET
+                           title=excluded.title, done=excluded.done,
+                           priority=excluded.priority, due_date=excluded.due_date,
+                           category=excluded.category, notes=excluded.notes,
+                           updated_at=excluded.updated_at, deleted=excluded.deleted""",
+                        (rt["id"], rt["title"], rt["done"], rt["priority"],
+                         rt["due_date"], rt["category"], rt["notes"],
+                         rt["created_at"], rt["updated_at"], rt["deleted"]),
+                    )
+                    changes += 1
+
             conn.commit()
         finally:
             conn.close()
@@ -469,6 +508,24 @@ class SyncEngine(QThread):
                 local_path.parent.mkdir(parents=True, exist_ok=True)
                 local_path.write_text(rnote["content"], encoding="utf-8")
                 changes += 1
+
+        # Merge Obsidian vault notes
+        cfg = load_config()
+        vault_path = cfg.get("obsidian_vault_path", "")
+        if vault_path:
+            vault_dir = Path(vault_path)
+            for rnote in remote.get("vault_notes", []):
+                local_path = vault_dir / rnote["path"]
+                should_write = False
+                if local_path.exists():
+                    if rnote["mtime"] > local_path.stat().st_mtime:
+                        should_write = True
+                else:
+                    should_write = True
+                if should_write:
+                    local_path.parent.mkdir(parents=True, exist_ok=True)
+                    local_path.write_text(rnote["content"], encoding="utf-8")
+                    changes += 1
 
         return changes
 

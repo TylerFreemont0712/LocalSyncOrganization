@@ -15,6 +15,7 @@ from src.ui.themes.styles import THEMES, PALETTES, get_theme_names
 from src.ui.modules.notes_panel import NotesPanel
 from src.ui.modules.calendar_panel import CalendarPanel
 from src.ui.modules.finance_panel import FinancePanel
+from src.ui.modules.todo_panel import TodoPanel
 
 
 class SidebarButton(QPushButton):
@@ -25,17 +26,17 @@ class SidebarButton(QPushButton):
             display += f"   {shortcut_hint}"
         super().__init__(display)
         self.setCheckable(True)
-        self.setFixedHeight(44)
+        self.setFixedHeight(34)
         self.setCursor(Qt.CursorShape.PointingHandCursor)
 
     def apply_colors(self, accent: str, accent_fg: str, hover: str):
         self.setStyleSheet(f"""
             QPushButton {{
                 text-align: left;
-                padding-left: 16px;
+                padding-left: 12px;
                 border: none;
-                border-radius: 8px;
-                font-size: 14px;
+                border-radius: 6px;
+                font-size: 12px;
             }}
             QPushButton:checked {{
                 background-color: {accent};
@@ -80,6 +81,7 @@ class MainWindow(QMainWindow):
         file_menu.addAction(self._action("&Notes", "Ctrl+1", lambda: self._navigate("Notes")))
         file_menu.addAction(self._action("&Calendar", "Ctrl+2", lambda: self._navigate("Calendar")))
         file_menu.addAction(self._action("&Earnings", "Ctrl+3", lambda: self._navigate("Earnings")))
+        file_menu.addAction(self._action("&Tasks", "Ctrl+4", lambda: self._navigate("Tasks")))
         file_menu.addSeparator()
         file_menu.addAction(self._action("E&xit", "Ctrl+Q", self.close))
 
@@ -118,11 +120,11 @@ class MainWindow(QMainWindow):
 
         # ── Sidebar ──────────────────────────────────
         self.sidebar = QWidget()
-        self.sidebar.setFixedWidth(220)
+        self.sidebar.setFixedWidth(190)
         self.sidebar.setObjectName("sidebar")
         sidebar_layout = QVBoxLayout(self.sidebar)
-        sidebar_layout.setContentsMargins(10, 14, 10, 14)
-        sidebar_layout.setSpacing(4)
+        sidebar_layout.setContentsMargins(8, 10, 8, 10)
+        sidebar_layout.setSpacing(3)
 
         app_label = QLabel(APP_NAME)
         app_label.setObjectName("sectionTitle")
@@ -145,6 +147,7 @@ class MainWindow(QMainWindow):
             ("Notes", "\U0001f4dd", "Ctrl+1"),
             ("Calendar", "\U0001f4c5", "Ctrl+2"),
             ("Earnings", "\U0001f4b0", "Ctrl+3"),
+            ("Tasks", "\u2611", "Ctrl+4"),
         ]
         for name, icon, shortcut_text in nav_items:
             btn = SidebarButton(name, icon, shortcut_text)
@@ -201,10 +204,12 @@ class MainWindow(QMainWindow):
         self.notes_panel = NotesPanel()
         self.calendar_panel = CalendarPanel()
         self.finance_panel = FinancePanel()
+        self.todo_panel = TodoPanel()
 
         self.stack.addWidget(self.notes_panel)     # 0
         self.stack.addWidget(self.calendar_panel)   # 1
         self.stack.addWidget(self.finance_panel)    # 2
+        self.stack.addWidget(self.todo_panel)       # 3
 
         main_layout.addWidget(self.stack, 1)
 
@@ -229,7 +234,7 @@ class MainWindow(QMainWindow):
     # ── Navigation ─────────────────────────────────────
 
     def _navigate(self, name: str):
-        idx_map = {"Notes": 0, "Calendar": 1, "Earnings": 2}
+        idx_map = {"Notes": 0, "Calendar": 1, "Earnings": 2, "Tasks": 3}
         idx = idx_map.get(name, 0)
         self.stack.setCurrentIndex(idx)
         for i, btn in enumerate(self.nav_buttons):
@@ -262,6 +267,8 @@ class MainWindow(QMainWindow):
             self.finance_panel.set_palette(palette)
         if hasattr(self.calendar_panel, 'set_palette'):
             self.calendar_panel.set_palette(palette)
+        if hasattr(self.todo_panel, 'set_palette'):
+            self.todo_panel.set_palette(palette)
 
     # ── Sync integration ───────────────────────────────
 
@@ -301,6 +308,6 @@ class MainWindow(QMainWindow):
             self, f"About {APP_NAME}",
             f"<b>{APP_NAME}</b> v{APP_VERSION}<br><br>"
             f"Personal productivity app with LAN mesh sync.<br>"
-            f"Notes \u2022 Calendar \u2022 Earnings Tracker<br><br>"
+            f"Notes \u2022 Calendar \u2022 Earnings \u2022 Tasks<br><br>"
             f"Syncs automatically over your home network.",
         )

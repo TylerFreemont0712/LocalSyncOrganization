@@ -40,6 +40,11 @@ DEFAULTS = {
     "scan_timeout_ms": 150,          # Per-host TCP probe timeout
     # Data
     "notes_dir": str(NOTES_DIR),
+    # Obsidian
+    "obsidian_vault_path": "",           # Path to the Obsidian vault folder
+    "obsidian_api_key": "",              # Obsidian Local REST API plugin key
+    "obsidian_api_url": "http://127.0.0.1:27123",  # REST API base URL
+    "obsidian_sync_enabled": False,      # Whether to sync vault files
 }
 
 

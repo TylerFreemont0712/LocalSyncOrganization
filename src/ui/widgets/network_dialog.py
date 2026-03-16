@@ -8,7 +8,7 @@ from PyQt6.QtWidgets import (
     QDialog, QVBoxLayout, QHBoxLayout, QGridLayout,
     QLabel, QPushButton, QLineEdit, QSpinBox, QCheckBox,
     QFrame, QTableWidget, QTableWidgetItem, QHeaderView,
-    QTextEdit, QTabWidget, QWidget, QMessageBox,
+    QTextEdit, QTabWidget, QWidget, QMessageBox, QFileDialog,
 )
 
 from src.config import load_config, save_config
@@ -116,6 +116,71 @@ class NetworkDialog(QDialog):
         settings_layout.addLayout(save_row)
 
         tabs.addTab(settings_tab, "Settings")
+
+        # ── Tab 1.5: Obsidian ─────────────────────────
+        obs_tab = QWidget()
+        obs_layout = QVBoxLayout(obs_tab)
+        obs_layout.setSpacing(10)
+
+        obs_title = QLabel("Obsidian Integration")
+        obs_title.setObjectName("sectionTitle")
+        obs_layout.addWidget(obs_title)
+
+        obs_desc = QLabel(
+            "Configure your Obsidian vault path and REST API settings.\n"
+            "The vault path is used to sync markdown files between computers.\n"
+            "The REST API connects to the Obsidian Local REST API plugin."
+        )
+        obs_desc.setObjectName("subtitle")
+        obs_desc.setWordWrap(True)
+        obs_layout.addWidget(obs_desc)
+
+        obs_form = QGridLayout()
+        obs_form.setSpacing(8)
+
+        obs_form.addWidget(QLabel("Vault path:"), 0, 0)
+        self.vault_path_edit = QLineEdit()
+        self.vault_path_edit.setPlaceholderText("/path/to/your/obsidian/vault")
+        self.vault_path_edit.setText(self.cfg.get("obsidian_vault_path", ""))
+        obs_form.addWidget(self.vault_path_edit, 0, 1)
+        browse_btn = QPushButton("Browse")
+        browse_btn.setObjectName("secondary")
+        browse_btn.clicked.connect(self._browse_vault)
+        obs_form.addWidget(browse_btn, 0, 2)
+
+        obs_form.addWidget(QLabel("Sync vault files:"), 1, 0)
+        self.vault_sync_check = QCheckBox()
+        self.vault_sync_check.setChecked(self.cfg.get("obsidian_sync_enabled", False))
+        obs_form.addWidget(self.vault_sync_check, 1, 1)
+
+        sep_obs = QFrame()
+        sep_obs.setObjectName("separator")
+        sep_obs.setFrameShape(QFrame.Shape.HLine)
+        obs_form.addWidget(sep_obs, 2, 0, 1, 3)
+
+        obs_form.addWidget(QLabel("REST API key:"), 3, 0)
+        self.api_key_edit = QLineEdit()
+        self.api_key_edit.setPlaceholderText("From Obsidian Local REST API plugin")
+        self.api_key_edit.setEchoMode(QLineEdit.EchoMode.Password)
+        self.api_key_edit.setText(self.cfg.get("obsidian_api_key", ""))
+        obs_form.addWidget(self.api_key_edit, 3, 1, 1, 2)
+
+        obs_form.addWidget(QLabel("REST API URL:"), 4, 0)
+        self.api_url_edit = QLineEdit()
+        self.api_url_edit.setText(self.cfg.get("obsidian_api_url", "http://127.0.0.1:27123"))
+        obs_form.addWidget(self.api_url_edit, 4, 1, 1, 2)
+
+        obs_layout.addLayout(obs_form)
+        obs_layout.addStretch()
+
+        obs_save_row = QHBoxLayout()
+        obs_save_row.addStretch()
+        obs_save_btn = QPushButton("Save Obsidian Settings")
+        obs_save_btn.clicked.connect(self._save_obsidian_settings)
+        obs_save_row.addWidget(obs_save_btn)
+        obs_layout.addLayout(obs_save_row)
+
+        tabs.addTab(obs_tab, "Obsidian")
 
         # ── Tab 2: Peers ──────────────────────────────
         peers_tab = QWidget()
@@ -288,9 +353,25 @@ class NetworkDialog(QDialog):
             self._append_log("Forcing immediate sync...")
             self.sync_engine.force_sync()
 
+    def _browse_vault(self):
+        from PyQt6.QtWidgets import QFileDialog
+        path = QFileDialog.getExistingDirectory(
+            self, "Select Obsidian Vault",
+            self.vault_path_edit.text(),
+        )
+        if path:
+            self.vault_path_edit.setText(path)
+
+    def _save_obsidian_settings(self):
+        self.cfg["obsidian_vault_path"] = self.vault_path_edit.text().strip()
+        self.cfg["obsidian_sync_enabled"] = self.vault_sync_check.isChecked()
+        self.cfg["obsidian_api_key"] = self.api_key_edit.text().strip()
+        self.cfg["obsidian_api_url"] = self.api_url_edit.text().strip() or "http://127.0.0.1:27123"
+        save_config(self.cfg)
+        QMessageBox.information(self, "Saved", "Obsidian settings saved.\nRestart the app for vault changes to take effect.")
+
     def _append_log(self, msg: str):
         self.log_view.append(msg)
-        # Auto-scroll to bottom
         scrollbar = self.log_view.verticalScrollBar()
         scrollbar.setValue(scrollbar.maximum())
 
