@@ -1,23 +1,22 @@
-"""Notes/Obsidian module UI — vault browser, markdown editor, REST API integration.
+"""Notes/Obsidian module UI — tree-based vault browser, markdown editor, REST API integration.
 
-This panel serves as a middleman for Obsidian vaults:
-- Browse and edit markdown files from a configured vault path
-- Sync vault files between computers via the mesh sync engine
-- Optionally connect to Obsidian's Local REST API to create/read notes
-- Falls back to the built-in notes directory if no vault is configured
+The sidebar uses a QTreeWidget with collapsible folders (triangle toggles)
+that mimics Obsidian's file explorer layout.
 """
 
 import json
 import logging
 import threading
-from pathlib import Path
+from collections import defaultdict
+from pathlib import Path, PurePosixPath
 
 from PyQt6.QtCore import Qt, QTimer
+from PyQt6.QtGui import QFont, QIcon
 from PyQt6.QtWidgets import (
     QWidget, QVBoxLayout, QHBoxLayout, QSplitter,
-    QListWidget, QListWidgetItem, QPlainTextEdit,
+    QTreeWidget, QTreeWidgetItem, QPlainTextEdit,
     QLineEdit, QPushButton, QLabel, QMessageBox, QInputDialog,
-    QFrame, QFileDialog, QTabWidget,
+    QFrame, QFileDialog,
 )
 
 from src.config import load_config, save_config
@@ -66,7 +65,7 @@ class ObsidianAPI:
 
     def read_note(self, path: str) -> str:
         try:
-            import urllib.request
+            import urllib.request, urllib.parse
             encoded_path = urllib.parse.quote(path, safe="/")
             headers = self._headers()
             headers["Accept"] = "text/markdown"
@@ -82,7 +81,7 @@ class ObsidianAPI:
 
     def create_note(self, path: str, content: str) -> bool:
         try:
-            import urllib.request
+            import urllib.request, urllib.parse
             encoded_path = urllib.parse.quote(path, safe="/")
             headers = self._headers()
             headers["Content-Type"] = "text/markdown"
@@ -99,7 +98,7 @@ class ObsidianAPI:
 
     def append_note(self, path: str, content: str) -> bool:
         try:
-            import urllib.request
+            import urllib.request, urllib.parse
             encoded_path = urllib.parse.quote(path, safe="/")
             headers = self._headers()
             headers["Content-Type"] = "text/markdown"
@@ -118,11 +117,9 @@ class ObsidianAPI:
         """Open a note in the Obsidian desktop app via URI scheme."""
         import subprocess
         import sys
-        vault_name = ""
         cfg = load_config()
         vault_path = cfg.get("obsidian_vault_path", "")
-        if vault_path:
-            vault_name = Path(vault_path).name
+        vault_name = Path(vault_path).name if vault_path else ""
         uri = f"obsidian://open?vault={vault_name}&file={path}"
         try:
             if sys.platform == "win32":
@@ -135,6 +132,62 @@ class ObsidianAPI:
             logger.warning(f"Failed to open Obsidian: {e}")
 
 
+# ── Tree builder ───────────────────────────────────────
+
+def _build_tree_structure(notes: list[Note]) -> dict:
+    """Build a nested dict from note paths for the tree view.
+
+    Returns: {"_files": [Note, ...], "subfolder": {"_files": [...], ...}}
+    """
+    tree: dict = {"_files": []}
+    for note in sorted(notes, key=lambda n: str(n.path).lower()):
+        parts = PurePosixPath(str(note.path)).parts
+        if len(parts) == 1:
+            # Root-level file
+            tree["_files"].append(note)
+        else:
+            # Navigate into subfolders
+            node = tree
+            for folder in parts[:-1]:
+                if folder not in node:
+                    node[folder] = {"_files": []}
+                node = node[folder]
+            node["_files"].append(note)
+    return tree
+
+
+def _populate_tree_widget(parent_item, tree_dict: dict, expanded_paths: set):
+    """Recursively populate QTreeWidgetItems from the nested dict."""
+    # Add subfolders first (sorted)
+    folders = sorted(k for k in tree_dict if k != "_files")
+    for folder_name in folders:
+        folder_item = QTreeWidgetItem(parent_item)
+        folder_item.setText(0, f"\U0001f4c1 {folder_name}")
+        folder_item.setData(0, Qt.ItemDataRole.UserRole, None)  # Not a file
+        folder_item.setData(0, Qt.ItemDataRole.UserRole + 1, folder_name)
+        font = folder_item.font(0)
+        font.setBold(True)
+        folder_item.setFont(0, font)
+        folder_item.setFlags(
+            folder_item.flags() | Qt.ItemFlag.ItemIsAutoTristate
+        )
+        # Recursively fill
+        _populate_tree_widget(folder_item, tree_dict[folder_name], expanded_paths)
+        # Expand if it was previously expanded
+        if folder_name in expanded_paths:
+            folder_item.setExpanded(True)
+
+    # Add files
+    for note in tree_dict.get("_files", []):
+        file_item = QTreeWidgetItem(parent_item)
+        file_item.setText(0, f"\U0001f4c4 {note.title}")
+        file_item.setData(0, Qt.ItemDataRole.UserRole, str(note.path))
+        file_item.setToolTip(
+            0,
+            f"Tags: {', '.join('#' + t for t in note.tags) if note.tags else 'none'}"
+        )
+
+
 class NotesPanel(QWidget):
 
     def __init__(self, parent=None):
@@ -142,6 +195,7 @@ class NotesPanel(QWidget):
         self.cfg = load_config()
         self._init_store()
         self.current_note_path: str | None = None
+        self._expanded_folders: set[str] = set()
         self._save_timer = QTimer(self)
         self._save_timer.setSingleShot(True)
         self._save_timer.setInterval(500)
@@ -166,7 +220,6 @@ class NotesPanel(QWidget):
         api_url = self.cfg.get("obsidian_api_url", "http://127.0.0.1:27123")
         if api_key:
             self._obsidian_api = ObsidianAPI(api_url, api_key)
-            # Check availability in background
             def check():
                 if self._obsidian_api and self._obsidian_api.is_available():
                     self._obsidian_status = "connected"
@@ -183,19 +236,18 @@ class NotesPanel(QWidget):
 
         splitter = QSplitter(Qt.Orientation.Horizontal)
 
-        # ── Left sidebar ─────────────────────────────
+        # ── Left sidebar: tree view ──────────────────
         sidebar = QWidget()
         sidebar_layout = QVBoxLayout(sidebar)
         sidebar_layout.setContentsMargins(8, 8, 4, 8)
-        sidebar_layout.setSpacing(6)
+        sidebar_layout.setSpacing(4)
 
-        # Header with vault info
+        # Header
         header = QHBoxLayout()
         title = QLabel("Notes")
         title.setObjectName("sectionTitle")
         header.addWidget(title)
         header.addStretch()
-
         self.vault_badge = QLabel("")
         self.vault_badge.setObjectName("subtitle")
         header.addWidget(self.vault_badge)
@@ -211,15 +263,15 @@ class NotesPanel(QWidget):
 
         set_vault_btn = QPushButton("Set Vault")
         set_vault_btn.setObjectName("secondary")
-        set_vault_btn.setFixedHeight(22)
-        set_vault_btn.setStyleSheet("font-size: 10px; padding: 2px 6px;")
+        set_vault_btn.setFixedHeight(20)
+        set_vault_btn.setStyleSheet("font-size: 10px; padding: 1px 5px;")
         set_vault_btn.clicked.connect(self._set_vault_path)
         obs_row.addWidget(set_vault_btn)
 
         api_btn = QPushButton("API")
         api_btn.setObjectName("secondary")
-        api_btn.setFixedHeight(22)
-        api_btn.setStyleSheet("font-size: 10px; padding: 2px 6px;")
+        api_btn.setFixedHeight(20)
+        api_btn.setStyleSheet("font-size: 10px; padding: 1px 5px;")
         api_btn.setToolTip("Configure Obsidian REST API")
         api_btn.clicked.connect(self._configure_api)
         obs_row.addWidget(api_btn)
@@ -235,7 +287,7 @@ class NotesPanel(QWidget):
 
         # Buttons
         btn_row = QHBoxLayout()
-        btn_row.setSpacing(4)
+        btn_row.setSpacing(3)
         self.btn_new = QPushButton("+ Note")
         self.btn_new.clicked.connect(self._new_note)
         self.btn_folder = QPushButton("+ Folder")
@@ -243,20 +295,39 @@ class NotesPanel(QWidget):
         self.btn_folder.clicked.connect(self._new_folder)
         btn_row.addWidget(self.btn_new)
         btn_row.addWidget(self.btn_folder)
-
-        if self._obsidian_api:
-            api_note_btn = QPushButton("+ via API")
-            api_note_btn.setObjectName("secondary")
-            api_note_btn.setToolTip("Create note via Obsidian REST API")
-            api_note_btn.clicked.connect(self._create_via_api)
-            btn_row.addWidget(api_note_btn)
-
         sidebar_layout.addLayout(btn_row)
 
-        # Note list
-        self.note_list = QListWidget()
-        self.note_list.currentItemChanged.connect(self._on_note_selected)
-        sidebar_layout.addWidget(self.note_list, 1)
+        # Tree widget (replaces the old flat list)
+        self.file_tree = QTreeWidget()
+        self.file_tree.setHeaderHidden(True)
+        self.file_tree.setIndentation(16)
+        self.file_tree.setAnimated(True)
+        self.file_tree.setExpandsOnDoubleClick(False)
+        self.file_tree.setStyleSheet("""
+            QTreeWidget {
+                border: 1px solid palette(mid);
+                border-radius: 4px;
+                padding: 2px;
+                outline: none;
+            }
+            QTreeWidget::item {
+                padding: 2px 0;
+            }
+            QTreeWidget::branch:has-children:!has-siblings:closed,
+            QTreeWidget::branch:closed:has-children:has-siblings {
+                border-image: none;
+                image: none;
+            }
+            QTreeWidget::branch:open:has-children:!has-siblings,
+            QTreeWidget::branch:open:has-children:has-siblings {
+                border-image: none;
+                image: none;
+            }
+        """)
+        self.file_tree.currentItemChanged.connect(self._on_tree_item_selected)
+        self.file_tree.itemExpanded.connect(self._on_item_expanded)
+        self.file_tree.itemCollapsed.connect(self._on_item_collapsed)
+        sidebar_layout.addWidget(self.file_tree, 1)
 
         self.note_count_label = QLabel("0 notes")
         self.note_count_label.setObjectName("subtitle")
@@ -268,7 +339,6 @@ class NotesPanel(QWidget):
         editor_layout.setContentsMargins(4, 8, 8, 8)
         editor_layout.setSpacing(4)
 
-        # Title bar
         title_row = QHBoxLayout()
         self.note_title_label = QLabel("Select or create a note")
         self.note_title_label.setObjectName("sectionTitle")
@@ -301,12 +371,13 @@ class NotesPanel(QWidget):
         editor_layout.addWidget(sep)
 
         self.editor = QPlainTextEdit()
-        self.editor.setPlaceholderText("Start writing in Markdown...\n\nUse #tags anywhere in your text.")
+        self.editor.setPlaceholderText(
+            "Start writing in Markdown...\n\nUse #tags anywhere in your text."
+        )
         self.editor.setTabStopDistance(28.0)
         self.editor.textChanged.connect(self._on_text_changed)
         editor_layout.addWidget(self.editor, 1)
 
-        # Footer
         footer = QHBoxLayout()
         self.tag_label = QLabel("")
         self.tag_label.setObjectName("subtitle")
@@ -326,6 +397,80 @@ class NotesPanel(QWidget):
         layout.addWidget(splitter)
         self._update_status_label()
 
+    # ── Tree building ──────────────────────────────────
+
+    def _refresh_list(self, notes=None):
+        """Rebuild the tree from the note store."""
+        # Remember which folders were expanded
+        self._save_expanded_state()
+
+        self.file_tree.blockSignals(True)
+        self.file_tree.clear()
+
+        notes = notes or self.store.list_notes()
+        tree = _build_tree_structure(notes)
+        _populate_tree_widget(self.file_tree.invisibleRootItem(), tree, self._expanded_folders)
+
+        # Expand root-level folders by default on first load
+        if not self._expanded_folders:
+            for i in range(self.file_tree.topLevelItemCount()):
+                item = self.file_tree.topLevelItem(i)
+                if item and item.data(0, Qt.ItemDataRole.UserRole) is None:
+                    item.setExpanded(True)
+
+        self.file_tree.blockSignals(False)
+        self.note_count_label.setText(f"{len(notes)} note{'s' if len(notes) != 1 else ''}")
+
+        # Re-select current note if still present
+        if self.current_note_path:
+            self._select_note_in_tree(self.current_note_path)
+
+    def _save_expanded_state(self):
+        """Walk the tree and record which folder names are expanded."""
+        self._expanded_folders.clear()
+        self._walk_expanded(self.file_tree.invisibleRootItem())
+
+    def _walk_expanded(self, parent):
+        for i in range(parent.childCount()):
+            child = parent.child(i)
+            if child.data(0, Qt.ItemDataRole.UserRole) is None:  # folder
+                folder_name = child.data(0, Qt.ItemDataRole.UserRole + 1)
+                if child.isExpanded() and folder_name:
+                    self._expanded_folders.add(folder_name)
+                self._walk_expanded(child)
+
+    def _on_item_expanded(self, item):
+        folder_name = item.data(0, Qt.ItemDataRole.UserRole + 1)
+        if folder_name:
+            self._expanded_folders.add(folder_name)
+
+    def _on_item_collapsed(self, item):
+        folder_name = item.data(0, Qt.ItemDataRole.UserRole + 1)
+        if folder_name:
+            self._expanded_folders.discard(folder_name)
+
+    def _select_note_in_tree(self, rel_path: str):
+        """Find and select a note in the tree by its relative path."""
+        self.file_tree.blockSignals(True)
+        item = self._find_tree_item(self.file_tree.invisibleRootItem(), rel_path)
+        if item:
+            self.file_tree.setCurrentItem(item)
+        self.file_tree.blockSignals(False)
+
+    def _find_tree_item(self, parent, rel_path: str):
+        for i in range(parent.childCount()):
+            child = parent.child(i)
+            if child.data(0, Qt.ItemDataRole.UserRole) == rel_path:
+                return child
+            # Recurse into folders
+            if child.data(0, Qt.ItemDataRole.UserRole) is None:
+                found = self._find_tree_item(child, rel_path)
+                if found:
+                    return found
+        return None
+
+    # ── Status labels ──────────────────────────────────
+
     def _update_status_label(self):
         if self._mode == "vault":
             vault_path = self.cfg.get("obsidian_vault_path", "")
@@ -333,9 +478,7 @@ class NotesPanel(QWidget):
             self.vault_badge.setText(f"Vault: {vault_name}")
         else:
             self.vault_badge.setText("Built-in notes")
-
-        obs_text = f"Obsidian API: {self._obsidian_status}"
-        self.obsidian_status_label.setText(obs_text)
+        self.obsidian_status_label.setText(f"API: {self._obsidian_status}")
 
     # ── Vault / API configuration ──────────────────────
 
@@ -360,7 +503,6 @@ class NotesPanel(QWidget):
     def _configure_api(self):
         current_key = self.cfg.get("obsidian_api_key", "")
         current_url = self.cfg.get("obsidian_api_url", "http://127.0.0.1:27123")
-
         key, ok = QInputDialog.getText(
             self, "Obsidian REST API Key",
             "Enter the API key from the Obsidian Local REST API plugin:\n"
@@ -389,7 +531,6 @@ class NotesPanel(QWidget):
             path = f"{name.strip()}.md"
             content = f"# {name.strip()}\n\n"
             if self._obsidian_api.create_note(path, content):
-                # Also save locally so it shows up immediately
                 self._refresh_list()
                 QMessageBox.information(self, "Created", f"Note '{path}' created via API.")
             else:
@@ -399,7 +540,6 @@ class NotesPanel(QWidget):
         if self.current_note_path and self._obsidian_api:
             self._obsidian_api.open_in_obsidian(self.current_note_path)
         elif self.current_note_path:
-            # Try URI scheme directly
             import subprocess, sys
             vault_path = self.cfg.get("obsidian_vault_path", "")
             vault_name = Path(vault_path).name if vault_path else ""
@@ -415,20 +555,7 @@ class NotesPanel(QWidget):
             except Exception:
                 pass
 
-    # ── List management ────────────────────────────────
-
-    def _refresh_list(self, notes=None):
-        self.note_list.blockSignals(True)
-        self.note_list.clear()
-        notes = notes or self.store.list_notes()
-        for note in notes:
-            display = str(note.path)
-            item = QListWidgetItem(display)
-            item.setData(Qt.ItemDataRole.UserRole, str(note.path))
-            item.setToolTip(f"Tags: {', '.join('#' + t for t in note.tags) if note.tags else 'none'}")
-            self.note_list.addItem(item)
-        self.note_list.blockSignals(False)
-        self.note_count_label.setText(f"{len(notes)} note{'s' if len(notes) != 1 else ''}")
+    # ── Search ─────────────────────────────────────────
 
     def _on_search(self, query: str):
         if query.strip():
@@ -438,12 +565,16 @@ class NotesPanel(QWidget):
 
     # ── Note selection ─────────────────────────────────
 
-    def _on_note_selected(self, current: QListWidgetItem | None, _prev):
+    def _on_tree_item_selected(self, current, _prev):
         self._save_current()
         if current is None:
             self._clear_editor()
             return
-        rel_path = current.data(Qt.ItemDataRole.UserRole)
+        rel_path = current.data(0, Qt.ItemDataRole.UserRole)
+        if rel_path is None:
+            # Folder clicked — toggle expand
+            current.setExpanded(not current.isExpanded())
+            return
         note = self.store.get_note(rel_path)
         if note:
             self.current_note_path = rel_path
@@ -454,7 +585,6 @@ class NotesPanel(QWidget):
             self._update_footer(note)
             self.btn_rename.setVisible(True)
             self.btn_delete.setVisible(True)
-            # Show "Open in Obsidian" if vault mode
             self.btn_open_obsidian.setVisible(self._mode == "vault")
 
     def _clear_editor(self):
@@ -475,8 +605,7 @@ class NotesPanel(QWidget):
         self._save_timer.start()
         text = self.editor.toPlainText()
         words = len(text.split()) if text.strip() else 0
-        chars = len(text)
-        self.word_count_label.setText(f"{words} words | {chars} chars")
+        self.word_count_label.setText(f"{words} words | {len(text)} chars")
 
     def _save_current(self):
         if self.current_note_path is None:
@@ -507,7 +636,7 @@ class NotesPanel(QWidget):
             note = Note(title=safe_name, content="", path=rel)
             self.store.save_note(note)
             self._refresh_list()
-            self._select_note(str(rel))
+            self._select_note_in_tree(str(rel))
 
     def _new_folder(self):
         name, ok = QInputDialog.getText(self, "New Folder", "Folder name:")
@@ -523,8 +652,9 @@ class NotesPanel(QWidget):
                 rel = Path(safe_name) / f"{safe_note}.md"
                 note = Note(title=safe_note, content="", path=rel)
                 self.store.save_note(note)
+                self._expanded_folders.add(safe_name)
                 self._refresh_list()
-                self._select_note(str(rel))
+                self._select_note_in_tree(str(rel))
             else:
                 self._refresh_list()
 
@@ -548,7 +678,7 @@ class NotesPanel(QWidget):
                 self.current_note_path = str(new_rel)
                 self.note_title_label.setText(safe_name)
                 self._refresh_list()
-                self._select_note(str(new_rel))
+                self._select_note_in_tree(str(new_rel))
 
     def _delete_note(self):
         if self.current_note_path is None:
@@ -562,10 +692,3 @@ class NotesPanel(QWidget):
             self.store.delete_note(self.current_note_path)
             self._clear_editor()
             self._refresh_list()
-
-    def _select_note(self, rel_path: str):
-        for i in range(self.note_list.count()):
-            item = self.note_list.item(i)
-            if item and item.data(Qt.ItemDataRole.UserRole) == rel_path:
-                self.note_list.setCurrentItem(item)
-                break
