@@ -1,4 +1,9 @@
-"""Financial transaction storage backed by SQLite."""
+"""Financial/earnings storage backed by SQLite.
+
+Reframed for freelance work tracking: income categories focus on client/project
+types, and the summary is oriented around "Amount Earned" rather than generic
+income/expense tracking.
+"""
 
 import uuid
 from dataclasses import dataclass
@@ -8,9 +13,12 @@ from src.utils.timestamps import now_utc
 
 
 DEFAULT_CATEGORIES = [
-    "Salary", "Freelance", "Investments",  # Income
-    "Food", "Housing", "Transport", "Utilities", "Entertainment",
-    "Health", "Shopping", "Education", "Uncategorized",  # Expenses
+    # Earnings sources
+    "Freelance", "Contract", "Consulting", "Commission", "Royalties",
+    "Side Project", "Referral Bonus",
+    # Expense categories (still useful for net tracking)
+    "Software/Tools", "Hardware", "Office", "Travel", "Education",
+    "Taxes", "Fees", "Uncategorized",
 ]
 
 
@@ -20,7 +28,7 @@ class Transaction:
     date: str  # YYYY-MM-DD
     amount: float
     type: str  # 'income' or 'expense'
-    category: str = "Uncategorized"
+    category: str = "Freelance"
     description: str = ""
     updated_at: str = ""
     deleted: bool = False
@@ -29,7 +37,7 @@ class Transaction:
 class FinanceStore:
 
     def add_transaction(self, date: str, amount: float, txn_type: str,
-                        category: str = "Uncategorized", description: str = "") -> Transaction:
+                        category: str = "Freelance", description: str = "") -> Transaction:
         txn = Transaction(
             id=str(uuid.uuid4()),
             date=date,
@@ -82,19 +90,32 @@ class FinanceStore:
 
     def get_summary(self, start_date: str | None = None,
                     end_date: str | None = None) -> dict:
-        """Return income/expense totals and by-category breakdown."""
+        """Return earnings/expense totals and by-category breakdown."""
         txns = self.get_transactions(start_date, end_date)
-        income = sum(t.amount for t in txns if t.type == "income")
-        expenses = sum(t.amount for t in txns if t.type == "expense")
+        earned = sum(t.amount for t in txns if t.type == "income")
+        spent = sum(t.amount for t in txns if t.type == "expense")
         by_category: dict[str, float] = {}
         for t in txns:
             by_category[t.category] = by_category.get(t.category, 0) + t.amount
         return {
-            "income": income,
-            "expenses": expenses,
-            "net": income - expenses,
+            "earned": earned,
+            "spent": spent,
+            "net": earned - spent,
             "by_category": by_category,
+            "count": len(txns),
         }
+
+    def get_all_time_earned(self) -> float:
+        """Total income across all time."""
+        conn = get_connection()
+        try:
+            row = conn.execute(
+                "SELECT COALESCE(SUM(amount), 0) as total FROM transactions "
+                "WHERE deleted=0 AND type='income'"
+            ).fetchone()
+            return row["total"]
+        finally:
+            conn.close()
 
     def _upsert(self, txn: Transaction):
         conn = get_connection()

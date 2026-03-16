@@ -1,4 +1,4 @@
-"""Financial Tracker module UI — transaction list with summaries and category bars."""
+"""Earnings Tracker module UI — freelance income tracking with summaries."""
 
 from datetime import date
 
@@ -15,11 +15,11 @@ from src.data.finance_store import FinanceStore, Transaction, DEFAULT_CATEGORIES
 
 
 class TransactionDialog(QDialog):
-    """Dialog to add/edit a transaction."""
+    """Dialog to add/edit a transaction (earning or expense)."""
 
     def __init__(self, parent=None, txn=None):
         super().__init__(parent)
-        self.setWindowTitle("Edit Transaction" if txn else "New Transaction")
+        self.setWindowTitle("Edit Entry" if txn else "New Entry")
         self.setMinimumWidth(380)
         self.txn = txn
         self._build_ui()
@@ -33,6 +33,7 @@ class TransactionDialog(QDialog):
         self.type_combo.addItems(["income", "expense"])
         if self.txn:
             self.type_combo.setCurrentText(self.txn.type)
+        self.type_combo.currentTextChanged.connect(self._on_type_changed)
         layout.addWidget(self.type_combo)
 
         layout.addWidget(QLabel("Amount"))
@@ -55,7 +56,8 @@ class TransactionDialog(QDialog):
             self.date_edit.setDate(QDate(today.year, today.month, today.day))
         layout.addWidget(self.date_edit)
 
-        layout.addWidget(QLabel("Category"))
+        self.cat_label = QLabel("Source")
+        layout.addWidget(self.cat_label)
         self.cat_combo = QComboBox()
         self.cat_combo.addItems(DEFAULT_CATEGORIES)
         self.cat_combo.setEditable(True)
@@ -65,7 +67,7 @@ class TransactionDialog(QDialog):
 
         layout.addWidget(QLabel("Description"))
         self.desc_edit = QLineEdit()
-        self.desc_edit.setPlaceholderText("Optional description...")
+        self.desc_edit.setPlaceholderText("Client name, project, invoice #...")
         if self.txn:
             self.desc_edit.setText(self.txn.description)
         layout.addWidget(self.desc_edit)
@@ -86,6 +88,11 @@ class TransactionDialog(QDialog):
         btn_row.addWidget(save_btn)
         layout.addLayout(btn_row)
 
+        self._on_type_changed(self.type_combo.currentText())
+
+    def _on_type_changed(self, txn_type: str):
+        self.cat_label.setText("Source" if txn_type == "income" else "Category")
+
     def get_data(self) -> dict:
         qd = self.date_edit.date()
         return {
@@ -98,7 +105,6 @@ class TransactionDialog(QDialog):
 
 
 class CategoryBar(QWidget):
-    """A simple horizontal bar showing category proportion."""
 
     def __init__(self, label: str, amount: float, max_amount: float,
                  bar_color: str = "#4a9eff", parent=None):
@@ -111,7 +117,6 @@ class CategoryBar(QWidget):
         name_label.setFixedWidth(110)
         layout.addWidget(name_label)
 
-        # Bar
         bar_frame = QFrame()
         width_pct = (amount / max_amount * 100) if max_amount > 0 else 0
         bar_frame.setStyleSheet(
@@ -147,27 +152,53 @@ class FinancePanel(QWidget):
         layout.setContentsMargins(16, 12, 16, 12)
         layout.setSpacing(8)
 
-        # Header
+        # ── Header with big earnings display ──────────
         header = QHBoxLayout()
-        title = QLabel("Finance")
+
+        title_col = QVBoxLayout()
+        title = QLabel("Earnings Tracker")
         title.setObjectName("sectionTitle")
-        header.addWidget(title)
+        title_col.addWidget(title)
+        subtitle = QLabel("Freelance income & expenses")
+        subtitle.setObjectName("subtitle")
+        title_col.addWidget(subtitle)
+        header.addLayout(title_col)
+
         header.addStretch()
 
-        btn_add = QPushButton("+ Transaction")
-        btn_add.setToolTip("Add a new transaction")
-        btn_add.clicked.connect(self._add_transaction)
-        header.addWidget(btn_add)
+        # All-time earnings badge
+        self.all_time_label = QLabel("$0.00")
+        self.all_time_label.setStyleSheet(
+            "font-size: 28px; font-weight: bold; padding: 4px 16px;"
+        )
+        self.all_time_label.setToolTip("Total amount earned (all time)")
+        header.addWidget(self.all_time_label)
+
+        all_time_caption = QLabel("earned all-time")
+        all_time_caption.setObjectName("subtitle")
+        header.addWidget(all_time_caption)
+
+        header.addSpacing(20)
+
+        btn_add_income = QPushButton("+ Earning")
+        btn_add_income.setToolTip("Log a new earning")
+        btn_add_income.clicked.connect(self._add_earning)
+        header.addWidget(btn_add_income)
+
+        btn_add_expense = QPushButton("+ Expense")
+        btn_add_expense.setObjectName("secondary")
+        btn_add_expense.setToolTip("Log a new expense")
+        btn_add_expense.clicked.connect(self._add_expense)
+        header.addWidget(btn_add_expense)
 
         btn_delete = QPushButton("Delete")
         btn_delete.setObjectName("destructive")
-        btn_delete.setToolTip("Delete selected transactions")
         btn_delete.clicked.connect(self._delete_transaction)
         header.addWidget(btn_delete)
 
         layout.addLayout(header)
 
-        # Filters
+        # ── Filters ───────────────────────────────────
         filter_row = QHBoxLayout()
         filter_row.setSpacing(8)
         filter_row.addWidget(QLabel("Show:"))
@@ -196,13 +227,13 @@ class FinancePanel(QWidget):
         filter_row.addStretch()
         layout.addLayout(filter_row)
 
-        # Content: table + summary
+        # ── Content: table + summary ──────────────────
         content = QSplitter(Qt.Orientation.Horizontal)
 
-        # Transaction table
+        # Table
         self.table = QTableWidget()
         self.table.setColumnCount(5)
-        self.table.setHorizontalHeaderLabels(["Date", "Type", "Category", "Amount", "Description"])
+        self.table.setHorizontalHeaderLabels(["Date", "Type", "Source", "Amount", "Description"])
         self.table.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
         self.table.horizontalHeader().setSectionResizeMode(0, QHeaderView.ResizeMode.ResizeToContents)
         self.table.horizontalHeader().setSectionResizeMode(1, QHeaderView.ResizeMode.ResizeToContents)
@@ -218,17 +249,17 @@ class FinancePanel(QWidget):
         self.summary_layout.setContentsMargins(16, 12, 16, 12)
         self.summary_layout.setSpacing(8)
 
-        summary_title = QLabel("Summary")
-        summary_title.setObjectName("sectionTitle")
-        self.summary_layout.addWidget(summary_title)
+        period_title = QLabel("Period Summary")
+        period_title.setObjectName("sectionTitle")
+        self.summary_layout.addWidget(period_title)
 
-        self.income_label = QLabel("Income: $0.00")
-        self.income_label.setStyleSheet("font-size: 16px; font-weight: bold;")
-        self.summary_layout.addWidget(self.income_label)
+        self.earned_label = QLabel("Earned: $0.00")
+        self.earned_label.setStyleSheet("font-size: 18px; font-weight: bold;")
+        self.summary_layout.addWidget(self.earned_label)
 
-        self.expense_label = QLabel("Expenses: $0.00")
-        self.expense_label.setStyleSheet("font-size: 16px; font-weight: bold;")
-        self.summary_layout.addWidget(self.expense_label)
+        self.spent_label = QLabel("Spent: $0.00")
+        self.spent_label.setStyleSheet("font-size: 16px; font-weight: bold;")
+        self.summary_layout.addWidget(self.spent_label)
 
         sep = QFrame()
         sep.setObjectName("separator")
@@ -239,16 +270,19 @@ class FinancePanel(QWidget):
         self.net_label.setStyleSheet("font-size: 20px; font-weight: bold;")
         self.summary_layout.addWidget(self.net_label)
 
+        self.txn_count_label = QLabel("0 transactions")
+        self.txn_count_label.setObjectName("subtitle")
+        self.summary_layout.addWidget(self.txn_count_label)
+
         sep2 = QFrame()
         sep2.setObjectName("separator")
         sep2.setFrameShape(QFrame.Shape.HLine)
         self.summary_layout.addWidget(sep2)
 
-        cat_title = QLabel("By Category")
+        cat_title = QLabel("By Source / Category")
         cat_title.setStyleSheet("font-weight: bold; font-size: 14px;")
         self.summary_layout.addWidget(cat_title)
 
-        # Container for category bars (dynamically rebuilt)
         self.cat_bars_container = QWidget()
         self.cat_bars_layout = QVBoxLayout(self.cat_bars_container)
         self.cat_bars_layout.setContentsMargins(0, 0, 0, 0)
@@ -279,14 +313,22 @@ class FinancePanel(QWidget):
         red = self._palette.get("red", "#f38ba8")
         accent = self._palette.get("accent", "#4a9eff")
 
-        # Update table
+        # All-time earned
+        all_time = self.store.get_all_time_earned()
+        self.all_time_label.setText(f"${all_time:,.2f}")
+        self.all_time_label.setStyleSheet(
+            f"color: {green}; font-size: 28px; font-weight: bold; padding: 4px 16px;"
+        )
+
+        # Table
         self.table.setRowCount(len(txns))
         self._txn_ids = []
         for row, txn in enumerate(txns):
             self._txn_ids.append(txn.id)
             self.table.setItem(row, 0, QTableWidgetItem(txn.date))
 
-            type_item = QTableWidgetItem(txn.type.capitalize())
+            type_text = "Earned" if txn.type == "income" else "Spent"
+            type_item = QTableWidgetItem(type_text)
             color = QColor(green if txn.type == "income" else red)
             type_item.setForeground(QBrush(color))
             self.table.setItem(row, 1, type_item)
@@ -301,12 +343,12 @@ class FinancePanel(QWidget):
 
             self.table.setItem(row, 4, QTableWidgetItem(txn.description))
 
-        # Update summary
+        # Summary
         summary = self.store.get_summary(start, end)
-        self.income_label.setText(f"Income: ${summary['income']:,.2f}")
-        self.income_label.setStyleSheet(f"color: {green}; font-size: 16px; font-weight: bold;")
-        self.expense_label.setText(f"Expenses: ${summary['expenses']:,.2f}")
-        self.expense_label.setStyleSheet(f"color: {red}; font-size: 16px; font-weight: bold;")
+        self.earned_label.setText(f"Earned: ${summary['earned']:,.2f}")
+        self.earned_label.setStyleSheet(f"color: {green}; font-size: 18px; font-weight: bold;")
+        self.spent_label.setText(f"Spent: ${summary['spent']:,.2f}")
+        self.spent_label.setStyleSheet(f"color: {red}; font-size: 16px; font-weight: bold;")
 
         net = summary['net']
         net_color = green if net >= 0 else red
@@ -314,7 +356,9 @@ class FinancePanel(QWidget):
         self.net_label.setText(f"Net: {sign}${net:,.2f}")
         self.net_label.setStyleSheet(f"color: {net_color}; font-size: 20px; font-weight: bold;")
 
-        # Rebuild category bars
+        self.txn_count_label.setText(f"{summary['count']} transaction(s) in period")
+
+        # Category bars
         while self.cat_bars_layout.count():
             child = self.cat_bars_layout.takeAt(0)
             if child.widget():
@@ -323,7 +367,6 @@ class FinancePanel(QWidget):
         by_cat = summary['by_category']
         if by_cat:
             max_amount = max(by_cat.values())
-            # Cycle through some colors
             bar_colors = [accent, green, "#cba6f7", "#fab387", "#f9e2af", "#94e2d5", red, "#f5c2e7"]
             for i, (cat, amount) in enumerate(sorted(by_cat.items(), key=lambda x: -x[1])):
                 bar = CategoryBar(cat, amount, max_amount, bar_colors[i % len(bar_colors)])
@@ -333,11 +376,18 @@ class FinancePanel(QWidget):
             no_data.setObjectName("subtitle")
             self.cat_bars_layout.addWidget(no_data)
 
-    def _add_transaction(self):
+    def _add_earning(self):
         dlg = TransactionDialog(self)
+        dlg.type_combo.setCurrentText("income")
         if dlg.exec():
-            data = dlg.get_data()
-            self.store.add_transaction(**data)
+            self.store.add_transaction(**dlg.get_data())
+            self._refresh()
+
+    def _add_expense(self):
+        dlg = TransactionDialog(self)
+        dlg.type_combo.setCurrentText("expense")
+        if dlg.exec():
+            self.store.add_transaction(**dlg.get_data())
             self._refresh()
 
     def _edit_transaction(self, index):
@@ -365,8 +415,8 @@ class FinancePanel(QWidget):
         if not rows:
             return
         reply = QMessageBox.question(
-            self, "Delete Transaction",
-            f"Delete {len(rows)} transaction(s)?",
+            self, "Delete",
+            f"Delete {len(rows)} entry/entries?",
             QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
         )
         if reply == QMessageBox.StandardButton.Yes:

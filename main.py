@@ -32,7 +32,7 @@ def main():
     sync_engine = None
     if cfg.get("sync_enabled", True):
         sync_engine = SyncEngine()
-        sync_engine.status_changed.connect(window.set_sync_status)
+        window.set_sync_engine(sync_engine)
         sync_engine.start()
 
     exit_code = app.exec()
