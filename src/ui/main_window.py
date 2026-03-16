@@ -277,6 +277,18 @@ class MainWindow(QMainWindow):
         self.sync_engine = engine
         engine.status_changed.connect(self.set_sync_status)
         engine.peers_updated.connect(self._on_peers_updated)
+        engine.sync_completed.connect(self._on_sync_completed)
+
+    def _on_sync_completed(self):
+        """Refresh all panels after incoming data has been merged."""
+        if hasattr(self.notes_panel, '_refresh_list'):
+            self.notes_panel._refresh_list()
+        if hasattr(self.calendar_panel, '_refresh'):
+            self.calendar_panel._refresh()
+        if hasattr(self.finance_panel, '_refresh'):
+            self.finance_panel._refresh()
+        if hasattr(self.todo_panel, '_refresh'):
+            self.todo_panel._refresh()
 
     def set_sync_status(self, text: str):
         self.sync_label.setText(f"Sync: {text}")

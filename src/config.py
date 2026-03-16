@@ -29,7 +29,7 @@ DEFAULTS = {
     "theme": "Catppuccin Dark",
     # Sync
     "sync_enabled": True,
-    "sync_interval_seconds": 300,  # 5 minutes
+    "sync_interval_seconds": 30,  # 30 seconds for near-realtime sync
     "sync_port": 42069,
     "discovery_port": 42070,
     "subnet": "192.168.0",          # /24 subnet prefix to scan
