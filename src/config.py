@@ -6,7 +6,7 @@ from pathlib import Path
 
 
 APP_NAME = "LocalSync"
-APP_VERSION = "0.1.0"
+APP_VERSION = "0.2.0"
 
 # Cross-platform data directory
 if platform.system() == "Windows":
@@ -27,9 +27,18 @@ for d in [DATA_DIR, NOTES_DIR]:
 # Default settings
 DEFAULTS = {
     "theme": "Catppuccin Dark",
+    # Sync
     "sync_enabled": True,
     "sync_interval_seconds": 300,  # 5 minutes
     "sync_port": 42069,
+    "discovery_port": 42070,
+    "subnet": "192.168.0",          # /24 subnet prefix to scan
+    "known_peers": [],               # Manually pinned peer IPs
+    "scan_range_start": 1,
+    "scan_range_end": 254,
+    "scan_threads": 20,              # Parallel ping threads
+    "scan_timeout_ms": 150,          # Per-host TCP probe timeout
+    # Data
     "notes_dir": str(NOTES_DIR),
 }
 
@@ -38,7 +47,6 @@ def load_config() -> dict:
     if CONFIG_PATH.exists():
         with open(CONFIG_PATH, "r", encoding="utf-8") as f:
             saved = json.load(f)
-        # Merge defaults with saved (saved wins)
         return {**DEFAULTS, **saved}
     return dict(DEFAULTS)
 
