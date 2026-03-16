@@ -9,7 +9,7 @@ QMainWindow, QWidget {{
     background-color: {c['bg']};
     color: {c['fg']};
     font-family: "Segoe UI", "Ubuntu", "Noto Sans", sans-serif;
-    font-size: 14px;
+    font-size: 12px;
 }}
 
 /* ── Text inputs ──────────────────────────────────── */
@@ -17,8 +17,8 @@ QLineEdit, QTextEdit, QPlainTextEdit {{
     background-color: {c['surface']};
     color: {c['fg']};
     border: 1px solid {c['border']};
-    border-radius: 6px;
-    padding: 6px;
+    border-radius: 4px;
+    padding: 4px;
     selection-background-color: {c['accent']};
     selection-color: {c['accent_fg']};
 }}
@@ -34,8 +34,8 @@ QPushButton {{
     background-color: {c['accent']};
     color: {c['accent_fg']};
     border: none;
-    border-radius: 6px;
-    padding: 8px 16px;
+    border-radius: 4px;
+    padding: 5px 12px;
     font-weight: bold;
 }}
 QPushButton:hover {{
@@ -73,8 +73,8 @@ QListWidget {{
     outline: none;
 }}
 QListWidget::item {{
-    padding: 8px;
-    border-radius: 4px;
+    padding: 4px;
+    border-radius: 3px;
 }}
 QListWidget::item:selected {{
     background-color: {c['accent']};
@@ -93,7 +93,7 @@ QTableWidget {{
     outline: none;
 }}
 QTableWidget::item {{
-    padding: 6px;
+    padding: 3px;
 }}
 QTableWidget::item:selected {{
     background-color: {c['accent']};
@@ -105,7 +105,7 @@ QTableWidget::item:alternate {{
 QHeaderView::section {{
     background-color: {c['header_bg']};
     color: {c['fg']};
-    padding: 8px;
+    padding: 4px;
     border: none;
     border-bottom: 2px solid {c['accent']};
     font-weight: bold;
@@ -116,9 +116,9 @@ QComboBox {{
     background-color: {c['surface']};
     color: {c['fg']};
     border: 1px solid {c['border']};
-    border-radius: 6px;
-    padding: 6px 8px;
-    min-width: 80px;
+    border-radius: 4px;
+    padding: 3px 6px;
+    min-width: 70px;
 }}
 QComboBox::drop-down {{
     border: none;
@@ -138,8 +138,8 @@ QDateEdit, QTimeEdit, QSpinBox, QDoubleSpinBox {{
     background-color: {c['surface']};
     color: {c['fg']};
     border: 1px solid {c['border']};
-    border-radius: 6px;
-    padding: 6px;
+    border-radius: 4px;
+    padding: 3px;
 }}
 QDateEdit::drop-down, QTimeEdit::drop-down {{
     border: none;
@@ -163,13 +163,13 @@ QCheckBox::indicator:checked {{
 
 /* ── Labels ───────────────────────────────────────── */
 QLabel#sectionTitle {{
-    font-size: 18px;
+    font-size: 15px;
     font-weight: bold;
     color: {c['fg']};
-    padding-bottom: 2px;
+    padding-bottom: 1px;
 }}
 QLabel#subtitle {{
-    font-size: 12px;
+    font-size: 11px;
     color: {c['muted']};
 }}
 QLabel#statusOk {{
@@ -255,8 +255,8 @@ QStatusBar {{
     background-color: {c['header_bg']};
     color: {c['muted']};
     border-top: 1px solid {c['border']};
-    font-size: 12px;
-    padding: 2px 8px;
+    font-size: 11px;
+    padding: 1px 6px;
 }}
 QStatusBar::item {{
     border: none;

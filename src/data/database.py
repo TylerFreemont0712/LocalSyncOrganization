@@ -53,6 +53,19 @@ CREATE TABLE IF NOT EXISTS transactions (
     deleted     INTEGER DEFAULT 0
 );
 
+CREATE TABLE IF NOT EXISTS todos (
+    id          TEXT PRIMARY KEY,
+    title       TEXT NOT NULL,
+    done        INTEGER DEFAULT 0,
+    priority    INTEGER DEFAULT 0,
+    due_date    TEXT,
+    category    TEXT DEFAULT '',
+    notes       TEXT DEFAULT '',
+    created_at  TEXT NOT NULL,
+    updated_at  TEXT NOT NULL,
+    deleted     INTEGER DEFAULT 0
+);
+
 CREATE TABLE IF NOT EXISTS sync_meta (
     key   TEXT PRIMARY KEY,
     value TEXT
