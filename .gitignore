@@ -5,7 +5,9 @@ __pycache__/
 *.egg-info/
 dist/
 build/
-data/
+# Runtime data lives outside the repo (in ~/.local/share/LocalSync)
+# Only ignore the top-level data/ placeholder if someone creates one
+/data/
 *.db
 *.db-wal
 *.db-shm

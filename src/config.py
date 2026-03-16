@@ -26,7 +26,7 @@ for d in [DATA_DIR, NOTES_DIR]:
 
 # Default settings
 DEFAULTS = {
-    "theme": "dark",
+    "theme": "Catppuccin Dark",
     "sync_enabled": True,
     "sync_interval_seconds": 300,  # 5 minutes
     "sync_port": 42069,
