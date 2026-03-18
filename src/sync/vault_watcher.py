@@ -5,9 +5,10 @@ in the configured vault directory. When changes are detected, emits a signal
 so the sync engine can broadcast them to peers.
 """
 
+import json
 import logging
 import time
-from pathlib import Path
+from pathlib import Path, PurePosixPath
 
 from PyQt6.QtCore import QThread, pyqtSignal
 
@@ -48,7 +49,10 @@ class VaultWatcher(QThread):
             self._snapshot = self._scan_vault()
 
     def _scan_vault(self) -> dict[str, float]:
-        """Build a dict of {relative_path: mtime} for all .md files in vault."""
+        """Build a dict of {posix_relative_path: mtime} for all .md files in vault.
+
+        Always uses forward slashes so Windows/Linux snapshots are comparable.
+        """
         if not self._vault_path or not self._vault_path.is_dir():
             return {}
         result = {}
@@ -59,8 +63,10 @@ class VaultWatcher(QThread):
                 parts = rel.parts
                 if any(p.startswith(".") for p in parts):
                     continue
+                # Normalize to forward slashes
+                rel_posix = str(PurePosixPath(rel))
                 try:
-                    result[str(rel)] = md.stat().st_mtime
+                    result[rel_posix] = md.stat().st_mtime
                 except OSError:
                     pass
         except OSError as e:
@@ -81,6 +87,8 @@ class VaultWatcher(QThread):
             if self._vault_path and self._vault_path.is_dir():
                 current = self._scan_vault()
                 if self._has_changes(current):
+                    # Record any deletions before updating the snapshot
+                    self._record_deletions(current)
                     logger.info("Vault changes detected, triggering sync")
                     self._snapshot = current
                     self.vault_changed.emit()
@@ -113,6 +121,36 @@ class VaultWatcher(QThread):
             if path not in current:
                 return True
         return False
+
+    def _record_deletions(self, current: dict[str, float]):
+        """When files disappear from the vault, record them in the deletion manifest."""
+        if not self._vault_path:
+            return
+        deleted = set(self._snapshot.keys()) - set(current.keys())
+        if not deleted:
+            return
+
+        manifest_path = self._vault_path / ".localsync_deletions.json"
+        try:
+            existing = json.loads(manifest_path.read_text(encoding="utf-8")) if manifest_path.exists() else []
+        except Exception:
+            existing = []
+
+        existing_paths = {d["path"] for d in existing}
+        now = time.time()
+        for path in deleted:
+            if path not in existing_paths:
+                existing.append({"path": path, "deleted_at": now})
+                logger.info(f"Recorded vault deletion: {path}")
+
+        # Prune old entries (30 days)
+        cutoff = now - (30 * 86400)
+        existing = [d for d in existing if d.get("deleted_at", 0) > cutoff]
+
+        try:
+            manifest_path.write_text(json.dumps(existing, indent=2), encoding="utf-8")
+        except OSError as e:
+            logger.warning(f"Failed to write deletion manifest: {e}")
 
     def stop(self):
         self._running = False

@@ -25,7 +25,7 @@ import struct
 import threading
 import time
 from concurrent.futures import ThreadPoolExecutor, as_completed
-from pathlib import Path
+from pathlib import Path, PurePosixPath
 
 from PyQt6.QtCore import QThread, pyqtSignal
 
@@ -425,19 +425,28 @@ class SyncEngine(QThread):
         finally:
             conn.close()
 
-        # Gather notes from configured notes dir
+        cfg = load_config()
+
+        # Gather notes from configured notes dir (built-in notes)
         notes = []
-        notes_dir = Path(load_config().get("notes_dir", str(NOTES_DIR)))
+        notes_dir = Path(cfg.get("notes_dir", str(NOTES_DIR)))
         if notes_dir.exists():
             for md in notes_dir.rglob("*.md"):
-                rel = str(md.relative_to(notes_dir))
-                mtime = md.stat().st_mtime
-                content = md.read_text(encoding="utf-8")
-                notes.append({"path": rel, "mtime": mtime, "content": content})
+                rel = md.relative_to(notes_dir)
+                if any(part.startswith(".") for part in rel.parts):
+                    continue
+                # Always use forward slashes for cross-platform compatibility
+                rel_posix = str(PurePosixPath(rel))
+                try:
+                    mtime = md.stat().st_mtime
+                    content = md.read_text(encoding="utf-8")
+                    notes.append({"path": rel_posix, "mtime": mtime, "content": content})
+                except OSError:
+                    pass
 
         # Gather Obsidian vault files if configured
         vault_notes = []
-        cfg = load_config()
+        vault_existing_paths = set()  # track what exists for deletion manifest
         vault_path = cfg.get("obsidian_vault_path", "")
         if vault_path:
             vault_dir = Path(vault_path)
@@ -447,18 +456,55 @@ class SyncEngine(QThread):
                     # Skip hidden dirs (.obsidian, .trash, etc.)
                     if any(p.startswith(".") for p in rel.parts):
                         continue
-                    rel_str = str(rel)
+                    # Always use forward slashes for cross-platform compatibility
+                    rel_posix = str(PurePosixPath(rel))
+                    vault_existing_paths.add(rel_posix)
                     try:
                         mtime = md.stat().st_mtime
                         content = md.read_text(encoding="utf-8")
-                        vault_notes.append({"path": rel_str, "mtime": mtime, "content": content})
+                        vault_notes.append({"path": rel_posix, "mtime": mtime, "content": content})
                     except OSError:
                         pass
+
+        # Build deletion manifest — files we know were deleted locally
+        vault_deletions = self._get_vault_deletions(vault_path)
 
         return {
             "events": events, "transactions": transactions,
             "todos": todos, "notes": notes, "vault_notes": vault_notes,
+            "vault_deletions": vault_deletions,
         }
+
+    def _get_vault_deletions(self, vault_path: str) -> list[dict]:
+        """Read the deletion manifest for vault files."""
+        if not vault_path:
+            return []
+        manifest_path = Path(vault_path) / ".localsync_deletions.json"
+        if manifest_path.exists():
+            try:
+                data = json.loads(manifest_path.read_text(encoding="utf-8"))
+                return data if isinstance(data, list) else []
+            except Exception:
+                return []
+        return []
+
+    def _record_vault_deletion(self, vault_path: str, rel_posix: str):
+        """Record a file deletion in the vault manifest."""
+        if not vault_path:
+            return
+        manifest_path = Path(vault_path) / ".localsync_deletions.json"
+        deletions = self._get_vault_deletions(vault_path)
+        # Don't duplicate
+        existing_paths = {d["path"] for d in deletions}
+        if rel_posix not in existing_paths:
+            deletions.append({"path": rel_posix, "deleted_at": time.time()})
+        # Keep only last 30 days of deletions
+        cutoff = time.time() - (30 * 86400)
+        deletions = [d for d in deletions if d.get("deleted_at", 0) > cutoff]
+        try:
+            manifest_path.write_text(json.dumps(deletions, indent=2), encoding="utf-8")
+        except OSError as e:
+            logger.warning(f"Failed to write deletion manifest: {e}")
 
     def _merge_remote_data(self, remote: dict) -> int:
         """Merge remote data. Returns count of changes applied."""
@@ -529,10 +575,13 @@ class SyncEngine(QThread):
         finally:
             conn.close()
 
-        # Merge notes
-        notes_dir = Path(load_config().get("notes_dir", str(NOTES_DIR)))
+        # Merge notes (built-in notes dir)
+        cfg = load_config()
+        notes_dir = Path(cfg.get("notes_dir", str(NOTES_DIR)))
         for rnote in remote.get("notes", []):
-            local_path = notes_dir / rnote["path"]
+            # Normalize path — always convert to OS-native from posix
+            rel_posix = rnote["path"].replace("\\", "/")
+            local_path = notes_dir / Path(rel_posix)
             should_write = False
             if local_path.exists():
                 if rnote["mtime"] > local_path.stat().st_mtime:
@@ -545,15 +594,61 @@ class SyncEngine(QThread):
                 changes += 1
 
         # Merge Obsidian vault notes
-        cfg = load_config()
         vault_path = cfg.get("obsidian_vault_path", "")
         if vault_path:
             vault_dir = Path(vault_path)
+
+            # First, apply remote deletions — remove files the peer deleted
+            for deletion in remote.get("vault_deletions", []):
+                del_posix = deletion["path"].replace("\\", "/")
+                del_time = deletion.get("deleted_at", 0)
+                local_path = vault_dir / Path(del_posix)
+                if local_path.exists():
+                    # Only delete if the local file is older than the deletion
+                    try:
+                        local_mtime = local_path.stat().st_mtime
+                        if del_time > local_mtime:
+                            local_path.unlink()
+                            changes += 1
+                            self._log(f"Deleted vault file (remote deletion): {del_posix}")
+                            # Also record locally so we don't re-create from other peers
+                            self._record_vault_deletion(vault_path, del_posix)
+                    except OSError as e:
+                        logger.warning(f"Failed to delete {del_posix}: {e}")
+
+            # Build set of remotely-deleted paths for this sync
+            remote_deleted = {
+                d["path"].replace("\\", "/")
+                for d in remote.get("vault_deletions", [])
+            }
+
+            # Then, merge vault notes — create/update files
             for rnote in remote.get("vault_notes", []):
-                local_path = vault_dir / rnote["path"]
+                rel_posix = rnote["path"].replace("\\", "/")
+                # Skip if this file was deleted locally
+                local_deletions = {
+                    d["path"] for d in self._get_vault_deletions(vault_path)
+                }
+                if rel_posix in local_deletions:
+                    # Check if remote mtime is newer than our deletion
+                    local_del_time = 0
+                    for d in self._get_vault_deletions(vault_path):
+                        if d["path"] == rel_posix:
+                            local_del_time = d.get("deleted_at", 0)
+                            break
+                    if rnote["mtime"] <= local_del_time:
+                        continue  # Our deletion is newer, skip
+                    # Remote edit is newer than our deletion — re-create
+                    # Remove from deletion manifest
+                    self._remove_vault_deletion(vault_path, rel_posix)
+
+                local_path = vault_dir / Path(rel_posix)
                 should_write = False
                 if local_path.exists():
-                    if rnote["mtime"] > local_path.stat().st_mtime:
+                    try:
+                        if rnote["mtime"] > local_path.stat().st_mtime:
+                            should_write = True
+                    except OSError:
                         should_write = True
                 else:
                     should_write = True
@@ -562,7 +657,38 @@ class SyncEngine(QThread):
                     local_path.write_text(rnote["content"], encoding="utf-8")
                     changes += 1
 
+            # Clean up empty directories left after deletions
+            if vault_dir.exists():
+                self._cleanup_empty_dirs(vault_dir)
+
         return changes
+
+    def _remove_vault_deletion(self, vault_path: str, rel_posix: str):
+        """Remove a path from the deletion manifest (file was re-created remotely)."""
+        if not vault_path:
+            return
+        manifest_path = Path(vault_path) / ".localsync_deletions.json"
+        deletions = self._get_vault_deletions(vault_path)
+        deletions = [d for d in deletions if d["path"] != rel_posix]
+        try:
+            manifest_path.write_text(json.dumps(deletions, indent=2), encoding="utf-8")
+        except OSError:
+            pass
+
+    @staticmethod
+    def _cleanup_empty_dirs(root: Path):
+        """Remove empty subdirectories (bottom-up) after file deletions."""
+        for dirpath in sorted(root.rglob("*"), reverse=True):
+            if dirpath.is_dir() and dirpath != root:
+                # Skip hidden dirs
+                rel = dirpath.relative_to(root)
+                if any(p.startswith(".") for p in rel.parts):
+                    continue
+                try:
+                    if not any(dirpath.iterdir()):
+                        dirpath.rmdir()
+                except OSError:
+                    pass
 
     # ── Peer management ────────────────────────────────
 
