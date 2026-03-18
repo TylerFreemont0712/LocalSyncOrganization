@@ -372,12 +372,14 @@ class WeekEventWidget(QFrame):
 
         title_label = QLabel(event.title)
         title_label.setStyleSheet("font-weight: bold; font-size: 13px;")
+        title_label.setWordWrap(True)
         info_layout.addWidget(title_label)
 
         if event.description:
             desc = QLabel(event.description[:60])
             desc.setObjectName("subtitle")
             desc.setStyleSheet("font-size: 11px;")
+            desc.setWordWrap(True)
             info_layout.addWidget(desc)
 
         layout.addLayout(info_layout, 1)
@@ -403,6 +405,8 @@ class DayColumn(QWidget):
         super().__init__()
         self.d = d
         self.parent_panel = parent_panel
+        # Fixed equal-width policy — prevents long text from stretching a column
+        self.setSizePolicy(QSizePolicy.Policy.Ignored, QSizePolicy.Policy.Preferred)
 
         layout = QVBoxLayout(self)
         layout.setContentsMargins(4, 4, 4, 4)
