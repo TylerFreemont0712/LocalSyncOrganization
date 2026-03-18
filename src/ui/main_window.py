@@ -16,6 +16,8 @@ from src.ui.modules.notes_panel import NotesPanel
 from src.ui.modules.calendar_panel import CalendarPanel
 from src.ui.modules.finance_panel import FinancePanel
 from src.ui.modules.todo_panel import TodoPanel
+from src.ui.modules.dashboard_panel import DashboardPanel
+from src.ui.modules.finance_charts import FinanceChartsPanel
 
 
 class SidebarButton(QPushButton):
@@ -68,7 +70,7 @@ class MainWindow(QMainWindow):
         if current_theme in ("dark", "light"):
             current_theme = "Catppuccin Dark" if current_theme == "dark" else "Catppuccin Light"
         self._apply_theme(current_theme)
-        self._navigate("Notes")
+        self._navigate("Dashboard")
 
     # ── Menu bar ───────────────────────────────────────
 
@@ -78,10 +80,12 @@ class MainWindow(QMainWindow):
         # File menu
         file_menu = menubar.addMenu("&File")
 
-        file_menu.addAction(self._action("&Notes", "Ctrl+1", lambda: self._navigate("Notes")))
-        file_menu.addAction(self._action("&Calendar", "Ctrl+2", lambda: self._navigate("Calendar")))
-        file_menu.addAction(self._action("&Earnings", "Ctrl+3", lambda: self._navigate("Earnings")))
-        file_menu.addAction(self._action("&Tasks", "Ctrl+4", lambda: self._navigate("Tasks")))
+        file_menu.addAction(self._action("&Dashboard", "Ctrl+1", lambda: self._navigate("Dashboard")))
+        file_menu.addAction(self._action("&Notes", "Ctrl+2", lambda: self._navigate("Notes")))
+        file_menu.addAction(self._action("&Calendar", "Ctrl+3", lambda: self._navigate("Calendar")))
+        file_menu.addAction(self._action("&Earnings", "Ctrl+4", lambda: self._navigate("Earnings")))
+        file_menu.addAction(self._action("&Charts", "Ctrl+5", lambda: self._navigate("Charts")))
+        file_menu.addAction(self._action("&Tasks", "Ctrl+6", lambda: self._navigate("Tasks")))
         file_menu.addSeparator()
         file_menu.addAction(self._action("E&xit", "Ctrl+Q", self.close))
 
@@ -144,10 +148,12 @@ class MainWindow(QMainWindow):
         # Nav buttons
         self.nav_buttons: list[SidebarButton] = []
         nav_items = [
-            ("Notes", "\U0001f4dd", "Ctrl+1"),
-            ("Calendar", "\U0001f4c5", "Ctrl+2"),
-            ("Earnings", "\U0001f4b0", "Ctrl+3"),
-            ("Tasks", "\u2611", "Ctrl+4"),
+            ("Dashboard", "\U0001f4ca", "Ctrl+1"),
+            ("Notes", "\U0001f4dd", "Ctrl+2"),
+            ("Calendar", "\U0001f4c5", "Ctrl+3"),
+            ("Earnings", "\U0001f4b0", "Ctrl+4"),
+            ("Charts", "\U0001f4c8", "Ctrl+5"),
+            ("Tasks", "\u2611", "Ctrl+6"),
         ]
         for name, icon, shortcut_text in nav_items:
             btn = SidebarButton(name, icon, shortcut_text)
@@ -201,15 +207,19 @@ class MainWindow(QMainWindow):
 
         # ── Content stack ────────────────────────────
         self.stack = QStackedWidget()
+        self.dashboard_panel = DashboardPanel()
         self.notes_panel = NotesPanel()
         self.calendar_panel = CalendarPanel()
         self.finance_panel = FinancePanel()
+        self.charts_panel = FinanceChartsPanel()
         self.todo_panel = TodoPanel()
 
-        self.stack.addWidget(self.notes_panel)     # 0
-        self.stack.addWidget(self.calendar_panel)   # 1
-        self.stack.addWidget(self.finance_panel)    # 2
-        self.stack.addWidget(self.todo_panel)       # 3
+        self.stack.addWidget(self.dashboard_panel)   # 0
+        self.stack.addWidget(self.notes_panel)       # 1
+        self.stack.addWidget(self.calendar_panel)    # 2
+        self.stack.addWidget(self.finance_panel)     # 3
+        self.stack.addWidget(self.charts_panel)      # 4
+        self.stack.addWidget(self.todo_panel)        # 5
 
         main_layout.addWidget(self.stack, 1)
 
@@ -234,7 +244,10 @@ class MainWindow(QMainWindow):
     # ── Navigation ─────────────────────────────────────
 
     def _navigate(self, name: str):
-        idx_map = {"Notes": 0, "Calendar": 1, "Earnings": 2, "Tasks": 3}
+        idx_map = {
+            "Dashboard": 0, "Notes": 1, "Calendar": 2,
+            "Earnings": 3, "Charts": 4, "Tasks": 5,
+        }
         idx = idx_map.get(name, 0)
         self.stack.setCurrentIndex(idx)
         for i, btn in enumerate(self.nav_buttons):
@@ -269,6 +282,10 @@ class MainWindow(QMainWindow):
             self.calendar_panel.set_palette(palette)
         if hasattr(self.todo_panel, 'set_palette'):
             self.todo_panel.set_palette(palette)
+        if hasattr(self.dashboard_panel, 'set_palette'):
+            self.dashboard_panel.set_palette(palette)
+        if hasattr(self.charts_panel, 'set_palette'):
+            self.charts_panel.set_palette(palette)
 
     # ── Sync integration ───────────────────────────────
 
@@ -289,6 +306,10 @@ class MainWindow(QMainWindow):
             self.finance_panel._refresh()
         if hasattr(self.todo_panel, '_refresh'):
             self.todo_panel._refresh()
+        if hasattr(self.dashboard_panel, '_refresh'):
+            self.dashboard_panel._refresh()
+        if hasattr(self.charts_panel, '_refresh'):
+            self.charts_panel._refresh()
 
     def set_sync_status(self, text: str):
         self.sync_label.setText(f"Sync: {text}")

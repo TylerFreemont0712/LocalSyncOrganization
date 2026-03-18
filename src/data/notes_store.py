@@ -2,7 +2,7 @@
 
 import re
 from dataclasses import dataclass, field
-from pathlib import Path
+from pathlib import Path, PurePosixPath
 
 from src.config import load_config
 
@@ -28,25 +28,31 @@ class NotesStore:
         self.root.mkdir(parents=True, exist_ok=True)
 
     def list_notes(self) -> list[Note]:
-        """List all .md files under the notes directory."""
+        """List all .md files under the notes directory, skipping hidden dirs."""
         notes = []
         for md_file in sorted(self.root.rglob("*.md")):
+            rel = md_file.relative_to(self.root)
+            # Skip hidden directories like .obsidian, .trash, etc.
+            if any(part.startswith(".") for part in rel.parts):
+                continue
             notes.append(self._load_note(md_file))
         return notes
 
     def get_note(self, rel_path: str) -> Note | None:
-        full = self.root / rel_path
+        # Convert posix-style path to OS-native for file access
+        full = self.root / Path(rel_path.replace("\\", "/"))
         if full.exists():
             return self._load_note(full)
         return None
 
     def save_note(self, note: Note):
-        full = self.root / note.path
+        # Convert posix-style path to OS-native for file access
+        full = self.root / Path(str(note.path).replace("\\", "/"))
         full.parent.mkdir(parents=True, exist_ok=True)
         full.write_text(note.content, encoding="utf-8")
 
     def delete_note(self, rel_path: str):
-        full = self.root / rel_path
+        full = self.root / Path(rel_path.replace("\\", "/"))
         if full.exists():
             full.unlink()
 
@@ -65,7 +71,8 @@ class NotesStore:
         content = full_path.read_text(encoding="utf-8")
         tags = self._extract_tags(content)
         title = full_path.stem
-        rel = full_path.relative_to(self.root)
+        # Always store relative path with forward slashes for cross-platform consistency
+        rel = PurePosixPath(full_path.relative_to(self.root))
         return Note(title=title, content=content, path=rel, tags=tags)
 
     @staticmethod
