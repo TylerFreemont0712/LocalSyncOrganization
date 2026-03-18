@@ -172,6 +172,34 @@ class SyncEngine(QThread):
         self.status_changed.emit("idle")
         self.sync_completed.emit()
 
+    def trigger_vault_sync(self):
+        """Called by the vault watcher when local vault files changed.
+
+        Immediately syncs with all known peers so the changes propagate.
+        """
+        threading.Thread(target=self._vault_sync_once, daemon=True).start()
+
+    def _vault_sync_once(self):
+        self._log("Vault change detected — pushing to peers")
+        self.status_changed.emit("vault changed, syncing...")
+        peers = self._get_alive_peers()
+        synced = 0
+        for peer in peers:
+            try:
+                self._sync_with_peer(peer)
+                peer.last_sync = time.time()
+                peer.fail_count = 0
+                synced += 1
+                self._log(f"Vault sync pushed to {peer.ip}")
+            except Exception as e:
+                peer.fail_count += 1
+                self._log(f"Vault sync to {peer.ip} failed: {e}")
+        if synced:
+            self.status_changed.emit(f"vault synced ({synced} peer{'s' if synced != 1 else ''})")
+        else:
+            self.status_changed.emit("vault changed (no peers)")
+        self.sync_completed.emit()
+
     def add_manual_peer(self, ip: str):
         """Add a peer IP manually (from the network settings dialog)."""
         with self._lock:
@@ -415,10 +443,17 @@ class SyncEngine(QThread):
             vault_dir = Path(vault_path)
             if vault_dir.exists():
                 for md in vault_dir.rglob("*.md"):
-                    rel = str(md.relative_to(vault_dir))
-                    mtime = md.stat().st_mtime
-                    content = md.read_text(encoding="utf-8")
-                    vault_notes.append({"path": rel, "mtime": mtime, "content": content})
+                    rel = md.relative_to(vault_dir)
+                    # Skip hidden dirs (.obsidian, .trash, etc.)
+                    if any(p.startswith(".") for p in rel.parts):
+                        continue
+                    rel_str = str(rel)
+                    try:
+                        mtime = md.stat().st_mtime
+                        content = md.read_text(encoding="utf-8")
+                        vault_notes.append({"path": rel_str, "mtime": mtime, "content": content})
+                    except OSError:
+                        pass
 
         return {
             "events": events, "transactions": transactions,

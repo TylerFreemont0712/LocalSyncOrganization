@@ -10,6 +10,7 @@ from src.data.database import init_db
 from src.config import load_config
 from src.ui.main_window import MainWindow
 from src.sync.engine import SyncEngine
+from src.sync.vault_watcher import VaultWatcher
 
 
 def main():
@@ -30,14 +31,24 @@ def main():
     # Start background sync if enabled
     cfg = load_config()
     sync_engine = None
+    vault_watcher = None
     if cfg.get("sync_enabled", True):
         sync_engine = SyncEngine()
         window.set_sync_engine(sync_engine)
         sync_engine.start()
 
+        # Start vault watcher — detects Obsidian edits and pushes to peers
+        vault_watcher = VaultWatcher()
+        vault_watcher.vault_changed.connect(sync_engine.trigger_vault_sync)
+        vault_watcher.vault_changed.connect(window._on_sync_completed)
+        vault_watcher.start()
+
     exit_code = app.exec()
 
     # Clean shutdown
+    if vault_watcher:
+        vault_watcher.stop()
+        vault_watcher.wait(3000)
     if sync_engine:
         sync_engine.stop()
         sync_engine.wait(5000)

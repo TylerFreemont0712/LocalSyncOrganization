@@ -425,6 +425,9 @@ class NotesPanel(QWidget):
         if self.current_note_path:
             self._select_note_in_tree(self.current_note_path)
 
+        # Reload the open note if its content changed on disk (external edit)
+        self._reload_if_changed_on_disk()
+
     def _save_expanded_state(self):
         """Walk the tree and record which folder names are expanded."""
         self._expanded_folders.clear()
@@ -468,6 +471,25 @@ class NotesPanel(QWidget):
                 if found:
                     return found
         return None
+
+    def _reload_if_changed_on_disk(self):
+        """If the currently open note was modified externally, reload it."""
+        if not self.current_note_path:
+            return
+        note = self.store.get_note(self.current_note_path)
+        if not note:
+            return
+        current_text = self.editor.toPlainText()
+        if note.content != current_text:
+            self.editor.blockSignals(True)
+            cursor_pos = self.editor.textCursor().position()
+            self.editor.setPlainText(note.content)
+            # Restore cursor position as close as possible
+            cursor = self.editor.textCursor()
+            cursor.setPosition(min(cursor_pos, len(note.content)))
+            self.editor.setTextCursor(cursor)
+            self.editor.blockSignals(False)
+            self._update_footer(note)
 
     # ── Status labels ──────────────────────────────────
 
