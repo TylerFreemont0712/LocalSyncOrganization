@@ -117,13 +117,20 @@ class ObsidianAPI:
         """Open a note in the Obsidian desktop app via URI scheme."""
         import subprocess
         import sys
+        import urllib.parse
         cfg = load_config()
         vault_path = cfg.get("obsidian_vault_path", "")
         vault_name = Path(vault_path).name if vault_path else ""
-        uri = f"obsidian://open?vault={vault_name}&file={path}"
+        # Strip .md extension
+        if path.endswith(".md"):
+            path = path[:-3]
+        encoded_vault = urllib.parse.quote(vault_name, safe="")
+        encoded_file = urllib.parse.quote(path, safe="/")
+        uri = f"obsidian://open?vault={encoded_vault}&file={encoded_file}"
         try:
             if sys.platform == "win32":
-                subprocess.Popen(["start", uri], shell=True)
+                import os
+                os.startfile(uri)
             elif sys.platform == "darwin":
                 subprocess.Popen(["open", uri])
             else:
@@ -559,23 +566,36 @@ class NotesPanel(QWidget):
                 QMessageBox.warning(self, "Failed", "Could not create note via API.")
 
     def _open_in_obsidian(self):
-        if self.current_note_path and self._obsidian_api:
-            self._obsidian_api.open_in_obsidian(self.current_note_path)
-        elif self.current_note_path:
-            import subprocess, sys
-            vault_path = self.cfg.get("obsidian_vault_path", "")
-            vault_name = Path(vault_path).name if vault_path else ""
-            note_path = self.current_note_path.replace(".md", "")
-            uri = f"obsidian://open?vault={vault_name}&file={note_path}"
-            try:
-                if sys.platform == "win32":
-                    subprocess.Popen(["start", uri], shell=True)
-                elif sys.platform == "darwin":
-                    subprocess.Popen(["open", uri])
-                else:
-                    subprocess.Popen(["xdg-open", uri])
-            except Exception:
-                pass
+        """Open the current note in Obsidian via obsidian:// URI scheme."""
+        if not self.current_note_path:
+            return
+        import subprocess
+        import sys
+        import urllib.parse
+        vault_path = self.cfg.get("obsidian_vault_path", "")
+        vault_name = Path(vault_path).name if vault_path else ""
+        if not vault_name:
+            QMessageBox.warning(self, "No Vault", "Set an Obsidian vault path first.")
+            return
+        # Strip .md extension — Obsidian URI expects path without it
+        note_path = self.current_note_path
+        if note_path.endswith(".md"):
+            note_path = note_path[:-3]
+        # URL-encode vault name and file path for special characters
+        encoded_vault = urllib.parse.quote(vault_name, safe="")
+        encoded_file = urllib.parse.quote(note_path, safe="/")
+        uri = f"obsidian://open?vault={encoded_vault}&file={encoded_file}"
+        try:
+            if sys.platform == "win32":
+                import os
+                os.startfile(uri)
+            elif sys.platform == "darwin":
+                subprocess.Popen(["open", uri])
+            else:
+                subprocess.Popen(["xdg-open", uri])
+        except Exception as e:
+            logger.warning(f"Failed to open Obsidian: {e}")
+            QMessageBox.warning(self, "Error", f"Could not open Obsidian:\n{e}")
 
     # ── Search ─────────────────────────────────────────
 
@@ -654,7 +674,7 @@ class NotesPanel(QWidget):
         name, ok = QInputDialog.getText(self, "New Note", "Note name (without .md):")
         if ok and name.strip():
             safe_name = name.strip().replace("/", "-").replace("\\", "-")
-            rel = Path(f"{safe_name}.md")
+            rel = PurePosixPath(f"{safe_name}.md")
             note = Note(title=safe_name, content="", path=rel)
             self.store.save_note(note)
             self._refresh_list()
@@ -671,7 +691,7 @@ class NotesPanel(QWidget):
             )
             if ok2 and note_name.strip():
                 safe_note = note_name.strip().replace("/", "-").replace("\\", "-")
-                rel = Path(safe_name) / f"{safe_note}.md"
+                rel = PurePosixPath(safe_name) / f"{safe_note}.md"
                 note = Note(title=safe_note, content="", path=rel)
                 self.store.save_note(note)
                 self._expanded_folders.add(safe_name)
@@ -683,7 +703,7 @@ class NotesPanel(QWidget):
     def _rename_note(self):
         if self.current_note_path is None:
             return
-        old_path = Path(self.current_note_path)
+        old_path = PurePosixPath(self.current_note_path)
         current_name = old_path.stem
         new_name, ok = QInputDialog.getText(
             self, "Rename Note", "New name (without .md):", text=current_name,
