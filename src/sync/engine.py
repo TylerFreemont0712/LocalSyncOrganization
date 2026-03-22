@@ -432,6 +432,11 @@ class SyncEngine(QThread):
                 activities = [dict(r) for r in conn.execute("SELECT * FROM activities").fetchall()]
             except Exception:
                 activities = []
+            # Birthdays — may not exist in older DBs
+            try:
+                birthdays = [dict(r) for r in conn.execute("SELECT * FROM birthdays").fetchall()]
+            except Exception:
+                birthdays = []
         finally:
             conn.close()
 
@@ -482,6 +487,7 @@ class SyncEngine(QThread):
         return {
             "events": events, "transactions": transactions,
             "todos": todos, "activities": activities,
+            "birthdays": birthdays,
             "notes": notes, "vault_notes": vault_notes,
             "vault_deletions": vault_deletions,
         }
@@ -510,16 +516,18 @@ class SyncEngine(QThread):
                 if local is None or rev["updated_at"] > local["updated_at"]:
                     conn.execute(
                         """INSERT INTO events (id, title, description, start_time, end_time,
-                           all_day, color, updated_at, deleted)
-                           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                           all_day, color, updated_at, deleted, recurrence, category)
+                           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                            ON CONFLICT(id) DO UPDATE SET
                            title=excluded.title, description=excluded.description,
                            start_time=excluded.start_time, end_time=excluded.end_time,
                            all_day=excluded.all_day, color=excluded.color,
-                           updated_at=excluded.updated_at, deleted=excluded.deleted""",
+                           updated_at=excluded.updated_at, deleted=excluded.deleted,
+                           recurrence=excluded.recurrence, category=excluded.category""",
                         (rev["id"], rev["title"], rev["description"],
                          rev["start_time"], rev["end_time"], rev["all_day"],
-                         rev["color"], rev["updated_at"], rev["deleted"]),
+                         rev["color"], rev["updated_at"], rev["deleted"],
+                         rev.get("recurrence", ""), rev.get("category", "")),
                     )
                     changes += 1
 
@@ -565,6 +573,29 @@ class SyncEngine(QThread):
                         changes += 1
                 except Exception:
                     pass  # Gracefully handle if activities table doesn't exist on peer
+
+            # Merge birthdays
+            for rb in remote.get("birthdays", []):
+                try:
+                    local = conn.execute(
+                        "SELECT updated_at FROM birthdays WHERE id=?", (rb["id"],)
+                    ).fetchone()
+                    if local is None or rb["updated_at"] > local["updated_at"]:
+                        conn.execute(
+                            """INSERT INTO birthdays (id, name, month, day, year,
+                               updated_at, deleted)
+                               VALUES (?, ?, ?, ?, ?, ?, ?)
+                               ON CONFLICT(id) DO UPDATE SET
+                               name=excluded.name, month=excluded.month,
+                               day=excluded.day, year=excluded.year,
+                               updated_at=excluded.updated_at,
+                               deleted=excluded.deleted""",
+                            (rb["id"], rb["name"], rb["month"], rb["day"],
+                             rb.get("year"), rb["updated_at"], rb["deleted"]),
+                        )
+                        changes += 1
+                except Exception:
+                    pass  # Gracefully handle if birthdays table doesn't exist on peer
 
             # Merge todos
             for rt in remote.get("todos", []):
