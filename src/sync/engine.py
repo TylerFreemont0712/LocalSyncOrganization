@@ -32,6 +32,11 @@ from PyQt6.QtCore import QThread, pyqtSignal
 from src.config import load_config, NOTES_DIR
 from src.data.database import get_connection
 from src.utils.timestamps import now_utc
+from src.sync.deletion_manifest import (
+    read_manifest as _read_vault_manifest,
+    record_deletion as _record_vault_del,
+    remove_deletion as _remove_vault_del,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -422,6 +427,11 @@ class SyncEngine(QThread):
             events = [dict(r) for r in conn.execute("SELECT * FROM events").fetchall()]
             transactions = [dict(r) for r in conn.execute("SELECT * FROM transactions").fetchall()]
             todos = [dict(r) for r in conn.execute("SELECT * FROM todos").fetchall()]
+            # Activities — may not exist in older DBs
+            try:
+                activities = [dict(r) for r in conn.execute("SELECT * FROM activities").fetchall()]
+            except Exception:
+                activities = []
         finally:
             conn.close()
 
@@ -471,7 +481,8 @@ class SyncEngine(QThread):
 
         return {
             "events": events, "transactions": transactions,
-            "todos": todos, "notes": notes, "vault_notes": vault_notes,
+            "todos": todos, "activities": activities,
+            "notes": notes, "vault_notes": vault_notes,
             "vault_deletions": vault_deletions,
         }
 
@@ -479,32 +490,13 @@ class SyncEngine(QThread):
         """Read the deletion manifest for vault files."""
         if not vault_path:
             return []
-        manifest_path = Path(vault_path) / ".localsync_deletions.json"
-        if manifest_path.exists():
-            try:
-                data = json.loads(manifest_path.read_text(encoding="utf-8"))
-                return data if isinstance(data, list) else []
-            except Exception:
-                return []
-        return []
+        return _read_vault_manifest(Path(vault_path))
 
     def _record_vault_deletion(self, vault_path: str, rel_posix: str):
         """Record a file deletion in the vault manifest."""
         if not vault_path:
             return
-        manifest_path = Path(vault_path) / ".localsync_deletions.json"
-        deletions = self._get_vault_deletions(vault_path)
-        # Don't duplicate
-        existing_paths = {d["path"] for d in deletions}
-        if rel_posix not in existing_paths:
-            deletions.append({"path": rel_posix, "deleted_at": time.time()})
-        # Keep only last 30 days of deletions
-        cutoff = time.time() - (30 * 86400)
-        deletions = [d for d in deletions if d.get("deleted_at", 0) > cutoff]
-        try:
-            manifest_path.write_text(json.dumps(deletions, indent=2), encoding="utf-8")
-        except OSError as e:
-            logger.warning(f"Failed to write deletion manifest: {e}")
+        _record_vault_del(rel_posix, Path(vault_path))
 
     def _merge_remote_data(self, remote: dict) -> int:
         """Merge remote data. Returns count of changes applied."""
@@ -549,6 +541,30 @@ class SyncEngine(QThread):
                          rtx["updated_at"], rtx["deleted"]),
                     )
                     changes += 1
+
+            # Merge activities
+            for ra in remote.get("activities", []):
+                try:
+                    local = conn.execute(
+                        "SELECT updated_at FROM activities WHERE id=?", (ra["id"],)
+                    ).fetchone()
+                    if local is None or ra["updated_at"] > local["updated_at"]:
+                        conn.execute(
+                            """INSERT INTO activities (id, date, activity, start_time, end_time,
+                               notes, created_at, updated_at, deleted)
+                               VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                               ON CONFLICT(id) DO UPDATE SET
+                               date=excluded.date, activity=excluded.activity,
+                               start_time=excluded.start_time, end_time=excluded.end_time,
+                               notes=excluded.notes, updated_at=excluded.updated_at,
+                               deleted=excluded.deleted""",
+                            (ra["id"], ra["date"], ra["activity"], ra["start_time"],
+                             ra["end_time"], ra["notes"], ra["created_at"],
+                             ra["updated_at"], ra["deleted"]),
+                        )
+                        changes += 1
+                except Exception:
+                    pass  # Gracefully handle if activities table doesn't exist on peer
 
             # Merge todos
             for rt in remote.get("todos", []):
@@ -667,13 +683,7 @@ class SyncEngine(QThread):
         """Remove a path from the deletion manifest (file was re-created remotely)."""
         if not vault_path:
             return
-        manifest_path = Path(vault_path) / ".localsync_deletions.json"
-        deletions = self._get_vault_deletions(vault_path)
-        deletions = [d for d in deletions if d["path"] != rel_posix]
-        try:
-            manifest_path.write_text(json.dumps(deletions, indent=2), encoding="utf-8")
-        except OSError:
-            pass
+        _remove_vault_del(rel_posix, Path(vault_path))
 
     @staticmethod
     def _cleanup_empty_dirs(root: Path):

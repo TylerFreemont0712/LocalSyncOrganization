@@ -5,7 +5,6 @@ in the configured vault directory. When changes are detected, emits a signal
 so the sync engine can broadcast them to peers.
 """
 
-import json
 import logging
 import time
 from pathlib import Path, PurePosixPath
@@ -13,6 +12,7 @@ from pathlib import Path, PurePosixPath
 from PyQt6.QtCore import QThread, pyqtSignal
 
 from src.config import load_config
+from src.sync.deletion_manifest import record_deletion, read_manifest
 
 logger = logging.getLogger(__name__)
 
@@ -123,34 +123,23 @@ class VaultWatcher(QThread):
         return False
 
     def _record_deletions(self, current: dict[str, float]):
-        """When files disappear from the vault, record them in the deletion manifest."""
+        """When files disappear from the vault, record them in the deletion manifest.
+
+        Uses the shared deletion_manifest module. Skips paths already recorded
+        (e.g. by the UI doing an immediate delete/rename).
+        """
         if not self._vault_path:
             return
         deleted = set(self._snapshot.keys()) - set(current.keys())
         if not deleted:
             return
 
-        manifest_path = self._vault_path / ".localsync_deletions.json"
-        try:
-            existing = json.loads(manifest_path.read_text(encoding="utf-8")) if manifest_path.exists() else []
-        except Exception:
-            existing = []
+        # Read manifest once to check what's already recorded
+        existing_paths = {d["path"] for d in read_manifest(self._vault_path)}
 
-        existing_paths = {d["path"] for d in existing}
-        now = time.time()
         for path in deleted:
             if path not in existing_paths:
-                existing.append({"path": path, "deleted_at": now})
-                logger.info(f"Recorded vault deletion: {path}")
-
-        # Prune old entries (30 days)
-        cutoff = now - (30 * 86400)
-        existing = [d for d in existing if d.get("deleted_at", 0) > cutoff]
-
-        try:
-            manifest_path.write_text(json.dumps(existing, indent=2), encoding="utf-8")
-        except OSError as e:
-            logger.warning(f"Failed to write deletion manifest: {e}")
+                record_deletion(path, self._vault_path)
 
     def stop(self):
         self._running = False

@@ -21,6 +21,7 @@ from PyQt6.QtWidgets import (
 
 from src.config import load_config, save_config
 from src.data.notes_store import NotesStore, Note
+from src.sync.deletion_manifest import record_deletion as _record_vault_deletion
 
 logger = logging.getLogger(__name__)
 
@@ -714,6 +715,10 @@ class NotesPanel(QWidget):
             note = self.store.get_note(self.current_note_path)
             if note:
                 content = note.content
+                # Record old path deletion BEFORE unlinking so sync won't re-create it
+                old_posix = str(PurePosixPath(self.current_note_path))
+                if self._mode == "vault":
+                    _record_vault_deletion(old_posix)
                 self.store.delete_note(self.current_note_path)
                 new_note = Note(title=safe_name, content=content, path=new_rel, tags=note.tags)
                 self.store.save_note(new_note)
@@ -731,6 +736,10 @@ class NotesPanel(QWidget):
             QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
         )
         if reply == QMessageBox.StandardButton.Yes:
+            # Record deletion in manifest BEFORE unlinking so sync won't re-create
+            del_posix = str(PurePosixPath(self.current_note_path))
+            if self._mode == "vault":
+                _record_vault_deletion(del_posix)
             self.store.delete_note(self.current_note_path)
             self._clear_editor()
             self._refresh_list()
