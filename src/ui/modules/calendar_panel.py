@@ -21,6 +21,24 @@ EVENT_COLORS = {
     "Teal": "#94e2d5", "Pink": "#f5c2e7",
 }
 
+# ── Category emojis ───────────────────────────────────
+CATEGORY_EMOJIS = {
+    "birthday": "\U0001f382",   # 🎂
+    "trip":     "\u2708\ufe0f", # ✈️
+    "holiday":  "\U0001f389",   # 🎉
+    "major":    "\u2b50",       # ⭐
+    "work":     "\U0001f4bc",   # 💼
+}
+
+CATEGORY_OPTIONS = [
+    ("", "None"),
+    ("work", "Work \U0001f4bc"),
+    ("birthday", "Birthday \U0001f382"),
+    ("trip", "Trip \u2708\ufe0f"),
+    ("holiday", "Holiday \U0001f389"),
+    ("major", "Major Event \u2b50"),
+]
+
 
 class EventDialog(QDialog):
     """Dialog to add/edit an event."""
@@ -95,7 +113,12 @@ class EventDialog(QDialog):
         self.time_widgets = [self.start_time, self.end_time]
         self._toggle_time(self.all_day_check.isChecked())
 
-        layout.addWidget(QLabel("Color"))
+        # Color + Category side by side
+        cc_row = QHBoxLayout()
+        cc_row.setSpacing(12)
+
+        color_col = QVBoxLayout()
+        color_col.addWidget(QLabel("Color"))
         self.color_combo = QComboBox()
         for name, hex_val in EVENT_COLORS.items():
             self.color_combo.addItem(name, hex_val)
@@ -103,7 +126,22 @@ class EventDialog(QDialog):
             idx = self.color_combo.findData(self.event.color)
             if idx >= 0:
                 self.color_combo.setCurrentIndex(idx)
-        layout.addWidget(self.color_combo)
+        color_col.addWidget(self.color_combo)
+        cc_row.addLayout(color_col, 1)
+
+        cat_col = QVBoxLayout()
+        cat_col.addWidget(QLabel("Category"))
+        self.category_combo = QComboBox()
+        for val, label in CATEGORY_OPTIONS:
+            self.category_combo.addItem(label, val)
+        if self.event:
+            idx = self.category_combo.findData(self.event.category)
+            if idx >= 0:
+                self.category_combo.setCurrentIndex(idx)
+        cat_col.addWidget(self.category_combo)
+        cc_row.addLayout(cat_col, 1)
+
+        layout.addLayout(cc_row)
 
         sep = QFrame()
         sep.setObjectName("separator")
@@ -151,6 +189,7 @@ class EventDialog(QDialog):
             "start_time": start, "end_time": end,
             "all_day": self.all_day_check.isChecked(),
             "color": self.color_combo.currentData(),
+            "category": self.category_combo.currentData() or "",
         }
 
 
@@ -176,14 +215,8 @@ class MiniMonthCell(QLabel):
 
         self.setStyleSheet(style)
 
-        # Colored dots for events
         if has_events and not is_today:
-            dots = " ".join(
-                f'<span style="color:{c};">\u2022</span>'
-                for c in event_colors[:3]
-            )
             self.setToolTip(f"{len(event_colors)} event(s)")
-            # We'll add dots below via the parent layout
             self._dot_colors = event_colors[:3]
         else:
             self._dot_colors = []
@@ -296,17 +329,6 @@ class MiniMonth(QWidget):
                     cell.clicked.connect(self._on_cell_click)
                     self._grid.addWidget(cell, row, col)
 
-                    # Add dot row below if events
-                    if event_colors:
-                        dot_label = QLabel(
-                            " ".join(f'<span style="color:{c};">\u2022</span>'
-                                     for c in event_colors[:3])
-                        )
-                        dot_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-                        dot_label.setFixedHeight(8)
-                        dot_label.setStyleSheet("font-size: 8px;")
-                        # We'll overlay it — for simplicity just add tooltips
-
     def _on_cell_click(self, y, m, d):
         self._selected_date = date(y, m, d)
         self._render()
@@ -370,7 +392,9 @@ class WeekEventWidget(QFrame):
                 time_label.setStyleSheet("font-size: 11px;")
                 info_layout.addWidget(time_label)
 
-        title_label = QLabel(event.title)
+        emoji = CATEGORY_EMOJIS.get(event.category, "")
+        display_title = f"{emoji} {event.title}" if emoji else event.title
+        title_label = QLabel(display_title)
         title_label.setStyleSheet("font-weight: bold; font-size: 13px;")
         title_label.setWordWrap(True)
         info_layout.addWidget(title_label)
@@ -389,7 +413,7 @@ class WeekEventWidget(QFrame):
             f"border-radius: 4px; padding: 2px; }}"
         )
         self.setToolTip(
-            f"{event.title}\n{event.start_time}"
+            f"{display_title}\n{event.start_time}"
             + (f" - {event.end_time}" if event.end_time else "")
             + (f"\n{event.description}" if event.description else "")
         )
@@ -405,7 +429,6 @@ class DayColumn(QWidget):
         super().__init__()
         self.d = d
         self.parent_panel = parent_panel
-        # Fixed equal-width policy — prevents long text from stretching a column
         self.setSizePolicy(QSizePolicy.Policy.Ignored, QSizePolicy.Policy.Preferred)
 
         layout = QVBoxLayout(self)
@@ -448,7 +471,6 @@ class DayColumn(QWidget):
 
         layout.addStretch()
 
-        # Double-click empty space to add event
         self.setCursor(Qt.CursorShape.PointingHandCursor)
 
     def mouseDoubleClickEvent(self, ev):
@@ -475,11 +497,11 @@ class CalendarPanel(QWidget):
         layout.setContentsMargins(0, 0, 0, 0)
         layout.setSpacing(0)
 
-        # ── Main area: weekly view ────────────────────
+        # ── Main area: weekly view + today's events ───
         main_area = QWidget()
         main_layout = QVBoxLayout(main_area)
         main_layout.setContentsMargins(16, 12, 8, 12)
-        main_layout.setSpacing(8)
+        main_layout.setSpacing(0)
 
         # Week header
         week_header = QHBoxLayout()
@@ -514,22 +536,50 @@ class CalendarPanel(QWidget):
         week_header.addWidget(btn_add)
 
         main_layout.addLayout(week_header)
+        main_layout.addSpacing(6)
 
-        # Week grid
+        # Weekly grid (top half)
         self._week_container = QWidget()
         self._week_grid = QHBoxLayout(self._week_container)
         self._week_grid.setSpacing(2)
         self._week_grid.setContentsMargins(0, 0, 0, 0)
 
-        scroll = QScrollArea()
-        scroll.setWidgetResizable(True)
-        scroll.setWidget(self._week_container)
-        scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
-        main_layout.addWidget(scroll, 1)
+        week_scroll = QScrollArea()
+        week_scroll.setWidgetResizable(True)
+        week_scroll.setWidget(self._week_container)
+        week_scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+        week_scroll.setMaximumHeight(280)
+        main_layout.addWidget(week_scroll, 1)
+
+        # Divider between weekly grid and today's events
+        divider = QFrame()
+        divider.setFrameShape(QFrame.Shape.HLine)
+        divider.setStyleSheet("border: none; border-top: 2px solid palette(mid); margin: 6px 0;")
+        main_layout.addWidget(divider)
+
+        # Today's Events (bottom half)
+        today_header = QHBoxLayout()
+        self.today_events_title = QLabel("Today's Events")
+        self.today_events_title.setStyleSheet("font-weight: bold; font-size: 13px;")
+        today_header.addWidget(self.today_events_title)
+        today_header.addStretch()
+        main_layout.addLayout(today_header)
+        main_layout.addSpacing(4)
+
+        self._today_event_list = QVBoxLayout()
+        self._today_event_list.setSpacing(4)
+        today_list_widget = QWidget()
+        today_list_widget.setLayout(self._today_event_list)
+
+        today_scroll = QScrollArea()
+        today_scroll.setWidgetResizable(True)
+        today_scroll.setWidget(today_list_widget)
+        today_scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+        main_layout.addWidget(today_scroll, 1)
 
         layout.addWidget(main_area, 1)
 
-        # ── Right sidebar: mini month + day detail ────
+        # ── Right sidebar: mini month + major events ──
         right_sidebar = QWidget()
         right_sidebar.setFixedWidth(250)
         right_layout = QVBoxLayout(right_sidebar)
@@ -545,27 +595,28 @@ class CalendarPanel(QWidget):
         sep.setFrameShape(QFrame.Shape.HLine)
         right_layout.addWidget(sep)
 
-        # Day detail panel
-        self.day_detail_title = QLabel("Today")
-        self.day_detail_title.setStyleSheet("font-weight: bold; font-size: 14px;")
-        right_layout.addWidget(self.day_detail_title)
+        # Next Major Events
+        major_title = QLabel("Next Major Events")
+        major_title.setStyleSheet("font-weight: bold; font-size: 13px;")
+        right_layout.addWidget(major_title)
 
-        self.day_event_list = QVBoxLayout()
-        self.day_event_list.setSpacing(4)
-        day_list_widget = QWidget()
-        day_list_widget.setLayout(self.day_event_list)
+        self._major_events_list = QVBoxLayout()
+        self._major_events_list.setSpacing(4)
+        major_list_widget = QWidget()
+        major_list_widget.setLayout(self._major_events_list)
 
-        day_scroll = QScrollArea()
-        day_scroll.setWidgetResizable(True)
-        day_scroll.setWidget(day_list_widget)
-        day_scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
-        right_layout.addWidget(day_scroll, 1)
+        major_scroll = QScrollArea()
+        major_scroll.setWidgetResizable(True)
+        major_scroll.setWidget(major_list_widget)
+        major_scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+        right_layout.addWidget(major_scroll, 1)
 
         layout.addWidget(right_sidebar)
 
     def _refresh(self):
         self._render_week()
         self._render_day_detail()
+        self._render_major_events()
         self._update_mini_month_events()
 
     def _get_week_start(self) -> date:
@@ -599,19 +650,27 @@ class CalendarPanel(QWidget):
         today = date.today()
         for i in range(7):
             d = week_start + timedelta(days=i)
+
+            # Vertical divider between day columns
+            if i > 0:
+                col_div = QFrame()
+                col_div.setFrameShape(QFrame.Shape.VLine)
+                col_div.setStyleSheet("border: none; border-left: 1px solid palette(mid);")
+                self._week_grid.addWidget(col_div)
+
             day_events = events_by_date.get(d, [])
             col = DayColumn(d, day_events, d == today, self)
             self._week_grid.addWidget(col, 1)
 
     def _render_day_detail(self):
         # Clear
-        while self.day_event_list.count():
-            child = self.day_event_list.takeAt(0)
+        while self._today_event_list.count():
+            child = self._today_event_list.takeAt(0)
             if child.widget():
                 child.widget().deleteLater()
 
         d = self._selected_date
-        self.day_detail_title.setText(d.strftime("%A, %B %d"))
+        self.today_events_title.setText(d.strftime("%A, %B %d"))
 
         events = self.store.get_events(
             d.isoformat(), d.isoformat() + "T23:59:59",
@@ -620,14 +679,17 @@ class CalendarPanel(QWidget):
         if not events:
             lbl = QLabel("No events")
             lbl.setObjectName("subtitle")
-            self.day_event_list.addWidget(lbl)
+            self._today_event_list.addWidget(lbl)
         else:
             for ev in sorted(events, key=lambda e: e.start_time):
-                row = QHBoxLayout()
-                dot = QLabel("\u25cf")
-                dot.setStyleSheet(f"color: {ev.color}; font-size: 12px;")
-                dot.setFixedWidth(14)
-                row.addWidget(dot)
+                row_widget = QFrame()
+                row_widget.setStyleSheet(
+                    "QFrame { border-left: 3px solid " + ev.color + "; "
+                    "border-radius: 3px; padding: 2px 6px; }"
+                )
+                row_layout = QHBoxLayout(row_widget)
+                row_layout.setContentsMargins(6, 3, 6, 3)
+                row_layout.setSpacing(8)
 
                 if not ev.all_day:
                     try:
@@ -637,18 +699,65 @@ class CalendarPanel(QWidget):
                     time_lbl = QLabel(t)
                     time_lbl.setObjectName("subtitle")
                     time_lbl.setFixedWidth(42)
-                    row.addWidget(time_lbl)
+                    row_layout.addWidget(time_lbl)
 
-                title_lbl = QLabel(ev.title)
+                emoji = CATEGORY_EMOJIS.get(ev.category, "")
+                display_title = f"{emoji} {ev.title}" if emoji else ev.title
+                title_lbl = QLabel(display_title)
                 title_lbl.setStyleSheet("font-size: 12px;")
-                row.addWidget(title_lbl, 1)
+                row_layout.addWidget(title_lbl, 1)
 
-                container = QWidget()
-                container.setLayout(row)
-                container.setCursor(Qt.CursorShape.PointingHandCursor)
-                self.day_event_list.addWidget(container)
+                row_widget.setCursor(Qt.CursorShape.PointingHandCursor)
+                row_widget.mouseDoubleClickEvent = lambda _ev, event=ev: self._edit_event(event)
+                self._today_event_list.addWidget(row_widget)
 
-        self.day_event_list.addStretch()
+        self._today_event_list.addStretch()
+
+    def _render_major_events(self):
+        # Clear
+        while self._major_events_list.count():
+            child = self._major_events_list.takeAt(0)
+            if child.widget():
+                child.widget().deleteLater()
+
+        major_events = self.store.get_next_major_events(date.today(), limit=4)
+
+        if not major_events:
+            lbl = QLabel("No upcoming major events")
+            lbl.setObjectName("subtitle")
+            lbl.setWordWrap(True)
+            self._major_events_list.addWidget(lbl)
+        else:
+            for ev_date, title, category, color in major_events:
+                row_widget = QFrame()
+                row_widget.setStyleSheet(
+                    "QFrame { border-left: 3px solid " + color + "; "
+                    "border-radius: 3px; padding: 2px 4px; }"
+                )
+                row_layout = QHBoxLayout(row_widget)
+                row_layout.setContentsMargins(6, 3, 4, 3)
+                row_layout.setSpacing(6)
+
+                emoji = CATEGORY_EMOJIS.get(category, "\u2022")
+                emoji_lbl = QLabel(emoji)
+                emoji_lbl.setFixedWidth(20)
+                emoji_lbl.setStyleSheet("font-size: 14px;")
+                row_layout.addWidget(emoji_lbl)
+
+                date_lbl = QLabel(ev_date.strftime("%b %d"))
+                date_lbl.setObjectName("subtitle")
+                date_lbl.setFixedWidth(44)
+                date_lbl.setStyleSheet("font-size: 11px;")
+                row_layout.addWidget(date_lbl)
+
+                title_lbl = QLabel(title)
+                title_lbl.setStyleSheet("font-size: 12px;")
+                title_lbl.setWordWrap(True)
+                row_layout.addWidget(title_lbl, 1)
+
+                self._major_events_list.addWidget(row_widget)
+
+        self._major_events_list.addStretch()
 
     def _update_mini_month_events(self):
         """Feed the mini month with event data so it can show colored dots."""
@@ -723,5 +832,6 @@ class CalendarPanel(QWidget):
             event.end_time = data["end_time"]
             event.all_day = data["all_day"]
             event.color = data["color"]
+            event.category = data["category"]
             self.store.update_event(event)
             self._refresh()

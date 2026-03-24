@@ -310,3 +310,53 @@ class CalendarStore:
             day=row["day"], year=row["year"],
             updated_at=row["updated_at"], deleted=bool(row["deleted"]),
         )
+
+    # ── Major events ──────────────────────────────────
+
+    def get_next_major_events(self, from_date: date, limit: int = 4) -> list[tuple]:
+        """Return next `limit` upcoming major events as (event_date, title, category, color).
+
+        Sources:
+        1. Events with category in ('birthday', 'trip', 'holiday', 'major').
+        2. Birthdays table (next annual occurrence).
+        Results are sorted by date ascending.
+        """
+        results: list[tuple] = []
+
+        # Regular events with a major category
+        conn = get_connection()
+        try:
+            rows = conn.execute(
+                """SELECT * FROM events WHERE deleted=0
+                   AND category IN ('birthday','trip','holiday','major')
+                   AND start_time >= ?
+                   ORDER BY start_time""",
+                (from_date.isoformat(),),
+            ).fetchall()
+        finally:
+            conn.close()
+
+        for row in rows:
+            ev = self._row_to_event(row)
+            try:
+                ev_date = datetime.fromisoformat(ev.start_time).date()
+            except Exception:
+                continue
+            results.append((ev_date, ev.title, ev.category, ev.color))
+
+        # Birthday table — find next annual occurrence
+        today = from_date
+        for b in self.get_birthdays():
+            try:
+                candidate = date(today.year, b.month, b.day)
+            except ValueError:
+                continue
+            if candidate < today:
+                try:
+                    candidate = date(today.year + 1, b.month, b.day)
+                except ValueError:
+                    continue
+            results.append((candidate, b.name, "birthday", "#f38ba8"))
+
+        results.sort(key=lambda x: x[0])
+        return results[:limit]
