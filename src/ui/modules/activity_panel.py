@@ -1,13 +1,14 @@
-"""Activity Tracker panel — Gantt-style single-row day view with manual timer input.
+"""Activity Tracker panel — Gantt-style single-row day view with timer and manual input.
 
-Tracks daily activities with start/end times, a dropdown of common activities,
-and a small notes section. Exports activities to the Obsidian vault.
+Tracks daily activities with start/end times. Primary input is via the live timer
+(Start → Stop → Add), but manual time entry is always available.
+Exports activities to the Obsidian vault.
 """
 
 from datetime import date, datetime, timedelta
 from pathlib import Path, PurePosixPath
 
-from PyQt6.QtCore import Qt, QRectF, QPointF
+from PyQt6.QtCore import Qt, QRectF, QPointF, QTimer, QTime
 from PyQt6.QtGui import QPainter, QColor, QFont, QPen, QBrush, QMouseEvent
 from PyQt6.QtWidgets import (
     QWidget, QVBoxLayout, QHBoxLayout, QLabel,
@@ -215,6 +216,8 @@ class ActivityPanel(QWidget):
         self._palette: dict = {}
         self._current_date = date.today()
         self._editing_activity: Activity | None = None
+        self._active_timer: QTimer | None = None
+        self._timer_start: datetime | None = None
         self._build_ui()
         self._refresh()
 
@@ -261,7 +264,7 @@ class ActivityPanel(QWidget):
         self.gantt.set_on_select(self._on_bar_selected)
         layout.addWidget(self.gantt)
 
-        # Input form — quick entry
+        # Input form — timer + quick entry
         form_frame = QFrame()
         form_frame.setStyleSheet(
             "QFrame { border: 1px solid palette(mid); border-radius: 6px; padding: 8px; }"
@@ -290,9 +293,7 @@ class ActivityPanel(QWidget):
         self.start_edit = QTimeEdit()
         self.start_edit.setDisplayFormat("HH:mm")
         self.start_edit.setWrapping(True)
-        # Default to current hour
         now = datetime.now()
-        from PyQt6.QtCore import QTime
         self.start_edit.setTime(QTime(now.hour, 0))
         row1.addWidget(self.start_edit)
 
@@ -305,15 +306,58 @@ class ActivityPanel(QWidget):
 
         form_layout.addLayout(row1)
 
-        # Row 2: Notes + buttons
-        row2 = QHBoxLayout()
-        row2.setSpacing(8)
+        # Row 2: Timer controls
+        timer_row = QHBoxLayout()
+        timer_row.setSpacing(8)
+
+        self.timer_label = QLabel("\u23f1 00:00:00")
+        self.timer_label.setStyleSheet(
+            "font-size: 15px; font-weight: bold; font-family: monospace; border: none;"
+        )
+        self.timer_label.setMinimumWidth(110)
+        timer_row.addWidget(self.timer_label)
+
+        self.btn_start_timer = QPushButton("\u25b6 Start Timer")
+        self.btn_start_timer.setStyleSheet(
+            "background-color: #a6e3a1; color: #1e1e2e; font-weight: bold; border-radius: 4px;"
+        )
+        self.btn_start_timer.setFixedHeight(28)
+        self.btn_start_timer.clicked.connect(self._start_timer)
+        timer_row.addWidget(self.btn_start_timer)
+
+        self.btn_stop_timer = QPushButton("\u25a0 Stop")
+        self.btn_stop_timer.setStyleSheet(
+            "background-color: #f38ba8; color: #1e1e2e; font-weight: bold; border-radius: 4px;"
+        )
+        self.btn_stop_timer.setFixedHeight(28)
+        self.btn_stop_timer.setEnabled(False)
+        self.btn_stop_timer.clicked.connect(self._stop_timer)
+        timer_row.addWidget(self.btn_stop_timer)
+
+        timer_row.addStretch()
+
+        manual_hint = QLabel("or use manual Start/End times above")
+        manual_hint.setObjectName("subtitle")
+        manual_hint.setStyleSheet("font-size: 10px; font-style: italic; border: none;")
+        timer_row.addWidget(manual_hint)
+
+        form_layout.addLayout(timer_row)
+
+        # Divider
+        div = QFrame()
+        div.setFrameShape(QFrame.Shape.HLine)
+        div.setStyleSheet("border: none; border-top: 1px solid palette(mid);")
+        form_layout.addWidget(div)
+
+        # Row 3: Notes + buttons
+        row3 = QHBoxLayout()
+        row3.setSpacing(8)
 
         self.notes_edit = QPlainTextEdit()
         self.notes_edit.setPlaceholderText("Notes (optional)...")
         self.notes_edit.setMaximumHeight(50)
         self.notes_edit.setStyleSheet("border: 1px solid palette(mid); border-radius: 3px;")
-        row2.addWidget(self.notes_edit, 1)
+        row3.addWidget(self.notes_edit, 1)
 
         btn_col = QVBoxLayout()
         btn_col.setSpacing(3)
@@ -344,8 +388,8 @@ class ActivityPanel(QWidget):
         self.btn_cancel.setVisible(False)
         btn_col.addWidget(self.btn_cancel)
 
-        row2.addLayout(btn_col)
-        form_layout.addLayout(row2)
+        row3.addLayout(btn_col)
+        form_layout.addLayout(row3)
 
         layout.addWidget(form_frame)
 
@@ -381,16 +425,65 @@ class ActivityPanel(QWidget):
     # ── Navigation ──────────────────────────────────────
 
     def _prev_day(self):
+        self._stop_timer()
         self._current_date -= timedelta(days=1)
         self._refresh()
 
     def _next_day(self):
+        self._stop_timer()
         self._current_date += timedelta(days=1)
         self._refresh()
 
     def _go_today(self):
+        self._stop_timer()
         self._current_date = date.today()
         self._refresh()
+
+    # ── Timer ───────────────────────────────────────────
+
+    def _start_timer(self):
+        now = datetime.now()
+        self._timer_start = now
+        self.start_edit.setTime(QTime(now.hour, now.minute))
+        self.end_edit.setTime(QTime(now.hour, now.minute))
+
+        self._active_timer = QTimer(self)
+        self._active_timer.timeout.connect(self._update_timer_display)
+        self._active_timer.start(1000)
+
+        self.btn_start_timer.setEnabled(False)
+        self.btn_stop_timer.setEnabled(True)
+        self.timer_label.setStyleSheet(
+            "font-size: 15px; font-weight: bold; font-family: monospace; "
+            "color: #a6e3a1; border: none;"
+        )
+
+    def _stop_timer(self):
+        if self._active_timer is not None:
+            self._active_timer.stop()
+            self._active_timer = None
+        if self._timer_start is not None:
+            now = datetime.now()
+            self.end_edit.setTime(QTime(now.hour, now.minute))
+        self._timer_start = None
+        self.btn_start_timer.setEnabled(True)
+        self.btn_stop_timer.setEnabled(False)
+        self.timer_label.setStyleSheet(
+            "font-size: 15px; font-weight: bold; font-family: monospace; border: none;"
+        )
+
+    def _update_timer_display(self):
+        if self._timer_start is None:
+            return
+        elapsed = datetime.now() - self._timer_start
+        total_secs = int(elapsed.total_seconds())
+        h = total_secs // 3600
+        m = (total_secs % 3600) // 60
+        s = total_secs % 60
+        self.timer_label.setText(f"\u23f1 {h:02d}:{m:02d}:{s:02d}")
+        # Keep end_edit in sync with rolling now
+        now = datetime.now()
+        self.end_edit.setTime(QTime(now.hour, now.minute))
 
     # ── Refresh ─────────────────────────────────────────
 
@@ -445,7 +538,7 @@ class ActivityPanel(QWidget):
         layout.addWidget(name)
 
         # Time range
-        time_lbl = QLabel(f"{act.start_time} – {act.end_time}")
+        time_lbl = QLabel(f"{act.start_time} \u2013 {act.end_time}")
         time_lbl.setObjectName("subtitle")
         time_lbl.setStyleSheet("font-size: 11px; border: none;")
         layout.addWidget(time_lbl)
@@ -490,6 +583,9 @@ class ActivityPanel(QWidget):
             QMessageBox.warning(self, "Invalid Time", "End time must be after start time.")
             return
 
+        # Stop timer if it was running when user clicks Add
+        self._stop_timer()
+
         self.store.add(
             date=self._current_date.isoformat(),
             activity=activity_name,
@@ -508,7 +604,6 @@ class ActivityPanel(QWidget):
         else:
             self.activity_combo.setCurrentText(act.activity)
 
-        from PyQt6.QtCore import QTime
         sh, sm = map(int, act.start_time.split(":"))
         eh, em = map(int, act.end_time.split(":"))
         self.start_edit.setTime(QTime(sh, sm))
@@ -541,7 +636,7 @@ class ActivityPanel(QWidget):
             return
         reply = QMessageBox.question(
             self, "Delete Activity",
-            f"Delete '{self._editing_activity.activity}' ({self._editing_activity.start_time}–{self._editing_activity.end_time})?",
+            f"Delete '{self._editing_activity.activity}' ({self._editing_activity.start_time}\u2013{self._editing_activity.end_time})?",
             QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
         )
         if reply == QMessageBox.StandardButton.Yes:
@@ -593,7 +688,7 @@ class ActivityPanel(QWidget):
         hours, mins = divmod(total_mins, 60)
 
         lines = [
-            f"# Activity Summary — {d.strftime('%A, %B %d, %Y')}",
+            f"# Activity Summary \u2014 {d.strftime('%A, %B %d, %Y')}",
             "",
             f"**Total tracked:** {hours}h {mins}m",
             "",
@@ -603,7 +698,7 @@ class ActivityPanel(QWidget):
         for a in activities:
             dur = f"{a.duration_minutes}m"
             notes = a.notes.replace("\n", " ").replace("|", "/") if a.notes else ""
-            lines.append(f"| {a.start_time}–{a.end_time} | {a.activity} | {dur} | {notes} |")
+            lines.append(f"| {a.start_time}\u2013{a.end_time} | {a.activity} | {dur} | {notes} |")
 
         lines.append("")
         summary_path.write_text("\n".join(lines), encoding="utf-8")
@@ -616,7 +711,7 @@ class ActivityPanel(QWidget):
                 f"# {a.activity}",
                 "",
                 f"**Date:** {d.isoformat()}",
-                f"**Time:** {a.start_time} – {a.end_time}",
+                f"**Time:** {a.start_time} \u2013 {a.end_time}",
                 f"**Duration:** {a.duration_minutes} minutes",
                 "",
             ]
