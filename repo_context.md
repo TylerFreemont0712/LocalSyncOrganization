@@ -13,7 +13,7 @@ This document contains the full context of the repository, formatted for optimal
 
 ## 📁 File Tree
 ```
-- main.pyw
+- main.py
   - __init__.py
   - config.py
     - __init__.py
@@ -50,10 +50,10 @@ This document contains the full context of the repository, formatted for optimal
 
 ## 📊 Project Summary
 - Total Python files: **33**
-- Total lines of code: **7415**
+- Total lines of code: **8600**
 
 ## 🔗 Dependency Graph
-### main.pyw
+### main.py
 - logging
 - sys
 - PyQt6.QtWidgets
@@ -176,6 +176,8 @@ This document contains the full context of the repository, formatted for optimal
 - src.ui.modules.finance_panel
 
 ### src\ui\modules\activity_panel.py
+- __future__
+- collections
 - datetime
 - pathlib
 - PyQt6.QtCore
@@ -185,12 +187,14 @@ This document contains the full context of the repository, formatted for optimal
 - src.data.activity_store
 
 ### src\ui\modules\calendar_panel.py
-- datetime
+- __future__
 - calendar
+- datetime
 - PyQt6.QtCore
+- PyQt6.QtGui
 - PyQt6.QtWidgets
 - src.data.calendar_store
-- PyQt6.QtCore
+- src.data.holidays_jp
 
 ### src\ui\modules\dashboard_panel.py
 - datetime
@@ -277,7 +281,7 @@ This document contains the full context of the repository, formatted for optimal
 - datetime
 
 ## 📝 Docstring Summary
-### main.pyw
+### main.py
 **Module docstring:**
 LocalSync — Personal productivity app entry point.
 
@@ -637,95 +641,195 @@ Module panels for each app feature.
 
 ### src\ui\modules\activity_panel.py
 **Module docstring:**
-Activity Tracker panel — Gantt-style single-row day view with timer and manual input.
+Activity Tracker panel — weekly 24-hour time-block view with efficiency totals.
 
-Tracks daily activities with start/end times. Primary input is via the live timer
-(Start → Stop → Add), but manual time entry is always available.
-Exports activities to the Obsidian vault.
+Layout:
+  Left (scrollable):  7-column × 24-hour painted block grid
+  Right (fixed 290px): Efficiency panel + compact log form
+
+Features:
+  • Stacked colored blocks showing activities proportionally across 24 h
+  • Cross-midnight activities drawn across the day boundary
+  • "Now" horizontal line on today's column
+  • Click a block to select / edit it in the log form
+  • Double-click empty space to open add form for that day+time
+  • Compact single-row log form (activity, date, start, end, timer, add)
+  • Notes are a pop-out dialog — not shown by default
+  • Efficiency panel: weekly totals by activity category + per-day bar chart
 
 **Classes:**
-- `GanttBar`: Represents a single activity block on the Gantt chart.
-- `GanttWidget`: Custom-painted Gantt chart showing a single day's activities.
+- `ActivityBlock`: Represents one painted rectangle on the weekly grid.
+- `WeekBlockWidget`: Custom-painted weekly time-block grid.
+- `NotesDialog`: (No docstring)
+- `EfficiencyPanel`: Shows weekly activity totals and a per-day summary.
+- `LogForm`: Compact activity log form docked at the bottom of the right panel.
 - `ActivityPanel`: (No docstring)
 
 **Functions:**
+- `_parse_hhmm`: Convert 'HH:MM' to float hours (e.g. '09:30' → 9.5).
+- `_hours_to_px`: (No docstring)
+- `_px_to_hours`: (No docstring)
+- `_fmt_hm`: (No docstring)
 - `__init__`: (No docstring)
 - `__init__`: (No docstring)
 - `set_palette`: (No docstring)
-- `set_bars`: (No docstring)
-- `set_on_select`: (No docstring)
-- `_time_to_x`: Convert HH:MM to x coordinate.
-- `paintEvent`: (No docstring)
+- `load_week`: (No docstring)
+- `select_activity`: (No docstring)
+- `_col_x`: (No docstring)
+- `_col_width`: (No docstring)
+- `_block_at`: (No docstring)
+- `_pos_to_col_hour`: (No docstring)
 - `mousePressEvent`: (No docstring)
+- `mouseDoubleClickEvent`: (No docstring)
 - `mouseMoveEvent`: (No docstring)
+- `paintEvent`: (No docstring)
+- `__init__`: (No docstring)
+- `get_notes`: (No docstring)
 - `__init__`: (No docstring)
 - `set_palette`: (No docstring)
 - `_build_ui`: (No docstring)
-- `_prev_day`: (No docstring)
-- `_next_day`: (No docstring)
-- `_go_today`: (No docstring)
+- `update_data`: (No docstring)
+- `_make_bar_row`: (No docstring)
+- `_make_day_row`: (No docstring)
+- `__init__`: (No docstring)
+- `_build_ui`: (No docstring)
+- `set_week_start`: (No docstring)
+- `prefill`: Called when user double-clicks empty space on the grid.
+- `load_for_edit`: Populate form fields with an existing activity for editing.
+- `_rebuild_day_combo`: (No docstring)
+- `_selected_date`: (No docstring)
+- `_submit`: (No docstring)
+- `_delete`: (No docstring)
+- `_cancel_edit`: (No docstring)
+- `_open_notes`: (No docstring)
 - `_start_timer`: (No docstring)
 - `_stop_timer`: (No docstring)
-- `_update_timer_display`: (No docstring)
+- `_tick`: (No docstring)
+- `__init__`: (No docstring)
+- `set_palette`: (No docstring)
+- `_build_ui`: (No docstring)
+- `_prev_week`: (No docstring)
+- `_next_week`: (No docstring)
+- `_go_today`: (No docstring)
 - `_refresh`: (No docstring)
-- `_make_activity_row`: (No docstring)
-- `_add_activity`: (No docstring)
-- `_start_edit`: (No docstring)
-- `_update_activity`: (No docstring)
-- `_delete_activity`: (No docstring)
-- `_cancel_edit`: (No docstring)
-- `_on_bar_selected`: Called when user clicks a bar in the Gantt chart.
-- `_export_to_vault`: (No docstring)
-- `_clear_layout`: (No docstring)
+- `_on_block_clicked`: (No docstring)
+- `_on_empty_clicked`: (No docstring)
+- `_on_activity_added`: (No docstring)
+- `_on_activity_updated`: (No docstring)
+- `_on_activity_deleted`: (No docstring)
+- `_export`: (No docstring)
 
 ### src\ui\modules\calendar_panel.py
 **Module docstring:**
-Calendar module UI — weekly main view + mini month navigator + colored dot indicators.
+Calendar module UI — weekly view + mini-month navigator + major events.
+
+All colors read from the active theme palette so the panel adapts when the
+user switches themes.  No hardcoded hex values remain in inline stylesheets
+or paintEvent code.
+
+Layout (positions unchanged):
+  Upper-left  → Weekly overview grid (7 day columns)
+  Lower-left  → Selected-day detail list
+  Upper-right → Mini month navigator (interactive dot indicators)
+  Lower-right → Next major events panel
 
 **Classes:**
-- `EventDialog`: Dialog to add/edit an event.
-- `MiniMonthCell`: A single day number in the mini calendar.
-- `MiniMonth`: Compact month grid for date navigation.
-- `WeekEventWidget`: A single event rendered in the weekly time grid.
-- `DayColumn`: A single day column in the weekly view.
+- `ColorButton`: (No docstring)
+- `EventDialog`: (No docstring)
+- `BirthdayDialog`: (No docstring)
+- `MiniMonthCell`: (No docstring)
+- `MiniMonth`: (No docstring)
+- `EventChip`: (No docstring)
+- `DayColumn`: (No docstring)
+- `MajorEventCard`: (No docstring)
+- `DayEventRow`: (No docstring)
 - `CalendarPanel`: (No docstring)
+- `BirthdayManagerDialog`: (No docstring)
 
 **Functions:**
+- `_p`: Return current palette value for *key*.
+- `_cat_emoji`: (No docstring)
+- `_cat_color`: (No docstring)
+- `_clear_layout`: (No docstring)
+- `__init__`: (No docstring)
+- `setChecked`: (No docstring)
+- `_update_style`: (No docstring)
 - `__init__`: (No docstring)
 - `_build_ui`: (No docstring)
+- `_on_color_picked`: (No docstring)
+- `_on_category_changed`: (No docstring)
 - `_toggle_time`: (No docstring)
 - `_on_delete`: (No docstring)
+- `_on_save`: (No docstring)
+- `_selected_color`: (No docstring)
+- `_selected_recurrence`: (No docstring)
 - `get_data`: (No docstring)
 - `__init__`: (No docstring)
+- `_build_ui`: (No docstring)
+- `_on_delete`: (No docstring)
+- `_on_save`: (No docstring)
+- `get_data`: (No docstring)
+- `__init__`: (No docstring)
+- `enterEvent`: (No docstring)
+- `leaveEvent`: (No docstring)
 - `mousePressEvent`: (No docstring)
+- `paintEvent`: (No docstring)
 - `__init__`: (No docstring)
 - `set_events`: (No docstring)
+- `set_holidays`: (No docstring)
 - `set_selected`: (No docstring)
+- `refresh_styles`: Re-apply palette colors to navigation buttons/labels.
+- `_nav_style`: (No docstring)
 - `_build`: (No docstring)
 - `_render`: (No docstring)
 - `_on_cell_click`: (No docstring)
 - `_prev_month`: (No docstring)
 - `_next_month`: (No docstring)
+- `_prev_year`: (No docstring)
+- `_next_year`: (No docstring)
+- `_go_today_month`: (No docstring)
+- `__init__`: (No docstring)
+- `enterEvent`: (No docstring)
+- `leaveEvent`: (No docstring)
+- `mouseDoubleClickEvent`: (No docstring)
+- `paintEvent`: (No docstring)
+- `__init__`: (No docstring)
+- `_build`: (No docstring)
+- `enterEvent`: (No docstring)
+- `leaveEvent`: (No docstring)
+- `mouseDoubleClickEvent`: (No docstring)
+- `paintEvent`: (No docstring)
+- `__init__`: (No docstring)
 - `__init__`: (No docstring)
 - `mouseDoubleClickEvent`: (No docstring)
-- `__init__`: (No docstring)
-- `mouseDoubleClickEvent`: (No docstring)
+- `mousePressEvent`: (No docstring)
 - `__init__`: (No docstring)
 - `set_palette`: (No docstring)
 - `_build_ui`: (No docstring)
+- `_today_btn`: (No docstring)
 - `_refresh`: (No docstring)
-- `_get_week_start`: Monday of the selected week.
+- `_get_week_start`: (No docstring)
 - `_render_week`: (No docstring)
 - `_render_day_detail`: (No docstring)
 - `_render_major_events`: (No docstring)
-- `_update_mini_month_events`: Feed the mini month with event data so it can show colored dots.
+- `_update_mini_month_events`: (No docstring)
 - `_prev_week`: (No docstring)
 - `_next_week`: (No docstring)
 - `_go_today`: (No docstring)
 - `_on_mini_date_selected`: (No docstring)
+- `_jump_to_date`: (No docstring)
 - `_add_event`: (No docstring)
-- `_add_event_on_day_date`: (No docstring)
+- `_add_event_on_date`: (No docstring)
 - `_edit_event`: (No docstring)
+- `_manage_birthdays`: (No docstring)
+- `__init__`: (No docstring)
+- `_build_ui`: (No docstring)
+- `_load`: (No docstring)
+- `_filter`: (No docstring)
+- `_make_row`: (No docstring)
+- `_add_birthday`: (No docstring)
+- `_edit_birthday`: (No docstring)
+- `sk`: (No docstring)
 
 ### src\ui\modules\dashboard_panel.py
 **Module docstring:**
@@ -891,7 +995,23 @@ Theme definitions and management.
 
 ### src\ui\themes\styles.py
 **Module docstring:**
-Theme stylesheets for PyQt6 — Catppuccin Dark, Catppuccin Light, Nord, Solarized, Gruvbox.
+Theme stylesheets for PyQt6.
+
+Themes included:
+  Dark   — Catppuccin Mocha, Tokyo Night, Dracula, Monokai Pro, One Dark Pro, Rosé Pine
+  Medium — Nord, Gruvbox Dark
+  Light  — Catppuccin Latte, Solarized Light
+
+Fixes over previous version:
+  - Full QTabBar / QTabWidget styling (dialogs now have proper tabs)
+  - QMenuBar / QMenu styling (menu bar no longer inherits OS chrome)
+  - QToolButton styling (color swatches, weekday pickers, etc.)
+  - QComboBox, QDateEdit, QTimeEdit, QSpinBox arrow-button subcontrols
+    styled with visible backgrounds so arrows are legible on all themes
+  - Secondary button contrast improved (explicit text color + stronger border)
+  - QProgressBar added (used in dashboard)
+  - QScrollArea viewport now transparent (no mismatched bg panels)
+  - Solarized Light replaces Solarized Dark (fg was too muted for readability)
 
 **Classes:**
 - (None)
@@ -979,7 +1099,7 @@ Tests for LocalSync.
 
 ## 📄 Full File Contents
 
-### `main.pyw`
+### `main.py`
 
 ```python
 #!/usr/bin/env python3
@@ -3731,215 +3851,820 @@ __all__ = ["NotesPanel", "CalendarPanel", "FinancePanel"]
 ### `src\ui\modules\activity_panel.py`
 
 ```python
-"""Activity Tracker panel — Gantt-style single-row day view with timer and manual input.
+"""Activity Tracker panel — weekly 24-hour time-block view with efficiency totals.
 
-Tracks daily activities with start/end times. Primary input is via the live timer
-(Start → Stop → Add), but manual time entry is always available.
-Exports activities to the Obsidian vault.
+Layout:
+  Left (scrollable):  7-column × 24-hour painted block grid
+  Right (fixed 290px): Efficiency panel + compact log form
+
+Features:
+  • Stacked colored blocks showing activities proportionally across 24 h
+  • Cross-midnight activities drawn across the day boundary
+  • "Now" horizontal line on today's column
+  • Click a block to select / edit it in the log form
+  • Double-click empty space to open add form for that day+time
+  • Compact single-row log form (activity, date, start, end, timer, add)
+  • Notes are a pop-out dialog — not shown by default
+  • Efficiency panel: weekly totals by activity category + per-day bar chart
 """
 
-from datetime import date, datetime, timedelta
-from pathlib import Path, PurePosixPath
+from __future__ import annotations
 
-from PyQt6.QtCore import Qt, QRectF, QPointF, QTimer, QTime
-from PyQt6.QtGui import QPainter, QColor, QFont, QPen, QBrush, QMouseEvent
+from collections import defaultdict
+from datetime import date, datetime, timedelta
+from pathlib import Path
+
+from PyQt6.QtCore import Qt, QRectF, QPointF, QTimer, QTime, pyqtSignal
+from PyQt6.QtGui import (
+    QPainter, QColor, QFont, QFontMetrics, QPen, QBrush,
+    QLinearGradient, QMouseEvent,
+)
 from PyQt6.QtWidgets import (
     QWidget, QVBoxLayout, QHBoxLayout, QLabel,
     QPushButton, QComboBox, QTimeEdit, QPlainTextEdit,
     QFrame, QScrollArea, QMessageBox, QSizePolicy,
+    QDialog, QGridLayout,
 )
 
 from src.config import load_config
 from src.data.activity_store import (
-    ActivityStore, Activity, DEFAULT_ACTIVITIES, ACTIVITY_COLORS, DEFAULT_COLOR,
+    ActivityStore, Activity,
+    DEFAULT_ACTIVITIES, ACTIVITY_COLORS, DEFAULT_COLOR,
 )
 
 
-# Day view spans 0:00 to 30:00 (6 AM previous to noon next day conceptually,
-# but we display 0-30 hours so users can log late-night activity)
-DAY_START_HOUR = 0
-DAY_END_HOUR = 30
-HOUR_COUNT = DAY_END_HOUR - DAY_START_HOUR
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+#  Layout constants
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+HOUR_H    = 52      # px per hour → 52 × 24 = 1248 px total height
+HEADER_H  = 44      # day-name row height
+TIME_W    = 52      # left column for hour labels
+DAY_COUNT = 7       # Mon–Sun
+TOTAL_H   = HEADER_H + 24 * HOUR_H   # 1292
 
 
-class GanttBar:
-    """Represents a single activity block on the Gantt chart."""
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+#  Helpers
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-    def __init__(self, activity: Activity):
-        self.activity = activity
-        self.rect = QRectF()  # Set during painting
+def _parse_hhmm(s: str) -> float:
+    """Convert 'HH:MM' to float hours (e.g. '09:30' → 9.5)."""
+    try:
+        h, m = map(int, s.split(":"))
+        return h + m / 60.0
+    except Exception:
+        return 0.0
+
+def _hours_to_px(hours: float) -> float:
+    return HEADER_H + hours * HOUR_H
+
+def _px_to_hours(py: float) -> float:
+    return max(0.0, min(24.0, (py - HEADER_H) / HOUR_H))
+
+def _fmt_hm(total_minutes: int) -> str:
+    h, m = divmod(abs(total_minutes), 60)
+    return f"{h}h {m}m" if m else f"{h}h"
 
 
-class GanttWidget(QWidget):
-    """Custom-painted Gantt chart showing a single day's activities."""
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+#  ActivityBlock  — one drawn block on the grid
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+class ActivityBlock:
+    """Represents one painted rectangle on the weekly grid."""
+    def __init__(self, activity: Activity, col: int,
+                 y_start: float, y_end: float, overflow: bool = False):
+        self.activity  = activity
+        self.col       = col
+        self.y_start   = y_start   # pixel y of top
+        self.y_end     = y_end     # pixel y of bottom
+        self.overflow  = overflow  # True = this is the continuation from prev day
+        self.rect      = QRectF()  # set during paint (includes column x offset)
+
+
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+#  WeekBlockWidget  — fully-painted main calendar body
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+class WeekBlockWidget(QWidget):
+    """Custom-painted weekly time-block grid."""
+
+    block_clicked  = pyqtSignal(object)    # Activity
+    empty_clicked  = pyqtSignal(object, float)  # date, hour_float
 
     def __init__(self, parent=None):
         super().__init__(parent)
-        self.bars: list[GanttBar] = []
-        self.selected_bar: GanttBar | None = None
         self._palette: dict = {}
-        self.setMinimumHeight(100)
+        self._blocks:  list[ActivityBlock] = []
+        self._week_start: date = date.today() - timedelta(days=date.today().weekday())
+        self._selected: ActivityBlock | None = None
+        self._hovered:  ActivityBlock | None = None
+        self.setFixedHeight(TOTAL_H)
+        self.setMinimumWidth(400)
         self.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
-        self.setFixedHeight(100)
         self.setMouseTracking(True)
-        self._hover_bar: GanttBar | None = None
-        self._on_select = None  # callback
+
+    # ── Public API ───────────────────────────────────
 
     def set_palette(self, palette: dict):
-        self._palette = palette
+        self._palette = palette; self.update()
+
+    def load_week(self, week_start: date, activities_by_date: dict[date, list[Activity]]):
+        self._week_start = week_start
+        self._blocks = []
+        self._selected = None
+
+        for col in range(DAY_COUNT):
+            day = week_start + timedelta(days=col)
+            acts = activities_by_date.get(day, [])
+
+            # Also check previous day for any cross-midnight overflows
+            prev_day = day - timedelta(days=1)
+            for prev_act in activities_by_date.get(prev_day, []):
+                sh = _parse_hhmm(prev_act.start_time)
+                eh = _parse_hhmm(prev_act.end_time)
+                if eh < sh:   # crosses midnight
+                    y0 = _hours_to_px(0.0)
+                    y1 = _hours_to_px(eh)
+                    if y1 > y0:
+                        self._blocks.append(ActivityBlock(
+                            prev_act, col, y0, y1, overflow=True))
+
+            for act in acts:
+                sh = _parse_hhmm(act.start_time)
+                eh = _parse_hhmm(act.end_time)
+                if eh < sh:
+                    # Crosses midnight: draw to bottom of this column
+                    self._blocks.append(ActivityBlock(
+                        act, col, _hours_to_px(sh), _hours_to_px(24.0)))
+                else:
+                    self._blocks.append(ActivityBlock(
+                        act, col, _hours_to_px(sh), _hours_to_px(eh)))
+
         self.update()
 
-    def set_bars(self, activities: list[Activity]):
-        self.bars = [GanttBar(a) for a in activities]
-        self.selected_bar = None
+    def select_activity(self, activity: Activity | None):
+        if activity is None:
+            self._selected = None
+        else:
+            for b in self._blocks:
+                if b.activity.id == activity.id:
+                    self._selected = b; break
         self.update()
 
-    def set_on_select(self, callback):
-        self._on_select = callback
+    # ── Mouse ────────────────────────────────────────
 
-    def _time_to_x(self, time_str: str, width: float, margin: float) -> float:
-        """Convert HH:MM to x coordinate."""
-        try:
-            h, m = map(int, time_str.split(":"))
-            total_minutes = h * 60 + m
-            chart_width = width - 2 * margin
-            return margin + (total_minutes / (HOUR_COUNT * 60)) * chart_width
-        except (ValueError, AttributeError):
-            return margin
+    def _col_x(self, col: int) -> float:
+        col_w = (self.width() - TIME_W) / DAY_COUNT
+        return TIME_W + col * col_w
 
-    def paintEvent(self, event):
-        painter = QPainter(self)
-        painter.setRenderHint(QPainter.RenderHint.Antialiasing)
+    def _col_width(self) -> float:
+        return (self.width() - TIME_W) / DAY_COUNT
 
-        w = self.width()
-        h = self.height()
-        margin_left = 40
-        margin_right = 10
-        margin_top = 18
-        bar_height = 36
-        chart_width = w - margin_left - margin_right
+    def _block_at(self, pos: QPointF) -> ActivityBlock | None:
+        for b in reversed(self._blocks):   # top = last drawn = front
+            if b.rect.contains(pos):
+                return b
+        return None
 
-        bg = QColor(self._palette.get("bg", "#1e1e2e"))
-        fg = QColor(self._palette.get("fg", "#cdd6f4"))
-        grid_color = QColor(self._palette.get("border", "#45475a"))
+    def _pos_to_col_hour(self, pos: QPointF):
+        cw = self._col_width()
+        col = int((pos.x() - TIME_W) / cw)
+        col = max(0, min(DAY_COUNT - 1, col))
+        hour = _px_to_hours(pos.y())
+        return col, hour
 
-        # Background
-        painter.fillRect(0, 0, w, h, bg)
+    def mousePressEvent(self, ev: QMouseEvent):
+        b = self._block_at(ev.position())
+        if b:
+            self._selected = b; self.update()
+            self.block_clicked.emit(b.activity)
+        else:
+            self._selected = None; self.update()
 
-        # Hour grid lines and labels
-        painter.setPen(QPen(grid_color, 1))
-        label_font = QFont()
-        label_font.setPixelSize(9)
-        painter.setFont(label_font)
+    def mouseDoubleClickEvent(self, ev: QMouseEvent):
+        b = self._block_at(ev.position())
+        if not b:
+            col, hour = self._pos_to_col_hour(ev.position())
+            d = self._week_start + timedelta(days=col)
+            self.empty_clicked.emit(d, hour)
 
-        for hour in range(DAY_START_HOUR, DAY_END_HOUR + 1):
-            x = margin_left + (hour / HOUR_COUNT) * chart_width
-            # Major lines every 6 hours, minor every hour
-            if hour % 6 == 0:
-                painter.setPen(QPen(grid_color, 1))
-                painter.drawLine(QPointF(x, margin_top - 2), QPointF(x, margin_top + bar_height + 4))
-                # Label
-                display_h = hour % 24
-                label = f"{display_h:02d}:00"
-                painter.setPen(fg)
-                painter.drawText(QRectF(x - 18, 0, 36, margin_top - 2),
-                                 Qt.AlignmentFlag.AlignCenter, label)
-            elif hour % 3 == 0:
-                painter.setPen(QPen(grid_color, 1, Qt.PenStyle.DotLine))
-                painter.drawLine(QPointF(x, margin_top), QPointF(x, margin_top + bar_height))
-
-        # Track background
-        track_rect = QRectF(margin_left, margin_top, chart_width, bar_height)
-        painter.setPen(Qt.PenStyle.NoPen)
-        painter.setBrush(QBrush(QColor(grid_color.red(), grid_color.green(),
-                                        grid_color.blue(), 80)))
-        painter.drawRoundedRect(track_rect, 4, 4)
-
-        # Activity bars
-        for bar in self.bars:
-            x1 = self._time_to_x(bar.activity.start_time, w, margin_left)
-            x2 = self._time_to_x(bar.activity.end_time, w, margin_left)
-            bar_w = max(x2 - x1, 2)
-            bar.rect = QRectF(x1, margin_top + 2, bar_w, bar_height - 4)
-
-            color = QColor(bar.activity.color)
-            if bar == self.selected_bar:
-                color = color.lighter(130)
-            elif bar == self._hover_bar:
-                color = color.lighter(115)
-
-            painter.setPen(Qt.PenStyle.NoPen)
-            painter.setBrush(QBrush(color))
-            painter.drawRoundedRect(bar.rect, 3, 3)
-
-            # Label inside bar if wide enough
-            if bar_w > 40:
-                painter.setPen(QColor("#11111b"))
-                text_font = QFont()
-                text_font.setPixelSize(10)
-                text_font.setBold(True)
-                painter.setFont(text_font)
-                text_rect = bar.rect.adjusted(4, 0, -4, 0)
-                painter.drawText(text_rect, Qt.AlignmentFlag.AlignVCenter |
-                                 Qt.AlignmentFlag.AlignLeft,
-                                 bar.activity.activity)
-
-        # "Now" indicator if viewing today
-        now = datetime.now()
-        now_minutes = now.hour * 60 + now.minute
-        if 0 <= now_minutes <= HOUR_COUNT * 60:
-            now_x = margin_left + (now_minutes / (HOUR_COUNT * 60)) * chart_width
-            painter.setPen(QPen(QColor("#f38ba8"), 2))
-            painter.drawLine(QPointF(now_x, margin_top - 4),
-                             QPointF(now_x, margin_top + bar_height + 4))
-
-        # Bottom time summary
-        total = sum(b.activity.duration_minutes for b in self.bars)
-        hours = total // 60
-        mins = total % 60
-        painter.setPen(fg)
-        summary_font = QFont()
-        summary_font.setPixelSize(10)
-        painter.setFont(summary_font)
-        painter.drawText(QRectF(margin_left, margin_top + bar_height + 6,
-                                chart_width, 20),
-                         Qt.AlignmentFlag.AlignLeft,
-                         f"Total tracked: {hours}h {mins}m")
-
-        painter.end()
-
-    def mousePressEvent(self, event: QMouseEvent):
-        pos = event.position()
-        clicked = None
-        for bar in self.bars:
-            if bar.rect.contains(pos):
-                clicked = bar
-                break
-        self.selected_bar = clicked
-        self.update()
-        if self._on_select and clicked:
-            self._on_select(clicked.activity)
-
-    def mouseMoveEvent(self, event: QMouseEvent):
-        pos = event.position()
-        hover = None
-        for bar in self.bars:
-            if bar.rect.contains(pos):
-                hover = bar
-                break
-        if hover != self._hover_bar:
-            self._hover_bar = hover
-            if hover:
-                a = hover.activity
-                self.setToolTip(
-                    f"{a.activity}\n{a.start_time} – {a.end_time} "
-                    f"({a.duration_minutes}m)\n{a.notes}" if a.notes
-                    else f"{a.activity}\n{a.start_time} – {a.end_time} ({a.duration_minutes}m)"
-                )
+    def mouseMoveEvent(self, ev: QMouseEvent):
+        b = self._block_at(ev.position())
+        if b != self._hovered:
+            self._hovered = b
+            if b:
+                a = b.activity
+                tip = f"{a.activity}\n{a.start_time} – {a.end_time}  ({a.duration_minutes}m)"
+                if a.notes: tip += f"\n{a.notes}"
+                self.setToolTip(tip)
             else:
                 self.setToolTip("")
             self.update()
 
+    # ── Paint ────────────────────────────────────────
+
+    def paintEvent(self, event):
+        p = QPainter(self)
+        p.setRenderHint(QPainter.RenderHint.Antialiasing)
+        w = self.width()
+
+        bg     = QColor(self._palette.get("bg",        "#1e1e2e"))
+        surf   = QColor(self._palette.get("surface",   "#313244"))
+        border = QColor(self._palette.get("border",    "#45475a"))
+        fg     = QColor(self._palette.get("fg",        "#cdd6f4"))
+        muted  = QColor(self._palette.get("muted",     "#7f849c"))
+        accent = QColor(self._palette.get("accent",    "#89b4fa"))
+        hdr_bg = QColor(self._palette.get("header_bg", "#181825"))
+
+        col_w  = self._col_width()
+
+        # ── Background ───────────────────────────────
+        p.fillRect(0, 0, w, TOTAL_H, bg)
+        p.fillRect(0, 0, w, HEADER_H, hdr_bg)
+
+        # ── Hour grid lines ──────────────────────────
+        hour_font = QFont(); hour_font.setPixelSize(9)
+        p.setFont(hour_font)
+        for h in range(25):
+            y = _hours_to_px(h)
+            is_major = (h % 6 == 0)
+            c = QColor(border)
+            if is_major: c.setAlpha(200)
+            else:        c.setAlpha(80)
+            p.setPen(QPen(c, 1 if is_major else 0.5))
+            p.drawLine(QPointF(TIME_W, y), QPointF(w, y))
+
+            if h < 24:
+                lbl = f"{h:02d}:00"
+                p.setPen(muted if h % 6 else fg)
+                p.drawText(QRectF(0, y + 1, TIME_W - 4, HOUR_H - 2),
+                           Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignTop, lbl)
+
+        # ── Column dividers + day headers ─────────────
+        today = date.today()
+        day_font = QFont(); day_font.setPixelSize(11); day_font.setBold(True)
+        num_font  = QFont(); num_font.setPixelSize(15); num_font.setBold(True)
+
+        for col in range(DAY_COUNT):
+            x = TIME_W + col * col_w
+            d = self._week_start + timedelta(days=col)
+            is_today = (d == today)
+            is_weekend = (col >= 5)
+
+            # Column background (weekend slightly tinted)
+            if is_weekend:
+                tint = QColor(surf)
+                tint.setAlpha(30)
+                p.fillRect(QRectF(x, HEADER_H, col_w, TOTAL_H - HEADER_H), QBrush(tint))
+
+            # Column divider
+            if col > 0:
+                p.setPen(QPen(border, 1))
+                p.drawLine(QPointF(x, 0), QPointF(x, TOTAL_H))
+
+            # Day header
+            if is_today:
+                p.fillRect(QRectF(x, 0, col_w, HEADER_H), QBrush(accent))
+                text_c = QColor(self._palette.get("accent_fg", "#1e1e2e"))
+            else:
+                text_c = fg
+
+            p.setPen(text_c)
+            p.setFont(day_font)
+            p.drawText(QRectF(x, 4, col_w, 18),
+                       Qt.AlignmentFlag.AlignCenter, d.strftime("%a").upper())
+            p.setFont(num_font)
+            p.drawText(QRectF(x, 20, col_w, 22),
+                       Qt.AlignmentFlag.AlignCenter, str(d.day))
+
+        # Time-label column border
+        p.setPen(QPen(border, 1))
+        p.drawLine(QPointF(TIME_W, 0), QPointF(TIME_W, TOTAL_H))
+
+        # ── Activity blocks ──────────────────────────
+        for b in self._blocks:
+            x    = TIME_W + b.col * col_w
+            bx   = x + 2
+            bw   = col_w - 4
+            by   = b.y_start + (0 if b.y_start <= HEADER_H else 0)
+            bh   = b.y_end - b.y_start
+            if bh < 1: continue
+            b.rect = QRectF(bx, by, bw, bh)
+
+            color = QColor(b.activity.color)
+            is_sel = (b is self._selected)
+            is_hov = (b is self._hovered)
+
+            if b.overflow:
+                color.setAlpha(160)
+            if is_sel:   color = color.lighter(135)
+            elif is_hov: color = color.lighter(115)
+
+            p.setBrush(QBrush(color))
+            p.setPen(QPen(color.lighter(160), 1) if is_sel else Qt.PenStyle.NoPen)
+            p.drawRoundedRect(b.rect, 3, 3)
+
+            # Label
+            if bh >= 18:
+                lbl_font = QFont()
+                lbl_font.setPixelSize(10 if bh < 32 else 11)
+                lbl_font.setBold(True)
+                p.setFont(lbl_font)
+                # Dark text on light block
+                p.setPen(QColor("#11111b") if color.lightness() > 128
+                         else QColor("#cdd6f4"))
+                fm = QFontMetrics(lbl_font)
+                text = b.activity.activity
+                if b.overflow: text = "← " + text
+                etext = fm.elidedText(text, Qt.TextElideMode.ElideRight, int(bw - 8))
+                text_rect = b.rect.adjusted(4, 2, -4, -2)
+                if bh >= 32:
+                    p.drawText(text_rect, Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop, etext)
+                    # Time hint on second line
+                    lbl_font.setPixelSize(9); lbl_font.setBold(False); p.setFont(lbl_font)
+                    time_lbl = f"{b.activity.start_time}–{b.activity.end_time}"
+                    time_rect = QRectF(b.rect.x()+4, b.rect.y()+13, bw-8, 12)
+                    p.drawText(time_rect, Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop, time_lbl)
+                else:
+                    p.drawText(text_rect, Qt.AlignmentFlag.AlignVCenter | Qt.AlignmentFlag.AlignLeft, etext)
+
+        # ── "Now" indicator ──────────────────────────
+        now = datetime.now()
+        if self._week_start <= today <= self._week_start + timedelta(days=6):
+            now_col = (today - self._week_start).days
+            now_y   = _hours_to_px(now.hour + now.minute / 60)
+            x0 = TIME_W + now_col * col_w
+            x1 = x0 + col_w
+            now_color = QColor(self._palette.get("red", "#f38ba8"))
+            p.setPen(QPen(now_color, 2))
+            p.drawLine(QPointF(x0, now_y), QPointF(x1, now_y))
+            # Small circle at left edge
+            p.setBrush(QBrush(now_color)); p.setPen(Qt.PenStyle.NoPen)
+            p.drawEllipse(QPointF(x0, now_y), 4, 4)
+
+        p.end()
+
+
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+#  NotesDialog
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+class NotesDialog(QDialog):
+    def __init__(self, parent=None, notes: str = ""):
+        super().__init__(parent)
+        self.setWindowTitle("Activity Notes")
+        self.setMinimumSize(340, 200)
+        self.setModal(True)
+        layout = QVBoxLayout(self)
+        layout.addWidget(QLabel("Notes (optional):"))
+        self.edit = QPlainTextEdit()
+        self.edit.setPlainText(notes)
+        self.edit.setPlaceholderText("Add notes for this activity…")
+        layout.addWidget(self.edit)
+        btn_row = QHBoxLayout()
+        cancel = QPushButton("Cancel"); cancel.setObjectName("secondary")
+        cancel.clicked.connect(self.reject)
+        ok = QPushButton("OK"); ok.setDefault(True); ok.clicked.connect(self.accept)
+        btn_row.addStretch(); btn_row.addWidget(cancel); btn_row.addWidget(ok)
+        layout.addLayout(btn_row)
+
+    def get_notes(self) -> str:
+        return self.edit.toPlainText().strip()
+
+
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+#  EfficiencyPanel  — right-side totals + mini bar chart
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+class EfficiencyPanel(QWidget):
+    """Shows weekly activity totals and a per-day summary."""
+
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self._palette: dict = {}
+        self._build_ui()
+
+    def set_palette(self, palette: dict):
+        self._palette = palette; self.update()
+
+    def _build_ui(self):
+        layout = QVBoxLayout(self)
+        layout.setContentsMargins(0, 0, 0, 0)
+        layout.setSpacing(6)
+
+        hdr = QLabel("Week Efficiency")
+        hdr.setStyleSheet("font-size:13px;font-weight:bold;")
+        layout.addWidget(hdr)
+
+        self._totals_lbl  = QLabel("—")
+        self._totals_lbl.setStyleSheet("font-size:11px;")
+        layout.addWidget(self._totals_lbl)
+
+        div = QFrame(); div.setFrameShape(QFrame.Shape.HLine)
+        div.setObjectName("separator"); layout.addWidget(div)
+
+        self._bar_container = QWidget()
+        self._bar_layout    = QVBoxLayout(self._bar_container)
+        self._bar_layout.setContentsMargins(0, 0, 0, 0)
+        self._bar_layout.setSpacing(4)
+        layout.addWidget(self._bar_container)
+
+        div2 = QFrame(); div2.setFrameShape(QFrame.Shape.HLine)
+        div2.setObjectName("separator"); layout.addWidget(div2)
+
+        daily_hdr = QLabel("Daily totals")
+        daily_hdr.setStyleSheet("font-size:11px;font-weight:bold;")
+        layout.addWidget(daily_hdr)
+
+        self._daily_container = QWidget()
+        self._daily_layout    = QVBoxLayout(self._daily_container)
+        self._daily_layout.setContentsMargins(0, 0, 0, 0)
+        self._daily_layout.setSpacing(3)
+        layout.addWidget(self._daily_container)
+        layout.addStretch()
+
+    def update_data(self, week_start: date, activities_by_date: dict[date, list[Activity]]):
+        # ── Category totals ──────────────────────────
+        by_name: dict[str, int] = defaultdict(int)
+        total_mins = 0
+        for acts in activities_by_date.values():
+            for a in acts:
+                by_name[a.activity] += a.duration_minutes
+                total_mins += a.duration_minutes
+
+        self._totals_lbl.setText(
+            f"Tracked: {_fmt_hm(total_mins)}  "
+            f"({total_mins // 60}h avg/day)"
+        )
+
+        # Clear bar rows
+        while self._bar_layout.count():
+            child = self._bar_layout.takeAt(0)
+            if child.widget(): child.widget().deleteLater()
+
+        max_mins = max(by_name.values(), default=1)
+        for name, mins in sorted(by_name.items(), key=lambda x: -x[1])[:10]:
+            color = ACTIVITY_COLORS.get(name, DEFAULT_COLOR)
+            row = self._make_bar_row(name, mins, max_mins, color)
+            self._bar_layout.addWidget(row)
+
+        # ── Daily totals ─────────────────────────────
+        while self._daily_layout.count():
+            child = self._daily_layout.takeAt(0)
+            if child.widget(): child.widget().deleteLater()
+
+        day_labels = ["Mon","Tue","Wed","Thu","Fri","Sat","Sun"]
+        day_totals = []
+        for i in range(7):
+            d = week_start + timedelta(days=i)
+            acts = activities_by_date.get(d, [])
+            day_totals.append(sum(a.duration_minutes for a in acts))
+
+        max_day = max(day_totals, default=1) or 1
+        today = date.today()
+        for i, (label, mins) in enumerate(zip(day_labels, day_totals)):
+            d = week_start + timedelta(days=i)
+            is_today = (d == today)
+            row = self._make_day_row(label, mins, max_day, is_today)
+            self._daily_layout.addWidget(row)
+
+    def _make_bar_row(self, name: str, mins: int, max_mins: int, color: str) -> QWidget:
+        w = QWidget()
+        layout = QVBoxLayout(w); layout.setContentsMargins(0,2,0,0); layout.setSpacing(1)
+
+        top_row = QHBoxLayout(); top_row.setSpacing(4)
+        name_lbl = QLabel(name)
+        name_lbl.setStyleSheet("font-size:11px;")
+        top_row.addWidget(name_lbl, 1)
+        mins_lbl = QLabel(_fmt_hm(mins))
+        mins_lbl.setStyleSheet("font-size:10px;font-weight:bold;")
+        top_row.addWidget(mins_lbl)
+        layout.addLayout(top_row)
+
+        bar_bg = QFrame(); bar_bg.setFixedHeight(6)
+        bar_bg.setStyleSheet(
+            f"background-color:{self._palette.get('border','#45475a')};"
+            "border-radius:3px;")
+        layout.addWidget(bar_bg)
+
+        # Painted fill bar inside bg
+        ratio = mins / max(max_mins, 1)
+        fill = QFrame(bar_bg); fill.setFixedHeight(6)
+        fill.setFixedWidth(max(4, int(ratio * (bar_bg.width() or 200))))
+        fill.setStyleSheet(f"background-color:{color};border-radius:3px;")
+        fill.move(0, 0)
+        # Width is approximate at build time; resize event would fix it properly
+        bar_bg._fill = fill  # keep reference
+
+        return w
+
+    def _make_day_row(self, label: str, mins: int, max_mins: int,
+                      is_today: bool) -> QWidget:
+        w = QWidget(); layout = QHBoxLayout(w)
+        layout.setContentsMargins(0,1,0,1); layout.setSpacing(6)
+
+        lbl = QLabel(label)
+        lbl.setFixedWidth(28)
+        lbl.setStyleSheet(
+            f"font-size:10px;font-weight:bold;"
+            f"color:{self._palette.get('accent','#89b4fa') if is_today else self._palette.get('muted','#7f849c')};")
+        layout.addWidget(lbl)
+
+        bar_bg = QFrame(); bar_bg.setFixedHeight(8)
+        bar_bg.setStyleSheet(
+            f"background-color:{self._palette.get('border','#45475a')};border-radius:4px;")
+        ratio = mins / max(max_mins, 1)
+        bar_bg.setMinimumWidth(20)
+        fill = QFrame(bar_bg); fill.setFixedHeight(8)
+        fill_w = max(4, int(ratio * 120)) if mins > 0 else 0
+        fill.setFixedWidth(fill_w)
+        accent_c = self._palette.get("accent","#89b4fa") if is_today else \
+                   self._palette.get("green","#a6e3a1")
+        fill.setStyleSheet(f"background-color:{accent_c};border-radius:4px;")
+        layout.addWidget(bar_bg, 1)
+
+        time_lbl = QLabel(_fmt_hm(mins) if mins else "—")
+        time_lbl.setFixedWidth(36)
+        time_lbl.setAlignment(Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter)
+        time_lbl.setStyleSheet("font-size:10px;")
+        layout.addWidget(time_lbl)
+        return w
+
+
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+#  LogForm  — compact single-row activity entry
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+class LogForm(QWidget):
+    """Compact activity log form docked at the bottom of the right panel."""
+
+    activity_added   = pyqtSignal(object)   # Activity
+    activity_updated = pyqtSignal(object)   # Activity
+    activity_deleted = pyqtSignal(str)      # id
+
+    def __init__(self, week_start: date, parent=None):
+        super().__init__(parent)
+        self._week_start = week_start
+        self._editing: Activity | None = None
+        self._pending_notes: str = ""
+        self._timer: QTimer | None = None
+        self._timer_start: datetime | None = None
+        self._build_ui()
+
+    # ── Build ────────────────────────────────────────
+
+    def _build_ui(self):
+        root = QVBoxLayout(self)
+        root.setContentsMargins(0, 0, 0, 0)
+        root.setSpacing(6)
+
+        # Header row
+        hdr = QHBoxLayout()
+        self._form_title = QLabel("Log Activity")
+        self._form_title.setStyleSheet("font-size:12px;font-weight:bold;")
+        hdr.addWidget(self._form_title); hdr.addStretch()
+
+        self._cancel_btn = QPushButton("Cancel")
+        self._cancel_btn.setObjectName("secondary")
+        self._cancel_btn.setFixedHeight(24)
+        self._cancel_btn.clicked.connect(self._cancel_edit)
+        self._cancel_btn.setVisible(False)
+        hdr.addWidget(self._cancel_btn)
+        root.addLayout(hdr)
+
+        # Row 1: Activity name + day selector
+        row1 = QHBoxLayout(); row1.setSpacing(6)
+        self.activity_combo = QComboBox()
+        self.activity_combo.setEditable(True)
+        self.activity_combo.addItems(DEFAULT_ACTIVITIES)
+        self.activity_combo.setMinimumWidth(130)
+        self.activity_combo.setPlaceholderText("Activity…")
+        row1.addWidget(self.activity_combo, 2)
+
+        self.day_combo = QComboBox()
+        self._rebuild_day_combo()
+        row1.addWidget(self.day_combo, 1)
+        root.addLayout(row1)
+
+        # Row 2: Times + timer + add
+        row2 = QHBoxLayout(); row2.setSpacing(5)
+
+        start_lbl = QLabel("Start")
+        start_lbl.setStyleSheet("font-size:11px;color:palette(mid);")
+        row2.addWidget(start_lbl)
+        self.start_edit = QTimeEdit()
+        self.start_edit.setDisplayFormat("HH:mm")
+        now = datetime.now()
+        self.start_edit.setTime(QTime(now.hour, 0))
+        self.start_edit.setFixedWidth(60)
+        row2.addWidget(self.start_edit)
+
+        end_lbl = QLabel("End")
+        end_lbl.setStyleSheet("font-size:11px;color:palette(mid);")
+        row2.addWidget(end_lbl)
+        self.end_edit = QTimeEdit()
+        self.end_edit.setDisplayFormat("HH:mm")
+        self.end_edit.setTime(QTime(min(now.hour + 1, 23), 0))
+        self.end_edit.setFixedWidth(60)
+        row2.addWidget(self.end_edit)
+
+        row2.addStretch(1)
+
+        self._timer_label = QLabel("⏱ 00:00")
+        self._timer_label.setStyleSheet(
+            "font-family:monospace;font-size:12px;font-weight:bold;")
+        row2.addWidget(self._timer_label)
+
+        self._start_btn = QPushButton("▶")
+        self._start_btn.setToolTip("Start timer")
+        self._start_btn.setFixedSize(26, 26)
+        self._start_btn.setStyleSheet(
+            "background-color:#a6e3a1;color:#1e1e2e;font-weight:bold;border-radius:4px;")
+        self._start_btn.clicked.connect(self._start_timer)
+        row2.addWidget(self._start_btn)
+
+        self._stop_btn = QPushButton("■")
+        self._stop_btn.setToolTip("Stop timer")
+        self._stop_btn.setFixedSize(26, 26)
+        self._stop_btn.setStyleSheet(
+            "background-color:#f38ba8;color:#1e1e2e;font-weight:bold;border-radius:4px;")
+        self._stop_btn.setEnabled(False)
+        self._stop_btn.clicked.connect(self._stop_timer)
+        row2.addWidget(self._stop_btn)
+
+        root.addLayout(row2)
+
+        # Row 3: Notes + buttons
+        row3 = QHBoxLayout(); row3.setSpacing(5)
+
+        self._notes_btn = QPushButton("Notes…")
+        self._notes_btn.setObjectName("secondary")
+        self._notes_btn.setFixedHeight(26)
+        self._notes_btn.clicked.connect(self._open_notes)
+        row3.addWidget(self._notes_btn)
+
+        row3.addStretch()
+
+        self._delete_btn = QPushButton("Delete")
+        self._delete_btn.setObjectName("destructive")
+        self._delete_btn.setFixedHeight(26)
+        self._delete_btn.clicked.connect(self._delete)
+        self._delete_btn.setVisible(False)
+        row3.addWidget(self._delete_btn)
+
+        self._action_btn = QPushButton("Add")
+        self._action_btn.setFixedHeight(26)
+        self._action_btn.clicked.connect(self._submit)
+        row3.addWidget(self._action_btn)
+
+        root.addLayout(row3)
+
+    # ── Public ───────────────────────────────────────
+
+    def set_week_start(self, week_start: date):
+        self._week_start = week_start
+        self._rebuild_day_combo()
+
+    def prefill(self, d: date, hour: float):
+        """Called when user double-clicks empty space on the grid."""
+        self._cancel_edit()
+        idx = (d - self._week_start).days
+        if 0 <= idx < 7:
+            self.day_combo.setCurrentIndex(idx)
+        h = int(hour); m = int((hour - h) * 60)
+        self.start_edit.setTime(QTime(h, m))
+        self.end_edit.setTime(QTime(min(h + 1, 23), m))
+
+    def load_for_edit(self, activity: Activity):
+        """Populate form fields with an existing activity for editing."""
+        self._editing = activity
+        self._pending_notes = activity.notes or ""
+
+        idx = self.activity_combo.findText(activity.activity)
+        if idx >= 0: self.activity_combo.setCurrentIndex(idx)
+        else:        self.activity_combo.setCurrentText(activity.activity)
+
+        act_date = date.fromisoformat(activity.date)
+        day_idx = (act_date - self._week_start).days
+        if 0 <= day_idx < 7: self.day_combo.setCurrentIndex(day_idx)
+
+        sh, sm = map(int, activity.start_time.split(":"))
+        eh, em = map(int, activity.end_time.split(":"))
+        self.start_edit.setTime(QTime(sh, sm))
+        self.end_edit.setTime(QTime(eh, em))
+
+        self._form_title.setText("Edit Activity")
+        self._action_btn.setText("Update")
+        self._cancel_btn.setVisible(True)
+        self._delete_btn.setVisible(True)
+
+    # ── Private ──────────────────────────────────────
+
+    def _rebuild_day_combo(self):
+        self.day_combo.clear()
+        day_names = ["Mon","Tue","Wed","Thu","Fri","Sat","Sun"]
+        today = date.today()
+        for i in range(7):
+            d = self._week_start + timedelta(days=i)
+            label = f"{day_names[i]} {d.day}"
+            if d == today: label += " ★"
+            self.day_combo.addItem(label, d)
+        # Default to today if in range
+        idx = (today - self._week_start).days
+        if 0 <= idx < 7: self.day_combo.setCurrentIndex(idx)
+
+    def _selected_date(self) -> date:
+        d = self.day_combo.currentData()
+        return d if isinstance(d, date) else self._week_start
+
+    def _submit(self):
+        name = self.activity_combo.currentText().strip()
+        if not name: return
+
+        self._stop_timer()
+        start = self.start_edit.time().toString("HH:mm")
+        end   = self.end_edit.time().toString("HH:mm")
+        d     = self._selected_date()
+
+        if self._editing:
+            self._editing.activity   = name
+            self._editing.date       = d.isoformat()
+            self._editing.start_time = start
+            self._editing.end_time   = end
+            self._editing.notes      = self._pending_notes
+            self.activity_updated.emit(self._editing)
+            self._cancel_edit()
+        else:
+            store = ActivityStore()
+            act = store.add(date=d.isoformat(), activity=name,
+                            start_time=start, end_time=end,
+                            notes=self._pending_notes)
+            self._pending_notes = ""
+            self.activity_added.emit(act)
+
+    def _delete(self):
+        if not self._editing: return
+        reply = QMessageBox.question(
+            self, "Delete Activity",
+            f"Delete '{self._editing.activity}' ({self._editing.start_time}–{self._editing.end_time})?",
+            QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
+        )
+        if reply == QMessageBox.StandardButton.Yes:
+            self.activity_deleted.emit(self._editing.id)
+            self._cancel_edit()
+
+    def _cancel_edit(self):
+        self._editing = None
+        self._pending_notes = ""
+        self._form_title.setText("Log Activity")
+        self._action_btn.setText("Add")
+        self._cancel_btn.setVisible(False)
+        self._delete_btn.setVisible(False)
+
+    def _open_notes(self):
+        dlg = NotesDialog(self, self._pending_notes)
+        if dlg.exec():
+            self._pending_notes = dlg.get_notes()
+
+    def _start_timer(self):
+        now = datetime.now()
+        self._timer_start = now
+        self.start_edit.setTime(QTime(now.hour, now.minute))
+        self.end_edit.setTime(QTime(now.hour, now.minute))
+        self._timer = QTimer(self)
+        self._timer.timeout.connect(self._tick)
+        self._timer.start(1000)
+        self._start_btn.setEnabled(False)
+        self._stop_btn.setEnabled(True)
+        self._timer_label.setStyleSheet(
+            "font-family:monospace;font-size:12px;font-weight:bold;color:#a6e3a1;")
+
+    def _stop_timer(self):
+        if self._timer:
+            self._timer.stop(); self._timer = None
+        if self._timer_start:
+            now = datetime.now()
+            self.end_edit.setTime(QTime(now.hour, now.minute))
+        self._timer_start = None
+        self._start_btn.setEnabled(True)
+        self._stop_btn.setEnabled(False)
+        self._timer_label.setStyleSheet(
+            "font-family:monospace;font-size:12px;font-weight:bold;")
+
+    def _tick(self):
+        if not self._timer_start: return
+        secs = int((datetime.now() - self._timer_start).total_seconds())
+        h, s = divmod(secs, 3600); m, s = divmod(s, 60)
+        self._timer_label.setText(f"⏱ {h:02d}:{m:02d}" if h else f"⏱ {m:02d}:{s:02d}")
+        now = datetime.now()
+        self.end_edit.setTime(QTime(now.hour, now.minute))
+
+
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+#  ActivityPanel  — main panel
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 class ActivityPanel(QWidget):
 
@@ -3947,1010 +4672,1123 @@ class ActivityPanel(QWidget):
         super().__init__(parent)
         self.store = ActivityStore()
         self._palette: dict = {}
-        self._current_date = date.today()
-        self._editing_activity: Activity | None = None
-        self._active_timer: QTimer | None = None
-        self._timer_start: datetime | None = None
+        self._week_start = date.today() - timedelta(days=date.today().weekday())
+        self._activities_by_date: dict[date, list[Activity]] = {}
         self._build_ui()
         self._refresh()
 
+    # ── Palette ─────────────────────────────────────
+
     def set_palette(self, palette: dict):
         self._palette = palette
-        self.gantt.set_palette(palette)
-        self._refresh()
+        self._grid.set_palette(palette)
+        self._efficiency.set_palette(palette)
+
+    # ── Build UI ────────────────────────────────────
 
     def _build_ui(self):
-        layout = QVBoxLayout(self)
-        layout.setContentsMargins(16, 12, 16, 12)
-        layout.setSpacing(10)
+        root = QHBoxLayout(self)
+        root.setContentsMargins(0, 0, 0, 0)
+        root.setSpacing(0)
 
-        # Header
-        header = QHBoxLayout()
-        title = QLabel("Activity Tracker")
-        title.setObjectName("sectionTitle")
-        header.addWidget(title)
-        header.addStretch()
+        # ══ LEFT: scrollable week grid ══
+        left = QWidget()
+        left_l = QVBoxLayout(left)
+        left_l.setContentsMargins(0, 10, 0, 10)
+        left_l.setSpacing(8)
 
-        btn_prev = QPushButton("\u25c0")
-        btn_prev.setFixedSize(28, 28)
-        btn_prev.clicked.connect(self._prev_day)
-        header.addWidget(btn_prev)
+        # Top bar
+        top_bar = QHBoxLayout(); top_bar.setContentsMargins(14, 0, 8, 0)
+        title = QLabel("Activity Tracker"); title.setObjectName("sectionTitle")
+        top_bar.addWidget(title); top_bar.addStretch()
 
-        self.date_label = QLabel("")
-        self.date_label.setStyleSheet("font-weight: bold; font-size: 13px;")
-        header.addWidget(self.date_label)
+        self._week_label = QLabel()
+        self._week_label.setStyleSheet("font-size:12px;font-weight:bold;")
+        top_bar.addWidget(self._week_label); top_bar.addSpacing(8)
 
-        btn_next = QPushButton("\u25b6")
-        btn_next.setFixedSize(28, 28)
-        btn_next.clicked.connect(self._next_day)
-        header.addWidget(btn_next)
+        btn_prev = QPushButton("‹"); btn_prev.setObjectName("secondary")
+        btn_prev.setFixedSize(28, 28); btn_prev.setToolTip("Previous week")
+        btn_prev.clicked.connect(self._prev_week); top_bar.addWidget(btn_prev)
 
-        btn_today = QPushButton("Today")
-        btn_today.setObjectName("secondary")
-        btn_today.clicked.connect(self._go_today)
-        header.addWidget(btn_today)
+        btn_today = QPushButton("Today"); btn_today.setObjectName("secondary")
+        btn_today.setFixedHeight(28); btn_today.clicked.connect(self._go_today)
+        top_bar.addWidget(btn_today)
 
-        layout.addLayout(header)
+        btn_next = QPushButton("›"); btn_next.setObjectName("secondary")
+        btn_next.setFixedSize(28, 28); btn_next.setToolTip("Next week")
+        btn_next.clicked.connect(self._next_week); top_bar.addWidget(btn_next)
 
-        # Gantt chart
-        self.gantt = GanttWidget()
-        self.gantt.set_on_select(self._on_bar_selected)
-        layout.addWidget(self.gantt)
+        top_bar.addSpacing(8)
+        btn_export = QPushButton("Export…"); btn_export.setObjectName("secondary")
+        btn_export.setFixedHeight(28); btn_export.clicked.connect(self._export)
+        top_bar.addWidget(btn_export)
 
-        # Input form — timer + quick entry
-        form_frame = QFrame()
-        form_frame.setStyleSheet(
-            "QFrame { border: 1px solid palette(mid); border-radius: 6px; padding: 8px; }"
-        )
-        form_layout = QVBoxLayout(form_frame)
-        form_layout.setContentsMargins(10, 8, 10, 8)
-        form_layout.setSpacing(6)
+        left_l.addLayout(top_bar)
 
-        form_title = QLabel("Log Activity")
-        form_title.setStyleSheet("font-weight: bold; font-size: 12px; border: none;")
-        form_layout.addWidget(form_title)
+        # Grid inside scroll area
+        self._grid = WeekBlockWidget()
+        self._grid.block_clicked.connect(self._on_block_clicked)
+        self._grid.empty_clicked.connect(self._on_empty_clicked)
 
-        # Row 1: Activity + times
-        row1 = QHBoxLayout()
-        row1.setSpacing(8)
+        scroll = QScrollArea(); scroll.setWidgetResizable(True)
+        scroll.setWidget(self._grid)
+        scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+        scroll.setFrameShape(QFrame.Shape.NoFrame)
+        left_l.addWidget(scroll, 1)
+        root.addWidget(left, 1)
 
-        self.activity_combo = QComboBox()
-        self.activity_combo.setEditable(True)
-        self.activity_combo.addItems(DEFAULT_ACTIVITIES)
-        self.activity_combo.setMinimumWidth(140)
-        self.activity_combo.setPlaceholderText("Activity...")
-        row1.addWidget(QLabel("Activity:"))
-        row1.addWidget(self.activity_combo, 1)
+        # ══ RIGHT: efficiency + log form ══
+        right = QWidget(); right.setFixedWidth(290)
+        right_l = QVBoxLayout(right)
+        right_l.setContentsMargins(6, 10, 12, 10)
+        right_l.setSpacing(10)
 
-        row1.addWidget(QLabel("Start:"))
-        self.start_edit = QTimeEdit()
-        self.start_edit.setDisplayFormat("HH:mm")
-        self.start_edit.setWrapping(True)
-        now = datetime.now()
-        self.start_edit.setTime(QTime(now.hour, 0))
-        row1.addWidget(self.start_edit)
+        # Vertical separator
+        vsep = QFrame(); vsep.setFrameShape(QFrame.Shape.VLine)
+        vsep.setObjectName("separator")
+        # We don't add it to a layout, it's just structural
 
-        row1.addWidget(QLabel("End:"))
-        self.end_edit = QTimeEdit()
-        self.end_edit.setDisplayFormat("HH:mm")
-        self.end_edit.setWrapping(True)
-        self.end_edit.setTime(QTime(min(now.hour + 1, 23), 0))
-        row1.addWidget(self.end_edit)
+        self._efficiency = EfficiencyPanel()
+        right_l.addWidget(self._efficiency, 1)
 
-        form_layout.addLayout(row1)
+        div = QFrame(); div.setFrameShape(QFrame.Shape.HLine)
+        div.setObjectName("separator"); right_l.addWidget(div)
 
-        # Row 2: Timer controls
-        timer_row = QHBoxLayout()
-        timer_row.setSpacing(8)
+        self._log_form = LogForm(self._week_start)
+        self._log_form.activity_added.connect(self._on_activity_added)
+        self._log_form.activity_updated.connect(self._on_activity_updated)
+        self._log_form.activity_deleted.connect(self._on_activity_deleted)
+        right_l.addWidget(self._log_form)
 
-        self.timer_label = QLabel("\u23f1 00:00:00")
-        self.timer_label.setStyleSheet(
-            "font-size: 15px; font-weight: bold; font-family: monospace; border: none;"
-        )
-        self.timer_label.setMinimumWidth(110)
-        timer_row.addWidget(self.timer_label)
+        root.addWidget(right)
 
-        self.btn_start_timer = QPushButton("\u25b6 Start Timer")
-        self.btn_start_timer.setStyleSheet(
-            "background-color: #a6e3a1; color: #1e1e2e; font-weight: bold; border-radius: 4px;"
-        )
-        self.btn_start_timer.setFixedHeight(28)
-        self.btn_start_timer.clicked.connect(self._start_timer)
-        timer_row.addWidget(self.btn_start_timer)
+        # Auto-refresh timer
+        self._auto_timer = QTimer(self)
+        self._auto_timer.setInterval(60_000)
+        self._auto_timer.timeout.connect(self._refresh)
+        self._auto_timer.start()
 
-        self.btn_stop_timer = QPushButton("\u25a0 Stop")
-        self.btn_stop_timer.setStyleSheet(
-            "background-color: #f38ba8; color: #1e1e2e; font-weight: bold; border-radius: 4px;"
-        )
-        self.btn_stop_timer.setFixedHeight(28)
-        self.btn_stop_timer.setEnabled(False)
-        self.btn_stop_timer.clicked.connect(self._stop_timer)
-        timer_row.addWidget(self.btn_stop_timer)
+    # ── Navigation ───────────────────────────────────
 
-        timer_row.addStretch()
-
-        manual_hint = QLabel("or use manual Start/End times above")
-        manual_hint.setObjectName("subtitle")
-        manual_hint.setStyleSheet("font-size: 10px; font-style: italic; border: none;")
-        timer_row.addWidget(manual_hint)
-
-        form_layout.addLayout(timer_row)
-
-        # Divider
-        div = QFrame()
-        div.setFrameShape(QFrame.Shape.HLine)
-        div.setStyleSheet("border: none; border-top: 1px solid palette(mid);")
-        form_layout.addWidget(div)
-
-        # Row 3: Notes + buttons
-        row3 = QHBoxLayout()
-        row3.setSpacing(8)
-
-        self.notes_edit = QPlainTextEdit()
-        self.notes_edit.setPlaceholderText("Notes (optional)...")
-        self.notes_edit.setMaximumHeight(50)
-        self.notes_edit.setStyleSheet("border: 1px solid palette(mid); border-radius: 3px;")
-        row3.addWidget(self.notes_edit, 1)
-
-        btn_col = QVBoxLayout()
-        btn_col.setSpacing(3)
-
-        self.btn_add = QPushButton("Add")
-        self.btn_add.setFixedWidth(70)
-        self.btn_add.clicked.connect(self._add_activity)
-        btn_col.addWidget(self.btn_add)
-
-        self.btn_update = QPushButton("Update")
-        self.btn_update.setObjectName("secondary")
-        self.btn_update.setFixedWidth(70)
-        self.btn_update.clicked.connect(self._update_activity)
-        self.btn_update.setVisible(False)
-        btn_col.addWidget(self.btn_update)
-
-        self.btn_delete = QPushButton("Delete")
-        self.btn_delete.setObjectName("destructive")
-        self.btn_delete.setFixedWidth(70)
-        self.btn_delete.clicked.connect(self._delete_activity)
-        self.btn_delete.setVisible(False)
-        btn_col.addWidget(self.btn_delete)
-
-        self.btn_cancel = QPushButton("Cancel")
-        self.btn_cancel.setObjectName("secondary")
-        self.btn_cancel.setFixedWidth(70)
-        self.btn_cancel.clicked.connect(self._cancel_edit)
-        self.btn_cancel.setVisible(False)
-        btn_col.addWidget(self.btn_cancel)
-
-        row3.addLayout(btn_col)
-        form_layout.addLayout(row3)
-
-        layout.addWidget(form_frame)
-
-        # Activity list for the day (scrollable)
-        list_header = QHBoxLayout()
-        list_title = QLabel("Today's Activities")
-        list_title.setStyleSheet("font-weight: bold; font-size: 13px;")
-        list_header.addWidget(list_title)
-        list_header.addStretch()
-
-        self.total_label = QLabel("")
-        self.total_label.setObjectName("subtitle")
-        list_header.addWidget(self.total_label)
-
-        btn_export = QPushButton("Export to Vault")
-        btn_export.setObjectName("secondary")
-        btn_export.clicked.connect(self._export_to_vault)
-        list_header.addWidget(btn_export)
-
-        layout.addLayout(list_header)
-
-        self._list_container = QWidget()
-        self._list_layout = QVBoxLayout(self._list_container)
-        self._list_layout.setContentsMargins(0, 0, 0, 0)
-        self._list_layout.setSpacing(3)
-
-        list_scroll = QScrollArea()
-        list_scroll.setWidgetResizable(True)
-        list_scroll.setWidget(self._list_container)
-        list_scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
-        layout.addWidget(list_scroll, 1)
-
-    # ── Navigation ──────────────────────────────────────
-
-    def _prev_day(self):
-        self._stop_timer()
-        self._current_date -= timedelta(days=1)
+    def _prev_week(self):
+        self._week_start -= timedelta(weeks=1)
+        self._log_form.set_week_start(self._week_start)
         self._refresh()
 
-    def _next_day(self):
-        self._stop_timer()
-        self._current_date += timedelta(days=1)
+    def _next_week(self):
+        self._week_start += timedelta(weeks=1)
+        self._log_form.set_week_start(self._week_start)
         self._refresh()
 
     def _go_today(self):
-        self._stop_timer()
-        self._current_date = date.today()
+        today = date.today()
+        self._week_start = today - timedelta(days=today.weekday())
+        self._log_form.set_week_start(self._week_start)
         self._refresh()
 
-    # ── Timer ───────────────────────────────────────────
-
-    def _start_timer(self):
-        now = datetime.now()
-        self._timer_start = now
-        self.start_edit.setTime(QTime(now.hour, now.minute))
-        self.end_edit.setTime(QTime(now.hour, now.minute))
-
-        self._active_timer = QTimer(self)
-        self._active_timer.timeout.connect(self._update_timer_display)
-        self._active_timer.start(1000)
-
-        self.btn_start_timer.setEnabled(False)
-        self.btn_stop_timer.setEnabled(True)
-        self.timer_label.setStyleSheet(
-            "font-size: 15px; font-weight: bold; font-family: monospace; "
-            "color: #a6e3a1; border: none;"
-        )
-
-    def _stop_timer(self):
-        if self._active_timer is not None:
-            self._active_timer.stop()
-            self._active_timer = None
-        if self._timer_start is not None:
-            now = datetime.now()
-            self.end_edit.setTime(QTime(now.hour, now.minute))
-        self._timer_start = None
-        self.btn_start_timer.setEnabled(True)
-        self.btn_stop_timer.setEnabled(False)
-        self.timer_label.setStyleSheet(
-            "font-size: 15px; font-weight: bold; font-family: monospace; border: none;"
-        )
-
-    def _update_timer_display(self):
-        if self._timer_start is None:
-            return
-        elapsed = datetime.now() - self._timer_start
-        total_secs = int(elapsed.total_seconds())
-        h = total_secs // 3600
-        m = (total_secs % 3600) // 60
-        s = total_secs % 60
-        self.timer_label.setText(f"\u23f1 {h:02d}:{m:02d}:{s:02d}")
-        # Keep end_edit in sync with rolling now
-        now = datetime.now()
-        self.end_edit.setTime(QTime(now.hour, now.minute))
-
-    # ── Refresh ─────────────────────────────────────────
+    # ── Refresh ─────────────────────────────────────
 
     def _refresh(self):
-        self.date_label.setText(self._current_date.strftime("%A, %B %d, %Y"))
-
-        activities = self.store.get_for_date(self._current_date.isoformat())
-        self.gantt.set_bars(activities)
-
-        # Populate list
-        self._clear_layout(self._list_layout)
-
-        total_mins = 0
-        for act in activities:
-            total_mins += act.duration_minutes
-            row = self._make_activity_row(act)
-            self._list_layout.addWidget(row)
-
-        if not activities:
-            empty = QLabel("No activities logged for this day")
-            empty.setObjectName("subtitle")
-            empty.setAlignment(Qt.AlignmentFlag.AlignCenter)
-            self._list_layout.addWidget(empty)
-
-        self._list_layout.addStretch()
-
-        hours = total_mins // 60
-        mins = total_mins % 60
-        self.total_label.setText(f"Total: {hours}h {mins}m")
-
-        # Reset edit state
-        self._cancel_edit()
-
-    def _make_activity_row(self, act: Activity) -> QFrame:
-        row = QFrame()
-        row.setStyleSheet(
-            "QFrame { border: 1px solid palette(mid); border-radius: 4px; padding: 4px; }"
+        we = self._week_start + timedelta(days=6)
+        self._week_label.setText(
+            f"{self._week_start.strftime('%b %d')} – {we.strftime('%b %d, %Y')}"
         )
-        layout = QHBoxLayout(row)
-        layout.setContentsMargins(8, 4, 8, 4)
-        layout.setSpacing(8)
 
-        # Color dot
-        dot = QLabel("\u25cf")
-        dot.setStyleSheet(f"color: {act.color}; font-size: 16px; border: none;")
-        dot.setFixedWidth(18)
-        layout.addWidget(dot)
+        self._activities_by_date = {}
+        for i in range(7):
+            d = self._week_start + timedelta(days=i)
+            self._activities_by_date[d] = self.store.get_for_date(d.isoformat())
 
-        # Name
-        name = QLabel(act.activity)
-        name.setStyleSheet("font-weight: bold; font-size: 12px; border: none;")
-        layout.addWidget(name)
+        self._grid.load_week(self._week_start, self._activities_by_date)
+        self._efficiency.update_data(self._week_start, self._activities_by_date)
 
-        # Time range
-        time_lbl = QLabel(f"{act.start_time} \u2013 {act.end_time}")
-        time_lbl.setObjectName("subtitle")
-        time_lbl.setStyleSheet("font-size: 11px; border: none;")
-        layout.addWidget(time_lbl)
+    # ── Grid callbacks ───────────────────────────────
 
-        # Duration
-        dur = QLabel(f"{act.duration_minutes}m")
-        dur.setObjectName("subtitle")
-        dur.setStyleSheet("font-size: 11px; border: none;")
-        dur.setFixedWidth(40)
-        layout.addWidget(dur)
+    def _on_block_clicked(self, activity: Activity):
+        self._log_form.load_for_edit(activity)
 
-        # Notes preview
-        if act.notes:
-            notes_lbl = QLabel(act.notes[:50] + ("..." if len(act.notes) > 50 else ""))
-            notes_lbl.setObjectName("subtitle")
-            notes_lbl.setStyleSheet("font-size: 10px; font-style: italic; border: none;")
-            layout.addWidget(notes_lbl, 1)
-        else:
-            layout.addStretch(1)
+    def _on_empty_clicked(self, d: date, hour: float):
+        self._log_form.prefill(d, hour)
 
-        # Edit button
-        edit_btn = QPushButton("Edit")
-        edit_btn.setObjectName("secondary")
-        edit_btn.setFixedSize(40, 22)
-        edit_btn.setStyleSheet("font-size: 10px; border: 1px solid palette(mid); border-radius: 3px;")
-        edit_btn.clicked.connect(lambda _, a=act: self._start_edit(a))
-        layout.addWidget(edit_btn)
+    # ── CRUD callbacks ───────────────────────────────
 
-        return row
-
-    # ── CRUD ────────────────────────────────────────────
-
-    def _add_activity(self):
-        activity_name = self.activity_combo.currentText().strip()
-        if not activity_name:
-            return
-
-        start = self.start_edit.time().toString("HH:mm")
-        end = self.end_edit.time().toString("HH:mm")
-
-        if start >= end:
-            QMessageBox.warning(self, "Invalid Time", "End time must be after start time.")
-            return
-
-        # Stop timer if it was running when user clicks Add
-        self._stop_timer()
-
-        self.store.add(
-            date=self._current_date.isoformat(),
-            activity=activity_name,
-            start_time=start,
-            end_time=end,
-            notes=self.notes_edit.toPlainText().strip(),
-        )
+    def _on_activity_added(self, _activity: Activity):
         self._refresh()
 
-    def _start_edit(self, act: Activity):
-        self._editing_activity = act
-        # Populate form
-        idx = self.activity_combo.findText(act.activity)
-        if idx >= 0:
-            self.activity_combo.setCurrentIndex(idx)
-        else:
-            self.activity_combo.setCurrentText(act.activity)
-
-        sh, sm = map(int, act.start_time.split(":"))
-        eh, em = map(int, act.end_time.split(":"))
-        self.start_edit.setTime(QTime(sh, sm))
-        self.end_edit.setTime(QTime(eh, em))
-        self.notes_edit.setPlainText(act.notes)
-
-        self.btn_add.setVisible(False)
-        self.btn_update.setVisible(True)
-        self.btn_delete.setVisible(True)
-        self.btn_cancel.setVisible(True)
-
-    def _update_activity(self):
-        if not self._editing_activity:
-            return
-        act = self._editing_activity
-        act.activity = self.activity_combo.currentText().strip()
-        act.start_time = self.start_edit.time().toString("HH:mm")
-        act.end_time = self.end_edit.time().toString("HH:mm")
-        act.notes = self.notes_edit.toPlainText().strip()
-
-        if act.start_time >= act.end_time:
-            QMessageBox.warning(self, "Invalid Time", "End time must be after start time.")
-            return
-
-        self.store.update(act)
+    def _on_activity_updated(self, activity: Activity):
+        self.store.update(activity)
         self._refresh()
 
-    def _delete_activity(self):
-        if not self._editing_activity:
-            return
-        reply = QMessageBox.question(
-            self, "Delete Activity",
-            f"Delete '{self._editing_activity.activity}' ({self._editing_activity.start_time}\u2013{self._editing_activity.end_time})?",
-            QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
-        )
-        if reply == QMessageBox.StandardButton.Yes:
-            self.store.delete(self._editing_activity.id)
-            self._refresh()
+    def _on_activity_deleted(self, activity_id: str):
+        self.store.delete(activity_id)
+        self._refresh()
 
-    def _cancel_edit(self):
-        self._editing_activity = None
-        self.btn_add.setVisible(True)
-        self.btn_update.setVisible(False)
-        self.btn_delete.setVisible(False)
-        self.btn_cancel.setVisible(False)
-        self.notes_edit.clear()
+    # ── Export ───────────────────────────────────────
 
-    def _on_bar_selected(self, activity: Activity):
-        """Called when user clicks a bar in the Gantt chart."""
-        self._start_edit(activity)
-
-    # ── Obsidian export ─────────────────────────────────
-
-    def _export_to_vault(self):
+    def _export(self):
         cfg = load_config()
         vault_path = cfg.get("obsidian_vault_path", "")
         if not vault_path or not Path(vault_path).is_dir():
             QMessageBox.warning(
                 self, "No Vault",
-                "Set an Obsidian vault path first (Notes > Set Vault).",
+                "Set an Obsidian vault path first (Notes → Set Vault)."
             )
             return
 
-        activities = self.store.get_for_date(self._current_date.isoformat())
-        if not activities:
-            QMessageBox.information(self, "Nothing to Export", "No activities logged for this day.")
-            return
-
         vault = Path(vault_path)
-        d = self._current_date
-        # Structure: Activity Tracker / YYYY / MM - MonthName / DD - DayName / ActivityName.md
-        year_folder = f"{d.year}"
-        month_folder = f"{d.month:02d} - {d.strftime('%B')}"
-        day_folder = f"{d.day:02d} - {d.strftime('%A')}"
+        exported = 0
+        for d, activities in self._activities_by_date.items():
+            if not activities: continue
+            year_f  = str(d.year)
+            month_f = f"{d.month:02d} - {d.strftime('%B')}"
+            day_f   = f"{d.day:02d} - {d.strftime('%A')}"
+            base = vault / "Activity Tracker" / year_f / month_f / day_f
+            base.mkdir(parents=True, exist_ok=True)
 
-        base = vault / "Activity Tracker" / year_folder / month_folder / day_folder
-        base.mkdir(parents=True, exist_ok=True)
-
-        # Write a summary file
-        summary_path = base / "_Daily Summary.md"
-        total_mins = sum(a.duration_minutes for a in activities)
-        hours, mins = divmod(total_mins, 60)
-
-        lines = [
-            f"# Activity Summary \u2014 {d.strftime('%A, %B %d, %Y')}",
-            "",
-            f"**Total tracked:** {hours}h {mins}m",
-            "",
-            "| Time | Activity | Duration | Notes |",
-            "|------|----------|----------|-------|",
-        ]
-        for a in activities:
-            dur = f"{a.duration_minutes}m"
-            notes = a.notes.replace("\n", " ").replace("|", "/") if a.notes else ""
-            lines.append(f"| {a.start_time}\u2013{a.end_time} | {a.activity} | {dur} | {notes} |")
-
-        lines.append("")
-        summary_path.write_text("\n".join(lines), encoding="utf-8")
-
-        # Write individual activity files
-        for a in activities:
-            safe_name = a.activity.replace("/", "-").replace("\\", "-")
-            act_path = base / f"{safe_name}.md"
-            content = [
-                f"# {a.activity}",
-                "",
-                f"**Date:** {d.isoformat()}",
-                f"**Time:** {a.start_time} \u2013 {a.end_time}",
-                f"**Duration:** {a.duration_minutes} minutes",
-                "",
+            total_mins = sum(a.duration_minutes for a in activities)
+            h, m = divmod(total_mins, 60)
+            lines = [
+                f"# Activity Summary — {d.strftime('%A, %B %d, %Y')}",
+                "", f"**Total tracked:** {h}h {m}m", "",
+                "| Time | Activity | Duration | Notes |",
+                "|------|----------|----------|-------|",
             ]
-            if a.notes:
-                content.extend(["## Notes", "", a.notes, ""])
-            act_path.write_text("\n".join(content), encoding="utf-8")
+            for a in activities:
+                notes = (a.notes or "").replace("\n"," ").replace("|","/")
+                lines.append(f"| {a.start_time}–{a.end_time} | {a.activity} | {a.duration_minutes}m | {notes} |")
+            (base / "_Daily Summary.md").write_text("\n".join(lines), encoding="utf-8")
+            exported += len(activities)
 
+        we = self._week_start + timedelta(days=6)
         QMessageBox.information(
             self, "Exported",
-            f"Exported {len(activities)} activities to:\n{base}",
+            f"Exported {exported} activities for week of "
+            f"{self._week_start.strftime('%b %d')} – {we.strftime('%b %d')}."
         )
-
-    # ── Helpers ─────────────────────────────────────────
-
-    @staticmethod
-    def _clear_layout(layout):
-        while layout.count():
-            child = layout.takeAt(0)
-            if child.widget():
-                child.widget().deleteLater()
-
 ```
 
 ### `src\ui\modules\calendar_panel.py`
 
 ```python
-"""Calendar module UI — weekly main view + mini month navigator + colored dot indicators."""
+"""Calendar module UI — weekly view + mini-month navigator + major events.
 
-from datetime import date, datetime, timedelta
+All colors read from the active theme palette so the panel adapts when the
+user switches themes.  No hardcoded hex values remain in inline stylesheets
+or paintEvent code.
+
+Layout (positions unchanged):
+  Upper-left  → Weekly overview grid (7 day columns)
+  Lower-left  → Selected-day detail list
+  Upper-right → Mini month navigator (interactive dot indicators)
+  Lower-right → Next major events panel
+"""
+
+from __future__ import annotations
+
 import calendar
+from datetime import date, datetime, timedelta
 
-from PyQt6.QtCore import Qt, QDate, pyqtSignal
+from PyQt6.QtCore import Qt, QDate, QTime, QTimer, pyqtSignal
+from PyQt6.QtGui import QColor, QPainter, QPen, QBrush, QFont, QFontMetrics, QMouseEvent
 from PyQt6.QtWidgets import (
     QWidget, QVBoxLayout, QHBoxLayout, QGridLayout,
     QLabel, QPushButton, QDialog, QLineEdit, QTextEdit,
     QDateEdit, QTimeEdit, QCheckBox, QFrame, QComboBox,
-    QMessageBox, QScrollArea, QSizePolicy,
+    QMessageBox, QScrollArea, QSizePolicy, QTabWidget,
+    QButtonGroup, QToolButton, QSpinBox,
 )
 
-from src.data.calendar_store import CalendarStore, Event
+from src.data.calendar_store import (
+    CalendarStore, Event, Birthday,
+    build_recurrence, expand_recurring_to_range,
+)
 
 
-# ── Event colors ──────────────────────────────────────
-EVENT_COLORS = {
-    "Blue": "#4a9eff", "Green": "#a6e3a1", "Red": "#f38ba8",
-    "Yellow": "#f9e2af", "Purple": "#cba6f7", "Orange": "#fab387",
-    "Teal": "#94e2d5", "Pink": "#f5c2e7",
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+#  Module-level palette  (updated by CalendarPanel.set_palette)
+#  Defaults = Catppuccin Dark so the panel renders correctly before
+#  MainWindow calls set_palette() for the first time.
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+_PALETTE: dict = {
+    "bg":        "#1e1e2e", "surface":   "#313244", "border": "#45475a",
+    "fg":        "#cdd6f4", "muted":     "#7f849c",  "hover":  "#3b3d54",
+    "accent":    "#89b4fa", "accent_fg": "#1e1e2e",
+    "header_bg": "#181825", "alt_row":   "#252538",
+    "red":       "#f38ba8", "green":     "#a6e3a1",  "yellow": "#f9e2af",
 }
 
-# ── Category emojis ───────────────────────────────────
-CATEGORY_EMOJIS = {
-    "birthday": "\U0001f382",   # 🎂
-    "trip":     "\u2708\ufe0f", # ✈️
-    "holiday":  "\U0001f389",   # 🎉
-    "major":    "\u2b50",       # ⭐
-    "work":     "\U0001f4bc",   # 💼
+
+def _p(key: str, fallback: str = "#888888") -> str:
+    """Return current palette value for *key*."""
+    return _PALETTE.get(key, fallback)
+
+
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+#  Category / color constants
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+EVENT_COLORS: dict[str, str] = {
+    "Sky Blue": "#4a9eff", "Mint":     "#a6e3a1", "Rose":    "#f38ba8",
+    "Peach":    "#fab387", "Gold":     "#f9e2af", "Lavender":"#cba6f7",
+    "Teal":     "#94e2d5", "Pink":     "#f5c2e7", "Coral":   "#ff6b6b",
+    "Sage":     "#74c7b8",
 }
 
-CATEGORY_OPTIONS = [
-    ("", "None"),
-    ("work", "Work \U0001f4bc"),
-    ("birthday", "Birthday \U0001f382"),
-    ("trip", "Trip \u2708\ufe0f"),
-    ("holiday", "Holiday \U0001f389"),
-    ("major", "Major Event \u2b50"),
+CATEGORY_META: dict[str, dict] = {
+    "":         {"label": "General",     "emoji": "📅", "color": "#4a9eff"},
+    "work":     {"label": "Work",        "emoji": "💼", "color": "#4a9eff"},
+    "birthday": {"label": "Birthday",    "emoji": "🎂", "color": "#f38ba8"},
+    "trip":     {"label": "Trip",        "emoji": "✈️",  "color": "#94e2d5"},
+    "holiday":  {"label": "Holiday",     "emoji": "🎉", "color": "#f9e2af"},
+    "major":    {"label": "Major Event", "emoji": "⭐", "color": "#cba6f7"},
+    "health":   {"label": "Health",      "emoji": "🏥", "color": "#a6e3a1"},
+    "social":   {"label": "Social",      "emoji": "🎭", "color": "#fab387"},
+}
+
+RECURRENCE_OPTIONS = [
+    ("",        "Does not repeat"), ("daily",   "Every day"),
+    ("weekly",  "Weekly (select days)"), ("monthly", "Monthly"),
+    ("yearly",  "Yearly"),
 ]
 
+WEEKDAY_LABELS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
+
+
+def _cat_emoji(cat: str) -> str:
+    return CATEGORY_META.get(cat, CATEGORY_META[""]).get("emoji", "")
+
+def _cat_color(cat: str) -> str:
+    return CATEGORY_META.get(cat, CATEGORY_META[""]).get("color", "#4a9eff")
+
+def _clear_layout(layout):
+    while layout.count():
+        child = layout.takeAt(0)
+        if child.widget():   child.widget().deleteLater()
+        elif child.layout(): _clear_layout(child.layout())
+
+
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+#  ColorButton
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+class ColorButton(QToolButton):
+    def __init__(self, hex_color: str, name: str, parent=None):
+        super().__init__(parent)
+        self.hex_color = hex_color
+        self.setFixedSize(28, 28)
+        self.setCheckable(True)
+        self.setToolTip(name)
+        self._update_style()
+
+    def setChecked(self, checked: bool):
+        super().setChecked(checked)
+        self._update_style()
+
+    def _update_style(self):
+        border = "3px solid white" if self.isChecked() else "2px solid transparent"
+        self.setStyleSheet(
+            f"QToolButton {{ background-color: {self.hex_color}; "
+            f"border: {border}; border-radius: 6px; }}"
+        )
+
+
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+#  EventDialog
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 class EventDialog(QDialog):
-    """Dialog to add/edit an event."""
-
-    def __init__(self, parent=None, event=None):
+    def __init__(self, parent=None, event: Event | None = None,
+                 prefill_date: date | None = None):
         super().__init__(parent)
-        self.setWindowTitle("Edit Event" if event else "New Event")
-        self.setMinimumWidth(380)
         self.event = event
         self._delete_requested = False
-        self._build_ui()
+        self.setWindowTitle("Edit Event" if event else "New Event")
+        self.setMinimumWidth(460)
+        self.setModal(True)
+        self._build_ui(prefill_date)
 
-    def _build_ui(self):
-        layout = QVBoxLayout(self)
-        layout.setSpacing(10)
+    def _build_ui(self, prefill_date):
+        root = QVBoxLayout(self)
+        root.setContentsMargins(0, 0, 0, 0)
+        root.setSpacing(0)
 
-        layout.addWidget(QLabel("Title"))
+        init_color = self.event.color if self.event else _p("accent")
+        self._header_strip = QFrame()
+        self._header_strip.setFixedHeight(6)
+        self._header_strip.setStyleSheet(
+            f"background-color: {init_color}; border-radius: 3px 3px 0 0;")
+        root.addWidget(self._header_strip)
+
+        body = QWidget()
+        body_l = QVBoxLayout(body)
+        body_l.setContentsMargins(20, 16, 20, 16)
+        body_l.setSpacing(12)
+        root.addWidget(body)
+
+        tabs = QTabWidget()
+        tabs.setDocumentMode(True)
+        body_l.addWidget(tabs)
+
+        # ── Details tab ──
+        det_tab = QWidget()
+        det = QVBoxLayout(det_tab)
+        det.setContentsMargins(4, 12, 4, 4)
+        det.setSpacing(10)
+        tabs.addTab(det_tab, "Details")
+
         self.title_edit = QLineEdit()
-        self.title_edit.setPlaceholderText("Event title...")
-        if self.event:
-            self.title_edit.setText(self.event.title)
-        layout.addWidget(self.title_edit)
+        self.title_edit.setPlaceholderText("Event title…")
+        self.title_edit.setStyleSheet("font-size: 15px; padding: 6px; font-weight: bold;")
+        if self.event: self.title_edit.setText(self.event.title)
+        det.addWidget(self.title_edit)
 
-        layout.addWidget(QLabel("Description"))
         self.desc_edit = QTextEdit()
-        self.desc_edit.setMaximumHeight(80)
-        self.desc_edit.setPlaceholderText("Optional description...")
-        if self.event:
-            self.desc_edit.setPlainText(self.event.description)
-        layout.addWidget(self.desc_edit)
+        self.desc_edit.setMaximumHeight(68)
+        self.desc_edit.setPlaceholderText("Optional description…")
+        if self.event: self.desc_edit.setPlainText(self.event.description)
+        det.addWidget(self.desc_edit)
 
-        self.all_day_check = QCheckBox("All day event")
+        cat_row = QHBoxLayout()
+        cat_row.addWidget(QLabel("Category"))
+        self.category_combo = QComboBox()
+        for key, meta in CATEGORY_META.items():
+            self.category_combo.addItem(f"{meta['emoji']} {meta['label']}", key)
         if self.event:
-            self.all_day_check.setChecked(self.event.all_day)
+            idx = self.category_combo.findData(self.event.category)
+            if idx >= 0: self.category_combo.setCurrentIndex(idx)
+        self.category_combo.currentIndexChanged.connect(self._on_category_changed)
+        cat_row.addWidget(self.category_combo, 1)
+        det.addLayout(cat_row)
+
+        det.addWidget(QLabel("Color"))
+        color_row = QHBoxLayout()
+        color_row.setSpacing(6)
+        self._color_group = QButtonGroup(self)
+        self._color_group.setExclusive(True)
+        self._color_btns: dict[str, ColorButton] = {}
+        current_color = self.event.color if self.event else _p("accent")
+        for name, hex_val in EVENT_COLORS.items():
+            btn = ColorButton(hex_val, name)
+            btn.setChecked(hex_val == current_color)
+            btn.clicked.connect(lambda _, h=hex_val: self._on_color_picked(h))
+            self._color_group.addButton(btn)
+            self._color_btns[hex_val] = btn
+            color_row.addWidget(btn)
+        color_row.addStretch()
+        det.addLayout(color_row)
+
+        self.all_day_check = QCheckBox("All-day event")
+        if self.event: self.all_day_check.setChecked(self.event.all_day)
         self.all_day_check.toggled.connect(self._toggle_time)
-        layout.addWidget(self.all_day_check)
+        det.addWidget(self.all_day_check)
 
-        date_row = QHBoxLayout()
-        date_row.addWidget(QLabel("Date"))
+        dt_row = QHBoxLayout()
+        dt_row.setSpacing(8)
+        dt_row.addWidget(QLabel("Date"))
         self.date_edit = QDateEdit()
         self.date_edit.setCalendarPopup(True)
+        self.date_edit.setDisplayFormat("dd MMM yyyy")
         if self.event:
-            dt = datetime.fromisoformat(self.event.start_time)
-            self.date_edit.setDate(QDate(dt.year, dt.month, dt.day))
+            d0 = datetime.fromisoformat(self.event.start_time)
+            self.date_edit.setDate(QDate(d0.year, d0.month, d0.day))
+        elif prefill_date:
+            self.date_edit.setDate(QDate(prefill_date.year, prefill_date.month, prefill_date.day))
         else:
-            today = date.today()
-            self.date_edit.setDate(QDate(today.year, today.month, today.day))
-        date_row.addWidget(self.date_edit, 1)
-        layout.addLayout(date_row)
+            t = date.today()
+            self.date_edit.setDate(QDate(t.year, t.month, t.day))
+        dt_row.addWidget(self.date_edit, 2)
 
-        from PyQt6.QtCore import QTime
-        time_row = QHBoxLayout()
-        time_row.addWidget(QLabel("Start"))
+        dt_row.addWidget(QLabel("Start"))
         self.start_time = QTimeEdit()
         self.start_time.setDisplayFormat("HH:mm")
         if self.event and not self.event.all_day:
-            dt = datetime.fromisoformat(self.event.start_time)
-            self.start_time.setTime(QTime(dt.hour, dt.minute))
+            d0 = datetime.fromisoformat(self.event.start_time)
+            self.start_time.setTime(QTime(d0.hour, d0.minute))
         else:
             self.start_time.setTime(QTime(9, 0))
-        time_row.addWidget(self.start_time, 1)
-        time_row.addWidget(QLabel("End"))
+        dt_row.addWidget(self.start_time, 1)
+
+        dt_row.addWidget(QLabel("End"))
         self.end_time = QTimeEdit()
         self.end_time.setDisplayFormat("HH:mm")
         if self.event and self.event.end_time:
-            dt = datetime.fromisoformat(self.event.end_time)
-            self.end_time.setTime(QTime(dt.hour, dt.minute))
+            d0 = datetime.fromisoformat(self.event.end_time)
+            self.end_time.setTime(QTime(d0.hour, d0.minute))
         else:
             self.end_time.setTime(QTime(10, 0))
-        time_row.addWidget(self.end_time, 1)
-        layout.addLayout(time_row)
-        self.time_widgets = [self.start_time, self.end_time]
+        dt_row.addWidget(self.end_time, 1)
+        det.addLayout(dt_row)
         self._toggle_time(self.all_day_check.isChecked())
 
-        # Color + Category side by side
-        cc_row = QHBoxLayout()
-        cc_row.setSpacing(12)
+        # ── Repeat tab ──
+        rec_tab = QWidget()
+        rec = QVBoxLayout(rec_tab)
+        rec.setContentsMargins(4, 12, 4, 4)
+        rec.setSpacing(10)
+        tabs.addTab(rec_tab, "Repeat")
 
-        color_col = QVBoxLayout()
-        color_col.addWidget(QLabel("Color"))
-        self.color_combo = QComboBox()
-        for name, hex_val in EVENT_COLORS.items():
-            self.color_combo.addItem(name, hex_val)
-        if self.event:
-            idx = self.color_combo.findData(self.event.color)
-            if idx >= 0:
-                self.color_combo.setCurrentIndex(idx)
-        color_col.addWidget(self.color_combo)
-        cc_row.addLayout(color_col, 1)
+        rec.addWidget(QLabel("Repeat pattern"))
+        self.rec_combo = QComboBox()
+        for val, label in RECURRENCE_OPTIONS:
+            self.rec_combo.addItem(label, val)
+        rec.addWidget(self.rec_combo)
+        self.rec_combo.currentIndexChanged.connect(
+            lambda _: self._weekday_frame.setVisible(
+                self.rec_combo.currentData() == "weekly"))
 
-        cat_col = QVBoxLayout()
-        cat_col.addWidget(QLabel("Category"))
-        self.category_combo = QComboBox()
-        for val, label in CATEGORY_OPTIONS:
-            self.category_combo.addItem(label, val)
-        if self.event:
-            idx = self.category_combo.findData(self.event.category)
-            if idx >= 0:
-                self.category_combo.setCurrentIndex(idx)
-        cat_col.addWidget(self.category_combo)
-        cc_row.addLayout(cat_col, 1)
+        self._weekday_frame = QFrame()
+        wdf = QHBoxLayout(self._weekday_frame)
+        wdf.setContentsMargins(0, 4, 0, 0)
+        wdf.setSpacing(4)
+        self._weekday_btns: list[QToolButton] = []
+        for label in WEEKDAY_LABELS:
+            btn = QToolButton()
+            btn.setText(label)
+            btn.setCheckable(True)
+            btn.setFixedSize(42, 30)
+            self._weekday_btns.append(btn)
+            wdf.addWidget(btn)
+        wdf.addStretch()
+        rec.addWidget(self._weekday_frame)
+        self._weekday_frame.setVisible(False)
+        rec.addStretch()
 
-        layout.addLayout(cc_row)
+        if self.event and self.event.recurrence:
+            r = self.event.recurrence
+            if r == "daily":      self.rec_combo.setCurrentIndex(1)
+            elif r.startswith("weekly:"):
+                self.rec_combo.setCurrentIndex(2)
+                for d in [int(x) for x in r.split(":")[1].split(",") if x.strip()]:
+                    if 0 <= d < len(self._weekday_btns):
+                        self._weekday_btns[d].setChecked(True)
+            elif r == "monthly":  self.rec_combo.setCurrentIndex(3)
+            elif r == "yearly":   self.rec_combo.setCurrentIndex(4)
 
+        # ── Buttons ──
         sep = QFrame()
-        sep.setObjectName("separator")
         sep.setFrameShape(QFrame.Shape.HLine)
-        layout.addWidget(sep)
+        sep.setObjectName("separator")
+        body_l.addWidget(sep)
 
         btn_row = QHBoxLayout()
         if self.event:
-            del_btn = QPushButton("Delete")
+            del_btn = QPushButton("🗑  Delete")
             del_btn.setObjectName("destructive")
             del_btn.clicked.connect(self._on_delete)
             btn_row.addWidget(del_btn)
         btn_row.addStretch()
-        cancel_btn = QPushButton("Cancel")
-        cancel_btn.setObjectName("secondary")
-        cancel_btn.clicked.connect(self.reject)
-        btn_row.addWidget(cancel_btn)
-        save_btn = QPushButton("Save")
-        save_btn.clicked.connect(self.accept)
-        btn_row.addWidget(save_btn)
-        layout.addLayout(btn_row)
+        cancel = QPushButton("Cancel")
+        cancel.setObjectName("secondary")
+        cancel.clicked.connect(self.reject)
+        btn_row.addWidget(cancel)
+        save = QPushButton("Save Event")
+        save.setDefault(True)
+        save.clicked.connect(self._on_save)
+        btn_row.addWidget(save)
+        body_l.addLayout(btn_row)
+
+    def _on_color_picked(self, hex_val: str):
+        self._header_strip.setStyleSheet(
+            f"background-color: {hex_val}; border-radius: 3px 3px 0 0;")
+
+    def _on_category_changed(self, _):
+        auto = _cat_color(self.category_combo.currentData())
+        btn = self._color_btns.get(auto)
+        if btn:
+            for b in self._color_btns.values(): b.setChecked(False)
+            btn.setChecked(True)
+            self._on_color_picked(auto)
 
     def _toggle_time(self, all_day: bool):
-        for w in self.time_widgets:
-            w.setEnabled(not all_day)
+        self.start_time.setEnabled(not all_day)
+        self.end_time.setEnabled(not all_day)
 
     def _on_delete(self):
-        self._delete_requested = True
-        self.reject()
+        self._delete_requested = True; self.reject()
+
+    def _on_save(self):
+        if not self.title_edit.text().strip():
+            self.title_edit.setFocus()
+            self.title_edit.setPlaceholderText("⚠ Title is required")
+            return
+        self.accept()
+
+    def _selected_color(self) -> str:
+        for hex_val, btn in self._color_btns.items():
+            if btn.isChecked(): return hex_val
+        return _p("accent")
+
+    def _selected_recurrence(self) -> str:
+        val = self.rec_combo.currentData()
+        if val == "weekly":
+            days = [i for i, b in enumerate(self._weekday_btns) if b.isChecked()]
+            return build_recurrence("weekly", days) if days else ""
+        return build_recurrence(val) if val else ""
 
     def get_data(self) -> dict:
         qd = self.date_edit.date()
         d = date(qd.year(), qd.month(), qd.day())
-        if self.all_day_check.isChecked():
+        all_day = self.all_day_check.isChecked()
+        if all_day:
             start = datetime(d.year, d.month, d.day).isoformat()
             end = None
         else:
-            st = self.start_time.time()
-            et = self.end_time.time()
+            st = self.start_time.time(); et = self.end_time.time()
             start = datetime(d.year, d.month, d.day, st.hour(), st.minute()).isoformat()
-            end = datetime(d.year, d.month, d.day, et.hour(), et.minute()).isoformat()
+            end   = datetime(d.year, d.month, d.day, et.hour(), et.minute()).isoformat()
         return {
-            "title": self.title_edit.text().strip() or "Untitled",
+            "title":       self.title_edit.text().strip() or "Untitled",
             "description": self.desc_edit.toPlainText(),
-            "start_time": start, "end_time": end,
-            "all_day": self.all_day_check.isChecked(),
-            "color": self.color_combo.currentData(),
-            "category": self.category_combo.currentData() or "",
+            "start_time":  start, "end_time": end,
+            "all_day":     all_day, "color": self._selected_color(),
+            "category":    self.category_combo.currentData() or "",
+            "recurrence":  self._selected_recurrence(),
         }
 
 
-# ── Mini month calendar (for navigation) ──────────────
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+#  BirthdayDialog
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-class MiniMonthCell(QLabel):
-    """A single day number in the mini calendar."""
-    clicked = pyqtSignal(int, int, int)  # year, month, day
+class BirthdayDialog(QDialog):
+    def __init__(self, parent=None, birthday: Birthday | None = None):
+        super().__init__(parent)
+        self.birthday = birthday
+        self._delete_requested = False
+        self.setWindowTitle("Edit Birthday" if birthday else "Add Birthday")
+        self.setMinimumWidth(340); self.setModal(True)
+        self._build_ui()
 
-    def __init__(self, year: int, month: int, day: int, is_today: bool,
-                 is_selected: bool, has_events: bool, event_colors: list):
-        super().__init__(str(day))
+    def _build_ui(self):
+        layout = QVBoxLayout(self)
+        layout.setContentsMargins(20, 20, 20, 16)
+        layout.setSpacing(12)
+
+        hdr = QLabel("🎂  Birthday")
+        hdr.setStyleSheet("font-size: 16px; font-weight: bold;")
+        layout.addWidget(hdr)
+
+        layout.addWidget(QLabel("Name"))
+        self.name_edit = QLineEdit()
+        self.name_edit.setPlaceholderText("Person's name…")
+        if self.birthday: self.name_edit.setText(self.birthday.name)
+        layout.addWidget(self.name_edit)
+
+        mdy = QHBoxLayout()
+        for label, attr, lo, hi in [("Month","month",1,12), ("Day","day",1,31)]:
+            col = QVBoxLayout()
+            col.addWidget(QLabel(label))
+            spin = QSpinBox(); spin.setRange(lo, hi)
+            if self.birthday: spin.setValue(getattr(self.birthday, attr))
+            col.addWidget(spin); mdy.addLayout(col)
+            setattr(self, f"{attr}_spin", spin)
+        yr_col = QVBoxLayout()
+        yr_col.addWidget(QLabel("Year (optional)"))
+        self.year_spin = QSpinBox()
+        self.year_spin.setRange(0, 9999)
+        self.year_spin.setSpecialValueText("—")
+        self.year_spin.setValue(self.birthday.year if (self.birthday and self.birthday.year) else 0)
+        yr_col.addWidget(self.year_spin); mdy.addLayout(yr_col)
+        layout.addLayout(mdy)
+
+        sep = QFrame(); sep.setFrameShape(QFrame.Shape.HLine); sep.setObjectName("separator")
+        layout.addWidget(sep)
+
+        btn_row = QHBoxLayout()
+        if self.birthday:
+            del_btn = QPushButton("Delete"); del_btn.setObjectName("destructive")
+            del_btn.clicked.connect(self._on_delete); btn_row.addWidget(del_btn)
+        btn_row.addStretch()
+        cancel = QPushButton("Cancel"); cancel.setObjectName("secondary")
+        cancel.clicked.connect(self.reject); btn_row.addWidget(cancel)
+        save = QPushButton("Save"); save.setDefault(True)
+        save.clicked.connect(self._on_save); btn_row.addWidget(save)
+        layout.addLayout(btn_row)
+
+    def _on_delete(self): self._delete_requested = True; self.reject()
+    def _on_save(self):
+        if not self.name_edit.text().strip(): self.name_edit.setFocus(); return
+        self.accept()
+    def get_data(self) -> dict:
+        y = self.year_spin.value()
+        return {"name": self.name_edit.text().strip(),
+                "month": self.month_spin.value(), "day": self.day_spin.value(),
+                "year": y if y > 0 else None}
+
+
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+#  MiniMonthCell  — fully painted using current palette
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+class MiniMonthCell(QWidget):
+    clicked = pyqtSignal(int, int, int)
+    CELL = 32
+
+    def __init__(self, year, month, day, is_today, is_selected,
+                 event_colors: list[str], is_holiday: bool = False, parent=None):
+        super().__init__(parent)
         self.year, self.month, self.day = year, month, day
-        self.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        self.setFixedSize(28, 28)
+        self.is_today = is_today; self.is_selected = is_selected
+        self.event_colors = event_colors[:4]; self.is_holiday = is_holiday
+        self._hovered = False
+        self.setFixedSize(self.CELL, self.CELL)
         self.setCursor(Qt.CursorShape.PointingHandCursor)
+        self.setAttribute(Qt.WidgetAttribute.WA_Hover, True)
+        if event_colors or is_holiday:
+            parts = (["Holiday"] if is_holiday else []) + ([f"{len(event_colors)} event(s)"] if event_colors else [])
+            self.setToolTip(", ".join(parts))
 
-        style = "font-size: 11px; border-radius: 14px; "
-        if is_today:
-            style += "background-color: #4a9eff; color: #1e1e2e; font-weight: bold; "
-        elif is_selected:
-            style += "border: 1px solid #4a9eff; "
+    def enterEvent(self, ev): self._hovered = True;  self.update()
+    def leaveEvent(self, ev): self._hovered = False; self.update()
+    def mousePressEvent(self, ev): self.clicked.emit(self.year, self.month, self.day)
 
-        self.setStyleSheet(style)
+    def paintEvent(self, ev):
+        p = QPainter(self)
+        p.setRenderHint(QPainter.RenderHint.Antialiasing)
+        w, h = self.width(), self.height()
+        cx, cy = w / 2, (h - 6) / 2
 
-        if has_events and not is_today:
-            self.setToolTip(f"{len(event_colors)} event(s)")
-            self._dot_colors = event_colors[:3]
-        else:
-            self._dot_colors = []
+        accent = QColor(_p("accent"))
+        fg     = QColor(_p("fg"))
+        muted  = QColor(_p("muted"))
+        hover_c= QColor(_p("hover"))
+        red    = QColor(_p("red"))
 
-    def mousePressEvent(self, ev):
-        self.clicked.emit(self.year, self.month, self.day)
+        if self.is_today:
+            p.setBrush(QBrush(accent)); p.setPen(Qt.PenStyle.NoPen)
+            p.drawEllipse(int(cx-13), int(cy-13), 26, 26)
+        elif self.is_selected:
+            c = QColor(accent); c.setAlpha(45)
+            p.setBrush(QBrush(c)); p.setPen(QPen(accent, 1.5))
+            p.drawEllipse(int(cx-13), int(cy-13), 26, 26)
+        elif self._hovered:
+            p.setBrush(QBrush(hover_c)); p.setPen(Qt.PenStyle.NoPen)
+            p.drawEllipse(int(cx-13), int(cy-13), 26, 26)
 
+        font = QFont(); font.setPixelSize(12)
+        if self.is_today or self.is_selected: font.setBold(True)
+        p.setFont(font)
+        if self.is_today:        p.setPen(QColor(_p("accent_fg")))
+        elif self.is_holiday:    p.setPen(red)
+        else:                    p.setPen(fg)
+        p.drawText(0, 0, w, int(h-7), Qt.AlignmentFlag.AlignCenter, str(self.day))
+
+        if self.event_colors:
+            dr=3; n=len(self.event_colors); sp=dr*2+2
+            sx = cx - (n*sp-2)/2; dy = h-5
+            for i, color in enumerate(self.event_colors):
+                p.setBrush(QBrush(QColor(color))); p.setPen(Qt.PenStyle.NoPen)
+                p.drawEllipse(int(sx+i*sp-dr), int(dy-dr), dr*2, dr*2)
+        p.end()
+
+
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+#  MiniMonth
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 class MiniMonth(QWidget):
-    """Compact month grid for date navigation."""
-    date_selected = pyqtSignal(object)  # emits a date object
+    date_selected = pyqtSignal(object)
 
     def __init__(self, parent=None):
         super().__init__(parent)
-        self.setFixedWidth(230)
-        self._selected_date = date.today()
-        self._view_year = date.today().year
-        self._view_month = date.today().month
-        self._events_by_date: dict[date, list] = {}
+        self.setFixedWidth(240)
+        self._selected    = date.today()
+        self._view_year   = self._selected.year
+        self._view_month  = self._selected.month
+        self._events:    dict[date, list[str]] = {}
+        self._holidays:  set[date]             = set()
+        self._nav_buttons: list[QPushButton]   = []
+        self._dow_labels:  list[QLabel]        = []
+        self._title_btn:   QPushButton         = None  # type: ignore
         self._build()
 
-    def set_events(self, events_by_date: dict):
-        self._events_by_date = events_by_date
-        self._render()
+    # ── Public ──────────────────────────────────────
+
+    def set_events(self, by_date: dict[date, list[str]]):
+        self._events = by_date; self._render()
+
+    def set_holidays(self, holidays: set[date]):
+        self._holidays = holidays; self._render()
 
     def set_selected(self, d: date):
-        self._selected_date = d
-        self._view_year = d.year
-        self._view_month = d.month
+        self._selected = d
+        self._view_year = d.year; self._view_month = d.month
         self._render()
 
+    def refresh_styles(self):
+        """Re-apply palette colors to navigation buttons/labels."""
+        nav_style = (
+            f"QPushButton {{ background-color: {_p('surface')}; color: {_p('fg')}; "
+            f"border: 1px solid {_p('border')}; border-radius: 4px; "
+            f"font-weight: bold; font-size: 14px; padding: 0px; }}"
+            f"QPushButton:hover {{ background-color: {_p('hover')}; "
+            f"border-color: {_p('accent')}; color: {_p('accent')}; }}"
+            f"QPushButton:pressed {{ background-color: {_p('border')}; }}"
+        )
+        for btn in self._nav_buttons:
+            btn.setStyleSheet(nav_style)
+        if self._title_btn:
+            self._title_btn.setStyleSheet(
+                f"QPushButton {{ background-color: transparent; color: {_p('fg')}; "
+                f"border: none; font-weight: bold; font-size: 13px; }}"
+                f"QPushButton:hover {{ color: {_p('accent')}; }}"
+            )
+        for lbl in self._dow_labels:
+            lbl.setStyleSheet(f"font-size: 10px; font-weight: bold; color: {_p('muted')};")
+        self._render()
+
+    # ── Build ────────────────────────────────────────
+
+    def _nav_style(self) -> str:
+        return (
+            f"QPushButton {{ background-color: {_p('surface')}; color: {_p('fg')}; "
+            f"border: 1px solid {_p('border')}; border-radius: 4px; "
+            f"font-weight: bold; font-size: 14px; padding: 0px; }}"
+            f"QPushButton:hover {{ background-color: {_p('hover')}; "
+            f"border-color: {_p('accent')}; color: {_p('accent')}; }}"
+            f"QPushButton:pressed {{ background-color: {_p('border')}; }}"
+        )
+
     def _build(self):
-        self._layout = QVBoxLayout(self)
-        self._layout.setContentsMargins(8, 8, 8, 8)
-        self._layout.setSpacing(4)
+        outer = QVBoxLayout(self)
+        outer.setContentsMargins(8, 8, 8, 8); outer.setSpacing(2)
 
-        # Header row
-        header = QHBoxLayout()
-        self._prev_btn = QPushButton("\u25c0")
-        self._prev_btn.setObjectName("secondary")
-        self._prev_btn.setFixedSize(24, 24)
-        self._prev_btn.clicked.connect(self._prev_month)
-        header.addWidget(self._prev_btn)
+        nav = QHBoxLayout(); nav.setSpacing(0)
+        for symbol, tip, handler in [
+            ("«","Previous year", self._prev_year),
+            ("‹","Previous month",self._prev_month),
+        ]:
+            btn = QPushButton(symbol); btn.setFixedSize(26, 26)
+            btn.setToolTip(tip); btn.clicked.connect(handler)
+            btn.setStyleSheet(self._nav_style())
+            self._nav_buttons.append(btn); nav.addWidget(btn)
 
-        self._title = QLabel()
-        self._title.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        self._title.setStyleSheet("font-weight: bold; font-size: 13px;")
-        header.addWidget(self._title, 1)
+        self._title_btn = QPushButton()
+        self._title_btn.setFlat(True)
+        self._title_btn.clicked.connect(self._go_today_month)
+        self._title_btn.setStyleSheet(
+            f"QPushButton {{ background-color: transparent; color: {_p('fg')}; "
+            f"border: none; font-weight: bold; font-size: 13px; }}"
+            f"QPushButton:hover {{ color: {_p('accent')}; }}"
+        )
+        nav.addWidget(self._title_btn, 1)
 
-        self._next_btn = QPushButton("\u25b6")
-        self._next_btn.setObjectName("secondary")
-        self._next_btn.setFixedSize(24, 24)
-        self._next_btn.clicked.connect(self._next_month)
-        header.addWidget(self._next_btn)
+        for symbol, tip, handler in [
+            ("›","Next month",self._next_month),
+            ("»","Next year", self._next_year),
+        ]:
+            btn = QPushButton(symbol); btn.setFixedSize(26, 26)
+            btn.setToolTip(tip); btn.clicked.connect(handler)
+            btn.setStyleSheet(self._nav_style())
+            self._nav_buttons.append(btn); nav.addWidget(btn)
 
-        self._layout.addLayout(header)
+        outer.addLayout(nav)
 
-        # Day-of-week header
-        dow_row = QHBoxLayout()
-        dow_row.setSpacing(0)
-        for d in ["M", "T", "W", "T", "F", "S", "S"]:
-            lbl = QLabel(d)
-            lbl.setFixedSize(28, 18)
+        dow_row = QHBoxLayout(); dow_row.setSpacing(0)
+        dow_row.setContentsMargins(0, 4, 0, 0)
+        for label in ["Mo","Tu","We","Th","Fr","Sa","Su"]:
+            lbl = QLabel(label)
+            lbl.setFixedSize(MiniMonthCell.CELL, 16)
             lbl.setAlignment(Qt.AlignmentFlag.AlignCenter)
-            lbl.setObjectName("subtitle")
-            lbl.setStyleSheet("font-size: 10px; font-weight: bold;")
-            dow_row.addWidget(lbl)
-        self._layout.addLayout(dow_row)
+            lbl.setStyleSheet(f"font-size: 10px; font-weight: bold; color: {_p('muted')};")
+            self._dow_labels.append(lbl); dow_row.addWidget(lbl)
+        outer.addLayout(dow_row)
 
-        # Grid placeholder
-        self._grid_widget = QWidget()
-        self._grid = QGridLayout(self._grid_widget)
-        self._grid.setSpacing(1)
-        self._grid.setContentsMargins(0, 0, 0, 0)
-        self._layout.addWidget(self._grid_widget)
-
-        self._layout.addStretch()
+        self._grid_w = QWidget()
+        self._grid   = QGridLayout(self._grid_w)
+        self._grid.setSpacing(1); self._grid.setContentsMargins(0,0,0,0)
+        outer.addWidget(self._grid_w)
+        outer.addStretch()
         self._render()
 
     def _render(self):
-        # Clear grid
-        while self._grid.count():
-            child = self._grid.takeAt(0)
-            if child.widget():
-                child.widget().deleteLater()
-
-        self._title.setText(f"{calendar.month_abbr[self._view_month]} {self._view_year}")
-
+        _clear_layout(self._grid)
+        self._title_btn.setText(
+            f"{calendar.month_abbr[self._view_month]} {self._view_year}"
+        )
         today = date.today()
-        cal = calendar.Calendar(firstweekday=0)
-        weeks = cal.monthdayscalendar(self._view_year, self._view_month)
-
-        for row, week in enumerate(weeks):
+        for row, week in enumerate(
+                calendar.Calendar(firstweekday=0).monthdayscalendar(
+                    self._view_year, self._view_month)):
             for col, day in enumerate(week):
                 if day == 0:
-                    spacer = QLabel("")
-                    spacer.setFixedSize(28, 28)
-                    self._grid.addWidget(spacer, row, col)
+                    sp = QLabel(); sp.setFixedSize(MiniMonthCell.CELL, MiniMonthCell.CELL)
+                    self._grid.addWidget(sp, row, col)
                 else:
                     d = date(self._view_year, self._view_month, day)
-                    is_today = (d == today)
-                    is_selected = (d == self._selected_date)
-                    day_events = self._events_by_date.get(d, [])
-                    event_colors = [ev.color for ev in day_events]
-
                     cell = MiniMonthCell(
                         self._view_year, self._view_month, day,
-                        is_today, is_selected, bool(day_events), event_colors,
+                        is_today=(d==today), is_selected=(d==self._selected),
+                        event_colors=self._events.get(d,[]),
+                        is_holiday=(d in self._holidays),
                     )
                     cell.clicked.connect(self._on_cell_click)
                     self._grid.addWidget(cell, row, col)
 
     def _on_cell_click(self, y, m, d):
-        self._selected_date = date(y, m, d)
-        self._render()
-        self.date_selected.emit(self._selected_date)
+        self._selected = date(y,m,d); self._render()
+        self.date_selected.emit(self._selected)
 
     def _prev_month(self):
-        if self._view_month == 1:
-            self._view_month = 12
-            self._view_year -= 1
-        else:
-            self._view_month -= 1
+        if self._view_month==1: self._view_month=12; self._view_year-=1
+        else: self._view_month-=1
         self._render()
-
     def _next_month(self):
-        if self._view_month == 12:
-            self._view_month = 1
-            self._view_year += 1
-        else:
-            self._view_month += 1
+        if self._view_month==12: self._view_month=1; self._view_year+=1
+        else: self._view_month+=1
         self._render()
+    def _prev_year(self): self._view_year-=1; self._render()
+    def _next_year(self): self._view_year+=1; self._render()
+    def _go_today_month(self):
+        t=date.today(); self._view_year=t.year; self._view_month=t.month; self._render()
 
 
-# ── Weekly view (main content) ─────────────────────────
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+#  EventChip  — painted event chip in week grid
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-class WeekEventWidget(QFrame):
-    """A single event rendered in the weekly time grid."""
+class EventChip(QWidget):
+    double_clicked = pyqtSignal(object)
 
-    def __init__(self, event: Event, parent_panel):
-        super().__init__()
-        self.event = event
-        self.parent_panel = parent_panel
+    def __init__(self, event: Event, parent=None):
+        super().__init__(parent)
+        self.event = event; self._hovered = False
         self.setCursor(Qt.CursorShape.PointingHandCursor)
+        self.setAttribute(Qt.WidgetAttribute.WA_Hover, True)
+        self.setMinimumHeight(28)
+        self.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
 
-        layout = QHBoxLayout(self)
-        layout.setContentsMargins(6, 3, 6, 3)
-        layout.setSpacing(6)
-
-        # Color dot
-        dot = QLabel("\u25cf")
-        dot.setStyleSheet(f"color: {event.color}; font-size: 14px;")
-        dot.setFixedWidth(16)
-        layout.addWidget(dot)
-
-        # Time + title
-        info_layout = QVBoxLayout()
-        info_layout.setSpacing(0)
-        info_layout.setContentsMargins(0, 0, 0, 0)
-
+        time_str = ""
         if not event.all_day:
             try:
                 dt = datetime.fromisoformat(event.start_time)
                 time_str = dt.strftime("%H:%M")
                 if event.end_time:
                     et = datetime.fromisoformat(event.end_time)
-                    time_str += f" - {et.strftime('%H:%M')}"
-            except Exception:
-                time_str = ""
-            if time_str:
-                time_label = QLabel(time_str)
-                time_label.setObjectName("subtitle")
-                time_label.setStyleSheet("font-size: 11px;")
-                info_layout.addWidget(time_label)
+                    time_str += f"–{et.strftime('%H:%M')}"
+            except Exception: pass
+        self._time_str = time_str
+        emoji = _cat_emoji(event.category)
+        self._display = f"{emoji} {event.title}" if emoji else event.title
+        tip = self._display
+        if time_str: tip += f"\n{time_str}"
+        if event.description: tip += f"\n{event.description[:80]}"
+        self.setToolTip(tip)
 
-        emoji = CATEGORY_EMOJIS.get(event.category, "")
-        display_title = f"{emoji} {event.title}" if emoji else event.title
-        title_label = QLabel(display_title)
-        title_label.setStyleSheet("font-weight: bold; font-size: 13px;")
-        title_label.setWordWrap(True)
-        info_layout.addWidget(title_label)
+    def enterEvent(self, ev): self._hovered=True;  self.update()
+    def leaveEvent(self, ev): self._hovered=False; self.update()
+    def mouseDoubleClickEvent(self, ev): self.double_clicked.emit(self.event)
 
-        if event.description:
-            desc = QLabel(event.description[:60])
-            desc.setObjectName("subtitle")
-            desc.setStyleSheet("font-size: 11px;")
-            desc.setWordWrap(True)
-            info_layout.addWidget(desc)
+    def paintEvent(self, ev):
+        p = QPainter(self)
+        p.setRenderHint(QPainter.RenderHint.Antialiasing)
+        w, h = self.width(), self.height()
+        color = QColor(self.event.color)
+        bg = QColor(color); bg.setAlpha(55 if self._hovered else 35)
+        p.setBrush(QBrush(bg)); p.setPen(Qt.PenStyle.NoPen)
+        p.drawRoundedRect(0,0,w,h,4,4)
+        p.setBrush(QBrush(color)); p.drawRoundedRect(0,0,3,h,2,2)
+        text_c = color.lighter(145 if self._hovered else 128)
+        p.setPen(text_c)
+        font = QFont()
+        if self._time_str:
+            font.setPixelSize(9); p.setFont(font)
+            p.drawText(8,0,w-10,h//2+2,Qt.AlignmentFlag.AlignVCenter,self._time_str)
+            font.setPixelSize(11); font.setBold(True); p.setFont(font)
+            fm = QFontMetrics(font)
+            p.drawText(8,h//2-2,w-10,h//2+2,Qt.AlignmentFlag.AlignVCenter,
+                       fm.elidedText(self._display,Qt.TextElideMode.ElideRight,w-14))
+        else:
+            font.setPixelSize(11); font.setBold(True); p.setFont(font)
+            fm = QFontMetrics(font)
+            p.drawText(8,0,w-10,h,Qt.AlignmentFlag.AlignVCenter,
+                       fm.elidedText(self._display,Qt.TextElideMode.ElideRight,w-14))
+        p.end()
 
-        layout.addLayout(info_layout, 1)
 
-        self.setStyleSheet(
-            f"WeekEventWidget {{ border-left: 3px solid {event.color}; "
-            f"border-radius: 4px; padding: 2px; }}"
-        )
-        self.setToolTip(
-            f"{display_title}\n{event.start_time}"
-            + (f" - {event.end_time}" if event.end_time else "")
-            + (f"\n{event.description}" if event.description else "")
-        )
-
-    def mouseDoubleClickEvent(self, ev):
-        self.parent_panel._edit_event(self.event)
-
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+#  DayColumn
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 class DayColumn(QWidget):
-    """A single day column in the weekly view."""
+    request_add  = pyqtSignal(object)
+    request_edit = pyqtSignal(object)
 
-    def __init__(self, d: date, events: list, is_today: bool, parent_panel):
-        super().__init__()
-        self.d = d
-        self.parent_panel = parent_panel
+    def __init__(self, d: date, events: list[Event], birthdays: list[Birthday],
+                 is_today: bool, is_selected: bool, parent=None):
+        super().__init__(parent)
+        self.d = d; self._hovered = False
+        self.setAttribute(Qt.WidgetAttribute.WA_Hover, True)
         self.setSizePolicy(QSizePolicy.Policy.Ignored, QSizePolicy.Policy.Preferred)
+        self._build(events, birthdays, is_today, is_selected)
 
+    def _build(self, events, birthdays, is_today, is_selected):
         layout = QVBoxLayout(self)
-        layout.setContentsMargins(4, 4, 4, 4)
-        layout.setSpacing(4)
+        layout.setContentsMargins(3,4,3,4); layout.setSpacing(3)
 
-        # Day header
-        day_name = d.strftime("%a")
-        day_num = str(d.day)
-        header = QLabel(f"{day_name}\n{day_num}")
-        header.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        header = QWidget(); header.setFixedHeight(46)
+        hl = QVBoxLayout(header); hl.setContentsMargins(0,2,0,2); hl.setSpacing(0)
+
+        name_lbl = QLabel(self.d.strftime("%a").upper())
+        name_lbl.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        name_lbl.setStyleSheet(f"font-size:10px; font-weight:bold; color:{_p('muted')};")
+        hl.addWidget(name_lbl)
+
+        num_lbl = QLabel(str(self.d.day))
+        num_lbl.setAlignment(Qt.AlignmentFlag.AlignCenter)
         if is_today:
-            header.setStyleSheet(
-                "background-color: #4a9eff; color: #1e1e2e; "
-                "border-radius: 8px; padding: 4px; font-weight: bold; font-size: 13px;"
-            )
+            num_lbl.setStyleSheet(
+                f"background-color:{_p('accent')};color:{_p('accent_fg')};"
+                "border-radius:13px;font-size:16px;font-weight:bold;padding:0 4px;")
+            num_lbl.setFixedSize(26,26)
+        elif is_selected:
+            num_lbl.setStyleSheet(
+                f"border:1.5px solid {_p('accent')};border-radius:13px;"
+                "font-size:16px;font-weight:bold;padding:0 4px;")
+            num_lbl.setFixedSize(26,26)
         else:
-            header.setStyleSheet("font-size: 13px; padding: 4px;")
+            num_lbl.setStyleSheet(f"font-size:16px;color:{_p('fg')};")
+        hl.addWidget(num_lbl, 0, Qt.AlignmentFlag.AlignHCenter)
         layout.addWidget(header)
 
-        sep = QFrame()
-        sep.setObjectName("separator")
-        sep.setFrameShape(QFrame.Shape.HLine)
+        sep = QFrame(); sep.setFrameShape(QFrame.Shape.HLine)
+        sep.setStyleSheet(f"border:none;border-top:1px solid {_p('border')};")
         layout.addWidget(sep)
 
-        # Events sorted by time
-        sorted_events = sorted(events, key=lambda e: e.start_time)
-
-        # All-day events first
-        for ev in sorted_events:
+        for ev in sorted(events, key=lambda e: e.start_time):
             if ev.all_day:
-                w = WeekEventWidget(ev, parent_panel)
-                layout.addWidget(w)
+                chip = EventChip(ev)
+                chip.double_clicked.connect(self.request_edit.emit)
+                layout.addWidget(chip)
 
-        # Timed events
-        for ev in sorted_events:
+        for b in birthdays:
+            try: age = (self.d.year-b.year) if b.year else None
+            except Exception: age = None
+            age_str = f" ({age})" if age else ""
+            fake = Event(id=b.id, title=f"🎂 {b.name}{age_str}",
+                         start_time=datetime(self.d.year,self.d.month,self.d.day).isoformat(),
+                         all_day=True, color=_p("red"), category="birthday")
+            layout.addWidget(EventChip(fake))
+
+        for ev in sorted(events, key=lambda e: e.start_time):
             if not ev.all_day:
-                w = WeekEventWidget(ev, parent_panel)
-                layout.addWidget(w)
+                chip = EventChip(ev)
+                chip.double_clicked.connect(self.request_edit.emit)
+                layout.addWidget(chip)
 
         layout.addStretch()
 
+    def enterEvent(self, ev): self._hovered=True;  self.update()
+    def leaveEvent(self, ev): self._hovered=False; self.update()
+    def mouseDoubleClickEvent(self, ev): self.request_add.emit(self.d)
+    def paintEvent(self, ev):
+        p=QPainter(self)
+        if self._hovered: p.fillRect(self.rect(), QColor(_p("hover")))
+        p.end()
+
+
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+#  MajorEventCard
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+class MajorEventCard(QFrame):
+    def __init__(self, ev_date: date, title: str, category: str, color: str, parent=None):
+        super().__init__(parent)
+        today = date.today(); delta = (ev_date-today).days
+        layout = QHBoxLayout(self)
+        layout.setContentsMargins(10,8,10,8); layout.setSpacing(10)
+
+        bar = QFrame(); bar.setFixedWidth(3)
+        bar.setStyleSheet(f"background-color:{color};border-radius:2px;")
+        layout.addWidget(bar)
+
+        emoji_lbl = QLabel(_cat_emoji(category))
+        emoji_lbl.setStyleSheet("font-size:16px;"); emoji_lbl.setFixedWidth(22)
+        layout.addWidget(emoji_lbl)
+
+        text_col = QVBoxLayout(); text_col.setSpacing(1)
+        title_lbl = QLabel(title)
+        title_lbl.setStyleSheet(f"font-size:12px;font-weight:bold;color:{_p('fg')};")
+        title_lbl.setWordWrap(True); text_col.addWidget(title_lbl)
+        date_lbl = QLabel(ev_date.strftime("%b %d, %Y"))
+        date_lbl.setStyleSheet(f"font-size:10px;color:{_p('muted')};")
+        text_col.addWidget(date_lbl); layout.addLayout(text_col,1)
+
+        if   delta==0:    bt,bc="Today",    color
+        elif delta==1:    bt,bc="Tomorrow", color
+        elif delta<0:     bt,bc=f"{abs(delta)}d ago", _p("muted")
+        elif delta<=7:    bt,bc=f"{delta}d", color
+        elif delta<=30:   bt,bc=f"{delta}d", _p("yellow")
+        else:             bt,bc=f"{delta//7}w",_p("muted")
+
+        badge=QLabel(bt)
+        badge.setStyleSheet(
+            f"color:{bc};font-size:10px;font-weight:bold;"
+            f"border:1px solid {bc};border-radius:8px;padding:2px 7px;")
+        badge.setAlignment(Qt.AlignmentFlag.AlignCenter); layout.addWidget(badge)
+
+        self.setStyleSheet(
+            f"QFrame{{border:1px solid {_p('border')};border-radius:6px;"
+            f"background-color:{_p('header_bg')};}}"
+            f"QFrame:hover{{border-color:{_p('muted')};"
+            f"background-color:{_p('surface')};}}")
+
+
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+#  DayEventRow
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+class DayEventRow(QFrame):
+    edit_requested = pyqtSignal(object)
+
+    def __init__(self, event: Event, parent=None):
+        super().__init__(parent)
+        self.event = event
         self.setCursor(Qt.CursorShape.PointingHandCursor)
 
-    def mouseDoubleClickEvent(self, ev):
-        self.parent_panel._add_event_on_day_date(self.d)
+        layout = QHBoxLayout(self)
+        layout.setContentsMargins(0,0,0,0); layout.setSpacing(0)
+
+        bar = QFrame(); bar.setFixedWidth(4)
+        bar.setStyleSheet(f"background-color:{event.color};border-radius:2px 0 0 2px;")
+        layout.addWidget(bar)
+
+        body = QWidget(); bl = QHBoxLayout(body)
+        bl.setContentsMargins(8,6,8,6); bl.setSpacing(8)
+
+        if not event.all_day:
+            try: t = datetime.fromisoformat(event.start_time).strftime("%H:%M")
+            except Exception: t=""
+            tl = QLabel(t)
+            tl.setStyleSheet(f"font-size:11px;color:{_p('muted')};min-width:38px;")
+            bl.addWidget(tl)
+
+        emoji = _cat_emoji(event.category)
+        display = f"{emoji} {event.title}" if emoji else event.title
+        tl2 = QLabel(display)
+        tl2.setStyleSheet(f"font-size:13px;color:{_p('fg')};")
+        tl2.setWordWrap(True); bl.addWidget(tl2,1)
+
+        if event.recurrence:
+            rl=QLabel("↻")
+            rl.setStyleSheet(f"color:{_p('muted')};font-size:14px;")
+            rl.setToolTip("Recurring event"); bl.addWidget(rl)
+
+        layout.addWidget(body,1)
+        self.setStyleSheet(
+            f"QFrame{{border:1px solid {_p('border')};border-radius:4px;"
+            f"background-color:{_p('header_bg')};}}"
+            f"QFrame:hover{{border-color:{_p('muted')};"
+            f"background-color:{_p('surface')};}}")
+
+    def mouseDoubleClickEvent(self, ev): self.edit_requested.emit(self.event)
+    def mousePressEvent(self, ev): pass
 
 
-# ── Main calendar panel ───────────────────────────────
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+#  CalendarPanel — main widget
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 class CalendarPanel(QWidget):
 
@@ -4958,357 +5796,414 @@ class CalendarPanel(QWidget):
         super().__init__(parent)
         self.store = CalendarStore()
         self._selected_date = date.today()
-        self._palette = {}
-        self._build_ui()
-        self._refresh()
+        self._build_ui(); self._refresh()
+        self._auto_timer = QTimer(self)
+        self._auto_timer.setInterval(60_000)
+        self._auto_timer.timeout.connect(self._refresh)
+        self._auto_timer.start()
+
+    # ── Palette ─────────────────────────────────────
 
     def set_palette(self, palette: dict):
-        self._palette = palette
+        global _PALETTE
+        _PALETTE = palette
+        # Update static structural labels/dividers built once in _build_ui
+        self._week_label.setStyleSheet(
+            f"font-size:13px;font-weight:bold;color:{_p('muted')};")
+        self._left_div.setStyleSheet(
+            f"border:none;border-top:1px solid {_p('border')};margin:8px 0;")
+        self._mini_frame.setStyleSheet(
+            f"#miniMonthFrame{{border:1px solid {_p('border')};"
+            f"border-radius:8px;background-color:{_p('header_bg')};}}")
+        self._major_count_lbl.setStyleSheet(f"font-size:10px;color:{_p('muted')};")
+        self.mini_month.refresh_styles()
+        self._refresh()
+
+    # ── Build UI ────────────────────────────────────
 
     def _build_ui(self):
-        layout = QHBoxLayout(self)
-        layout.setContentsMargins(0, 0, 0, 0)
-        layout.setSpacing(0)
+        root = QHBoxLayout(self)
+        root.setContentsMargins(0,0,0,0); root.setSpacing(0)
 
-        # ── Main area: weekly view + today's events ───
-        main_area = QWidget()
-        main_layout = QVBoxLayout(main_area)
-        main_layout.setContentsMargins(16, 12, 8, 12)
-        main_layout.setSpacing(0)
+        # Left column
+        left = QWidget()
+        left_l = QVBoxLayout(left)
+        left_l.setContentsMargins(14,10,8,10); left_l.setSpacing(0)
 
-        # Week header
-        week_header = QHBoxLayout()
-        title = QLabel("Calendar")
-        title.setObjectName("sectionTitle")
-        week_header.addWidget(title)
-        week_header.addStretch()
+        top_bar = QHBoxLayout(); top_bar.setSpacing(6)
+        title = QLabel("Calendar"); title.setObjectName("sectionTitle")
+        top_bar.addWidget(title); top_bar.addStretch()
 
-        self.btn_prev_week = QPushButton("\u25c0 Prev")
-        self.btn_prev_week.setObjectName("secondary")
-        self.btn_prev_week.clicked.connect(self._prev_week)
-        week_header.addWidget(self.btn_prev_week)
+        self._week_label = QLabel()
+        self._week_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self._week_label.setStyleSheet(f"font-size:13px;font-weight:bold;color:{_p('muted')};")
+        top_bar.addWidget(self._week_label); top_bar.addSpacing(8)
 
-        self.week_label = QLabel()
-        self.week_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        self.week_label.setMinimumWidth(200)
-        self.week_label.setStyleSheet("font-size: 15px; font-weight: bold;")
-        week_header.addWidget(self.week_label)
+        for text, tip, slot in [("‹","Previous week",self._prev_week),
+                                  ("›","Next week",   self._next_week)]:
+            if text == "›": top_bar.addWidget(self._today_btn())
+            btn = QPushButton(text); btn.setObjectName("secondary")
+            btn.setFixedSize(28,28); btn.setToolTip(tip); btn.clicked.connect(slot)
+            top_bar.addWidget(btn)
 
-        self.btn_next_week = QPushButton("Next \u25b6")
-        self.btn_next_week.setObjectName("secondary")
-        self.btn_next_week.clicked.connect(self._next_week)
-        week_header.addWidget(self.btn_next_week)
+        top_bar.addSpacing(8)
+        btn_add = QPushButton("＋ Event"); btn_add.clicked.connect(self._add_event)
+        top_bar.addWidget(btn_add)
+        left_l.addLayout(top_bar); left_l.addSpacing(8)
 
-        btn_today = QPushButton("Today")
-        btn_today.setObjectName("secondary")
-        btn_today.clicked.connect(self._go_today)
-        week_header.addWidget(btn_today)
-
-        btn_add = QPushButton("+ Event")
-        btn_add.clicked.connect(self._add_event)
-        week_header.addWidget(btn_add)
-
-        main_layout.addLayout(week_header)
-        main_layout.addSpacing(6)
-
-        # Weekly grid (top half)
         self._week_container = QWidget()
         self._week_grid = QHBoxLayout(self._week_container)
-        self._week_grid.setSpacing(2)
-        self._week_grid.setContentsMargins(0, 0, 0, 0)
-
+        self._week_grid.setSpacing(0); self._week_grid.setContentsMargins(0,0,0,0)
         week_scroll = QScrollArea()
-        week_scroll.setWidgetResizable(True)
-        week_scroll.setWidget(self._week_container)
+        week_scroll.setWidgetResizable(True); week_scroll.setWidget(self._week_container)
         week_scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
-        week_scroll.setMaximumHeight(280)
-        main_layout.addWidget(week_scroll, 1)
+        week_scroll.setMinimumHeight(220); week_scroll.setMaximumHeight(340)
+        week_scroll.setFrameShape(QFrame.Shape.NoFrame)
+        left_l.addWidget(week_scroll, 3)
 
-        # Divider between weekly grid and today's events
-        divider = QFrame()
-        divider.setFrameShape(QFrame.Shape.HLine)
-        divider.setStyleSheet("border: none; border-top: 2px solid palette(mid); margin: 6px 0;")
-        main_layout.addWidget(divider)
+        self._left_div = QFrame(); self._left_div.setFrameShape(QFrame.Shape.HLine)
+        self._left_div.setStyleSheet(
+            f"border:none;border-top:1px solid {_p('border')};margin:8px 0;")
+        left_l.addWidget(self._left_div)
 
-        # Today's Events (bottom half)
-        today_header = QHBoxLayout()
-        self.today_events_title = QLabel("Today's Events")
-        self.today_events_title.setStyleSheet("font-weight: bold; font-size: 13px;")
-        today_header.addWidget(self.today_events_title)
-        today_header.addStretch()
-        main_layout.addLayout(today_header)
-        main_layout.addSpacing(4)
+        detail_bar = QHBoxLayout()
+        self._day_title = QLabel("Today")
+        self._day_title.setStyleSheet("font-size:14px;font-weight:bold;")
+        detail_bar.addWidget(self._day_title); detail_bar.addStretch()
+        btn_add_here = QPushButton("＋"); btn_add_here.setObjectName("secondary")
+        btn_add_here.setFixedSize(26,26); btn_add_here.setToolTip("Add event on this day")
+        btn_add_here.clicked.connect(lambda: self._add_event_on_date(self._selected_date))
+        detail_bar.addWidget(btn_add_here); left_l.addLayout(detail_bar)
+        left_l.addSpacing(4)
 
-        self._today_event_list = QVBoxLayout()
-        self._today_event_list.setSpacing(4)
-        today_list_widget = QWidget()
-        today_list_widget.setLayout(self._today_event_list)
+        self._day_list_layout = QVBoxLayout(); self._day_list_layout.setSpacing(4)
+        day_list_w = QWidget(); day_list_w.setLayout(self._day_list_layout)
+        day_scroll = QScrollArea(); day_scroll.setWidgetResizable(True)
+        day_scroll.setWidget(day_list_w)
+        day_scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+        day_scroll.setFrameShape(QFrame.Shape.NoFrame)
+        left_l.addWidget(day_scroll,2)
+        root.addWidget(left,1)
 
-        today_scroll = QScrollArea()
-        today_scroll.setWidgetResizable(True)
-        today_scroll.setWidget(today_list_widget)
-        today_scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
-        main_layout.addWidget(today_scroll, 1)
+        # Right sidebar
+        right = QWidget(); right.setFixedWidth(258)
+        right_l = QVBoxLayout(right)
+        right_l.setContentsMargins(0,10,12,10); right_l.setSpacing(0)
 
-        layout.addWidget(main_area, 1)
-
-        # ── Right sidebar: mini month + major events ──
-        right_sidebar = QWidget()
-        right_sidebar.setFixedWidth(250)
-        right_layout = QVBoxLayout(right_sidebar)
-        right_layout.setContentsMargins(8, 12, 12, 12)
-        right_layout.setSpacing(8)
-
+        self._mini_frame = QFrame(); self._mini_frame.setObjectName("miniMonthFrame")
+        self._mini_frame.setStyleSheet(
+            f"#miniMonthFrame{{border:1px solid {_p('border')};"
+            f"border-radius:8px;background-color:{_p('header_bg')};}}")
+        mf_l = QVBoxLayout(self._mini_frame); mf_l.setContentsMargins(0,0,0,0)
         self.mini_month = MiniMonth()
         self.mini_month.date_selected.connect(self._on_mini_date_selected)
-        right_layout.addWidget(self.mini_month)
+        mf_l.addWidget(self.mini_month); right_l.addWidget(self._mini_frame)
+        right_l.addSpacing(8)
 
-        sep = QFrame()
-        sep.setObjectName("separator")
-        sep.setFrameShape(QFrame.Shape.HLine)
-        right_layout.addWidget(sep)
+        action_row = QHBoxLayout(); action_row.setSpacing(4)
+        btn_bday = QPushButton("🎂 Birthdays"); btn_bday.setObjectName("secondary")
+        btn_bday.clicked.connect(self._manage_birthdays); action_row.addWidget(btn_bday)
+        btn_jump = QPushButton("Go to date…"); btn_jump.setObjectName("secondary")
+        btn_jump.clicked.connect(self._jump_to_date); action_row.addWidget(btn_jump)
+        right_l.addLayout(action_row); right_l.addSpacing(8)
 
-        # Next Major Events
-        major_title = QLabel("Next Major Events")
-        major_title.setStyleSheet("font-weight: bold; font-size: 13px;")
-        right_layout.addWidget(major_title)
+        rdiv1 = QFrame(); rdiv1.setFrameShape(QFrame.Shape.HLine)
+        rdiv1.setStyleSheet(f"border:none;border-top:1px solid {_p('border')};")
+        right_l.addWidget(rdiv1); right_l.addSpacing(8)
 
-        self._major_events_list = QVBoxLayout()
-        self._major_events_list.setSpacing(4)
-        major_list_widget = QWidget()
-        major_list_widget.setLayout(self._major_events_list)
+        major_hdr = QHBoxLayout()
+        major_title = QLabel("Upcoming Events")
+        major_title.setStyleSheet("font-size:13px;font-weight:bold;")
+        major_hdr.addWidget(major_title); major_hdr.addStretch()
+        self._major_count_lbl = QLabel("")
+        self._major_count_lbl.setStyleSheet(f"font-size:10px;color:{_p('muted')};")
+        major_hdr.addWidget(self._major_count_lbl); right_l.addLayout(major_hdr)
+        right_l.addSpacing(6)
 
-        major_scroll = QScrollArea()
-        major_scroll.setWidgetResizable(True)
-        major_scroll.setWidget(major_list_widget)
+        self._major_list_layout = QVBoxLayout(); self._major_list_layout.setSpacing(5)
+        major_list_w = QWidget(); major_list_w.setLayout(self._major_list_layout)
+        major_scroll = QScrollArea(); major_scroll.setWidgetResizable(True)
+        major_scroll.setWidget(major_list_w)
         major_scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
-        right_layout.addWidget(major_scroll, 1)
+        major_scroll.setFrameShape(QFrame.Shape.NoFrame)
+        right_l.addWidget(major_scroll,1)
+        root.addWidget(right)
 
-        layout.addWidget(right_sidebar)
+    def _today_btn(self) -> QPushButton:
+        btn = QPushButton("Today"); btn.setObjectName("secondary")
+        btn.setFixedHeight(28); btn.clicked.connect(self._go_today)
+        return btn
+
+    # ── Refresh ─────────────────────────────────────
 
     def _refresh(self):
-        self._render_week()
-        self._render_day_detail()
-        self._render_major_events()
-        self._update_mini_month_events()
+        self._render_week(); self._render_day_detail()
+        self._render_major_events(); self._update_mini_month_events()
 
     def _get_week_start(self) -> date:
-        """Monday of the selected week."""
-        d = self._selected_date
-        return d - timedelta(days=d.weekday())
+        d = self._selected_date; return d - timedelta(days=d.weekday())
 
     def _render_week(self):
-        # Clear
-        while self._week_grid.count():
-            child = self._week_grid.takeAt(0)
-            if child.widget():
-                child.widget().deleteLater()
+        _clear_layout(self._week_grid)
+        ws = self._get_week_start(); we = ws + timedelta(days=6)
+        self._week_label.setText(
+            f"{ws.strftime('%b %d')} – {we.strftime('%b %d, %Y')}")
 
-        week_start = self._get_week_start()
-        week_end = week_start + timedelta(days=6)
-        self.week_label.setText(
-            f"{week_start.strftime('%b %d')} - {week_end.strftime('%b %d, %Y')}"
-        )
-
-        events = self.store.get_events(
-            week_start.isoformat(),
-            week_end.isoformat() + "T23:59:59",
-        )
-
-        events_by_date: dict[date, list] = {}
+        events = self.store.get_events(ws.isoformat(), we.isoformat()+"T23:59:59")
+        ebd: dict[date,list[Event]] = {}
         for ev in events:
-            d = datetime.fromisoformat(ev.start_time).date()
-            events_by_date.setdefault(d, []).append(ev)
+            try: d=datetime.fromisoformat(ev.start_time).date()
+            except Exception: continue
+            ebd.setdefault(d,[]).append(ev)
+        for ev in self.store.get_all_recurring_events():
+            for occ in expand_recurring_to_range(ev,ws,we):
+                if ev not in ebd.get(occ,[]): ebd.setdefault(occ,[]).append(ev)
+
+        bbd: dict[date,list[Birthday]] = {}
+        for b in self.store.get_birthdays():
+            try: bd=date(ws.year,b.month,b.day)
+            except ValueError: continue
+            if ws<=bd<=we: bbd.setdefault(bd,[]).append(b)
 
         today = date.today()
         for i in range(7):
-            d = week_start + timedelta(days=i)
-
-            # Vertical divider between day columns
-            if i > 0:
-                col_div = QFrame()
-                col_div.setFrameShape(QFrame.Shape.VLine)
-                col_div.setStyleSheet("border: none; border-left: 1px solid palette(mid);")
-                self._week_grid.addWidget(col_div)
-
-            day_events = events_by_date.get(d, [])
-            col = DayColumn(d, day_events, d == today, self)
-            self._week_grid.addWidget(col, 1)
+            d = ws+timedelta(days=i)
+            if i>0:
+                sep=QFrame(); sep.setFrameShape(QFrame.Shape.VLine)
+                sep.setStyleSheet(f"border:none;border-left:1px solid {_p('border')};")
+                self._week_grid.addWidget(sep)
+            col = DayColumn(d, ebd.get(d,[]), bbd.get(d,[]),
+                            is_today=(d==today), is_selected=(d==self._selected_date))
+            col.request_add.connect(self._add_event_on_date)
+            col.request_edit.connect(self._edit_event)
+            self._week_grid.addWidget(col,1)
 
     def _render_day_detail(self):
-        # Clear
-        while self._today_event_list.count():
-            child = self._today_event_list.takeAt(0)
-            if child.widget():
-                child.widget().deleteLater()
+        _clear_layout(self._day_list_layout)
+        d=self._selected_date; today=date.today()
+        if   d==today:               hdr=f"Today  ·  {d.strftime('%A, %B %d')}"
+        elif d==today+timedelta(1):  hdr=f"Tomorrow  ·  {d.strftime('%A, %B %d')}"
+        elif d==today-timedelta(1):  hdr=f"Yesterday  ·  {d.strftime('%A, %B %d')}"
+        else:                        hdr=d.strftime("%A, %B %d, %Y")
+        self._day_title.setText(hdr)
 
-        d = self._selected_date
-        self.today_events_title.setText(d.strftime("%A, %B %d"))
+        events=self.store.get_events(d.isoformat(),d.isoformat()+"T23:59:59")
+        for ev in self.store.get_all_recurring_events():
+            if expand_recurring_to_range(ev,d,d) and ev not in events:
+                events.append(ev)
 
-        events = self.store.get_events(
-            d.isoformat(), d.isoformat() + "T23:59:59",
-        )
+        bday_evs: list[Event]=[]
+        for b in self.store.get_birthdays():
+            if b.month==d.month and b.day==d.day:
+                age=(d.year-b.year) if b.year else None
+                age_str=f" (turns {age})" if age else ""
+                bday_evs.append(Event(id=b.id, title=f"🎂 {b.name}{age_str}",
+                    start_time=datetime(d.year,d.month,d.day).isoformat(),
+                    all_day=True, color=_p("red"), category="birthday"))
 
-        if not events:
-            lbl = QLabel("No events")
-            lbl.setObjectName("subtitle")
-            self._today_event_list.addWidget(lbl)
+        all_evs=sorted(bday_evs+events,
+                       key=lambda e:(0 if e.all_day else 1, e.start_time))
+        if not all_evs:
+            lbl=QLabel("No events — double-click a day to add one")
+            lbl.setStyleSheet(f"color:{_p('muted')};font-size:12px;padding:8px 0;")
+            self._day_list_layout.addWidget(lbl)
         else:
-            for ev in sorted(events, key=lambda e: e.start_time):
-                row_widget = QFrame()
-                row_widget.setStyleSheet(
-                    "QFrame { border-left: 3px solid " + ev.color + "; "
-                    "border-radius: 3px; padding: 2px 6px; }"
-                )
-                row_layout = QHBoxLayout(row_widget)
-                row_layout.setContentsMargins(6, 3, 6, 3)
-                row_layout.setSpacing(8)
-
-                if not ev.all_day:
-                    try:
-                        t = datetime.fromisoformat(ev.start_time).strftime("%H:%M")
-                    except Exception:
-                        t = ""
-                    time_lbl = QLabel(t)
-                    time_lbl.setObjectName("subtitle")
-                    time_lbl.setFixedWidth(42)
-                    row_layout.addWidget(time_lbl)
-
-                emoji = CATEGORY_EMOJIS.get(ev.category, "")
-                display_title = f"{emoji} {ev.title}" if emoji else ev.title
-                title_lbl = QLabel(display_title)
-                title_lbl.setStyleSheet("font-size: 12px;")
-                row_layout.addWidget(title_lbl, 1)
-
-                row_widget.setCursor(Qt.CursorShape.PointingHandCursor)
-                row_widget.mouseDoubleClickEvent = lambda _ev, event=ev: self._edit_event(event)
-                self._today_event_list.addWidget(row_widget)
-
-        self._today_event_list.addStretch()
+            for ev in all_evs:
+                row=DayEventRow(ev); row.edit_requested.connect(self._edit_event)
+                self._day_list_layout.addWidget(row)
+        self._day_list_layout.addStretch()
 
     def _render_major_events(self):
-        # Clear
-        while self._major_events_list.count():
-            child = self._major_events_list.takeAt(0)
-            if child.widget():
-                child.widget().deleteLater()
-
-        major_events = self.store.get_next_major_events(date.today(), limit=4)
-
-        if not major_events:
-            lbl = QLabel("No upcoming major events")
-            lbl.setObjectName("subtitle")
-            lbl.setWordWrap(True)
-            self._major_events_list.addWidget(lbl)
+        _clear_layout(self._major_list_layout)
+        majors=self.store.get_next_major_events(date.today(),limit=8)
+        if not majors:
+            lbl=QLabel("No upcoming major events")
+            lbl.setStyleSheet(f"color:{_p('muted')};font-size:12px;padding:8px 0;")
+            lbl.setWordWrap(True); self._major_list_layout.addWidget(lbl)
+            self._major_count_lbl.setText("")
         else:
-            for ev_date, title, category, color in major_events:
-                row_widget = QFrame()
-                row_widget.setStyleSheet(
-                    "QFrame { border-left: 3px solid " + color + "; "
-                    "border-radius: 3px; padding: 2px 4px; }"
-                )
-                row_layout = QHBoxLayout(row_widget)
-                row_layout.setContentsMargins(6, 3, 4, 3)
-                row_layout.setSpacing(6)
-
-                emoji = CATEGORY_EMOJIS.get(category, "\u2022")
-                emoji_lbl = QLabel(emoji)
-                emoji_lbl.setFixedWidth(20)
-                emoji_lbl.setStyleSheet("font-size: 14px;")
-                row_layout.addWidget(emoji_lbl)
-
-                date_lbl = QLabel(ev_date.strftime("%b %d"))
-                date_lbl.setObjectName("subtitle")
-                date_lbl.setFixedWidth(44)
-                date_lbl.setStyleSheet("font-size: 11px;")
-                row_layout.addWidget(date_lbl)
-
-                title_lbl = QLabel(title)
-                title_lbl.setStyleSheet("font-size: 12px;")
-                title_lbl.setWordWrap(True)
-                row_layout.addWidget(title_lbl, 1)
-
-                self._major_events_list.addWidget(row_widget)
-
-        self._major_events_list.addStretch()
+            self._major_count_lbl.setText(f"{len(majors)} upcoming")
+            for ev_date,title,category,color in majors:
+                self._major_list_layout.addWidget(
+                    MajorEventCard(ev_date,title,category,color))
+        self._major_list_layout.addStretch()
 
     def _update_mini_month_events(self):
-        """Feed the mini month with event data so it can show colored dots."""
-        first = date(self.mini_month._view_year, self.mini_month._view_month, 1)
-        if self.mini_month._view_month == 12:
-            last = date(self.mini_month._view_year + 1, 1, 1) - timedelta(days=1)
-        else:
-            last = date(self.mini_month._view_year, self.mini_month._view_month + 1, 1) - timedelta(days=1)
-
-        events = self.store.get_events(first.isoformat(), last.isoformat() + "T23:59:59")
-        by_date: dict[date, list] = {}
-        for ev in events:
-            d = datetime.fromisoformat(ev.start_time).date()
-            by_date.setdefault(d, []).append(ev)
+        vy,vm=self.mini_month._view_year,self.mini_month._view_month
+        first=date(vy,vm,1)
+        last=date(vy+(vm==12), 1 if vm==12 else vm+1, 1)-timedelta(days=1)
+        by_date: dict[date,list[str]]={}
+        for ev in self.store.get_events(first.isoformat(),last.isoformat()+"T23:59:59"):
+            try: d=datetime.fromisoformat(ev.start_time).date()
+            except Exception: continue
+            by_date.setdefault(d,[]).append(ev.color)
+        for ev in self.store.get_all_recurring_events():
+            for occ in expand_recurring_to_range(ev,first,last):
+                by_date.setdefault(occ,[]).append(ev.color)
+        for b in self.store.get_birthdays():
+            if b.month==vm:
+                try:
+                    d=date(vy,b.month,b.day)
+                    if first<=d<=last: by_date.setdefault(d,[]).append(_p("red"))
+                except ValueError: pass
         self.mini_month.set_events(by_date)
+        try:
+            from src.data.holidays_jp import get_japanese_holidays
+            hset={d for d in get_japanese_holidays(vy) if first<=d<=last}
+            self.mini_month.set_holidays(hset)
+        except Exception: pass
 
-    # ── Navigation ─────────────────────────────────────
+    # ── Navigation ──────────────────────────────────
 
     def _prev_week(self):
-        self._selected_date -= timedelta(weeks=1)
-        self.mini_month.set_selected(self._selected_date)
-        self._refresh()
+        self._selected_date-=timedelta(weeks=1)
+        self.mini_month.set_selected(self._selected_date); self._refresh()
 
     def _next_week(self):
-        self._selected_date += timedelta(weeks=1)
-        self.mini_month.set_selected(self._selected_date)
-        self._refresh()
+        self._selected_date+=timedelta(weeks=1)
+        self.mini_month.set_selected(self._selected_date); self._refresh()
 
     def _go_today(self):
-        self._selected_date = date.today()
-        self.mini_month.set_selected(self._selected_date)
-        self._refresh()
+        self._selected_date=date.today()
+        self.mini_month.set_selected(self._selected_date); self._refresh()
 
-    def _on_mini_date_selected(self, d):
-        self._selected_date = d
-        self._refresh()
+    def _on_mini_date_selected(self,d:date):
+        self._selected_date=d
+        self._update_mini_month_events(); self._render_week(); self._render_day_detail()
 
-    # ── Event CRUD ─────────────────────────────────────
-
-    def _add_event(self):
-        dlg = EventDialog(self)
-        dlg.date_edit.setDate(QDate(
-            self._selected_date.year, self._selected_date.month, self._selected_date.day
-        ))
+    def _jump_to_date(self):
+        dlg=QDialog(self); dlg.setWindowTitle("Go to date"); dlg.setModal(True)
+        layout=QVBoxLayout(dlg); layout.addWidget(QLabel("Jump to date:"))
+        de=QDateEdit(); de.setCalendarPopup(True); de.setDisplayFormat("dd MMM yyyy")
+        sd=self._selected_date; de.setDate(QDate(sd.year,sd.month,sd.day))
+        layout.addWidget(de)
+        br=QHBoxLayout()
+        cancel=QPushButton("Cancel"); cancel.setObjectName("secondary"); cancel.clicked.connect(dlg.reject)
+        go=QPushButton("Go"); go.setDefault(True); go.clicked.connect(dlg.accept)
+        br.addStretch(); br.addWidget(cancel); br.addWidget(go); layout.addLayout(br)
         if dlg.exec():
-            self.store.add_event(**dlg.get_data())
-            self._refresh()
+            qd=de.date(); self._selected_date=date(qd.year(),qd.month(),qd.day())
+            self.mini_month.set_selected(self._selected_date); self._refresh()
 
-    def _add_event_on_day_date(self, d: date):
-        dlg = EventDialog(self)
-        dlg.date_edit.setDate(QDate(d.year, d.month, d.day))
-        if dlg.exec():
-            self.store.add_event(**dlg.get_data())
-            self._refresh()
+    # ── Event CRUD ───────────────────────────────────
 
-    def _edit_event(self, event: Event):
-        dlg = EventDialog(self, event)
-        result = dlg.exec()
+    def _add_event(self): self._add_event_on_date(self._selected_date)
+
+    def _add_event_on_date(self,d:date):
+        dlg=EventDialog(self,prefill_date=d)
+        if dlg.exec(): self.store.add_event(**dlg.get_data()); self._refresh()
+
+    def _edit_event(self,event:Event):
+        dlg=EventDialog(self,event=event); result=dlg.exec()
         if dlg._delete_requested:
-            reply = QMessageBox.question(
-                self, "Delete Event", f"Delete '{event.title}'?",
-                QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
-            )
-            if reply == QMessageBox.StandardButton.Yes:
-                self.store.delete_event(event.id)
-                self._refresh()
+            if QMessageBox.question(
+                self,"Delete Event",f'Delete "{event.title}"?',
+                QMessageBox.StandardButton.Yes|QMessageBox.StandardButton.No,
+            )==QMessageBox.StandardButton.Yes:
+                self.store.delete_event(event.id); self._refresh()
         elif result:
-            data = dlg.get_data()
-            event.title = data["title"]
-            event.description = data["description"]
-            event.start_time = data["start_time"]
-            event.end_time = data["end_time"]
-            event.all_day = data["all_day"]
-            event.color = data["color"]
-            event.category = data["category"]
-            self.store.update_event(event)
-            self._refresh()
+            data=dlg.get_data()
+            event.title=data["title"]; event.description=data["description"]
+            event.start_time=data["start_time"]; event.end_time=data["end_time"]
+            event.all_day=data["all_day"]; event.color=data["color"]
+            event.category=data["category"]; event.recurrence=data["recurrence"]
+            self.store.update_event(event); self._refresh()
 
+    def _manage_birthdays(self):
+        BirthdayManagerDialog(self,self.store).exec(); self._refresh()
+
+
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+#  BirthdayManagerDialog
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+class BirthdayManagerDialog(QDialog):
+    def __init__(self,parent,store:CalendarStore):
+        super().__init__(parent); self.store=store
+        self.setWindowTitle("Birthday Manager")
+        self.setMinimumSize(400,460); self.setModal(True)
+        self._build_ui(); self._load()
+
+    def _build_ui(self):
+        layout=QVBoxLayout(self); layout.setContentsMargins(16,16,16,16); layout.setSpacing(10)
+        hdr=QHBoxLayout(); title=QLabel("🎂  Birthdays")
+        title.setStyleSheet("font-size:16px;font-weight:bold;"); hdr.addWidget(title)
+        hdr.addStretch(); add_btn=QPushButton("＋ Add"); add_btn.clicked.connect(self._add_birthday)
+        hdr.addWidget(add_btn); layout.addLayout(hdr)
+        self._search=QLineEdit(); self._search.setPlaceholderText("Search by name…")
+        self._search.textChanged.connect(self._filter); layout.addWidget(self._search)
+        self._list_widget=QWidget(); self._list_layout=QVBoxLayout(self._list_widget)
+        self._list_layout.setSpacing(4); self._list_layout.setContentsMargins(0,0,0,0)
+        scroll=QScrollArea(); scroll.setWidgetResizable(True)
+        scroll.setWidget(self._list_widget); scroll.setFrameShape(QFrame.Shape.NoFrame)
+        layout.addWidget(scroll,1)
+        close_btn=QPushButton("Close"); close_btn.clicked.connect(self.accept)
+        layout.addWidget(close_btn,0,Qt.AlignmentFlag.AlignRight)
+
+    def _load(self):
+        self._birthdays=self.store.get_birthdays(); self._filter(self._search.text())
+
+    def _filter(self,text:str):
+        _clear_layout(self._list_layout); q=text.lower(); today=date.today()
+        filtered=[b for b in self._birthdays if q in b.name.lower()]
+        def sk(b):
+            try:
+                c=date(today.year,b.month,b.day)
+                if c<today: c=date(today.year+1,b.month,b.day)
+                return (c-today).days
+            except ValueError: return 9999
+        filtered.sort(key=sk)
+        if not filtered:
+            self._list_layout.addWidget(
+                QLabel("No birthdays yet — add one!" if not text else "No matches"))
+        for b in filtered: self._list_layout.addWidget(self._make_row(b))
+        self._list_layout.addStretch()
+
+    def _make_row(self,b:Birthday)->QFrame:
+        row=QFrame()
+        row.setStyleSheet(
+            f"QFrame{{border:1px solid {_p('border')};border-radius:6px;"
+            f"background-color:{_p('header_bg')};padding:2px;}}")
+        rl=QHBoxLayout(row); rl.setContentsMargins(10,6,10,6); rl.setSpacing(8)
+        cake=QLabel("🎂"); cake.setStyleSheet("font-size:18px;"); cake.setFixedWidth(24)
+        rl.addWidget(cake)
+        info=QVBoxLayout(); info.setSpacing(1)
+        name_lbl=QLabel(b.name)
+        name_lbl.setStyleSheet(f"font-size:13px;font-weight:bold;color:{_p('fg')};")
+        info.addWidget(name_lbl)
+        today=date.today()
+        try:
+            nb=date(today.year,b.month,b.day)
+            if nb<today: nb=date(today.year+1,b.month,b.day)
+            suffix=f"  ·  {(nb-today).days}d away" if (nb-today).days>0 else "  ·  Today! 🎉"
+        except ValueError: suffix=""
+        months=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"]
+        ds=f"{months[b.month-1]} {b.day}"
+        if b.year: ds+=f", {b.year}  (turns {today.year-b.year})"
+        ds+=suffix
+        dl=QLabel(ds); dl.setStyleSheet(f"font-size:11px;color:{_p('muted')};")
+        info.addWidget(dl); rl.addLayout(info,1)
+        edit_btn=QPushButton("Edit"); edit_btn.setObjectName("secondary")
+        edit_btn.setFixedHeight(26)
+        edit_btn.clicked.connect(lambda _,bd=b: self._edit_birthday(bd))
+        rl.addWidget(edit_btn); return row
+
+    def _add_birthday(self):
+        dlg=BirthdayDialog(self)
+        if dlg.exec(): self.store.add_birthday(**dlg.get_data()); self._load()
+
+    def _edit_birthday(self,birthday:Birthday):
+        dlg=BirthdayDialog(self,birthday); result=dlg.exec()
+        if dlg._delete_requested:
+            if QMessageBox.question(self,"Delete Birthday",
+                f"Remove birthday for {birthday.name}?",
+                QMessageBox.StandardButton.Yes|QMessageBox.StandardButton.No,
+            )==QMessageBox.StandardButton.Yes:
+                self.store.delete_birthday(birthday.id); self._load()
+        elif result:
+            data=dlg.get_data(); birthday.name=data["name"]
+            birthday.month=data["month"]; birthday.day=data["day"]; birthday.year=data["year"]
+            self.store.update_birthday(birthday); self._load()
 ```
 
 ### `src\ui\modules\dashboard_panel.py`
@@ -7785,13 +8680,30 @@ __all__ = ["THEMES", "get_theme_names"]
 ### `src\ui\themes\styles.py`
 
 ```python
-"""Theme stylesheets for PyQt6 — Catppuccin Dark, Catppuccin Light, Nord, Solarized, Gruvbox."""
+"""Theme stylesheets for PyQt6.
+
+Themes included:
+  Dark   — Catppuccin Mocha, Tokyo Night, Dracula, Monokai Pro, One Dark Pro, Rosé Pine
+  Medium — Nord, Gruvbox Dark
+  Light  — Catppuccin Latte, Solarized Light
+
+Fixes over previous version:
+  - Full QTabBar / QTabWidget styling (dialogs now have proper tabs)
+  - QMenuBar / QMenu styling (menu bar no longer inherits OS chrome)
+  - QToolButton styling (color swatches, weekday pickers, etc.)
+  - QComboBox, QDateEdit, QTimeEdit, QSpinBox arrow-button subcontrols
+    styled with visible backgrounds so arrows are legible on all themes
+  - Secondary button contrast improved (explicit text color + stronger border)
+  - QProgressBar added (used in dashboard)
+  - QScrollArea viewport now transparent (no mismatched bg panels)
+  - Solarized Light replaces Solarized Dark (fg was too muted for readability)
+"""
 
 
 def _build_theme(c: dict) -> str:
     """Generate a full QSS stylesheet from a color palette dict."""
     return f"""
-/* ── Base ──────────────────────────────────────────── */
+/* ━━━━ Base ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
 QMainWindow, QWidget {{
     background-color: {c['bg']};
     color: {c['fg']};
@@ -7799,31 +8711,121 @@ QMainWindow, QWidget {{
     font-size: 12px;
 }}
 
-/* ── Text inputs ──────────────────────────────────── */
+/* Transparent scroll-area viewport so inner widgets set their own bg */
+QScrollArea > QWidget > QWidget {{
+    background-color: transparent;
+}}
+
+/* ━━━━ Menu bar ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+QMenuBar {{
+    background-color: {c['header_bg']};
+    color: {c['fg']};
+    border-bottom: 1px solid {c['border']};
+    padding: 2px 4px;
+    font-size: 12px;
+}}
+QMenuBar::item {{
+    background-color: transparent;
+    padding: 4px 10px;
+    border-radius: 4px;
+}}
+QMenuBar::item:selected {{
+    background-color: {c['accent']};
+    color: {c['accent_fg']};
+}}
+QMenuBar::item:pressed {{
+    background-color: {c['accent_pressed']};
+    color: {c['accent_fg']};
+}}
+
+QMenu {{
+    background-color: {c['surface']};
+    color: {c['fg']};
+    border: 1px solid {c['border']};
+    border-radius: 6px;
+    padding: 4px;
+}}
+QMenu::item {{
+    padding: 5px 24px 5px 12px;
+    border-radius: 3px;
+}}
+QMenu::item:selected {{
+    background-color: {c['accent']};
+    color: {c['accent_fg']};
+}}
+QMenu::separator {{
+    height: 1px;
+    background-color: {c['border']};
+    margin: 4px 8px;
+}}
+
+/* ━━━━ Tab widget ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+QTabWidget::pane {{
+    border: 1px solid {c['border']};
+    border-radius: 6px;
+    background-color: {c['surface']};
+    top: -1px;
+}}
+QTabWidget[documentMode="true"]::pane {{
+    border: none;
+    border-top: 1px solid {c['border']};
+    background-color: transparent;
+    border-radius: 0;
+}}
+QTabBar {{
+    background-color: transparent;
+}}
+QTabBar::tab {{
+    background-color: transparent;
+    color: {c['muted']};
+    padding: 7px 16px;
+    border: none;
+    border-bottom: 2px solid transparent;
+    min-width: 60px;
+    font-size: 12px;
+}}
+QTabBar::tab:selected {{
+    color: {c['fg']};
+    border-bottom: 2px solid {c['accent']};
+    font-weight: bold;
+}}
+QTabBar::tab:hover:!selected {{
+    color: {c['fg']};
+    background-color: {c['hover']};
+    border-radius: 4px 4px 0 0;
+}}
+QTabBar::tab:disabled {{
+    color: {c['border']};
+}}
+
+/* ━━━━ Text inputs ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
 QLineEdit, QTextEdit, QPlainTextEdit {{
     background-color: {c['surface']};
     color: {c['fg']};
     border: 1px solid {c['border']};
     border-radius: 4px;
-    padding: 4px;
+    padding: 4px 6px;
     selection-background-color: {c['accent']};
     selection-color: {c['accent_fg']};
 }}
 QLineEdit:focus, QTextEdit:focus, QPlainTextEdit:focus {{
     border: 1px solid {c['accent']};
+    outline: none;
 }}
 QLineEdit[readOnly="true"] {{
     background-color: {c['bg']};
+    color: {c['muted']};
 }}
 
-/* ── Buttons ──────────────────────────────────────── */
+/* ━━━━ Push buttons ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
 QPushButton {{
     background-color: {c['accent']};
     color: {c['accent_fg']};
     border: none;
-    border-radius: 4px;
-    padding: 5px 12px;
+    border-radius: 5px;
+    padding: 5px 14px;
     font-weight: bold;
+    font-size: 12px;
 }}
 QPushButton:hover {{
     background-color: {c['accent_hover']};
@@ -7835,23 +8837,76 @@ QPushButton:disabled {{
     background-color: {c['border']};
     color: {c['muted']};
 }}
+QPushButton:flat {{
+    background-color: transparent;
+    border: none;
+    color: {c['fg']};
+    font-weight: normal;
+}}
+QPushButton:flat:hover {{
+    background-color: {c['hover']};
+}}
+
+/* Destructive (delete) */
 QPushButton#destructive {{
     background-color: {c['red']};
-    color: {c['accent_fg']};
+    color: #ffffff;
 }}
 QPushButton#destructive:hover {{
     background-color: {c['red_hover']};
 }}
+QPushButton#destructive:pressed {{
+    background-color: {c['red']};
+}}
+
+/* Secondary (muted/ghost) — high contrast */
 QPushButton#secondary {{
     background-color: {c['surface']};
     color: {c['fg']};
     border: 1px solid {c['border']};
+    font-weight: normal;
 }}
 QPushButton#secondary:hover {{
+    background-color: {c['hover']};
+    border-color: {c['accent']};
+    color: {c['fg']};
+}}
+QPushButton#secondary:pressed {{
     background-color: {c['border']};
 }}
+QPushButton#secondary:disabled {{
+    color: {c['muted']};
+    border-color: {c['border']};
+}}
 
-/* ── Lists ────────────────────────────────────────── */
+/* ━━━━ Tool buttons (color swatches, weekday pickers) ━━━━ */
+QToolButton {{
+    background-color: {c['surface']};
+    color: {c['fg']};
+    border: 1px solid {c['border']};
+    border-radius: 4px;
+    padding: 3px 6px;
+    font-size: 11px;
+}}
+QToolButton:hover {{
+    background-color: {c['hover']};
+    border-color: {c['accent']};
+}}
+QToolButton:checked {{
+    background-color: {c['accent']};
+    color: {c['accent_fg']};
+    border-color: {c['accent']};
+    font-weight: bold;
+}}
+QToolButton:pressed {{
+    background-color: {c['accent_pressed']};
+    color: {c['accent_fg']};
+}}
+QToolButton::menu-indicator {{
+    image: none;
+}}
+
+/* ━━━━ Lists ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
 QListWidget {{
     background-color: {c['surface']};
     border: 1px solid {c['border']};
@@ -7860,8 +8915,8 @@ QListWidget {{
     outline: none;
 }}
 QListWidget::item {{
-    padding: 4px;
-    border-radius: 3px;
+    padding: 5px 4px;
+    border-radius: 4px;
 }}
 QListWidget::item:selected {{
     background-color: {c['accent']};
@@ -7871,45 +8926,72 @@ QListWidget::item:hover:!selected {{
     background-color: {c['hover']};
 }}
 
-/* ── Tables ───────────────────────────────────────── */
+/* ━━━━ Tables ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
 QTableWidget {{
     background-color: {c['surface']};
     border: 1px solid {c['border']};
     border-radius: 6px;
     gridline-color: {c['border']};
     outline: none;
+    alternate-background-color: {c['alt_row']};
 }}
 QTableWidget::item {{
-    padding: 3px;
+    padding: 4px;
 }}
 QTableWidget::item:selected {{
     background-color: {c['accent']};
     color: {c['accent_fg']};
 }}
-QTableWidget::item:alternate {{
-    background-color: {c['alt_row']};
-}}
 QHeaderView::section {{
     background-color: {c['header_bg']};
     color: {c['fg']};
-    padding: 4px;
+    padding: 5px 6px;
     border: none;
     border-bottom: 2px solid {c['accent']};
+    border-right: 1px solid {c['border']};
     font-weight: bold;
+    font-size: 11px;
+}}
+QHeaderView::section:last {{
+    border-right: none;
 }}
 
-/* ── Combo boxes ──────────────────────────────────── */
+/* ━━━━ Combo boxes ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
 QComboBox {{
     background-color: {c['surface']};
     color: {c['fg']};
     border: 1px solid {c['border']};
     border-radius: 4px;
-    padding: 3px 6px;
+    padding: 4px 6px;
     min-width: 70px;
+    font-size: 12px;
+}}
+QComboBox:hover {{
+    border-color: {c['accent']};
+}}
+QComboBox:focus {{
+    border-color: {c['accent']};
 }}
 QComboBox::drop-down {{
-    border: none;
-    width: 20px;
+    subcontrol-origin: padding;
+    subcontrol-position: top right;
+    width: 22px;
+    background-color: {c['border']};
+    border-left: 1px solid {c['border']};
+    border-radius: 0 4px 4px 0;
+}}
+QComboBox::drop-down:hover {{
+    background-color: {c['accent']};
+}}
+QComboBox::down-arrow {{
+    width: 0;
+    height: 0;
+    border-left: 4px solid transparent;
+    border-right: 4px solid transparent;
+    border-top: 5px solid {c['fg']};
+}}
+QComboBox::down-arrow:hover {{
+    border-top-color: {c['accent_fg']};
 }}
 QComboBox QAbstractItemView {{
     background-color: {c['surface']};
@@ -7918,23 +9000,125 @@ QComboBox QAbstractItemView {{
     selection-color: {c['accent_fg']};
     border: 1px solid {c['border']};
     border-radius: 4px;
+    padding: 2px;
+    outline: none;
 }}
 
-/* ── Spin boxes / Date edits ──────────────────────── */
+/* ━━━━ Spin boxes, Date/Time edits ━━━━━━━━━━━━━━━ */
 QDateEdit, QTimeEdit, QSpinBox, QDoubleSpinBox {{
     background-color: {c['surface']};
     color: {c['fg']};
     border: 1px solid {c['border']};
     border-radius: 4px;
-    padding: 3px;
+    padding: 4px 6px;
+    font-size: 12px;
 }}
-QDateEdit::drop-down, QTimeEdit::drop-down {{
-    border: none;
+QDateEdit:hover, QTimeEdit:hover, QSpinBox:hover, QDoubleSpinBox:hover {{
+    border-color: {c['accent']};
+}}
+QDateEdit:focus, QTimeEdit:focus, QSpinBox:focus, QDoubleSpinBox:focus {{
+    border-color: {c['accent']};
 }}
 
-/* ── Check boxes ──────────────────────────────────── */
+/* Calendar popup button */
+QDateEdit::drop-down, QTimeEdit::drop-down {{
+    subcontrol-origin: padding;
+    subcontrol-position: top right;
+    width: 22px;
+    background-color: {c['border']};
+    border-left: 1px solid {c['border']};
+    border-radius: 0 4px 4px 0;
+}}
+QDateEdit::drop-down:hover, QTimeEdit::drop-down:hover {{
+    background-color: {c['accent']};
+}}
+QDateEdit::down-arrow, QTimeEdit::down-arrow {{
+    width: 0;
+    height: 0;
+    border-left: 4px solid transparent;
+    border-right: 4px solid transparent;
+    border-top: 5px solid {c['fg']};
+}}
+QDateEdit::down-arrow:hover, QTimeEdit::down-arrow:hover {{
+    border-top-color: {c['accent_fg']};
+}}
+
+/* Spinbox increment buttons */
+QSpinBox::up-button, QDoubleSpinBox::up-button {{
+    subcontrol-origin: border;
+    subcontrol-position: top right;
+    width: 18px;
+    background-color: {c['border']};
+    border-left: 1px solid {c['border']};
+    border-bottom: 1px solid {c['border']};
+    border-radius: 0 4px 0 0;
+}}
+QSpinBox::up-button:hover, QDoubleSpinBox::up-button:hover {{
+    background-color: {c['accent']};
+}}
+QSpinBox::up-arrow, QDoubleSpinBox::up-arrow {{
+    width: 0;
+    height: 0;
+    border-left: 3px solid transparent;
+    border-right: 3px solid transparent;
+    border-bottom: 4px solid {c['fg']};
+}}
+QSpinBox::down-button, QDoubleSpinBox::down-button {{
+    subcontrol-origin: border;
+    subcontrol-position: bottom right;
+    width: 18px;
+    background-color: {c['border']};
+    border-left: 1px solid {c['border']};
+    border-radius: 0 0 4px 0;
+}}
+QSpinBox::down-button:hover, QDoubleSpinBox::down-button:hover {{
+    background-color: {c['accent']};
+}}
+QSpinBox::down-arrow, QDoubleSpinBox::down-arrow {{
+    width: 0;
+    height: 0;
+    border-left: 3px solid transparent;
+    border-right: 3px solid transparent;
+    border-top: 4px solid {c['fg']};
+}}
+
+/* Calendar popup widget (the calendar picker) */
+QCalendarWidget QWidget {{
+    background-color: {c['surface']};
+    color: {c['fg']};
+}}
+QCalendarWidget QAbstractItemView:enabled {{
+    background-color: {c['surface']};
+    color: {c['fg']};
+    selection-background-color: {c['accent']};
+    selection-color: {c['accent_fg']};
+}}
+QCalendarWidget QAbstractItemView:disabled {{
+    color: {c['muted']};
+}}
+QCalendarWidget QToolButton {{
+    background-color: transparent;
+    color: {c['fg']};
+    border: none;
+    font-weight: bold;
+    font-size: 13px;
+    padding: 4px 8px;
+}}
+QCalendarWidget QToolButton:hover {{
+    background-color: {c['hover']};
+    border-radius: 4px;
+}}
+QCalendarWidget #qt_calendar_navigationbar {{
+    background-color: {c['header_bg']};
+    border-bottom: 1px solid {c['border']};
+    padding: 4px;
+}}
+
+/* ━━━━ Checkboxes ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
 QCheckBox {{
     spacing: 8px;
+    color: {c['fg']};
+    font-size: 12px;
 }}
 QCheckBox::indicator {{
     width: 18px;
@@ -7943,17 +9127,37 @@ QCheckBox::indicator {{
     border: 2px solid {c['border']};
     background-color: {c['surface']};
 }}
+QCheckBox::indicator:hover {{
+    border-color: {c['accent']};
+}}
 QCheckBox::indicator:checked {{
     background-color: {c['accent']};
     border-color: {c['accent']};
 }}
+QCheckBox::indicator:checked:hover {{
+    background-color: {c['accent_hover']};
+}}
 
-/* ── Labels ───────────────────────────────────────── */
+/* ━━━━ Progress bar ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+QProgressBar {{
+    background-color: {c['surface']};
+    border: 1px solid {c['border']};
+    border-radius: 4px;
+    text-align: center;
+    color: {c['fg']};
+    font-size: 11px;
+    min-height: 10px;
+}}
+QProgressBar::chunk {{
+    background-color: {c['accent']};
+    border-radius: 4px;
+}}
+
+/* ━━━━ Labels ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
 QLabel#sectionTitle {{
     font-size: 15px;
     font-weight: bold;
     color: {c['fg']};
-    padding-bottom: 1px;
 }}
 QLabel#subtitle {{
     font-size: 11px;
@@ -7962,19 +9166,22 @@ QLabel#subtitle {{
 QLabel#statusOk {{
     color: {c['green']};
     font-size: 12px;
+    font-weight: bold;
 }}
 QLabel#statusWarn {{
     color: {c['yellow']};
     font-size: 12px;
+    font-weight: bold;
 }}
 
-/* ── Separators ───────────────────────────────────── */
+/* ━━━━ Separators ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
 QFrame#separator {{
     background-color: {c['border']};
     max-height: 1px;
+    border: none;
 }}
 
-/* ── Splitter handles ─────────────────────────────── */
+/* ━━━━ Splitter ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
 QSplitter::handle {{
     background-color: {c['border']};
     width: 2px;
@@ -7984,60 +9191,67 @@ QSplitter::handle:hover {{
     background-color: {c['accent']};
 }}
 
-/* ── Scroll bars ──────────────────────────────────── */
+/* ━━━━ Scroll bars ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
 QScrollBar:vertical {{
     background-color: transparent;
-    width: 10px;
-    border-radius: 5px;
-    margin: 2px;
+    width: 8px;
+    margin: 0;
 }}
 QScrollBar::handle:vertical {{
     background-color: {c['border']};
-    border-radius: 5px;
-    min-height: 30px;
+    border-radius: 4px;
+    min-height: 24px;
 }}
 QScrollBar::handle:vertical:hover {{
     background-color: {c['muted']};
 }}
-QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {{
-    height: 0px;
+QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical,
+QScrollBar::add-page:vertical, QScrollBar::sub-page:vertical {{
+    height: 0;
+    background: transparent;
 }}
 QScrollBar:horizontal {{
     background-color: transparent;
-    height: 10px;
-    border-radius: 5px;
-    margin: 2px;
+    height: 8px;
+    margin: 0;
 }}
 QScrollBar::handle:horizontal {{
     background-color: {c['border']};
-    border-radius: 5px;
-    min-width: 30px;
+    border-radius: 4px;
+    min-width: 24px;
 }}
 QScrollBar::handle:horizontal:hover {{
     background-color: {c['muted']};
 }}
-QScrollBar::add-line:horizontal, QScrollBar::sub-line:horizontal {{
-    width: 0px;
+QScrollBar::add-line:horizontal, QScrollBar::sub-line:horizontal,
+QScrollBar::add-page:horizontal, QScrollBar::sub-page:horizontal {{
+    width: 0;
+    background: transparent;
 }}
 
-/* ── Tooltips ─────────────────────────────────────── */
+/* ━━━━ Tooltips ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
 QToolTip {{
     background-color: {c['surface']};
     color: {c['fg']};
     border: 1px solid {c['border']};
     border-radius: 4px;
-    padding: 4px 8px;
+    padding: 5px 8px;
+    font-size: 12px;
 }}
 
-/* ── Dialogs ──────────────────────────────────────── */
+/* ━━━━ Dialogs ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
 QDialog {{
     background-color: {c['bg']};
 }}
 QMessageBox {{
     background-color: {c['bg']};
 }}
+QMessageBox QLabel {{
+    color: {c['fg']};
+    font-size: 13px;
+}}
 
-/* ── Status bar ───────────────────────────────────── */
+/* ━━━━ Status bar ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
 QStatusBar {{
     background-color: {c['header_bg']};
     color: {c['muted']};
@@ -8048,87 +9262,175 @@ QStatusBar {{
 QStatusBar::item {{
     border: none;
 }}
+
+/* ━━━━ Group boxes ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+QGroupBox {{
+    border: 1px solid {c['border']};
+    border-radius: 6px;
+    margin-top: 14px;
+    padding-top: 8px;
+    font-weight: bold;
+    color: {c['fg']};
+}}
+QGroupBox::title {{
+    subcontrol-origin: margin;
+    left: 10px;
+    padding: 0 4px;
+    color: {c['accent']};
+    font-size: 12px;
+}}
 """
 
 
-# ── Catppuccin Mocha (Dark) ──────────────────────────
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+#  Dark themes
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+# Catppuccin Mocha — deep purple-dark, blue accent
 _CATPPUCCIN_DARK = {
-    "bg": "#1e1e2e", "surface": "#313244", "border": "#45475a",
-    "fg": "#cdd6f4", "muted": "#a6adc8", "hover": "#3b3d54",
-    "accent": "#4a9eff", "accent_fg": "#1e1e2e",
-    "accent_hover": "#6ab0ff", "accent_pressed": "#3a8eef",
-    "red": "#f38ba8", "red_hover": "#f5a0b8",
-    "green": "#a6e3a1", "yellow": "#f9e2af",
-    "header_bg": "#181825", "alt_row": "#2a2a3c",
+    "bg": "#1e1e2e",        "surface": "#313244",   "border": "#45475a",
+    "fg": "#cdd6f4",        "muted": "#7f849c",      "hover": "#3b3d54",
+    "accent": "#89b4fa",    "accent_fg": "#1e1e2e",
+    "accent_hover": "#a0c5ff", "accent_pressed": "#74a4ea",
+    "red": "#f38ba8",       "red_hover": "#f5a0b8",
+    "green": "#a6e3a1",     "yellow": "#f9e2af",
+    "header_bg": "#181825", "alt_row": "#252538",
 }
 
-# ── Catppuccin Latte (Light) ─────────────────────────
-_CATPPUCCIN_LIGHT = {
-    "bg": "#eff1f5", "surface": "#ffffff", "border": "#ccd0da",
-    "fg": "#4c4f69", "muted": "#8c8fa1", "hover": "#e6e9ef",
-    "accent": "#1e66f5", "accent_fg": "#ffffff",
-    "accent_hover": "#4080f7", "accent_pressed": "#1650d0",
-    "red": "#d20f39", "red_hover": "#e0304f",
-    "green": "#40a02b", "yellow": "#df8e1d",
-    "header_bg": "#e6e9ef", "alt_row": "#f4f5f8",
+# Tokyo Night — navy-dark, electric blue accent
+_TOKYO_NIGHT = {
+    "bg": "#1a1b26",        "surface": "#24283b",   "border": "#414868",
+    "fg": "#c0caf5",        "muted": "#565f89",      "hover": "#2d3348",
+    "accent": "#7aa2f7",    "accent_fg": "#1a1b26",
+    "accent_hover": "#93b4fb", "accent_pressed": "#6090e5",
+    "red": "#f7768e",       "red_hover": "#f88fa0",
+    "green": "#9ece6a",     "yellow": "#e0af68",
+    "header_bg": "#16161e", "alt_row": "#1f2335",
 }
 
-# ── Nord ─────────────────────────────────────────────
+# Dracula — classic dark purple
+_DRACULA = {
+    "bg": "#282a36",        "surface": "#343746",   "border": "#44475a",
+    "fg": "#f8f8f2",        "muted": "#8090c0",      "hover": "#3d4059",
+    "accent": "#bd93f9",    "accent_fg": "#282a36",
+    "accent_hover": "#cda7ff", "accent_pressed": "#ad83e9",
+    "red": "#ff5555",       "red_hover": "#ff7070",
+    "green": "#50fa7b",     "yellow": "#f1fa8c",
+    "header_bg": "#21222c", "alt_row": "#2f303e",
+}
+
+# Monokai Pro — warm dark, golden accent
+_MONOKAI = {
+    "bg": "#2d2a2e",        "surface": "#403e41",   "border": "#5b595c",
+    "fg": "#fcfcfa",        "muted": "#a9a7a7",      "hover": "#4a4849",
+    "accent": "#ffd866",    "accent_fg": "#2d2a2e",
+    "accent_hover": "#ffe085", "accent_pressed": "#e0be50",
+    "red": "#ff6188",       "red_hover": "#ff7a9c",
+    "green": "#a9dc76",     "yellow": "#ffd866",
+    "header_bg": "#221f22", "alt_row": "#353135",
+}
+
+# One Dark Pro — Atom-inspired neutral dark
+_ONE_DARK = {
+    "bg": "#282c34",        "surface": "#353b45",   "border": "#4b5263",
+    "fg": "#abb2bf",        "muted": "#7a8294",      "hover": "#3e4452",
+    "accent": "#61afef",    "accent_fg": "#282c34",
+    "accent_hover": "#7bbef5", "accent_pressed": "#519fd5",
+    "red": "#e06c75",       "red_hover": "#e88090",
+    "green": "#98c379",     "yellow": "#e5c07b",
+    "header_bg": "#21252b", "alt_row": "#2c313c",
+}
+
+# Rosé Pine — muted, nature-inspired dark
+_ROSE_PINE = {
+    "bg": "#191724",        "surface": "#26233a",   "border": "#403d52",
+    "fg": "#e0def4",        "muted": "#908caa",      "hover": "#2d2b3e",
+    "accent": "#c4a7e7",    "accent_fg": "#191724",
+    "accent_hover": "#d4b9f0", "accent_pressed": "#b498d4",
+    "red": "#eb6f92",       "red_hover": "#f08098",
+    "green": "#9ccfd8",     "yellow": "#f6c177",
+    "header_bg": "#12111f", "alt_row": "#201e2e",
+}
+
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+#  Medium themes
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+# Nord — arctic teal palette
 _NORD = {
-    "bg": "#2e3440", "surface": "#3b4252", "border": "#4c566a",
-    "fg": "#eceff4", "muted": "#d8dee9", "hover": "#434c5e",
-    "accent": "#88c0d0", "accent_fg": "#2e3440",
-    "accent_hover": "#8fbcbb", "accent_pressed": "#81a1c1",
-    "red": "#bf616a", "red_hover": "#d08770",
-    "green": "#a3be8c", "yellow": "#ebcb8b",
+    "bg": "#2e3440",        "surface": "#3b4252",   "border": "#4c566a",
+    "fg": "#eceff4",        "muted": "#9199aa",      "hover": "#434c5e",
+    "accent": "#88c0d0",    "accent_fg": "#2e3440",
+    "accent_hover": "#9bcfde", "accent_pressed": "#79b0c0",
+    "red": "#bf616a",       "red_hover": "#cc7079",
+    "green": "#a3be8c",     "yellow": "#ebcb8b",
     "header_bg": "#272c36", "alt_row": "#333a47",
 }
 
-# ── Solarized Dark ───────────────────────────────────
-_SOLARIZED = {
-    "bg": "#002b36", "surface": "#073642", "border": "#586e75",
-    "fg": "#839496", "muted": "#657b83", "hover": "#0a4050",
-    "accent": "#268bd2", "accent_fg": "#fdf6e3",
-    "accent_hover": "#2aa198", "accent_pressed": "#1a6da0",
-    "red": "#dc322f", "red_hover": "#e35550",
-    "green": "#859900", "yellow": "#b58900",
-    "header_bg": "#001f27", "alt_row": "#04303d",
-}
-
-# ── Gruvbox Dark ─────────────────────────────────────
+# Gruvbox Dark — warm earthy tones
 _GRUVBOX = {
-    "bg": "#282828", "surface": "#3c3836", "border": "#504945",
-    "fg": "#ebdbb2", "muted": "#a89984", "hover": "#444240",
-    "accent": "#d79921", "accent_fg": "#282828",
-    "accent_hover": "#fabd2f", "accent_pressed": "#b57614",
-    "red": "#cc241d", "red_hover": "#fb4934",
-    "green": "#98971a", "yellow": "#d79921",
+    "bg": "#282828",        "surface": "#3c3836",   "border": "#665c54",
+    "fg": "#ebdbb2",        "muted": "#bdae93",      "hover": "#504945",
+    "accent": "#fabd2f",    "accent_fg": "#282828",
+    "accent_hover": "#ffd045", "accent_pressed": "#d9a520",
+    "red": "#fb4934",       "red_hover": "#ff6147",
+    "green": "#b8bb26",     "yellow": "#fabd2f",
     "header_bg": "#1d2021", "alt_row": "#32302f",
 }
 
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+#  Light themes
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-# ── Build all themes ─────────────────────────────────
-THEMES = {
-    "Catppuccin Dark": _build_theme(_CATPPUCCIN_DARK),
-    "Catppuccin Light": _build_theme(_CATPPUCCIN_LIGHT),
-    "Nord": _build_theme(_NORD),
-    "Solarized Dark": _build_theme(_SOLARIZED),
-    "Gruvbox Dark": _build_theme(_GRUVBOX),
+# Catppuccin Latte — soft warm light
+_CATPPUCCIN_LIGHT = {
+    "bg": "#eff1f5",        "surface": "#ffffff",   "border": "#bcc0cc",
+    "fg": "#4c4f69",        "muted": "#7c7f93",      "hover": "#dce0ea",
+    "accent": "#1e66f5",    "accent_fg": "#ffffff",
+    "accent_hover": "#4080f7", "accent_pressed": "#1650d0",
+    "red": "#d20f39",       "red_hover": "#e0304f",
+    "green": "#40a02b",     "yellow": "#df8e1d",
+    "header_bg": "#e6e9ef", "alt_row": "#f4f5f8",
 }
 
-# Color palettes exposed for programmatic access (e.g. chart colors)
-PALETTES = {
-    "Catppuccin Dark": _CATPPUCCIN_DARK,
+# Solarized Light — high-readability warm ivory
+_SOLARIZED_LIGHT = {
+    "bg": "#fdf6e3",        "surface": "#eee8d5",   "border": "#d3cbbb",
+    "fg": "#657b83",        "muted": "#93a1a1",      "hover": "#e2dac8",
+    "accent": "#268bd2",    "accent_fg": "#fdf6e3",
+    "accent_hover": "#3aa0e8", "accent_pressed": "#1a6da0",
+    "red": "#dc322f",       "red_hover": "#e04545",
+    "green": "#859900",     "yellow": "#b58900",
+    "header_bg": "#ece7d6", "alt_row": "#f5f0e2",
+}
+
+
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+#  Build registry
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+_ALL_PALETTES = {
+    # Dark
+    "Catppuccin Dark":  _CATPPUCCIN_DARK,
+    "Tokyo Night":      _TOKYO_NIGHT,
+    "Dracula":          _DRACULA,
+    "Monokai Pro":      _MONOKAI,
+    "One Dark Pro":     _ONE_DARK,
+    "Rosé Pine":        _ROSE_PINE,
+    # Medium
+    "Nord":             _NORD,
+    "Gruvbox Dark":     _GRUVBOX,
+    # Light
     "Catppuccin Light": _CATPPUCCIN_LIGHT,
-    "Nord": _NORD,
-    "Solarized Dark": _SOLARIZED,
-    "Gruvbox Dark": _GRUVBOX,
+    "Solarized Light":  _SOLARIZED_LIGHT,
 }
+
+THEMES  = {name: _build_theme(pal) for name, pal in _ALL_PALETTES.items()}
+PALETTES = dict(_ALL_PALETTES)
 
 
 def get_theme_names() -> list[str]:
     return list(THEMES.keys())
-
 ```
 
 ### `src\ui\widgets\__init__.py`
