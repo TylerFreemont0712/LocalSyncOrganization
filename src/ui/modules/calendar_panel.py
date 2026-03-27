@@ -97,7 +97,7 @@ def _clear_layout(layout):
 
 
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-#  ColorButton
+#  ColorButton — theme-aware color swatch
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 class ColorButton(QToolButton):
@@ -114,10 +114,12 @@ class ColorButton(QToolButton):
         self._update_style()
 
     def _update_style(self):
-        border = "3px solid white" if self.isChecked() else "2px solid transparent"
+        # Use palette-aware border color so it's visible on both dark and light themes
+        border_color = _p("fg") if self.isChecked() else "transparent"
+        border_width = "3px" if self.isChecked() else "2px"
         self.setStyleSheet(
             f"QToolButton {{ background-color: {self.hex_color}; "
-            f"border: {border}; border-radius: 6px; }}"
+            f"border: {border_width} solid {border_color}; border-radius: 6px; }}"
         )
 
 
@@ -319,6 +321,9 @@ class EventDialog(QDialog):
     def _on_color_picked(self, hex_val: str):
         self._header_strip.setStyleSheet(
             f"background-color: {hex_val}; border-radius: 3px 3px 0 0;")
+        # Update all color button styles to reflect selection
+        for hv, btn in self._color_btns.items():
+            btn._update_style()
 
     def _on_category_changed(self, _):
         auto = _cat_color(self.category_combo.currentData())
@@ -773,7 +778,7 @@ class DayColumn(QWidget):
         elif is_selected:
             num_lbl.setStyleSheet(
                 f"border:1.5px solid {_p('accent')};border-radius:13px;"
-                "font-size:16px;font-weight:bold;padding:0 4px;")
+                f"font-size:16px;font-weight:bold;padding:0 4px;color:{_p('fg')};")
             num_lbl.setFixedSize(26,26)
         else:
             num_lbl.setStyleSheet(f"font-size:16px;color:{_p('fg')};")
@@ -817,7 +822,7 @@ class DayColumn(QWidget):
 
 
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-#  MajorEventCard
+#  MajorEventCard — emoji no longer clipped
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 class MajorEventCard(QFrame):
@@ -831,9 +836,16 @@ class MajorEventCard(QFrame):
         bar.setStyleSheet(f"background-color:{color};border-radius:2px;")
         layout.addWidget(bar)
 
-        emoji_lbl = QLabel(_cat_emoji(category))
-        emoji_lbl.setStyleSheet("font-size:16px;"); emoji_lbl.setFixedWidth(22)
-        layout.addWidget(emoji_lbl)
+        # Emoji label — no fixed width, no pill background, no clipping
+        emoji_text = _cat_emoji(category)
+        if emoji_text:
+            emoji_lbl = QLabel(emoji_text)
+            emoji_lbl.setStyleSheet(
+                f"font-size:16px; background:transparent; border:none; padding:0;")
+            emoji_lbl.setAlignment(Qt.AlignmentFlag.AlignCenter)
+            emoji_lbl.setSizePolicy(
+                QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Preferred)
+            layout.addWidget(emoji_lbl)
 
         text_col = QVBoxLayout(); text_col.setSpacing(1)
         title_lbl = QLabel(title)
@@ -853,13 +865,14 @@ class MajorEventCard(QFrame):
         badge=QLabel(bt)
         badge.setStyleSheet(
             f"color:{bc};font-size:10px;font-weight:bold;"
-            f"border:1px solid {bc};border-radius:8px;padding:2px 7px;")
+            f"border:1px solid {bc};border-radius:8px;padding:2px 7px;"
+            f"background:transparent;")
         badge.setAlignment(Qt.AlignmentFlag.AlignCenter); layout.addWidget(badge)
 
         self.setStyleSheet(
-            f"QFrame{{border:1px solid {_p('border')};border-radius:6px;"
+            f"MajorEventCard{{border:1px solid {_p('border')};border-radius:6px;"
             f"background-color:{_p('header_bg')};}}"
-            f"QFrame:hover{{border-color:{_p('muted')};"
+            f"MajorEventCard:hover{{border-color:{_p('muted')};"
             f"background-color:{_p('surface')};}}")
 
 
@@ -905,9 +918,9 @@ class DayEventRow(QFrame):
 
         layout.addWidget(body,1)
         self.setStyleSheet(
-            f"QFrame{{border:1px solid {_p('border')};border-radius:4px;"
+            f"DayEventRow{{border:1px solid {_p('border')};border-radius:4px;"
             f"background-color:{_p('header_bg')};}}"
-            f"QFrame:hover{{border-color:{_p('muted')};"
+            f"DayEventRow:hover{{border-color:{_p('muted')};"
             f"background-color:{_p('surface')};}}")
 
     def mouseDoubleClickEvent(self, ev): self.edit_requested.emit(self.event)
@@ -944,6 +957,10 @@ class CalendarPanel(QWidget):
             f"#miniMonthFrame{{border:1px solid {_p('border')};"
             f"border-radius:8px;background-color:{_p('header_bg')};}}")
         self._major_count_lbl.setStyleSheet(f"font-size:10px;color:{_p('muted')};")
+        self._major_title_lbl.setStyleSheet(
+            f"font-size:13px;font-weight:bold;color:{_p('fg')};")
+        self._day_title.setStyleSheet(
+            f"font-size:14px;font-weight:bold;color:{_p('fg')};")
         self.mini_month.refresh_styles()
         self._refresh()
 
@@ -996,7 +1013,7 @@ class CalendarPanel(QWidget):
 
         detail_bar = QHBoxLayout()
         self._day_title = QLabel("Today")
-        self._day_title.setStyleSheet("font-size:14px;font-weight:bold;")
+        self._day_title.setStyleSheet(f"font-size:14px;font-weight:bold;color:{_p('fg')};")
         detail_bar.addWidget(self._day_title); detail_bar.addStretch()
         btn_add_here = QPushButton("＋"); btn_add_here.setObjectName("secondary")
         btn_add_here.setFixedSize(26,26); btn_add_here.setToolTip("Add event on this day")
@@ -1040,9 +1057,10 @@ class CalendarPanel(QWidget):
         right_l.addWidget(rdiv1); right_l.addSpacing(8)
 
         major_hdr = QHBoxLayout()
-        major_title = QLabel("Upcoming Events")
-        major_title.setStyleSheet("font-size:13px;font-weight:bold;")
-        major_hdr.addWidget(major_title); major_hdr.addStretch()
+        self._major_title_lbl = QLabel("Upcoming Events")
+        self._major_title_lbl.setStyleSheet(
+            f"font-size:13px;font-weight:bold;color:{_p('fg')};")
+        major_hdr.addWidget(self._major_title_lbl); major_hdr.addStretch()
         self._major_count_lbl = QLabel("")
         self._major_count_lbl.setStyleSheet(f"font-size:10px;color:{_p('muted')};")
         major_hdr.addWidget(self._major_count_lbl); right_l.addLayout(major_hdr)

@@ -2,7 +2,7 @@
 
 Layout:
   Left (scrollable):  7-column × 24-hour painted block grid
-  Right (fixed 290px): Efficiency panel + compact log form
+  Right (fixed 310px): Efficiency panel + compact log form
 
 Features:
   • Stacked colored blocks showing activities proportionally across 24 h
@@ -10,7 +10,7 @@ Features:
   • "Now" horizontal line on today's column
   • Click a block to select / edit it in the log form
   • Double-click empty space to open add form for that day+time
-  • Compact single-row log form (activity, date, start, end, timer, add)
+  • Compact multi-row log form (activity, date, start, end, timer, add)
   • Notes are a pop-out dialog — not shown by default
   • Efficiency panel: weekly totals by activity category + per-day bar chart
 """
@@ -295,7 +295,7 @@ class WeekBlockWidget(QWidget):
             x    = TIME_W + b.col * col_w
             bx   = x + 2
             bw   = col_w - 4
-            by   = b.y_start + (0 if b.y_start <= HEADER_H else 0)
+            by   = b.y_start
             bh   = b.y_end - b.y_start
             if bh < 1: continue
             b.rect = QRectF(bx, by, bw, bh)
@@ -382,6 +382,42 @@ class NotesDialog(QDialog):
 
 
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+#  FillBar — a proper auto-resizing percentage bar
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+class FillBar(QWidget):
+    """A horizontal bar that fills to a percentage of its parent width."""
+
+    def __init__(self, ratio: float, fill_color: str, bg_color: str,
+                 height: int = 6, parent=None):
+        super().__init__(parent)
+        self._ratio = max(0.0, min(1.0, ratio))
+        self._fill_color = fill_color
+        self._bg_color = bg_color
+        self.setFixedHeight(height)
+        self.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
+
+    def paintEvent(self, ev):
+        p = QPainter(self)
+        p.setRenderHint(QPainter.RenderHint.Antialiasing)
+        w, h = self.width(), self.height()
+        r = h / 2
+
+        # Background track
+        p.setBrush(QBrush(QColor(self._bg_color)))
+        p.setPen(Qt.PenStyle.NoPen)
+        p.drawRoundedRect(0, 0, w, h, r, r)
+
+        # Fill
+        if self._ratio > 0:
+            fill_w = max(h, int(w * self._ratio))  # at least pill-shaped
+            p.setBrush(QBrush(QColor(self._fill_color)))
+            p.drawRoundedRect(0, 0, fill_w, h, r, r)
+
+        p.end()
+
+
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 #  EfficiencyPanel  — right-side totals + mini bar chart
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
@@ -408,6 +444,10 @@ class EfficiencyPanel(QWidget):
         self._totals_lbl  = QLabel("—")
         self._totals_lbl.setStyleSheet("font-size:11px;")
         layout.addWidget(self._totals_lbl)
+
+        self._today_lbl = QLabel("")
+        self._today_lbl.setStyleSheet("font-size:10px;font-weight:bold;")
+        layout.addWidget(self._today_lbl)
 
         div = QFrame(); div.setFrameShape(QFrame.Shape.HLine)
         div.setObjectName("separator"); layout.addWidget(div)
@@ -441,10 +481,30 @@ class EfficiencyPanel(QWidget):
                 by_name[a.activity] += a.duration_minutes
                 total_mins += a.duration_minutes
 
+        # Proper average per day
+        avg_mins_per_day = total_mins / 7
+        avg_h = int(avg_mins_per_day) // 60
+        avg_m = int(avg_mins_per_day) % 60
+        avg_str = f"{avg_h}h {avg_m}m" if avg_m else f"{avg_h}h"
+
         self._totals_lbl.setText(
-            f"Tracked: {_fmt_hm(total_mins)}  "
-            f"({total_mins // 60}h avg/day)"
+            f"Tracked: {_fmt_hm(total_mins)}  ·  ~{avg_str}/day"
         )
+
+        # Today's total
+        today = date.today()
+        today_acts = activities_by_date.get(today, [])
+        today_mins = sum(a.duration_minutes for a in today_acts)
+        accent = self._palette.get("accent", "#89b4fa")
+        green = self._palette.get("green", "#a6e3a1")
+        if today_mins > 0:
+            self._today_lbl.setText(f"Today: {_fmt_hm(today_mins)}")
+            self._today_lbl.setStyleSheet(
+                f"font-size:10px;font-weight:bold;color:{green};")
+        else:
+            self._today_lbl.setText("Today: —")
+            self._today_lbl.setStyleSheet(
+                f"font-size:10px;font-weight:bold;color:{self._palette.get('muted','#7f849c')};")
 
         # Clear bar rows
         while self._bar_layout.count():
@@ -470,7 +530,6 @@ class EfficiencyPanel(QWidget):
             day_totals.append(sum(a.duration_minutes for a in acts))
 
         max_day = max(day_totals, default=1) or 1
-        today = date.today()
         for i, (label, mins) in enumerate(zip(day_labels, day_totals)):
             d = week_start + timedelta(days=i)
             is_today = (d == today)
@@ -490,20 +549,10 @@ class EfficiencyPanel(QWidget):
         top_row.addWidget(mins_lbl)
         layout.addLayout(top_row)
 
-        bar_bg = QFrame(); bar_bg.setFixedHeight(6)
-        bar_bg.setStyleSheet(
-            f"background-color:{self._palette.get('border','#45475a')};"
-            "border-radius:3px;")
-        layout.addWidget(bar_bg)
-
-        # Painted fill bar inside bg
         ratio = mins / max(max_mins, 1)
-        fill = QFrame(bar_bg); fill.setFixedHeight(6)
-        fill.setFixedWidth(max(4, int(ratio * (bar_bg.width() or 200))))
-        fill.setStyleSheet(f"background-color:{color};border-radius:3px;")
-        fill.move(0, 0)
-        # Width is approximate at build time; resize event would fix it properly
-        bar_bg._fill = fill  # keep reference
+        bg_c = self._palette.get('border', '#45475a')
+        bar = FillBar(ratio, color, bg_c, height=6)
+        layout.addWidget(bar)
 
         return w
 
@@ -519,21 +568,15 @@ class EfficiencyPanel(QWidget):
             f"color:{self._palette.get('accent','#89b4fa') if is_today else self._palette.get('muted','#7f849c')};")
         layout.addWidget(lbl)
 
-        bar_bg = QFrame(); bar_bg.setFixedHeight(8)
-        bar_bg.setStyleSheet(
-            f"background-color:{self._palette.get('border','#45475a')};border-radius:4px;")
         ratio = mins / max(max_mins, 1)
-        bar_bg.setMinimumWidth(20)
-        fill = QFrame(bar_bg); fill.setFixedHeight(8)
-        fill_w = max(4, int(ratio * 120)) if mins > 0 else 0
-        fill.setFixedWidth(fill_w)
         accent_c = self._palette.get("accent","#89b4fa") if is_today else \
                    self._palette.get("green","#a6e3a1")
-        fill.setStyleSheet(f"background-color:{accent_c};border-radius:4px;")
-        layout.addWidget(bar_bg, 1)
+        bg_c = self._palette.get('border', '#45475a')
+        bar = FillBar(ratio if mins > 0 else 0, accent_c, bg_c, height=8)
+        layout.addWidget(bar, 1)
 
         time_lbl = QLabel(_fmt_hm(mins) if mins else "—")
-        time_lbl.setFixedWidth(36)
+        time_lbl.setFixedWidth(40)
         time_lbl.setAlignment(Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter)
         time_lbl.setStyleSheet("font-size:10px;")
         layout.addWidget(time_lbl)
@@ -541,7 +584,7 @@ class EfficiencyPanel(QWidget):
 
 
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-#  LogForm  — compact single-row activity entry
+#  LogForm  — redesigned multi-row activity entry
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 class LogForm(QWidget):
@@ -567,7 +610,7 @@ class LogForm(QWidget):
         root.setContentsMargins(0, 0, 0, 0)
         root.setSpacing(6)
 
-        # Header row
+        # ── Header row ──
         hdr = QHBoxLayout()
         self._form_title = QLabel("Log Activity")
         self._form_title.setStyleSheet("font-size:12px;font-weight:bold;")
@@ -581,92 +624,105 @@ class LogForm(QWidget):
         hdr.addWidget(self._cancel_btn)
         root.addLayout(hdr)
 
-        # Row 1: Activity name + day selector
-        row1 = QHBoxLayout(); row1.setSpacing(6)
+        # ── Row 1: Activity name (full width) ──
         self.activity_combo = QComboBox()
         self.activity_combo.setEditable(True)
         self.activity_combo.addItems(DEFAULT_ACTIVITIES)
-        self.activity_combo.setMinimumWidth(130)
         self.activity_combo.setPlaceholderText("Activity…")
-        row1.addWidget(self.activity_combo, 2)
+        root.addWidget(self.activity_combo)
 
+        # ── Row 2: Day selector (full width) ──
         self.day_combo = QComboBox()
         self._rebuild_day_combo()
-        row1.addWidget(self.day_combo, 1)
-        root.addLayout(row1)
+        root.addWidget(self.day_combo)
 
-        # Row 2: Times + timer + add
-        row2 = QHBoxLayout(); row2.setSpacing(5)
+        # ── Row 3: Start + End times ──
+        time_row = QHBoxLayout(); time_row.setSpacing(6)
 
         start_lbl = QLabel("Start")
-        start_lbl.setStyleSheet("font-size:11px;color:palette(mid);")
-        row2.addWidget(start_lbl)
+        start_lbl.setStyleSheet("font-size:10px;color:palette(mid);")
+        start_lbl.setFixedWidth(30)
+        time_row.addWidget(start_lbl)
         self.start_edit = QTimeEdit()
         self.start_edit.setDisplayFormat("HH:mm")
         now = datetime.now()
         self.start_edit.setTime(QTime(now.hour, 0))
-        self.start_edit.setFixedWidth(60)
-        row2.addWidget(self.start_edit)
+        time_row.addWidget(self.start_edit, 1)
+
+        time_row.addSpacing(4)
 
         end_lbl = QLabel("End")
-        end_lbl.setStyleSheet("font-size:11px;color:palette(mid);")
-        row2.addWidget(end_lbl)
+        end_lbl.setStyleSheet("font-size:10px;color:palette(mid);")
+        end_lbl.setFixedWidth(24)
+        time_row.addWidget(end_lbl)
         self.end_edit = QTimeEdit()
         self.end_edit.setDisplayFormat("HH:mm")
         self.end_edit.setTime(QTime(min(now.hour + 1, 23), 0))
-        self.end_edit.setFixedWidth(60)
-        row2.addWidget(self.end_edit)
+        time_row.addWidget(self.end_edit, 1)
 
-        row2.addStretch(1)
+        root.addLayout(time_row)
 
-        self._timer_label = QLabel("⏱ 00:00")
+        # ── Row 4: Timer (dedicated row) ──
+        timer_row = QHBoxLayout(); timer_row.setSpacing(6)
+
+        timer_icon = QLabel("⏱")
+        timer_icon.setStyleSheet("font-size:13px;")
+        timer_icon.setFixedWidth(18)
+        timer_row.addWidget(timer_icon)
+
+        self._timer_label = QLabel("00:00")
         self._timer_label.setStyleSheet(
-            "font-family:monospace;font-size:12px;font-weight:bold;")
-        row2.addWidget(self._timer_label)
+            "font-family:monospace;font-size:13px;font-weight:bold;")
+        self._timer_label.setMinimumWidth(52)
+        timer_row.addWidget(self._timer_label)
 
-        self._start_btn = QPushButton("▶")
+        timer_row.addStretch()
+
+        self._start_btn = QPushButton("▶ Start")
         self._start_btn.setToolTip("Start timer")
-        self._start_btn.setFixedSize(26, 26)
+        self._start_btn.setFixedHeight(26)
         self._start_btn.setStyleSheet(
-            "background-color:#a6e3a1;color:#1e1e2e;font-weight:bold;border-radius:4px;")
+            "background-color:#a6e3a1;color:#1e1e2e;font-weight:bold;"
+            "border-radius:4px;padding:2px 10px;font-size:11px;")
         self._start_btn.clicked.connect(self._start_timer)
-        row2.addWidget(self._start_btn)
+        timer_row.addWidget(self._start_btn)
 
-        self._stop_btn = QPushButton("■")
+        self._stop_btn = QPushButton("■ Stop")
         self._stop_btn.setToolTip("Stop timer")
-        self._stop_btn.setFixedSize(26, 26)
+        self._stop_btn.setFixedHeight(26)
         self._stop_btn.setStyleSheet(
-            "background-color:#f38ba8;color:#1e1e2e;font-weight:bold;border-radius:4px;")
+            "background-color:#f38ba8;color:#1e1e2e;font-weight:bold;"
+            "border-radius:4px;padding:2px 10px;font-size:11px;")
         self._stop_btn.setEnabled(False)
         self._stop_btn.clicked.connect(self._stop_timer)
-        row2.addWidget(self._stop_btn)
+        timer_row.addWidget(self._stop_btn)
 
-        root.addLayout(row2)
+        root.addLayout(timer_row)
 
-        # Row 3: Notes + buttons
-        row3 = QHBoxLayout(); row3.setSpacing(5)
+        # ── Row 5: Notes + action buttons ──
+        action_row = QHBoxLayout(); action_row.setSpacing(5)
 
         self._notes_btn = QPushButton("Notes…")
         self._notes_btn.setObjectName("secondary")
         self._notes_btn.setFixedHeight(26)
         self._notes_btn.clicked.connect(self._open_notes)
-        row3.addWidget(self._notes_btn)
+        action_row.addWidget(self._notes_btn)
 
-        row3.addStretch()
+        action_row.addStretch()
 
         self._delete_btn = QPushButton("Delete")
         self._delete_btn.setObjectName("destructive")
         self._delete_btn.setFixedHeight(26)
         self._delete_btn.clicked.connect(self._delete)
         self._delete_btn.setVisible(False)
-        row3.addWidget(self._delete_btn)
+        action_row.addWidget(self._delete_btn)
 
         self._action_btn = QPushButton("Add")
         self._action_btn.setFixedHeight(26)
         self._action_btn.clicked.connect(self._submit)
-        row3.addWidget(self._action_btn)
+        action_row.addWidget(self._action_btn)
 
-        root.addLayout(row3)
+        root.addLayout(action_row)
 
     # ── Public ───────────────────────────────────────
 
@@ -786,7 +842,7 @@ class LogForm(QWidget):
         self._start_btn.setEnabled(False)
         self._stop_btn.setEnabled(True)
         self._timer_label.setStyleSheet(
-            "font-family:monospace;font-size:12px;font-weight:bold;color:#a6e3a1;")
+            "font-family:monospace;font-size:13px;font-weight:bold;color:#a6e3a1;")
 
     def _stop_timer(self):
         if self._timer:
@@ -798,13 +854,13 @@ class LogForm(QWidget):
         self._start_btn.setEnabled(True)
         self._stop_btn.setEnabled(False)
         self._timer_label.setStyleSheet(
-            "font-family:monospace;font-size:12px;font-weight:bold;")
+            "font-family:monospace;font-size:13px;font-weight:bold;")
 
     def _tick(self):
         if not self._timer_start: return
         secs = int((datetime.now() - self._timer_start).total_seconds())
         h, s = divmod(secs, 3600); m, s = divmod(s, 60)
-        self._timer_label.setText(f"⏱ {h:02d}:{m:02d}" if h else f"⏱ {m:02d}:{s:02d}")
+        self._timer_label.setText(f"{h:02d}:{m:02d}" if h else f"{m:02d}:{s:02d}")
         now = datetime.now()
         self.end_edit.setTime(QTime(now.hour, now.minute))
 
@@ -885,15 +941,10 @@ class ActivityPanel(QWidget):
         root.addWidget(left, 1)
 
         # ══ RIGHT: efficiency + log form ══
-        right = QWidget(); right.setFixedWidth(290)
+        right = QWidget(); right.setFixedWidth(310)
         right_l = QVBoxLayout(right)
-        right_l.setContentsMargins(6, 10, 12, 10)
+        right_l.setContentsMargins(8, 10, 12, 10)
         right_l.setSpacing(10)
-
-        # Vertical separator
-        vsep = QFrame(); vsep.setFrameShape(QFrame.Shape.VLine)
-        vsep.setObjectName("separator")
-        # We don't add it to a layout, it's just structural
 
         self._efficiency = EfficiencyPanel()
         right_l.addWidget(self._efficiency, 1)
