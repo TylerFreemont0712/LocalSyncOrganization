@@ -1,38 +1,45 @@
-"""Financial/earnings storage backed by SQLite.
+"""Financial/earnings storage backed by SQLite."""
 
-Reframed for freelance work tracking: income categories focus on client/project
-types, and the summary is oriented around "Amount Earned" rather than generic
-income/expense tracking.
-"""
-
+import calendar as _calendar
 import uuid
-from dataclasses import dataclass, field
+from dataclasses import dataclass
+from datetime import date as _date
 
 from src.data.database import get_connection
 from src.utils.timestamps import now_utc
 
 
-DEFAULT_CATEGORIES = [
-    # Earnings sources
-    "Freelance", "Contract", "Consulting", "Commission", "Royalties",
-    "Side Project", "Referral Bonus",
-    # Expense categories (still useful for net tracking)
-    "Software/Tools", "Hardware", "Office", "Travel", "Education",
-    "Taxes", "Fees", "Uncategorized",
+INCOME_CATEGORIES = ["Main Job", "Side Job"]
+
+EXPENSE_CATEGORIES = [
+    "Rent / Housing",
+    "Software / Tools",
+    "Hardware",
+    "Office Supplies",
+    "Travel",
+    "Education",
+    "Food & Drink",
+    "Subscriptions",
+    "Utilities",
+    "Taxes",
+    "Fees & Banking",
+    "Uncategorized",
 ]
+
+DEFAULT_CATEGORIES = INCOME_CATEGORIES + EXPENSE_CATEGORIES
 
 
 @dataclass
 class Transaction:
     id: str
-    date: str           # YYYY-MM-DD
-    amount: float       # Always stored in original currency
-    type: str           # 'income' or 'expense'
-    category: str = "Freelance"
+    date: str
+    amount: float
+    type: str
+    category: str = "Side Job"
     description: str = ""
     updated_at: str = ""
     deleted: bool = False
-    currency: str = "USD"   # 'USD' or 'JPY'
+    currency: str = "USD"
     is_job_pay: bool = False
 
 
@@ -41,9 +48,19 @@ class JobPreset:
     id: str
     name: str
     amount_usd: float
-    category: str = "Contract"
+    category: str = "Main Job"
     updated_at: str = ""
     deleted: bool = False
+
+
+@dataclass
+class SideIncomeGoal:
+    id: str
+    year: int
+    month: int
+    min_goal: float
+    major_goal: float
+    updated_at: str = ""
 
 
 class FinanceStore:
@@ -51,18 +68,13 @@ class FinanceStore:
     # ── Transactions ──────────────────────────────────────────────────────────
 
     def add_transaction(self, date: str, amount: float, txn_type: str,
-                        category: str = "Freelance", description: str = "",
+                        category: str = "Side Job", description: str = "",
                         currency: str = "USD", is_job_pay: bool = False) -> Transaction:
         txn = Transaction(
             id=str(uuid.uuid4()),
-            date=date,
-            amount=amount,
-            type=txn_type,
-            category=category,
-            description=description,
-            updated_at=now_utc(),
-            currency=currency,
-            is_job_pay=is_job_pay,
+            date=date, amount=amount, type=txn_type,
+            category=category, description=description,
+            updated_at=now_utc(), currency=currency, is_job_pay=is_job_pay,
         )
         self._upsert(txn)
         return txn
@@ -91,49 +103,49 @@ class FinanceStore:
             query = "SELECT * FROM transactions WHERE deleted=0"
             params: list = []
             if start_date:
-                query += " AND date >= ?"
-                params.append(start_date)
+                query += " AND date >= ?"; params.append(start_date)
             if end_date:
-                query += " AND date <= ?"
-                params.append(end_date)
+                query += " AND date <= ?"; params.append(end_date)
             if txn_type:
-                query += " AND type = ?"
-                params.append(txn_type)
+                query += " AND type = ?"; params.append(txn_type)
             query += " ORDER BY date DESC"
             rows = conn.execute(query, params).fetchall()
             return [self._row_to_txn(r) for r in rows]
         finally:
             conn.close()
 
+    def has_monthly_tag(self, year: int, month: int) -> bool:
+        """Return True if any [Monthly] tagged expense exists for this month."""
+        import calendar as _cal
+        last_day = _cal.monthrange(year, month)[1]
+        first = _date(year, month, 1).isoformat()
+        last  = _date(year, month, last_day).isoformat()
+        conn = get_connection()
+        try:
+            row = conn.execute(
+                "SELECT COUNT(*) as cnt FROM transactions "
+                "WHERE deleted=0 AND type='expense' "
+                "AND description LIKE '[Monthly]%' "
+                "AND date >= ? AND date <= ?",
+                (first, last),
+            ).fetchone()
+            return row["cnt"] > 0
+        finally:
+            conn.close()
+
     def get_summary(self, start_date: str | None = None,
                     end_date: str | None = None) -> dict:
-        """Return earnings/expense totals and by-category breakdown.
-
-        All USD amounts; caller must convert JPY transactions using the
-        current exchange rate before passing in, or use get_summary_usd()
-        which accepts a rate parameter.
-        """
         txns = self.get_transactions(start_date, end_date)
         earned = sum(t.amount for t in txns if t.type == "income")
-        spent = sum(t.amount for t in txns if t.type == "expense")
+        spent  = sum(t.amount for t in txns if t.type == "expense")
         by_category: dict[str, float] = {}
         for t in txns:
             by_category[t.category] = by_category.get(t.category, 0) + t.amount
-        return {
-            "earned": earned,
-            "spent": spent,
-            "net": earned - spent,
-            "by_category": by_category,
-            "count": len(txns),
-        }
+        return {"earned": earned, "spent": spent, "net": earned - spent,
+                "by_category": by_category, "count": len(txns)}
 
     def get_goal_income(self, start_date: str, end_date: str,
                         usd_jpy_rate: float = 150.0) -> float:
-        """Return total additional income (non-job-pay) in USD for the period.
-
-        JPY transactions are converted to USD using usd_jpy_rate.
-        Only income transactions with is_job_pay=0 are counted.
-        """
         conn = get_connection()
         try:
             rows = conn.execute(
@@ -144,44 +156,31 @@ class FinanceStore:
             ).fetchall()
         finally:
             conn.close()
-
-        total_usd = 0.0
+        total = 0.0
         for r in rows:
-            if r["currency"] == "JPY":
-                total_usd += r["amount"] / usd_jpy_rate
-            else:
-                total_usd += r["amount"]
-        return total_usd
+            total += r["amount"] / usd_jpy_rate if r["currency"] == "JPY" else r["amount"]
+        return total
 
-    def get_all_time_earned(self) -> float:
-        """Total income across all time (raw stored amounts, no currency conversion)."""
-        conn = get_connection()
-        try:
-            row = conn.execute(
-                "SELECT COALESCE(SUM(amount), 0) as total FROM transactions "
-                "WHERE deleted=0 AND type='income'"
-            ).fetchone()
-            return row["total"]
-        finally:
-            conn.close()
+    def get_side_income(self, year: int, month: int,
+                        usd_jpy_rate: float = 150.0) -> float:
+        last_day = _calendar.monthrange(year, month)[1]
+        return self.get_goal_income(
+            _date(year, month, 1).isoformat(),
+            _date(year, month, last_day).isoformat(),
+            usd_jpy_rate,
+        )
 
     def get_all_time_earned_usd(self, usd_jpy_rate: float = 150.0) -> float:
-        """Total income across all time, normalised to USD."""
         conn = get_connection()
         try:
             rows = conn.execute(
-                "SELECT amount, currency FROM transactions "
-                "WHERE deleted=0 AND type='income'"
+                "SELECT amount, currency FROM transactions WHERE deleted=0 AND type='income'"
             ).fetchall()
         finally:
             conn.close()
-
         total = 0.0
         for r in rows:
-            if r["currency"] == "JPY":
-                total += r["amount"] / usd_jpy_rate
-            else:
-                total += r["amount"]
+            total += r["amount"] / usd_jpy_rate if r["currency"] == "JPY" else r["amount"]
         return total
 
     def _upsert(self, txn: Transaction):
@@ -229,14 +228,10 @@ class FinanceStore:
             conn.close()
 
     def add_preset(self, name: str, amount_usd: float,
-                   category: str = "Contract") -> JobPreset:
-        preset = JobPreset(
-            id=str(uuid.uuid4()),
-            name=name,
-            amount_usd=amount_usd,
-            category=category,
-            updated_at=now_utc(),
-        )
+                   category: str = "Main Job") -> JobPreset:
+        preset = JobPreset(id=str(uuid.uuid4()), name=name,
+                           amount_usd=amount_usd, category=category,
+                           updated_at=now_utc())
         self._upsert_preset(preset)
         return preset
 
@@ -258,21 +253,20 @@ class FinanceStore:
 
     def log_preset(self, preset: JobPreset, count: int = 1,
                    on_date: str | None = None) -> list[Transaction]:
-        """Log `count` completions of a preset job. Returns created transactions."""
-        from datetime import date as _date
+        """Log a preset as income. is_job_pay follows the preset's category."""
         day = on_date or _date.today().isoformat()
+        is_job_pay = (preset.category == "Main Job")
         txns = []
         for _ in range(count):
-            txn = self.add_transaction(
+            txns.append(self.add_transaction(
                 date=day,
                 amount=preset.amount_usd,
                 txn_type="income",
                 category=preset.category,
                 description=f"[Job] {preset.name}",
                 currency="USD",
-                is_job_pay=True,
-            )
-            txns.append(txn)
+                is_job_pay=is_job_pay,
+            ))
         return txns
 
     def _upsert_preset(self, preset: JobPreset):
@@ -299,4 +293,51 @@ class FinanceStore:
             id=row["id"], name=row["name"], amount_usd=row["amount_usd"],
             category=row["category"], updated_at=row["updated_at"],
             deleted=bool(row["deleted"]),
+        )
+
+    # ── Side Income Goals ─────────────────────────────────────────────────────
+
+    def get_goal(self, year: int, month: int) -> SideIncomeGoal | None:
+        conn = get_connection()
+        try:
+            row = conn.execute(
+                "SELECT * FROM side_income_goals WHERE year=? AND month=?",
+                (year, month),
+            ).fetchone()
+            return self._row_to_goal(row) if row else None
+        finally:
+            conn.close()
+
+    def set_goal(self, year: int, month: int,
+                 min_goal: float, major_goal: float) -> SideIncomeGoal:
+        conn = get_connection()
+        now = now_utc()
+        try:
+            existing = conn.execute(
+                "SELECT id FROM side_income_goals WHERE year=? AND month=?",
+                (year, month),
+            ).fetchone()
+            goal_id = existing["id"] if existing else str(uuid.uuid4())
+            conn.execute(
+                """INSERT INTO side_income_goals
+                   (id, year, month, min_goal, major_goal, updated_at)
+                   VALUES (?, ?, ?, ?, ?, ?)
+                   ON CONFLICT(year, month) DO UPDATE SET
+                   min_goal=excluded.min_goal, major_goal=excluded.major_goal,
+                   updated_at=excluded.updated_at""",
+                (goal_id, year, month, min_goal, major_goal, now),
+            )
+            conn.commit()
+        finally:
+            conn.close()
+        return SideIncomeGoal(id=goal_id, year=year, month=month,
+                              min_goal=min_goal, major_goal=major_goal,
+                              updated_at=now)
+
+    @staticmethod
+    def _row_to_goal(row) -> SideIncomeGoal:
+        return SideIncomeGoal(
+            id=row["id"], year=row["year"], month=row["month"],
+            min_goal=row["min_goal"], major_goal=row["major_goal"],
+            updated_at=row["updated_at"],
         )

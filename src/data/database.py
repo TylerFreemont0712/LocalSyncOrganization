@@ -42,7 +42,7 @@ def _migrate(conn: sqlite3.Connection):
     bcols = {r["name"] for r in conn.execute("PRAGMA table_info(birthdays)").fetchall()}
     if "note" not in bcols:
         conn.execute("ALTER TABLE birthdays ADD COLUMN note TEXT DEFAULT ''")
-        
+
     # --- transactions table ---
     txn_cols = {r["name"] for r in conn.execute("PRAGMA table_info(transactions)").fetchall()}
     if "currency" not in txn_cols:
@@ -90,7 +90,6 @@ CREATE TABLE IF NOT EXISTS transactions (
     is_job_pay  INTEGER DEFAULT 0
 );
 
- 
 CREATE TABLE IF NOT EXISTS job_presets (
     id          TEXT PRIMARY KEY,
     name        TEXT NOT NULL,
@@ -123,6 +122,16 @@ CREATE TABLE IF NOT EXISTS activities (
     created_at  TEXT NOT NULL,
     updated_at  TEXT NOT NULL,
     deleted     INTEGER DEFAULT 0
+);
+
+CREATE TABLE IF NOT EXISTS side_income_goals (
+    id          TEXT PRIMARY KEY,
+    year        INTEGER NOT NULL,
+    month       INTEGER NOT NULL,
+    min_goal    REAL NOT NULL DEFAULT 0,
+    major_goal  REAL NOT NULL DEFAULT 0,
+    updated_at  TEXT NOT NULL,
+    UNIQUE(year, month)
 );
 
 CREATE TABLE IF NOT EXISTS sync_meta (

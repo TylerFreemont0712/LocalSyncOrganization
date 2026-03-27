@@ -13,20 +13,31 @@ DEFAULT_ACTIVITIES = [
     "Coding", "Writing", "Reading", "Admin",
 ]
 
-# Colors for activity bars (matched to common activities)
+# Quick-tap card categories shown as large cards in the activity panel.
+# Users can rename these via config key "activity_quick_categories".
+QUICK_CATEGORIES = ["Food", "Work", "Side Job", "Break", "Family", "Free Time"]
+
+# Colors for activity bars and quick cards
 ACTIVITY_COLORS = {
-    "Deep Work": "#89b4fa",
-    "Meetings": "#f38ba8",
-    "Email / Comms": "#fab387",
-    "Learning": "#a6e3a1",
-    "Exercise": "#94e2d5",
-    "Break": "#9399b2",
-    "Errands": "#f9e2af",
-    "Commute": "#cba6f7",
-    "Coding": "#74c7ec",
-    "Writing": "#b4befe",
-    "Reading": "#f2cdcd",
-    "Admin": "#eba0ac",
+    # Quick categories
+    "Food":         "#fab387",  # peach
+    "Work":         "#89b4fa",  # blue
+    "Side Job":     "#a6e3a1",  # green
+    "Break":        "#9399b2",  # overlay2 / grey
+    "Family":       "#f5c2e7",  # pink
+    "Free Time":    "#cba6f7",  # mauve
+    # Legacy activities (kept for backwards compat)
+    "Deep Work":    "#89b4fa",
+    "Meetings":     "#f38ba8",
+    "Email / Comms":"#fab387",
+    "Learning":     "#a6e3a1",
+    "Exercise":     "#94e2d5",
+    "Errands":      "#f9e2af",
+    "Commute":      "#cba6f7",
+    "Coding":       "#74c7ec",
+    "Writing":      "#b4befe",
+    "Reading":      "#f2cdcd",
+    "Admin":        "#eba0ac",
 }
 
 DEFAULT_COLOR = "#89dceb"
