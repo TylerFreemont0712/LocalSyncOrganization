@@ -32,6 +32,7 @@ def init_db(conn: sqlite3.Connection | None = None):
 
 def _migrate(conn: sqlite3.Connection):
     """Add columns that may be missing from older databases."""
+    # --- events table ---
     cols = {r["name"] for r in conn.execute("PRAGMA table_info(events)").fetchall()}
     if "recurrence" not in cols:
         conn.execute("ALTER TABLE events ADD COLUMN recurrence TEXT DEFAULT ''")
@@ -41,6 +42,13 @@ def _migrate(conn: sqlite3.Connection):
     bcols = {r["name"] for r in conn.execute("PRAGMA table_info(birthdays)").fetchall()}
     if "note" not in bcols:
         conn.execute("ALTER TABLE birthdays ADD COLUMN note TEXT DEFAULT ''")
+        
+    # --- transactions table ---
+    txn_cols = {r["name"] for r in conn.execute("PRAGMA table_info(transactions)").fetchall()}
+    if "currency" not in txn_cols:
+        conn.execute("ALTER TABLE transactions ADD COLUMN currency TEXT DEFAULT 'USD'")
+    if "is_job_pay" not in txn_cols:
+        conn.execute("ALTER TABLE transactions ADD COLUMN is_job_pay INTEGER DEFAULT 0")
 
 
 _SCHEMA = """
@@ -76,6 +84,18 @@ CREATE TABLE IF NOT EXISTS transactions (
     type        TEXT NOT NULL CHECK(type IN ('income', 'expense')),
     category    TEXT DEFAULT 'Uncategorized',
     description TEXT DEFAULT '',
+    updated_at  TEXT NOT NULL,
+    deleted     INTEGER DEFAULT 0,
+    currency    TEXT DEFAULT 'USD',
+    is_job_pay  INTEGER DEFAULT 0
+);
+
+ 
+CREATE TABLE IF NOT EXISTS job_presets (
+    id          TEXT PRIMARY KEY,
+    name        TEXT NOT NULL,
+    amount_usd  REAL NOT NULL,
+    category    TEXT DEFAULT 'Contract',
     updated_at  TEXT NOT NULL,
     deleted     INTEGER DEFAULT 0
 );
