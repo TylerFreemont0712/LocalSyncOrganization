@@ -38,6 +38,10 @@ def _migrate(conn: sqlite3.Connection):
     if "category" not in cols:
         conn.execute("ALTER TABLE events ADD COLUMN category TEXT DEFAULT ''")
 
+    bcols = {r["name"] for r in conn.execute("PRAGMA table_info(birthdays)").fetchall()}
+    if "note" not in bcols:
+        conn.execute("ALTER TABLE birthdays ADD COLUMN note TEXT DEFAULT ''")
+
 
 _SCHEMA = """
 CREATE TABLE IF NOT EXISTS events (
@@ -60,6 +64,7 @@ CREATE TABLE IF NOT EXISTS birthdays (
     month       INTEGER NOT NULL,
     day         INTEGER NOT NULL,
     year        INTEGER,
+    note        TEXT DEFAULT '',
     updated_at  TEXT NOT NULL,
     deleted     INTEGER DEFAULT 0
 );

@@ -122,6 +122,7 @@ class Birthday:
     month: int
     day: int
     year: int | None = None
+    note: str = ""
     updated_at: str = ""
     deleted: bool = False
 
@@ -241,11 +242,11 @@ class CalendarStore:
     # ── Birthday CRUD ─────────────────────────────────
 
     def add_birthday(self, name: str, month: int, day: int,
-                     year: int | None = None) -> Birthday:
+                     year: int | None = None, note: str = "") -> Birthday:
         b = Birthday(
             id=str(uuid.uuid4()),
             name=name, month=month, day=day, year=year,
-            updated_at=now_utc(),
+            note=note, updated_at=now_utc(),
         )
         self._upsert_birthday(b)
         return b
@@ -291,13 +292,13 @@ class CalendarStore:
         conn = get_connection()
         try:
             conn.execute(
-                """INSERT INTO birthdays (id, name, month, day, year, updated_at, deleted)
-                   VALUES (?, ?, ?, ?, ?, ?, ?)
+                """INSERT INTO birthdays (id, name, month, day, year, note, updated_at, deleted)
+                   VALUES (?, ?, ?, ?, ?, ?, ?, ?)
                    ON CONFLICT(id) DO UPDATE SET
                    name=excluded.name, month=excluded.month, day=excluded.day,
-                   year=excluded.year, updated_at=excluded.updated_at,
-                   deleted=excluded.deleted""",
-                (b.id, b.name, b.month, b.day, b.year, b.updated_at, int(b.deleted)),
+                   year=excluded.year, note=excluded.note,
+                   updated_at=excluded.updated_at, deleted=excluded.deleted""",
+                (b.id, b.name, b.month, b.day, b.year, b.note, b.updated_at, int(b.deleted)),
             )
             conn.commit()
         finally:
@@ -308,6 +309,7 @@ class CalendarStore:
         return Birthday(
             id=row["id"], name=row["name"], month=row["month"],
             day=row["day"], year=row["year"],
+            note=row["note"] if row["note"] else "",
             updated_at=row["updated_at"], deleted=bool(row["deleted"]),
         )
 
@@ -342,7 +344,7 @@ class CalendarStore:
                 ev_date = datetime.fromisoformat(ev.start_time).date()
             except Exception:
                 continue
-            results.append((ev_date, ev.title, ev.category, ev.color))
+            results.append((ev_date, ev.title, ev.category, ev.color, ev.id, False))
 
         # Birthday table — find next annual occurrence
         today = from_date
@@ -356,7 +358,7 @@ class CalendarStore:
                     candidate = date(today.year + 1, b.month, b.day)
                 except ValueError:
                     continue
-            results.append((candidate, b.name, "birthday", "#f38ba8"))
+            results.append((candidate, b.name, "birthday", "#f38ba8", b.id, True))
 
         results.sort(key=lambda x: x[0])
         return results[:limit]
