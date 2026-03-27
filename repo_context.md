@@ -50,7 +50,7 @@ This document contains the full context of the repository, formatted for optimal
 
 ## 📊 Project Summary
 - Total Python files: **33**
-- Total lines of code: **9761**
+- Total lines of code: **10951**
 
 ## 🔗 Dependency Graph
 ### main.pyw
@@ -97,11 +97,13 @@ This document contains the full context of the repository, formatted for optimal
 - src.config
 
 ### src\data\finance_store.py
+- calendar
 - uuid
 - dataclasses
+- datetime
 - src.data.database
 - src.utils.timestamps
-- datetime
+- calendar
 
 ### src\data\holidays_jp.py
 - datetime
@@ -178,7 +180,6 @@ This document contains the full context of the repository, formatted for optimal
 
 ### src\ui\modules\activity_panel.py
 - __future__
-- collections
 - datetime
 - pathlib
 - PyQt6.QtCore
@@ -198,12 +199,16 @@ This document contains the full context of the repository, formatted for optimal
 - src.data.holidays_jp
 
 ### src\ui\modules\dashboard_panel.py
+- calendar
 - datetime
 - PyQt6.QtCore
+- PyQt6.QtGui
 - PyQt6.QtWidgets
+- src.config
 - src.data.todo_store
 - src.data.calendar_store
 - src.data.finance_store
+- PyQt6.QtWidgets
 
 ### src\ui\modules\finance_charts.py
 - calendar
@@ -213,11 +218,12 @@ This document contains the full context of the repository, formatted for optimal
 - PyQt6.QtGui
 - PyQt6.QtWidgets
 - src.data.finance_store
+- src.data.activity_store
+- src.config
 
 ### src\ui\modules\finance_panel.py
 - threading
 - urllib.request
-- urllib.error
 - json
 - datetime
 - PyQt6.QtCore
@@ -225,6 +231,7 @@ This document contains the full context of the repository, formatted for optimal
 - PyQt6.QtWidgets
 - src.config
 - src.data.finance_store
+- calendar
 
 ### src\ui\modules\notes_panel.py
 - json
@@ -402,13 +409,10 @@ SQLite database setup and connection for Calendar and Finance modules.
 **Module docstring:**
 Financial/earnings storage backed by SQLite.
 
-Reframed for freelance work tracking: income categories focus on client/project
-types, and the summary is oriented around "Amount Earned" rather than generic
-income/expense tracking.
-
 **Classes:**
 - `Transaction`: (No docstring)
 - `JobPreset`: (No docstring)
+- `SideIncomeGoal`: (No docstring)
 - `FinanceStore`: (No docstring)
 
 **Functions:**
@@ -416,26 +420,23 @@ income/expense tracking.
 - `update_transaction`: (No docstring)
 - `delete_transaction`: (No docstring)
 - `get_transactions`: (No docstring)
-- `get_summary`: Return earnings/expense totals and by-category breakdown.
-
-All USD amounts; caller must convert JPY transactions using the
-current exchange rate before passing in, or use get_summary_usd()
-which accepts a rate parameter.
-- `get_goal_income`: Return total additional income (non-job-pay) in USD for the period.
-
-JPY transactions are converted to USD using usd_jpy_rate.
-Only income transactions with is_job_pay=0 are counted.
-- `get_all_time_earned`: Total income across all time (raw stored amounts, no currency conversion).
-- `get_all_time_earned_usd`: Total income across all time, normalised to USD.
+- `has_monthly_tag`: Return True if any [Monthly] tagged expense exists for this month.
+- `get_summary`: (No docstring)
+- `get_goal_income`: (No docstring)
+- `get_side_income`: (No docstring)
+- `get_all_time_earned_usd`: (No docstring)
 - `_upsert`: (No docstring)
 - `_row_to_txn`: (No docstring)
 - `get_presets`: (No docstring)
 - `add_preset`: (No docstring)
 - `update_preset`: (No docstring)
 - `delete_preset`: (No docstring)
-- `log_preset`: Log `count` completions of a preset job. Returns created transactions.
+- `log_preset`: Log a preset as income. is_job_pay follows the preset's category.
 - `_upsert_preset`: (No docstring)
 - `_row_to_preset`: (No docstring)
+- `get_goal`: (No docstring)
+- `set_goal`: (No docstring)
+- `_row_to_goal`: (No docstring)
 
 ### src\data\holidays_jp.py
 **Module docstring:**
@@ -664,42 +665,39 @@ Module panels for each app feature.
 
 ### src\ui\modules\activity_panel.py
 **Module docstring:**
-Activity Tracker panel — weekly 24-hour time-block view with efficiency totals.
+Activity Tracker panel — quick-tap card interface + weekly 24-hour grid.
 
 Layout:
   Left (scrollable):  7-column × 24-hour painted block grid
-  Right (fixed 310px): Efficiency panel + compact log form
-
-Features:
-  • Stacked colored blocks showing activities proportionally across 24 h
-  • Cross-midnight activities drawn across the day boundary
-  • "Now" horizontal line on today's column
-  • Click a block to select / edit it in the log form
-  • Double-click empty space to open add form for that day+time
-  • Compact multi-row log form (activity, date, start, end, timer, add)
-  • Notes are a pop-out dialog — not shown by default
-  • Efficiency panel: weekly totals by activity category + per-day bar chart
+  Right (fixed 380px):
+    - Quick-tap category cards (2×3 grid)
+    - Today's activity log
+    - Manual log form with matching pill picker for category selection
 
 **Classes:**
-- `ActivityBlock`: Represents one painted rectangle on the weekly grid.
-- `WeekBlockWidget`: Custom-painted weekly time-block grid.
+- `ActivityBlock`: (No docstring)
+- `WeekBlockWidget`: (No docstring)
 - `NotesDialog`: (No docstring)
-- `FillBar`: A horizontal bar that fills to a percentage of its parent width.
-- `EfficiencyPanel`: Shows weekly activity totals and a per-day summary.
-- `LogForm`: Compact activity log form docked at the bottom of the right panel.
+- `RenameCategoriesDialog`: (No docstring)
+- `QuickCard`: (No docstring)
+- `TodayBreakdown`: (No docstring)
+- `_SmallPill`: A single small pill inside CategoryPillPicker.
+- `CategoryPillPicker`: 2×3 grid of small pills + optional custom text field.
+- `LogForm`: (No docstring)
 - `ActivityPanel`: (No docstring)
 
 **Functions:**
-- `_parse_hhmm`: Convert 'HH:MM' to float hours (e.g. '09:30' → 9.5).
+- `_parse_hhmm`: (No docstring)
 - `_hours_to_px`: (No docstring)
 - `_px_to_hours`: (No docstring)
 - `_fmt_hm`: (No docstring)
+- `_fmt_elapsed`: (No docstring)
+- `_make_lbl`: (No docstring)
 - `__init__`: (No docstring)
 - `__init__`: (No docstring)
 - `set_palette`: (No docstring)
 - `load_week`: (No docstring)
 - `select_activity`: (No docstring)
-- `_col_x`: (No docstring)
 - `_col_width`: (No docstring)
 - `_block_at`: (No docstring)
 - `_pos_to_col_hour`: (No docstring)
@@ -710,18 +708,39 @@ Features:
 - `__init__`: (No docstring)
 - `get_notes`: (No docstring)
 - `__init__`: (No docstring)
-- `paintEvent`: (No docstring)
+- `get_categories`: (No docstring)
+- `__init__`: (No docstring)
+- `_build_ui`: (No docstring)
+- `set_active`: (No docstring)
+- `set_daily_total`: (No docstring)
+- `tick`: (No docstring)
+- `_refresh_display`: (No docstring)
+- `_apply_style`: (No docstring)
+- `update_category`: (No docstring)
+- `mousePressEvent`: (No docstring)
 - `__init__`: (No docstring)
 - `set_palette`: (No docstring)
+- `refresh`: (No docstring)
+- `__init__`: (No docstring)
+- `set_selected`: (No docstring)
+- `update_category`: (No docstring)
+- `_apply_style`: (No docstring)
+- `mousePressEvent`: (No docstring)
+- `__init__`: (No docstring)
 - `_build_ui`: (No docstring)
-- `update_data`: (No docstring)
-- `_make_bar_row`: (No docstring)
-- `_make_day_row`: (No docstring)
+- `_on_pill_tapped`: (No docstring)
+- `_on_custom_changed`: (No docstring)
+- `_sync_pill_styles`: (No docstring)
+- `get_activity`: Returns the custom text if filled, otherwise the selected pill name.
+- `set_activity`: Pre-select a pill matching `name`, or fill custom field if no match.
+- `clear`: Deselect everything and clear custom text.
+- `update_categories`: Called when the user renames the quick cats.
 - `__init__`: (No docstring)
 - `_build_ui`: (No docstring)
 - `set_week_start`: (No docstring)
-- `prefill`: Called when user double-clicks empty space on the grid.
-- `load_for_edit`: Populate form fields with an existing activity for editing.
+- `update_categories`: Sync pill labels when categories are renamed.
+- `prefill`: (No docstring)
+- `load_for_edit`: (No docstring)
 - `_rebuild_day_combo`: (No docstring)
 - `_selected_date`: (No docstring)
 - `_submit`: (No docstring)
@@ -732,8 +751,16 @@ Features:
 - `_stop_timer`: (No docstring)
 - `_tick`: (No docstring)
 - `__init__`: (No docstring)
+- `_load_quick_cats`: (No docstring)
+- `_save_quick_cats`: (No docstring)
 - `set_palette`: (No docstring)
 - `_build_ui`: (No docstring)
+- `_on_card_tapped`: (No docstring)
+- `_start_session`: (No docstring)
+- `_stop_session`: (No docstring)
+- `_card_tick`: (No docstring)
+- `_update_card_states`: (No docstring)
+- `_rename_categories`: (No docstring)
 - `_prev_week`: (No docstring)
 - `_next_week`: (No docstring)
 - `_go_today`: (No docstring)
@@ -861,11 +888,26 @@ Layout (positions unchanged):
 
 ### src\ui\modules\dashboard_panel.py
 **Module docstring:**
-QA Dashboard panel — overview of tasks, upcoming deadlines, and productivity stats.
+Dashboard panel — overview of tasks, upcoming deadlines, and productivity stats.
+
+New in this version:
+  • SideIncomeGoalSection — prominent month-browsable side income goal tracker
+    with a color-coded progress bar (red → green → blue glow at major goal).
+  • Goal data stored in side_income_goals table via FinanceStore.set_goal()
 
 **Classes:**
 - `StatCard`: A compact stat card with a big number and label.
 - `UpcomingItem`: A single upcoming deadline / event in the dashboard.
+- `GoalBar`: Paints a progress bar that changes color based on goal thresholds.
+
+States:
+  current < min_goal  → red/orange gradient fill
+  current >= min_goal → green fill
+  current >= major_goal → blue fill + subtle outer glow
+- `GoalEditDialog`: Set minimum and major monthly side income goals.
+
+Input can be entered in USD or JPY — get_goals() always returns USD.
+- `SideIncomeGoalSection`: Prominent side income goal tracker with month navigation and color-coded bar.
 - `DashboardPanel`: (No docstring)
 
 **Functions:**
@@ -873,6 +915,26 @@ QA Dashboard panel — overview of tasks, upcoming deadlines, and productivity s
 - `update_value`: (No docstring)
 - `__init__`: (No docstring)
 - `__init__`: (No docstring)
+- `set_values`: (No docstring)
+- `set_palette`: (No docstring)
+- `paintEvent`: (No docstring)
+- `__init__`: (No docstring)
+- `_apply_usd_mode`: (No docstring)
+- `_apply_jpy_mode`: (No docstring)
+- `_on_currency_changed`: (No docstring)
+- `_update_hints`: (No docstring)
+- `_validate_and_accept`: (No docstring)
+- `get_goals`: Always returns (min_usd, major_usd).
+- `__init__`: (No docstring)
+- `set_palette`: (No docstring)
+- `_load_rate`: (No docstring)
+- `_build_ui`: (No docstring)
+- `_refresh`: (No docstring)
+- `_prev_month`: (No docstring)
+- `_next_month`: (No docstring)
+- `_edit_goals`: (No docstring)
+- `__init__`: (No docstring)
+- `showEvent`: Refresh immediately whenever the Dashboard tab becomes visible.
 - `set_palette`: (No docstring)
 - `_build_ui`: (No docstring)
 - `_refresh`: (No docstring)
@@ -882,13 +944,21 @@ QA Dashboard panel — overview of tasks, upcoming deadlines, and productivity s
 **Module docstring:**
 Finance charts — custom painted graphs for earnings data visualization.
 
-Uses QPainter for zero-dependency chart rendering: line chart, bar chart, pie chart.
+Uses QPainter for zero-dependency chart rendering: line chart, bar chart,
+pie chart, and activity stacked bar chart.
+
+Tabs:
+  Finance  — monthly line chart, earnings by source bar, category pie
+  Activity — stacked daily bar chart of time spent per quick category
 
 **Classes:**
 - `LineChart`: Monthly earnings line chart with area fill.
 - `BarChart`: Vertical bar chart for category or monthly comparisons.
 - `PieChart`: Donut/pie chart for category distribution.
-- `FinanceChartsPanel`: Charts view for the finance data.
+- `StackedActivityChart`: Stacked bar chart: one bar per day, segments per quick category.
+- `ActivityChartsPanel`: Activity stacked bar chart view.
+- `FinanceChartsPanel`: Tabbed charts panel: Finance tab + Activity tab.
+- `_FinanceChartsContent`: Original finance charts: line chart, bar chart, pie chart.
 
 **Functions:**
 - `__init__`: (No docstring)
@@ -900,6 +970,18 @@ Uses QPainter for zero-dependency chart rendering: line chart, bar chart, pie ch
 - `__init__`: (No docstring)
 - `set_data`: (No docstring)
 - `paintEvent`: (No docstring)
+- `__init__`: (No docstring)
+- `set_data`: (No docstring)
+- `set_palette`: (No docstring)
+- `paintEvent`: (No docstring)
+- `__init__`: (No docstring)
+- `set_palette`: (No docstring)
+- `_build_ui`: (No docstring)
+- `_refresh`: (No docstring)
+- `__init__`: (No docstring)
+- `set_palette`: (No docstring)
+- `_build_ui`: (No docstring)
+- `refresh`: (No docstring)
 - `__init__`: (No docstring)
 - `set_palette`: (No docstring)
 - `_build_ui`: (No docstring)
@@ -908,30 +990,35 @@ Uses QPainter for zero-dependency chart rendering: line chart, bar chart, pie ch
 
 ### src\ui\modules\finance_panel.py
 **Module docstring:**
-Earnings Tracker module UI — freelance income tracking with summaries.
+Earnings Tracker module UI.
 
-Features:
-- Quick-log preset jobs with one click (job pay, does not count toward goals)
-- Manual earning / expense entry with USD or JPY currency selection
-- Live USD→JPY exchange rate via open.er-api.com with offline fallback
-- Dual-currency display throughout (USD + ¥JPY)
-- Month's Goal section: Base Goal + Extra Goal progress bars
-  (only additional income, not job pay, counts toward goals)
-- Quick date-range buttons (This Month / Last Month / This Year / All Time)
-- Period summary panel with category bars
+Changes in this version:
+  • Income categories simplified to "Main Job" / "Side Job"
+  • Preset manager: category picker (Main Job / Side Job) per preset
+  • log_preset respects preset.category for is_job_pay
+  • Monthly Expenses dialog: recurring expense templates with one-click monthly logging
+    — tagged [Monthly] for easy 確定申告 filtering
+  • GoalEditDialog: JPY/USD currency toggle for goal entry
+  • Dropdown QSS fix applied everywhere
 
 **Classes:**
 - `RateSignals`: (No docstring)
-- `ExchangeRateManager`: Fetches USD→JPY rate in a background thread. Thread-safe.
-- `GoalProgressBar`: Paints a two-tier progress bar: base goal and extra goal.
+- `ExchangeRateManager`: (No docstring)
+- `GoalProgressBar`: (No docstring)
 - `CategoryBar`: (No docstring)
-- `PresetManagerDialog`: Add / edit / delete job presets.
-- `GoalSettingsDialog`: Set base and extra monthly income goals (USD).
-- `TransactionDialog`: Dialog to add/edit a transaction (earning or expense).
-- `PresetButton`: A card-style button for one-click job logging.
+- `PresetManagerDialog`: (No docstring)
+- `MonthlyExpenseTemplatesDialog`: Add / edit / delete recurring expense templates.
+- `MonthlyExpensesDialog`: One-click monthly expense logger for recurring bills.
+
+Transactions are tagged [Monthly] <name> in the description field,
+making them easy to filter for 確定申告 year-end reporting.
+- `GoalSettingsDialog`: Set monthly side-income goals.  Input can be in USD or JPY.
+- `TransactionDialog`: (No docstring)
+- `PresetButton`: (No docstring)
 - `FinancePanel`: (No docstring)
 
 **Functions:**
+- `_hdr_lbl`: (No docstring)
 - `__init__`: (No docstring)
 - `rate`: (No docstring)
 - `set_fallback`: (No docstring)
@@ -947,17 +1034,46 @@ Features:
 - `_edit_selected`: (No docstring)
 - `_delete_selected`: (No docstring)
 - `__init__`: (No docstring)
+- `_load`: (No docstring)
+- `_save`: (No docstring)
+- `_load_expense_cats`: (No docstring)
 - `_build_ui`: (No docstring)
-- `_validate_and_accept`: (No docstring)
-- `get_goals`: (No docstring)
+- `_on_currency_changed`: (No docstring)
+- `_refresh`: (No docstring)
+- `_add`: (No docstring)
+- `_edit_selected`: (No docstring)
+- `_delete_selected`: (No docstring)
+- `_reset_defaults`: (No docstring)
 - `__init__`: (No docstring)
+- `_load_presets`: (No docstring)
+- `_build_ui`: (No docstring)
+- `_reload`: Rebuild the expense rows from the current template list.
+- `_update_month_label`: (No docstring)
+- `_update_total`: (No docstring)
+- `_set_all_checked`: (No docstring)
+- `_prev_month`: (No docstring)
+- `_next_month`: (No docstring)
+- `_manage_templates`: (No docstring)
+- `_log_selected`: (No docstring)
+- `__init__`: (No docstring)
+- `_apply_usd_mode`: (No docstring)
+- `_apply_jpy_mode`: (No docstring)
+- `_on_currency_changed`: (No docstring)
+- `_update_hints`: (No docstring)
+- `_validate_and_accept`: (No docstring)
+- `get_goals`: Always return (base_usd, extra_usd).
+- `__init__`: (No docstring)
+- `_load_expense_cats`: (No docstring)
+- `_save_expense_cats`: (No docstring)
 - `_build_ui`: (No docstring)
 - `_on_type_changed`: (No docstring)
 - `_on_currency_changed`: (No docstring)
+- `_add_expense_cat`: (No docstring)
 - `get_data`: (No docstring)
 - `__init__`: (No docstring)
 - `__init__`: (No docstring)
 - `set_palette`: (No docstring)
+- `showEvent`: (No docstring)
 - `_build_ui`: (No docstring)
 - `_build_header`: (No docstring)
 - `_build_quick_log_bar`: (No docstring)
@@ -974,9 +1090,10 @@ Features:
 - `_refresh_rate`: (No docstring)
 - `_on_rate_updated`: (No docstring)
 - `_on_rate_error`: (No docstring)
-- `_rebuild_preset_buttons`: Clear and repopulate the Quick Log button row.
+- `_rebuild_preset_buttons`: (No docstring)
 - `_log_preset`: (No docstring)
 - `_open_preset_manager`: (No docstring)
+- `_open_monthly_expenses`: (No docstring)
 - `_open_goal_settings`: (No docstring)
 - `_update_goal_section`: (No docstring)
 - `_get_filters`: (No docstring)
@@ -1367,20 +1484,31 @@ DEFAULT_ACTIVITIES = [
     "Coding", "Writing", "Reading", "Admin",
 ]
 
-# Colors for activity bars (matched to common activities)
+# Quick-tap card categories shown as large cards in the activity panel.
+# Users can rename these via config key "activity_quick_categories".
+QUICK_CATEGORIES = ["Food", "Work", "Side Job", "Break", "Family", "Free Time"]
+
+# Colors for activity bars and quick cards
 ACTIVITY_COLORS = {
-    "Deep Work": "#89b4fa",
-    "Meetings": "#f38ba8",
-    "Email / Comms": "#fab387",
-    "Learning": "#a6e3a1",
-    "Exercise": "#94e2d5",
-    "Break": "#9399b2",
-    "Errands": "#f9e2af",
-    "Commute": "#cba6f7",
-    "Coding": "#74c7ec",
-    "Writing": "#b4befe",
-    "Reading": "#f2cdcd",
-    "Admin": "#eba0ac",
+    # Quick categories
+    "Food":         "#fab387",  # peach
+    "Work":         "#89b4fa",  # blue
+    "Side Job":     "#a6e3a1",  # green
+    "Break":        "#9399b2",  # overlay2 / grey
+    "Family":       "#f5c2e7",  # pink
+    "Free Time":    "#cba6f7",  # mauve
+    # Legacy activities (kept for backwards compat)
+    "Deep Work":    "#89b4fa",
+    "Meetings":     "#f38ba8",
+    "Email / Comms":"#fab387",
+    "Learning":     "#a6e3a1",
+    "Exercise":     "#94e2d5",
+    "Errands":      "#f9e2af",
+    "Commute":      "#cba6f7",
+    "Coding":       "#74c7ec",
+    "Writing":      "#b4befe",
+    "Reading":      "#f2cdcd",
+    "Admin":        "#eba0ac",
 }
 
 DEFAULT_COLOR = "#89dceb"
@@ -1491,7 +1619,6 @@ class ActivityStore:
             notes=row["notes"] or "", created_at=row["created_at"],
             updated_at=row["updated_at"], deleted=bool(row["deleted"]),
         )
-
 ```
 
 ### `src\data\calendar_store.py`
@@ -1911,7 +2038,7 @@ def _migrate(conn: sqlite3.Connection):
     bcols = {r["name"] for r in conn.execute("PRAGMA table_info(birthdays)").fetchall()}
     if "note" not in bcols:
         conn.execute("ALTER TABLE birthdays ADD COLUMN note TEXT DEFAULT ''")
-        
+
     # --- transactions table ---
     txn_cols = {r["name"] for r in conn.execute("PRAGMA table_info(transactions)").fetchall()}
     if "currency" not in txn_cols:
@@ -1959,7 +2086,6 @@ CREATE TABLE IF NOT EXISTS transactions (
     is_job_pay  INTEGER DEFAULT 0
 );
 
- 
 CREATE TABLE IF NOT EXISTS job_presets (
     id          TEXT PRIMARY KEY,
     name        TEXT NOT NULL,
@@ -1994,52 +2120,68 @@ CREATE TABLE IF NOT EXISTS activities (
     deleted     INTEGER DEFAULT 0
 );
 
+CREATE TABLE IF NOT EXISTS side_income_goals (
+    id          TEXT PRIMARY KEY,
+    year        INTEGER NOT NULL,
+    month       INTEGER NOT NULL,
+    min_goal    REAL NOT NULL DEFAULT 0,
+    major_goal  REAL NOT NULL DEFAULT 0,
+    updated_at  TEXT NOT NULL,
+    UNIQUE(year, month)
+);
+
 CREATE TABLE IF NOT EXISTS sync_meta (
     key   TEXT PRIMARY KEY,
     value TEXT
 );
 """
-
 ```
 
 ### `src\data\finance_store.py`
 
 ```python
-"""Financial/earnings storage backed by SQLite.
+"""Financial/earnings storage backed by SQLite."""
 
-Reframed for freelance work tracking: income categories focus on client/project
-types, and the summary is oriented around "Amount Earned" rather than generic
-income/expense tracking.
-"""
-
+import calendar as _calendar
 import uuid
-from dataclasses import dataclass, field
+from dataclasses import dataclass
+from datetime import date as _date
 
 from src.data.database import get_connection
 from src.utils.timestamps import now_utc
 
 
-DEFAULT_CATEGORIES = [
-    # Earnings sources
-    "Freelance", "Contract", "Consulting", "Commission", "Royalties",
-    "Side Project", "Referral Bonus",
-    # Expense categories (still useful for net tracking)
-    "Software/Tools", "Hardware", "Office", "Travel", "Education",
-    "Taxes", "Fees", "Uncategorized",
+INCOME_CATEGORIES = ["Main Job", "Side Job"]
+
+EXPENSE_CATEGORIES = [
+    "Rent / Housing",
+    "Software / Tools",
+    "Hardware",
+    "Office Supplies",
+    "Travel",
+    "Education",
+    "Food & Drink",
+    "Subscriptions",
+    "Utilities",
+    "Taxes",
+    "Fees & Banking",
+    "Uncategorized",
 ]
+
+DEFAULT_CATEGORIES = INCOME_CATEGORIES + EXPENSE_CATEGORIES
 
 
 @dataclass
 class Transaction:
     id: str
-    date: str           # YYYY-MM-DD
-    amount: float       # Always stored in original currency
-    type: str           # 'income' or 'expense'
-    category: str = "Freelance"
+    date: str
+    amount: float
+    type: str
+    category: str = "Side Job"
     description: str = ""
     updated_at: str = ""
     deleted: bool = False
-    currency: str = "USD"   # 'USD' or 'JPY'
+    currency: str = "USD"
     is_job_pay: bool = False
 
 
@@ -2048,9 +2190,19 @@ class JobPreset:
     id: str
     name: str
     amount_usd: float
-    category: str = "Contract"
+    category: str = "Main Job"
     updated_at: str = ""
     deleted: bool = False
+
+
+@dataclass
+class SideIncomeGoal:
+    id: str
+    year: int
+    month: int
+    min_goal: float
+    major_goal: float
+    updated_at: str = ""
 
 
 class FinanceStore:
@@ -2058,18 +2210,13 @@ class FinanceStore:
     # ── Transactions ──────────────────────────────────────────────────────────
 
     def add_transaction(self, date: str, amount: float, txn_type: str,
-                        category: str = "Freelance", description: str = "",
+                        category: str = "Side Job", description: str = "",
                         currency: str = "USD", is_job_pay: bool = False) -> Transaction:
         txn = Transaction(
             id=str(uuid.uuid4()),
-            date=date,
-            amount=amount,
-            type=txn_type,
-            category=category,
-            description=description,
-            updated_at=now_utc(),
-            currency=currency,
-            is_job_pay=is_job_pay,
+            date=date, amount=amount, type=txn_type,
+            category=category, description=description,
+            updated_at=now_utc(), currency=currency, is_job_pay=is_job_pay,
         )
         self._upsert(txn)
         return txn
@@ -2098,49 +2245,49 @@ class FinanceStore:
             query = "SELECT * FROM transactions WHERE deleted=0"
             params: list = []
             if start_date:
-                query += " AND date >= ?"
-                params.append(start_date)
+                query += " AND date >= ?"; params.append(start_date)
             if end_date:
-                query += " AND date <= ?"
-                params.append(end_date)
+                query += " AND date <= ?"; params.append(end_date)
             if txn_type:
-                query += " AND type = ?"
-                params.append(txn_type)
+                query += " AND type = ?"; params.append(txn_type)
             query += " ORDER BY date DESC"
             rows = conn.execute(query, params).fetchall()
             return [self._row_to_txn(r) for r in rows]
         finally:
             conn.close()
 
+    def has_monthly_tag(self, year: int, month: int) -> bool:
+        """Return True if any [Monthly] tagged expense exists for this month."""
+        import calendar as _cal
+        last_day = _cal.monthrange(year, month)[1]
+        first = _date(year, month, 1).isoformat()
+        last  = _date(year, month, last_day).isoformat()
+        conn = get_connection()
+        try:
+            row = conn.execute(
+                "SELECT COUNT(*) as cnt FROM transactions "
+                "WHERE deleted=0 AND type='expense' "
+                "AND description LIKE '[Monthly]%' "
+                "AND date >= ? AND date <= ?",
+                (first, last),
+            ).fetchone()
+            return row["cnt"] > 0
+        finally:
+            conn.close()
+
     def get_summary(self, start_date: str | None = None,
                     end_date: str | None = None) -> dict:
-        """Return earnings/expense totals and by-category breakdown.
-
-        All USD amounts; caller must convert JPY transactions using the
-        current exchange rate before passing in, or use get_summary_usd()
-        which accepts a rate parameter.
-        """
         txns = self.get_transactions(start_date, end_date)
         earned = sum(t.amount for t in txns if t.type == "income")
-        spent = sum(t.amount for t in txns if t.type == "expense")
+        spent  = sum(t.amount for t in txns if t.type == "expense")
         by_category: dict[str, float] = {}
         for t in txns:
             by_category[t.category] = by_category.get(t.category, 0) + t.amount
-        return {
-            "earned": earned,
-            "spent": spent,
-            "net": earned - spent,
-            "by_category": by_category,
-            "count": len(txns),
-        }
+        return {"earned": earned, "spent": spent, "net": earned - spent,
+                "by_category": by_category, "count": len(txns)}
 
     def get_goal_income(self, start_date: str, end_date: str,
                         usd_jpy_rate: float = 150.0) -> float:
-        """Return total additional income (non-job-pay) in USD for the period.
-
-        JPY transactions are converted to USD using usd_jpy_rate.
-        Only income transactions with is_job_pay=0 are counted.
-        """
         conn = get_connection()
         try:
             rows = conn.execute(
@@ -2151,44 +2298,31 @@ class FinanceStore:
             ).fetchall()
         finally:
             conn.close()
-
-        total_usd = 0.0
+        total = 0.0
         for r in rows:
-            if r["currency"] == "JPY":
-                total_usd += r["amount"] / usd_jpy_rate
-            else:
-                total_usd += r["amount"]
-        return total_usd
+            total += r["amount"] / usd_jpy_rate if r["currency"] == "JPY" else r["amount"]
+        return total
 
-    def get_all_time_earned(self) -> float:
-        """Total income across all time (raw stored amounts, no currency conversion)."""
-        conn = get_connection()
-        try:
-            row = conn.execute(
-                "SELECT COALESCE(SUM(amount), 0) as total FROM transactions "
-                "WHERE deleted=0 AND type='income'"
-            ).fetchone()
-            return row["total"]
-        finally:
-            conn.close()
+    def get_side_income(self, year: int, month: int,
+                        usd_jpy_rate: float = 150.0) -> float:
+        last_day = _calendar.monthrange(year, month)[1]
+        return self.get_goal_income(
+            _date(year, month, 1).isoformat(),
+            _date(year, month, last_day).isoformat(),
+            usd_jpy_rate,
+        )
 
     def get_all_time_earned_usd(self, usd_jpy_rate: float = 150.0) -> float:
-        """Total income across all time, normalised to USD."""
         conn = get_connection()
         try:
             rows = conn.execute(
-                "SELECT amount, currency FROM transactions "
-                "WHERE deleted=0 AND type='income'"
+                "SELECT amount, currency FROM transactions WHERE deleted=0 AND type='income'"
             ).fetchall()
         finally:
             conn.close()
-
         total = 0.0
         for r in rows:
-            if r["currency"] == "JPY":
-                total += r["amount"] / usd_jpy_rate
-            else:
-                total += r["amount"]
+            total += r["amount"] / usd_jpy_rate if r["currency"] == "JPY" else r["amount"]
         return total
 
     def _upsert(self, txn: Transaction):
@@ -2236,14 +2370,10 @@ class FinanceStore:
             conn.close()
 
     def add_preset(self, name: str, amount_usd: float,
-                   category: str = "Contract") -> JobPreset:
-        preset = JobPreset(
-            id=str(uuid.uuid4()),
-            name=name,
-            amount_usd=amount_usd,
-            category=category,
-            updated_at=now_utc(),
-        )
+                   category: str = "Main Job") -> JobPreset:
+        preset = JobPreset(id=str(uuid.uuid4()), name=name,
+                           amount_usd=amount_usd, category=category,
+                           updated_at=now_utc())
         self._upsert_preset(preset)
         return preset
 
@@ -2265,21 +2395,20 @@ class FinanceStore:
 
     def log_preset(self, preset: JobPreset, count: int = 1,
                    on_date: str | None = None) -> list[Transaction]:
-        """Log `count` completions of a preset job. Returns created transactions."""
-        from datetime import date as _date
+        """Log a preset as income. is_job_pay follows the preset's category."""
         day = on_date or _date.today().isoformat()
+        is_job_pay = (preset.category == "Main Job")
         txns = []
         for _ in range(count):
-            txn = self.add_transaction(
+            txns.append(self.add_transaction(
                 date=day,
                 amount=preset.amount_usd,
                 txn_type="income",
                 category=preset.category,
                 description=f"[Job] {preset.name}",
                 currency="USD",
-                is_job_pay=True,
-            )
-            txns.append(txn)
+                is_job_pay=is_job_pay,
+            ))
         return txns
 
     def _upsert_preset(self, preset: JobPreset):
@@ -2306,6 +2435,53 @@ class FinanceStore:
             id=row["id"], name=row["name"], amount_usd=row["amount_usd"],
             category=row["category"], updated_at=row["updated_at"],
             deleted=bool(row["deleted"]),
+        )
+
+    # ── Side Income Goals ─────────────────────────────────────────────────────
+
+    def get_goal(self, year: int, month: int) -> SideIncomeGoal | None:
+        conn = get_connection()
+        try:
+            row = conn.execute(
+                "SELECT * FROM side_income_goals WHERE year=? AND month=?",
+                (year, month),
+            ).fetchone()
+            return self._row_to_goal(row) if row else None
+        finally:
+            conn.close()
+
+    def set_goal(self, year: int, month: int,
+                 min_goal: float, major_goal: float) -> SideIncomeGoal:
+        conn = get_connection()
+        now = now_utc()
+        try:
+            existing = conn.execute(
+                "SELECT id FROM side_income_goals WHERE year=? AND month=?",
+                (year, month),
+            ).fetchone()
+            goal_id = existing["id"] if existing else str(uuid.uuid4())
+            conn.execute(
+                """INSERT INTO side_income_goals
+                   (id, year, month, min_goal, major_goal, updated_at)
+                   VALUES (?, ?, ?, ?, ?, ?)
+                   ON CONFLICT(year, month) DO UPDATE SET
+                   min_goal=excluded.min_goal, major_goal=excluded.major_goal,
+                   updated_at=excluded.updated_at""",
+                (goal_id, year, month, min_goal, major_goal, now),
+            )
+            conn.commit()
+        finally:
+            conn.close()
+        return SideIncomeGoal(id=goal_id, year=year, month=month,
+                              min_goal=min_goal, major_goal=major_goal,
+                              updated_at=now)
+
+    @staticmethod
+    def _row_to_goal(row) -> SideIncomeGoal:
+        return SideIncomeGoal(
+            id=row["id"], year=row["year"], month=row["month"],
+            min_goal=row["min_goal"], major_goal=row["major_goal"],
+            updated_at=row["updated_at"],
         )
 ```
 
@@ -4118,45 +4294,36 @@ __all__ = ["NotesPanel", "CalendarPanel", "FinancePanel"]
 ### `src\ui\modules\activity_panel.py`
 
 ```python
-"""Activity Tracker panel — weekly 24-hour time-block view with efficiency totals.
+"""Activity Tracker panel — quick-tap card interface + weekly 24-hour grid.
 
 Layout:
   Left (scrollable):  7-column × 24-hour painted block grid
-  Right (fixed 310px): Efficiency panel + compact log form
-
-Features:
-  • Stacked colored blocks showing activities proportionally across 24 h
-  • Cross-midnight activities drawn across the day boundary
-  • "Now" horizontal line on today's column
-  • Click a block to select / edit it in the log form
-  • Double-click empty space to open add form for that day+time
-  • Compact multi-row log form (activity, date, start, end, timer, add)
-  • Notes are a pop-out dialog — not shown by default
-  • Efficiency panel: weekly totals by activity category + per-day bar chart
+  Right (fixed 380px):
+    - Quick-tap category cards (2×3 grid)
+    - Today's activity log
+    - Manual log form with matching pill picker for category selection
 """
 
 from __future__ import annotations
 
-from collections import defaultdict
 from datetime import date, datetime, timedelta
 from pathlib import Path
 
 from PyQt6.QtCore import Qt, QRectF, QPointF, QTimer, QTime, pyqtSignal
 from PyQt6.QtGui import (
-    QPainter, QColor, QFont, QFontMetrics, QPen, QBrush,
-    QLinearGradient, QMouseEvent,
+    QPainter, QColor, QFont, QFontMetrics, QPen, QBrush, QMouseEvent,
 )
 from PyQt6.QtWidgets import (
     QWidget, QVBoxLayout, QHBoxLayout, QLabel,
     QPushButton, QComboBox, QTimeEdit, QPlainTextEdit,
     QFrame, QScrollArea, QMessageBox, QSizePolicy,
-    QDialog, QGridLayout,
+    QDialog, QGridLayout, QDialogButtonBox, QLineEdit,
 )
 
-from src.config import load_config
+from src.config import load_config, save_config
 from src.data.activity_store import (
     ActivityStore, Activity,
-    DEFAULT_ACTIVITIES, ACTIVITY_COLORS, DEFAULT_COLOR,
+    DEFAULT_ACTIVITIES, ACTIVITY_COLORS, DEFAULT_COLOR, QUICK_CATEGORIES,
 )
 
 
@@ -4164,11 +4331,11 @@ from src.data.activity_store import (
 #  Layout constants
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-HOUR_H    = 52      # px per hour → 52 × 24 = 1248 px total height
-HEADER_H  = 44      # day-name row height
-TIME_W    = 52      # left column for hour labels
-DAY_COUNT = 7       # Mon–Sun
-TOTAL_H   = HEADER_H + 24 * HOUR_H   # 1292
+HOUR_H    = 52
+HEADER_H  = 44
+TIME_W    = 52
+DAY_COUNT = 7
+TOTAL_H   = HEADER_H + 24 * HOUR_H
 
 
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -4176,7 +4343,6 @@ TOTAL_H   = HEADER_H + 24 * HOUR_H   # 1292
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 def _parse_hhmm(s: str) -> float:
-    """Convert 'HH:MM' to float hours (e.g. '09:30' → 9.5)."""
     try:
         h, m = map(int, s.split(":"))
         return h + m / 60.0
@@ -4193,46 +4359,46 @@ def _fmt_hm(total_minutes: int) -> str:
     h, m = divmod(abs(total_minutes), 60)
     return f"{h}h {m}m" if m else f"{h}h"
 
+def _fmt_elapsed(secs: int) -> str:
+    h, rem = divmod(secs, 3600)
+    m, s = divmod(rem, 60)
+    return f"{h}:{m:02d}:{s:02d}" if h else f"{m:02d}:{s:02d}"
+
 
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-#  ActivityBlock  — one drawn block on the grid
+#  ActivityBlock
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 class ActivityBlock:
-    """Represents one painted rectangle on the weekly grid."""
     def __init__(self, activity: Activity, col: int,
                  y_start: float, y_end: float, overflow: bool = False):
-        self.activity  = activity
-        self.col       = col
-        self.y_start   = y_start   # pixel y of top
-        self.y_end     = y_end     # pixel y of bottom
-        self.overflow  = overflow  # True = this is the continuation from prev day
-        self.rect      = QRectF()  # set during paint (includes column x offset)
+        self.activity = activity
+        self.col      = col
+        self.y_start  = y_start
+        self.y_end    = y_end
+        self.overflow = overflow
+        self.rect     = QRectF()
 
 
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-#  WeekBlockWidget  — fully-painted main calendar body
+#  WeekBlockWidget
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 class WeekBlockWidget(QWidget):
-    """Custom-painted weekly time-block grid."""
-
-    block_clicked  = pyqtSignal(object)    # Activity
-    empty_clicked  = pyqtSignal(object, float)  # date, hour_float
+    block_clicked = pyqtSignal(object)
+    empty_clicked = pyqtSignal(object, float)
 
     def __init__(self, parent=None):
         super().__init__(parent)
         self._palette: dict = {}
         self._blocks:  list[ActivityBlock] = []
-        self._week_start: date = date.today() - timedelta(days=date.today().weekday())
+        self._week_start = date.today() - timedelta(days=date.today().weekday())
         self._selected: ActivityBlock | None = None
         self._hovered:  ActivityBlock | None = None
         self.setFixedHeight(TOTAL_H)
         self.setMinimumWidth(400)
         self.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
         self.setMouseTracking(True)
-
-    # ── Public API ───────────────────────────────────
 
     def set_palette(self, palette: dict):
         self._palette = palette; self.update()
@@ -4241,72 +4407,50 @@ class WeekBlockWidget(QWidget):
         self._week_start = week_start
         self._blocks = []
         self._selected = None
-
         for col in range(DAY_COUNT):
             day = week_start + timedelta(days=col)
-            acts = activities_by_date.get(day, [])
-
-            # Also check previous day for any cross-midnight overflows
             prev_day = day - timedelta(days=1)
             for prev_act in activities_by_date.get(prev_day, []):
                 sh = _parse_hhmm(prev_act.start_time)
                 eh = _parse_hhmm(prev_act.end_time)
-                if eh < sh:   # crosses midnight
-                    y0 = _hours_to_px(0.0)
-                    y1 = _hours_to_px(eh)
+                if eh < sh:
+                    y0, y1 = _hours_to_px(0.0), _hours_to_px(eh)
                     if y1 > y0:
-                        self._blocks.append(ActivityBlock(
-                            prev_act, col, y0, y1, overflow=True))
-
-            for act in acts:
+                        self._blocks.append(ActivityBlock(prev_act, col, y0, y1, overflow=True))
+            for act in activities_by_date.get(day, []):
                 sh = _parse_hhmm(act.start_time)
                 eh = _parse_hhmm(act.end_time)
                 if eh < sh:
-                    # Crosses midnight: draw to bottom of this column
-                    self._blocks.append(ActivityBlock(
-                        act, col, _hours_to_px(sh), _hours_to_px(24.0)))
+                    self._blocks.append(ActivityBlock(act, col, _hours_to_px(sh), _hours_to_px(24.0)))
                 else:
-                    self._blocks.append(ActivityBlock(
-                        act, col, _hours_to_px(sh), _hours_to_px(eh)))
-
+                    self._blocks.append(ActivityBlock(act, col, _hours_to_px(sh), _hours_to_px(eh)))
         self.update()
 
     def select_activity(self, activity: Activity | None):
-        if activity is None:
-            self._selected = None
-        else:
+        self._selected = None
+        if activity:
             for b in self._blocks:
                 if b.activity.id == activity.id:
                     self._selected = b; break
         self.update()
 
-    # ── Mouse ────────────────────────────────────────
-
-    def _col_x(self, col: int) -> float:
-        col_w = (self.width() - TIME_W) / DAY_COUNT
-        return TIME_W + col * col_w
-
     def _col_width(self) -> float:
         return (self.width() - TIME_W) / DAY_COUNT
 
     def _block_at(self, pos: QPointF) -> ActivityBlock | None:
-        for b in reversed(self._blocks):   # top = last drawn = front
-            if b.rect.contains(pos):
-                return b
+        for b in reversed(self._blocks):
+            if b.rect.contains(pos): return b
         return None
 
     def _pos_to_col_hour(self, pos: QPointF):
-        cw = self._col_width()
-        col = int((pos.x() - TIME_W) / cw)
-        col = max(0, min(DAY_COUNT - 1, col))
-        hour = _px_to_hours(pos.y())
-        return col, hour
+        cw  = self._col_width()
+        col = max(0, min(DAY_COUNT - 1, int((pos.x() - TIME_W) / cw)))
+        return col, _px_to_hours(pos.y())
 
     def mousePressEvent(self, ev: QMouseEvent):
         b = self._block_at(ev.position())
         if b:
-            self._selected = b; self.update()
-            self.block_clicked.emit(b.activity)
+            self._selected = b; self.update(); self.block_clicked.emit(b.activity)
         else:
             self._selected = None; self.update()
 
@@ -4314,8 +4458,7 @@ class WeekBlockWidget(QWidget):
         b = self._block_at(ev.position())
         if not b:
             col, hour = self._pos_to_col_hour(ev.position())
-            d = self._week_start + timedelta(days=col)
-            self.empty_clicked.emit(d, hour)
+            self.empty_clicked.emit(self._week_start + timedelta(days=col), hour)
 
     def mouseMoveEvent(self, ev: QMouseEvent):
         b = self._block_at(ev.position())
@@ -4330,8 +4473,6 @@ class WeekBlockWidget(QWidget):
                 self.setToolTip("")
             self.update()
 
-    # ── Paint ────────────────────────────────────────
-
     def paintEvent(self, event):
         p = QPainter(self)
         p.setRenderHint(QPainter.RenderHint.Antialiasing)
@@ -4344,133 +4485,100 @@ class WeekBlockWidget(QWidget):
         muted  = QColor(self._palette.get("muted",     "#7f849c"))
         accent = QColor(self._palette.get("accent",    "#89b4fa"))
         hdr_bg = QColor(self._palette.get("header_bg", "#181825"))
-
         col_w  = self._col_width()
 
-        # ── Background ───────────────────────────────
         p.fillRect(0, 0, w, TOTAL_H, bg)
         p.fillRect(0, 0, w, HEADER_H, hdr_bg)
 
-        # ── Hour grid lines ──────────────────────────
         hour_font = QFont(); hour_font.setPixelSize(9)
         p.setFont(hour_font)
         for h in range(25):
             y = _hours_to_px(h)
-            is_major = (h % 6 == 0)
-            c = QColor(border)
-            if is_major: c.setAlpha(200)
-            else:        c.setAlpha(80)
-            p.setPen(QPen(c, 1 if is_major else 0.5))
+            c = QColor(border); c.setAlpha(200 if h % 6 == 0 else 80)
+            p.setPen(QPen(c, 1 if h % 6 == 0 else 0.5))
             p.drawLine(QPointF(TIME_W, y), QPointF(w, y))
-
             if h < 24:
-                lbl = f"{h:02d}:00"
                 p.setPen(muted if h % 6 else fg)
-                p.drawText(QRectF(0, y + 1, TIME_W - 4, HOUR_H - 2),
-                           Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignTop, lbl)
+                p.drawText(QRectF(0, y+1, TIME_W-4, HOUR_H-2),
+                           Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignTop,
+                           f"{h:02d}:00")
 
-        # ── Column dividers + day headers ─────────────
-        today = date.today()
+        today    = date.today()
         day_font = QFont(); day_font.setPixelSize(11); day_font.setBold(True)
-        num_font  = QFont(); num_font.setPixelSize(15); num_font.setBold(True)
+        num_font = QFont(); num_font.setPixelSize(15); num_font.setBold(True)
 
         for col in range(DAY_COUNT):
             x = TIME_W + col * col_w
             d = self._week_start + timedelta(days=col)
-            is_today = (d == today)
+            is_today   = (d == today)
             is_weekend = (col >= 5)
-
-            # Column background (weekend slightly tinted)
             if is_weekend:
-                tint = QColor(surf)
-                tint.setAlpha(30)
+                tint = QColor(surf); tint.setAlpha(30)
                 p.fillRect(QRectF(x, HEADER_H, col_w, TOTAL_H - HEADER_H), QBrush(tint))
-
-            # Column divider
             if col > 0:
                 p.setPen(QPen(border, 1))
                 p.drawLine(QPointF(x, 0), QPointF(x, TOTAL_H))
-
-            # Day header
             if is_today:
                 p.fillRect(QRectF(x, 0, col_w, HEADER_H), QBrush(accent))
                 text_c = QColor(self._palette.get("accent_fg", "#1e1e2e"))
             else:
                 text_c = fg
-
             p.setPen(text_c)
             p.setFont(day_font)
-            p.drawText(QRectF(x, 4, col_w, 18),
-                       Qt.AlignmentFlag.AlignCenter, d.strftime("%a").upper())
+            p.drawText(QRectF(x, 4, col_w, 18), Qt.AlignmentFlag.AlignCenter,
+                       d.strftime("%a").upper())
             p.setFont(num_font)
-            p.drawText(QRectF(x, 20, col_w, 22),
-                       Qt.AlignmentFlag.AlignCenter, str(d.day))
+            p.drawText(QRectF(x, 20, col_w, 22), Qt.AlignmentFlag.AlignCenter,
+                       str(d.day))
 
-        # Time-label column border
         p.setPen(QPen(border, 1))
         p.drawLine(QPointF(TIME_W, 0), QPointF(TIME_W, TOTAL_H))
 
-        # ── Activity blocks ──────────────────────────
         for b in self._blocks:
-            x    = TIME_W + b.col * col_w
-            bx   = x + 2
-            bw   = col_w - 4
-            by   = b.y_start
-            bh   = b.y_end - b.y_start
+            x  = TIME_W + b.col * col_w
+            bx, bw = x + 2, col_w - 4
+            by, bh = b.y_start, b.y_end - b.y_start
             if bh < 1: continue
             b.rect = QRectF(bx, by, bw, bh)
 
             color = QColor(b.activity.color)
             is_sel = (b is self._selected)
             is_hov = (b is self._hovered)
-
-            if b.overflow:
-                color.setAlpha(160)
-            if is_sel:   color = color.lighter(135)
-            elif is_hov: color = color.lighter(115)
+            if b.overflow:   color.setAlpha(160)
+            if is_sel:       color = color.lighter(135)
+            elif is_hov:     color = color.lighter(115)
 
             p.setBrush(QBrush(color))
             p.setPen(QPen(color.lighter(160), 1) if is_sel else Qt.PenStyle.NoPen)
             p.drawRoundedRect(b.rect, 3, 3)
 
-            # Label
             if bh >= 18:
-                lbl_font = QFont()
-                lbl_font.setPixelSize(10 if bh < 32 else 11)
-                lbl_font.setBold(True)
-                p.setFont(lbl_font)
-                # Dark text on light block
-                p.setPen(QColor("#11111b") if color.lightness() > 128
-                         else QColor("#cdd6f4"))
-                fm = QFontMetrics(lbl_font)
-                text = b.activity.activity
-                if b.overflow: text = "← " + text
+                lf = QFont(); lf.setPixelSize(10 if bh < 32 else 11); lf.setBold(True)
+                p.setFont(lf)
+                p.setPen(QColor("#11111b") if color.lightness() > 128 else QColor("#cdd6f4"))
+                fm   = QFontMetrics(lf)
+                text = ("\u2190 " if b.overflow else "") + b.activity.activity
                 etext = fm.elidedText(text, Qt.TextElideMode.ElideRight, int(bw - 8))
-                text_rect = b.rect.adjusted(4, 2, -4, -2)
+                tr = b.rect.adjusted(4, 2, -4, -2)
                 if bh >= 32:
-                    p.drawText(text_rect, Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop, etext)
-                    # Time hint on second line
-                    lbl_font.setPixelSize(9); lbl_font.setBold(False); p.setFont(lbl_font)
-                    time_lbl = f"{b.activity.start_time}–{b.activity.end_time}"
-                    time_rect = QRectF(b.rect.x()+4, b.rect.y()+13, bw-8, 12)
-                    p.drawText(time_rect, Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop, time_lbl)
+                    p.drawText(tr, Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop, etext)
+                    lf.setPixelSize(9); lf.setBold(False); p.setFont(lf)
+                    p.drawText(QRectF(bx+4, by+13, bw-8, 12),
+                               Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop,
+                               f"{b.activity.start_time}\u2013{b.activity.end_time}")
                 else:
-                    p.drawText(text_rect, Qt.AlignmentFlag.AlignVCenter | Qt.AlignmentFlag.AlignLeft, etext)
+                    p.drawText(tr, Qt.AlignmentFlag.AlignVCenter | Qt.AlignmentFlag.AlignLeft, etext)
 
-        # ── "Now" indicator ──────────────────────────
         now = datetime.now()
         if self._week_start <= today <= self._week_start + timedelta(days=6):
-            now_col = (today - self._week_start).days
-            now_y   = _hours_to_px(now.hour + now.minute / 60)
-            x0 = TIME_W + now_col * col_w
-            x1 = x0 + col_w
-            now_color = QColor(self._palette.get("red", "#f38ba8"))
-            p.setPen(QPen(now_color, 2))
-            p.drawLine(QPointF(x0, now_y), QPointF(x1, now_y))
-            # Small circle at left edge
-            p.setBrush(QBrush(now_color)); p.setPen(Qt.PenStyle.NoPen)
-            p.drawEllipse(QPointF(x0, now_y), 4, 4)
-
+            nc = (today - self._week_start).days
+            ny = _hours_to_px(now.hour + now.minute / 60)
+            x0 = TIME_W + nc * col_w; x1 = x0 + col_w
+            nc_color = QColor(self._palette.get("red", "#f38ba8"))
+            p.setPen(QPen(nc_color, 2))
+            p.drawLine(QPointF(x0, ny), QPointF(x1, ny))
+            p.setBrush(QBrush(nc_color)); p.setPen(Qt.PenStyle.NoPen)
+            p.drawEllipse(QPointF(x0, ny), 4, 4)
         p.end()
 
 
@@ -4479,263 +4587,448 @@ class WeekBlockWidget(QWidget):
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 class NotesDialog(QDialog):
-    def __init__(self, parent=None, notes: str = ""):
+    def __init__(self, parent=None, notes: str = "", title: str = "Activity Notes"):
         super().__init__(parent)
-        self.setWindowTitle("Activity Notes")
-        self.setMinimumSize(340, 200)
+        self.setWindowTitle(title)
+        self.setMinimumSize(360, 220)
         self.setModal(True)
         layout = QVBoxLayout(self)
+        layout.setSpacing(8)
         layout.addWidget(QLabel("Notes (optional):"))
         self.edit = QPlainTextEdit()
         self.edit.setPlainText(notes)
-        self.edit.setPlaceholderText("Add notes for this activity…")
+        self.edit.setPlaceholderText("What did you do during this time?")
+        self.edit.setMinimumHeight(120)
         layout.addWidget(self.edit)
-        btn_row = QHBoxLayout()
-        cancel = QPushButton("Cancel"); cancel.setObjectName("secondary")
-        cancel.clicked.connect(self.reject)
-        ok = QPushButton("OK"); ok.setDefault(True); ok.clicked.connect(self.accept)
-        btn_row.addStretch(); btn_row.addWidget(cancel); btn_row.addWidget(ok)
-        layout.addLayout(btn_row)
+        btn_box = QDialogButtonBox(
+            QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel)
+        btn_box.accepted.connect(self.accept)
+        btn_box.rejected.connect(self.reject)
+        layout.addWidget(btn_box)
 
     def get_notes(self) -> str:
         return self.edit.toPlainText().strip()
 
 
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-#  FillBar — a proper auto-resizing percentage bar
+#  RenameCategoriesDialog
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-class FillBar(QWidget):
-    """A horizontal bar that fills to a percentage of its parent width."""
-
-    def __init__(self, ratio: float, fill_color: str, bg_color: str,
-                 height: int = 6, parent=None):
+class RenameCategoriesDialog(QDialog):
+    def __init__(self, categories: list[str], parent=None):
         super().__init__(parent)
-        self._ratio = max(0.0, min(1.0, ratio))
-        self._fill_color = fill_color
-        self._bg_color = bg_color
-        self.setFixedHeight(height)
+        self.setWindowTitle("Edit Quick Categories")
+        self.setMinimumWidth(320)
+        self.setModal(True)
+        layout = QVBoxLayout(self)
+        layout.addWidget(QLabel("Rename the 6 quick-tap categories:"))
+        self._edits: list[QLineEdit] = []
+        form = QGridLayout(); form.setSpacing(6)
+        for i, cat in enumerate(categories):
+            lbl  = QLabel(f"Card {i + 1}:")
+            edit = QLineEdit(cat)
+            self._edits.append(edit)
+            form.addWidget(lbl, i, 0); form.addWidget(edit, i, 1)
+        layout.addLayout(form)
+        btn_box = QDialogButtonBox(
+            QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel)
+        btn_box.accepted.connect(self.accept)
+        btn_box.rejected.connect(self.reject)
+        layout.addWidget(btn_box)
+
+    def get_categories(self) -> list[str]:
+        return [e.text().strip() or "—" for e in self._edits]
+
+
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+#  QuickCard — large pill card for one-tap tracking
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+class QuickCard(QFrame):
+    tapped = pyqtSignal(str)
+
+    def __init__(self, category: str, parent=None):
+        super().__init__(parent)
+        self._category = category
+        self._active   = False
+        self._elapsed_secs    = 0
+        self._daily_total_mins = 0
+        self._color = ACTIVITY_COLORS.get(category, DEFAULT_COLOR)
+        self.setMinimumHeight(78)
         self.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
-
-    def paintEvent(self, ev):
-        p = QPainter(self)
-        p.setRenderHint(QPainter.RenderHint.Antialiasing)
-        w, h = self.width(), self.height()
-        r = h / 2
-
-        # Background track
-        p.setBrush(QBrush(QColor(self._bg_color)))
-        p.setPen(Qt.PenStyle.NoPen)
-        p.drawRoundedRect(0, 0, w, h, r, r)
-
-        # Fill
-        if self._ratio > 0:
-            fill_w = max(h, int(w * self._ratio))  # at least pill-shaped
-            p.setBrush(QBrush(QColor(self._fill_color)))
-            p.drawRoundedRect(0, 0, fill_w, h, r, r)
-
-        p.end()
-
-
-# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-#  EfficiencyPanel  — right-side totals + mini bar chart
-# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-class EfficiencyPanel(QWidget):
-    """Shows weekly activity totals and a per-day summary."""
-
-    def __init__(self, parent=None):
-        super().__init__(parent)
-        self._palette: dict = {}
+        self.setCursor(Qt.CursorShape.PointingHandCursor)
         self._build_ui()
-
-    def set_palette(self, palette: dict):
-        self._palette = palette; self.update()
+        self._apply_style(active=False)
 
     def _build_ui(self):
         layout = QVBoxLayout(self)
-        layout.setContentsMargins(0, 0, 0, 0)
-        layout.setSpacing(6)
+        layout.setContentsMargins(10, 8, 10, 8)
+        layout.setSpacing(3)
+        layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
-        hdr = QLabel("Week Efficiency")
-        hdr.setStyleSheet("font-size:13px;font-weight:bold;")
-        layout.addWidget(hdr)
+        name_row = QHBoxLayout(); name_row.setSpacing(4)
+        self._play_lbl = QLabel()
+        self._play_lbl.setFixedWidth(16)
+        self._play_lbl.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        name_row.addWidget(self._play_lbl)
+        self._name_lbl = QLabel(self._category)
+        self._name_lbl.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self._name_lbl.setStyleSheet(
+            "font-size:13px;font-weight:bold;background:transparent;border:none;")
+        name_row.addWidget(self._name_lbl, 1)
+        layout.addLayout(name_row)
 
-        self._totals_lbl  = QLabel("—")
-        self._totals_lbl.setStyleSheet("font-size:11px;")
-        layout.addWidget(self._totals_lbl)
+        self._time_lbl = QLabel("—")
+        self._time_lbl.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self._time_lbl.setStyleSheet(
+            "font-size:11px;font-family:monospace;background:transparent;border:none;")
+        layout.addWidget(self._time_lbl)
 
-        self._today_lbl = QLabel("")
-        self._today_lbl.setStyleSheet("font-size:10px;font-weight:bold;")
-        layout.addWidget(self._today_lbl)
+        self._total_lbl = QLabel("")
+        self._total_lbl.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self._total_lbl.setStyleSheet("font-size:9px;background:transparent;border:none;")
+        layout.addWidget(self._total_lbl)
 
-        div = QFrame(); div.setFrameShape(QFrame.Shape.HLine)
-        div.setObjectName("separator"); layout.addWidget(div)
+    def set_active(self, active: bool, elapsed_secs: int = 0):
+        self._active = active
+        self._elapsed_secs = elapsed_secs
+        self._refresh_display()
+        self._apply_style(active)
 
-        self._bar_container = QWidget()
-        self._bar_layout    = QVBoxLayout(self._bar_container)
-        self._bar_layout.setContentsMargins(0, 0, 0, 0)
-        self._bar_layout.setSpacing(4)
-        layout.addWidget(self._bar_container)
+    def set_daily_total(self, minutes: int):
+        self._daily_total_mins = minutes
+        self._refresh_display()
 
-        div2 = QFrame(); div2.setFrameShape(QFrame.Shape.HLine)
-        div2.setObjectName("separator"); layout.addWidget(div2)
+    def tick(self, elapsed_secs: int):
+        self._elapsed_secs = elapsed_secs
+        self._refresh_display()
 
-        daily_hdr = QLabel("Daily totals")
-        daily_hdr.setStyleSheet("font-size:11px;font-weight:bold;")
-        layout.addWidget(daily_hdr)
-
-        self._daily_container = QWidget()
-        self._daily_layout    = QVBoxLayout(self._daily_container)
-        self._daily_layout.setContentsMargins(0, 0, 0, 0)
-        self._daily_layout.setSpacing(3)
-        layout.addWidget(self._daily_container)
-        layout.addStretch()
-
-    def update_data(self, week_start: date, activities_by_date: dict[date, list[Activity]]):
-        # ── Category totals ──────────────────────────
-        by_name: dict[str, int] = defaultdict(int)
-        total_mins = 0
-        for acts in activities_by_date.values():
-            for a in acts:
-                by_name[a.activity] += a.duration_minutes
-                total_mins += a.duration_minutes
-
-        # Proper average per day
-        avg_mins_per_day = total_mins / 7
-        avg_h = int(avg_mins_per_day) // 60
-        avg_m = int(avg_mins_per_day) % 60
-        avg_str = f"{avg_h}h {avg_m}m" if avg_m else f"{avg_h}h"
-
-        self._totals_lbl.setText(
-            f"Tracked: {_fmt_hm(total_mins)}  ·  ~{avg_str}/day"
-        )
-
-        # Today's total
-        today = date.today()
-        today_acts = activities_by_date.get(today, [])
-        today_mins = sum(a.duration_minutes for a in today_acts)
-        accent = self._palette.get("accent", "#89b4fa")
-        green = self._palette.get("green", "#a6e3a1")
-        if today_mins > 0:
-            self._today_lbl.setText(f"Today: {_fmt_hm(today_mins)}")
-            self._today_lbl.setStyleSheet(
-                f"font-size:10px;font-weight:bold;color:{green};")
+    def _refresh_display(self):
+        if self._active:
+            self._play_lbl.setText("\u25b6")
+            self._play_lbl.setStyleSheet(
+                f"color:{self._color};font-size:11px;background:transparent;border:none;")
+            self._time_lbl.setText(_fmt_elapsed(self._elapsed_secs))
+            self._time_lbl.setStyleSheet(
+                f"font-size:13px;font-weight:bold;font-family:monospace;"
+                f"color:{self._color};background:transparent;border:none;")
+            total = self._daily_total_mins + self._elapsed_secs // 60
+            self._total_lbl.setText(f"Today: {_fmt_hm(total)}" if total else "Today: just started")
         else:
-            self._today_lbl.setText("Today: —")
-            self._today_lbl.setStyleSheet(
-                f"font-size:10px;font-weight:bold;color:{self._palette.get('muted','#7f849c')};")
+            self._play_lbl.setText("")
+            self._play_lbl.setStyleSheet("background:transparent;border:none;")
+            if self._daily_total_mins > 0:
+                self._time_lbl.setText(_fmt_hm(self._daily_total_mins))
+                self._time_lbl.setStyleSheet(
+                    "font-size:12px;font-family:monospace;background:transparent;border:none;")
+                self._total_lbl.setText("today")
+            else:
+                self._time_lbl.setText("—")
+                self._time_lbl.setStyleSheet(
+                    "font-size:11px;font-family:monospace;background:transparent;border:none;")
+                self._total_lbl.setText("")
 
-        # Clear bar rows
-        while self._bar_layout.count():
-            child = self._bar_layout.takeAt(0)
-            if child.widget(): child.widget().deleteLater()
+    def _apply_style(self, active: bool):
+        color = self._color
+        if active:
+            c = QColor(color); c.setAlpha(45)
+            bg = c.name(QColor.NameFormat.HexArgb)
+            self.setStyleSheet(
+                f"QuickCard{{border:2px solid {color};border-radius:12px;"
+                f"background-color:{bg};}}")
+        else:
+            self.setStyleSheet(
+                f"QuickCard{{border:1px solid {color}55;border-radius:12px;"
+                f"background-color:transparent;}}"
+                f"QuickCard:hover{{border:1px solid {color};"
+                f"background-color:{color}18;}}")
 
-        max_mins = max(by_name.values(), default=1)
-        for name, mins in sorted(by_name.items(), key=lambda x: -x[1])[:10]:
-            color = ACTIVITY_COLORS.get(name, DEFAULT_COLOR)
-            row = self._make_bar_row(name, mins, max_mins, color)
-            self._bar_layout.addWidget(row)
+    def update_category(self, new_name: str):
+        self._category = new_name
+        self._color    = ACTIVITY_COLORS.get(new_name, DEFAULT_COLOR)
+        self._name_lbl.setText(new_name)
+        self._apply_style(self._active)
 
-        # ── Daily totals ─────────────────────────────
-        while self._daily_layout.count():
-            child = self._daily_layout.takeAt(0)
-            if child.widget(): child.widget().deleteLater()
-
-        day_labels = ["Mon","Tue","Wed","Thu","Fri","Sat","Sun"]
-        day_totals = []
-        for i in range(7):
-            d = week_start + timedelta(days=i)
-            acts = activities_by_date.get(d, [])
-            day_totals.append(sum(a.duration_minutes for a in acts))
-
-        max_day = max(day_totals, default=1) or 1
-        for i, (label, mins) in enumerate(zip(day_labels, day_totals)):
-            d = week_start + timedelta(days=i)
-            is_today = (d == today)
-            row = self._make_day_row(label, mins, max_day, is_today)
-            self._daily_layout.addWidget(row)
-
-    def _make_bar_row(self, name: str, mins: int, max_mins: int, color: str) -> QWidget:
-        w = QWidget()
-        layout = QVBoxLayout(w); layout.setContentsMargins(0,2,0,0); layout.setSpacing(1)
-
-        top_row = QHBoxLayout(); top_row.setSpacing(4)
-        name_lbl = QLabel(name)
-        name_lbl.setStyleSheet("font-size:11px;")
-        top_row.addWidget(name_lbl, 1)
-        mins_lbl = QLabel(_fmt_hm(mins))
-        mins_lbl.setStyleSheet("font-size:10px;font-weight:bold;")
-        top_row.addWidget(mins_lbl)
-        layout.addLayout(top_row)
-
-        ratio = mins / max(max_mins, 1)
-        bg_c = self._palette.get('border', '#45475a')
-        bar = FillBar(ratio, color, bg_c, height=6)
-        layout.addWidget(bar)
-
-        return w
-
-    def _make_day_row(self, label: str, mins: int, max_mins: int,
-                      is_today: bool) -> QWidget:
-        w = QWidget(); layout = QHBoxLayout(w)
-        layout.setContentsMargins(0,1,0,1); layout.setSpacing(6)
-
-        lbl = QLabel(label)
-        lbl.setFixedWidth(28)
-        lbl.setStyleSheet(
-            f"font-size:10px;font-weight:bold;"
-            f"color:{self._palette.get('accent','#89b4fa') if is_today else self._palette.get('muted','#7f849c')};")
-        layout.addWidget(lbl)
-
-        ratio = mins / max(max_mins, 1)
-        accent_c = self._palette.get("accent","#89b4fa") if is_today else \
-                   self._palette.get("green","#a6e3a1")
-        bg_c = self._palette.get('border', '#45475a')
-        bar = FillBar(ratio if mins > 0 else 0, accent_c, bg_c, height=8)
-        layout.addWidget(bar, 1)
-
-        time_lbl = QLabel(_fmt_hm(mins) if mins else "—")
-        time_lbl.setFixedWidth(40)
-        time_lbl.setAlignment(Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter)
-        time_lbl.setStyleSheet("font-size:10px;")
-        layout.addWidget(time_lbl)
-        return w
+    def mousePressEvent(self, ev):
+        if ev.button() == Qt.MouseButton.LeftButton:
+            self.tapped.emit(self._category)
+        super().mousePressEvent(ev)
 
 
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-#  LogForm  — redesigned multi-row activity entry
+#  TodayBreakdown
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+class TodayBreakdown(QWidget):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self._palette: dict = {}
+        outer = QVBoxLayout(self)
+        outer.setContentsMargins(0, 0, 0, 0); outer.setSpacing(4)
+        hdr = QLabel("Today's Log")
+        hdr.setStyleSheet("font-size:11px;font-weight:bold;")
+        outer.addWidget(hdr)
+        self._scroll = QScrollArea()
+        self._scroll.setWidgetResizable(True)
+        self._scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+        self._scroll.setFrameShape(QFrame.Shape.NoFrame)
+        self._scroll.setMaximumHeight(150)
+        self._container = QWidget()
+        self._layout = QVBoxLayout(self._container)
+        self._layout.setContentsMargins(0, 0, 0, 0); self._layout.setSpacing(2)
+        self._scroll.setWidget(self._container)
+        outer.addWidget(self._scroll)
+
+    def set_palette(self, palette: dict):
+        self._palette = palette
+
+    def refresh(self, activities: list[Activity], active_category: str | None,
+                session_start: datetime | None):
+        while self._layout.count():
+            child = self._layout.takeAt(0)
+            if child.widget(): child.widget().deleteLater()
+
+        muted = self._palette.get("muted", "#7f849c")
+
+        if not activities and not active_category:
+            lbl = QLabel("Nothing logged yet")
+            lbl.setStyleSheet(f"font-size:10px;color:{muted};")
+            self._layout.addWidget(lbl)
+            return
+
+        # Active session row (top)
+        if active_category and session_start:
+            color = ACTIVITY_COLORS.get(active_category, DEFAULT_COLOR)
+            elapsed_mins = int((datetime.now() - session_start).total_seconds() // 60)
+            row = QHBoxLayout(); row.setSpacing(6); row.setContentsMargins(0, 1, 0, 1)
+            dot = QLabel("\u25b6"); dot.setFixedWidth(12)
+            dot.setStyleSheet(f"color:{color};font-size:10px;")
+            row.addWidget(dot)
+            name = QLabel(active_category)
+            name.setStyleSheet(f"font-size:10px;font-weight:bold;color:{color};")
+            row.addWidget(name, 1)
+            row.addWidget(_make_lbl(f"{elapsed_mins}m\u2026", f"font-size:10px;color:{color};"))
+            w = QWidget(); w.setLayout(row)
+            self._layout.addWidget(w)
+
+        for act in reversed(activities):
+            color = ACTIVITY_COLORS.get(act.activity, DEFAULT_COLOR)
+            row = QHBoxLayout(); row.setSpacing(6); row.setContentsMargins(0, 1, 0, 1)
+            dot = QLabel("\u25cf"); dot.setFixedWidth(12)
+            dot.setStyleSheet(f"color:{color};font-size:10px;")
+            row.addWidget(dot)
+            row.addWidget(_make_lbl(act.activity, "font-size:10px;font-weight:bold;"), 1)
+            dur = act.duration_minutes
+            row.addWidget(_make_lbl(_fmt_hm(dur) if dur > 0 else "\u2014",
+                                    f"font-size:10px;color:{muted};"))
+            row.addWidget(_make_lbl(f"{act.start_time}\u2013{act.end_time}",
+                                    f"font-size:9px;color:{muted};"))
+            w = QWidget(); w.setLayout(row)
+            self._layout.addWidget(w)
+
+        self._layout.addStretch()
+
+
+def _make_lbl(text: str, style: str) -> QLabel:
+    l = QLabel(text); l.setStyleSheet(style); return l
+
+
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+#  CategoryPillPicker — compact pill grid for LogForm
+#
+#  Same pill style as QuickCard but smaller (height ~40px).
+#  Clicking a pill selects it; a custom text field below
+#  lets the user type a one-off activity name instead.
+#  Priority: custom text (if non-empty) > selected pill.
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+class _SmallPill(QFrame):
+    """A single small pill inside CategoryPillPicker."""
+
+    tapped = pyqtSignal(str)
+
+    def __init__(self, category: str, parent=None):
+        super().__init__(parent)
+        self._category = category
+        self._selected = False
+        self._color = ACTIVITY_COLORS.get(category, DEFAULT_COLOR)
+        self.setMinimumHeight(40)
+        self.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
+        self.setCursor(Qt.CursorShape.PointingHandCursor)
+
+        layout = QVBoxLayout(self)
+        layout.setContentsMargins(6, 4, 6, 4)
+        layout.setSpacing(1)
+        layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
+
+        self._name_lbl = QLabel(category)
+        self._name_lbl.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self._name_lbl.setStyleSheet(
+            "font-size:11px;font-weight:bold;background:transparent;border:none;")
+        layout.addWidget(self._name_lbl)
+
+        self._apply_style()
+
+    def set_selected(self, selected: bool):
+        self._selected = selected
+        self._apply_style()
+
+    def update_category(self, name: str):
+        self._category = name
+        self._color = ACTIVITY_COLORS.get(name, DEFAULT_COLOR)
+        self._name_lbl.setText(name)
+        self._apply_style()
+
+    def _apply_style(self):
+        color = self._color
+        if self._selected:
+            c = QColor(color); c.setAlpha(50)
+            bg = c.name(QColor.NameFormat.HexArgb)
+            self.setStyleSheet(
+                f"_SmallPill{{border:2px solid {color};border-radius:8px;"
+                f"background-color:{bg};}}")
+            self._name_lbl.setStyleSheet(
+                f"font-size:11px;font-weight:bold;color:{color};"
+                "background:transparent;border:none;")
+        else:
+            self.setStyleSheet(
+                f"_SmallPill{{border:1px solid {color}44;border-radius:8px;"
+                f"background-color:transparent;}}"
+                f"_SmallPill:hover{{border:1px solid {color}aa;"
+                f"background-color:{color}15;}}")
+            self._name_lbl.setStyleSheet(
+                "font-size:11px;font-weight:bold;background:transparent;border:none;")
+
+    def mousePressEvent(self, ev):
+        if ev.button() == Qt.MouseButton.LeftButton:
+            self.tapped.emit(self._category)
+        super().mousePressEvent(ev)
+
+
+class CategoryPillPicker(QWidget):
+    """2×3 grid of small pills + optional custom text field."""
+
+    def __init__(self, categories: list[str], parent=None):
+        super().__init__(parent)
+        self._pills: list[_SmallPill] = []
+        self._selected_cat: str | None = None
+        self._build_ui(categories)
+
+    def _build_ui(self, categories: list[str]):
+        root = QVBoxLayout(self)
+        root.setContentsMargins(0, 0, 0, 0)
+        root.setSpacing(4)
+
+        grid = QGridLayout(); grid.setSpacing(5)
+        for i, cat in enumerate(categories):
+            pill = _SmallPill(cat)
+            pill.tapped.connect(self._on_pill_tapped)
+            self._pills.append(pill)
+            grid.addWidget(pill, i // 3, i % 3)
+        root.addLayout(grid)
+
+        # Custom / other text field
+        self._custom = QLineEdit()
+        self._custom.setPlaceholderText("Other activity\u2026")
+        self._custom.setFixedHeight(26)
+        self._custom.setStyleSheet("font-size:11px;")
+        self._custom.textChanged.connect(self._on_custom_changed)
+        root.addWidget(self._custom)
+
+    def _on_pill_tapped(self, category: str):
+        # Clear custom text when a pill is chosen
+        self._custom.blockSignals(True)
+        self._custom.clear()
+        self._custom.blockSignals(False)
+        # Toggle: tap again to deselect
+        if self._selected_cat == category:
+            self._selected_cat = None
+        else:
+            self._selected_cat = category
+        self._sync_pill_styles()
+
+    def _on_custom_changed(self, text: str):
+        # If the user is typing a custom name, deselect all pills
+        if text.strip():
+            self._selected_cat = None
+            self._sync_pill_styles()
+
+    def _sync_pill_styles(self):
+        for pill in self._pills:
+            pill.set_selected(pill._category == self._selected_cat)
+
+    # ── Public API ──────────────────────────────────
+
+    def get_activity(self) -> str:
+        """Returns the custom text if filled, otherwise the selected pill name."""
+        custom = self._custom.text().strip()
+        if custom:
+            return custom
+        return self._selected_cat or ""
+
+    def set_activity(self, name: str):
+        """Pre-select a pill matching `name`, or fill custom field if no match."""
+        self._custom.blockSignals(True)
+        self._custom.clear()
+        self._custom.blockSignals(False)
+        # Check if name matches one of the pills
+        self._selected_cat = None
+        for pill in self._pills:
+            if pill._category == name:
+                self._selected_cat = name
+                break
+        if self._selected_cat is None and name:
+            # No matching pill — put it in the custom field
+            self._custom.setText(name)
+        self._sync_pill_styles()
+
+    def clear(self):
+        """Deselect everything and clear custom text."""
+        self._selected_cat = None
+        self._custom.blockSignals(True)
+        self._custom.clear()
+        self._custom.blockSignals(False)
+        self._sync_pill_styles()
+
+    def update_categories(self, categories: list[str]):
+        """Called when the user renames the quick cats."""
+        for pill, cat in zip(self._pills, categories):
+            pill.update_category(cat)
+        # If current selection no longer exists, clear it
+        if self._selected_cat not in categories:
+            self._selected_cat = None
+            self._sync_pill_styles()
+
+
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+#  LogForm — manual activity entry / edit form
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 class LogForm(QWidget):
-    """Compact activity log form docked at the bottom of the right panel."""
+    activity_added   = pyqtSignal(object)
+    activity_updated = pyqtSignal(object)
+    activity_deleted = pyqtSignal(str)
 
-    activity_added   = pyqtSignal(object)   # Activity
-    activity_updated = pyqtSignal(object)   # Activity
-    activity_deleted = pyqtSignal(str)      # id
-
-    def __init__(self, week_start: date, parent=None):
+    def __init__(self, week_start: date, quick_cats: list[str], parent=None):
         super().__init__(parent)
-        self._week_start = week_start
+        self._week_start   = week_start
+        self._quick_cats   = quick_cats
         self._editing: Activity | None = None
-        self._pending_notes: str = ""
+        self._pending_notes = ""
         self._timer: QTimer | None = None
         self._timer_start: datetime | None = None
         self._build_ui()
 
-    # ── Build ────────────────────────────────────────
-
     def _build_ui(self):
         root = QVBoxLayout(self)
         root.setContentsMargins(0, 0, 0, 0)
-        root.setSpacing(6)
+        root.setSpacing(5)
 
-        # ── Header row ──
+        # ── Header ──
         hdr = QHBoxLayout()
         self._form_title = QLabel("Log Activity")
         self._form_title.setStyleSheet("font-size:12px;font-weight:bold;")
         hdr.addWidget(self._form_title); hdr.addStretch()
-
         self._cancel_btn = QPushButton("Cancel")
         self._cancel_btn.setObjectName("secondary")
         self._cancel_btn.setFixedHeight(24)
@@ -4744,71 +5037,52 @@ class LogForm(QWidget):
         hdr.addWidget(self._cancel_btn)
         root.addLayout(hdr)
 
-        # ── Row 1: Activity name (full width) ──
-        self.activity_combo = QComboBox()
-        self.activity_combo.setEditable(True)
-        self.activity_combo.addItems(DEFAULT_ACTIVITIES)
-        self.activity_combo.setPlaceholderText("Activity…")
-        root.addWidget(self.activity_combo)
+        # ── Pill picker (same categories as QuickCards) ──
+        self._pill_picker = CategoryPillPicker(self._quick_cats)
+        root.addWidget(self._pill_picker)
 
-        # ── Row 2: Day selector (full width) ──
+        # ── Day selector ──
         self.day_combo = QComboBox()
         self._rebuild_day_combo()
         root.addWidget(self.day_combo)
 
-        # ── Row 3: Start + End times ──
+        # ── Start / End times ──
         time_row = QHBoxLayout(); time_row.setSpacing(6)
-
-        start_lbl = QLabel("Start")
+        start_lbl = QLabel("Start"); start_lbl.setFixedWidth(30)
         start_lbl.setStyleSheet("font-size:10px;color:palette(mid);")
-        start_lbl.setFixedWidth(30)
         time_row.addWidget(start_lbl)
         self.start_edit = QTimeEdit()
         self.start_edit.setDisplayFormat("HH:mm")
         now = datetime.now()
         self.start_edit.setTime(QTime(now.hour, 0))
         time_row.addWidget(self.start_edit, 1)
-
         time_row.addSpacing(4)
-
-        end_lbl = QLabel("End")
+        end_lbl = QLabel("End"); end_lbl.setFixedWidth(24)
         end_lbl.setStyleSheet("font-size:10px;color:palette(mid);")
-        end_lbl.setFixedWidth(24)
         time_row.addWidget(end_lbl)
         self.end_edit = QTimeEdit()
         self.end_edit.setDisplayFormat("HH:mm")
         self.end_edit.setTime(QTime(min(now.hour + 1, 23), 0))
         time_row.addWidget(self.end_edit, 1)
-
         root.addLayout(time_row)
 
-        # ── Row 4: Timer (dedicated row) ──
+        # ── Timer ──
         timer_row = QHBoxLayout(); timer_row.setSpacing(6)
-
-        timer_icon = QLabel("⏱")
-        timer_icon.setStyleSheet("font-size:13px;")
-        timer_icon.setFixedWidth(18)
-        timer_row.addWidget(timer_icon)
-
+        timer_icon = QLabel("\u23f1"); timer_icon.setStyleSheet("font-size:13px;")
+        timer_icon.setFixedWidth(18); timer_row.addWidget(timer_icon)
         self._timer_label = QLabel("00:00")
         self._timer_label.setStyleSheet(
             "font-family:monospace;font-size:13px;font-weight:bold;")
         self._timer_label.setMinimumWidth(52)
-        timer_row.addWidget(self._timer_label)
-
-        timer_row.addStretch()
-
-        self._start_btn = QPushButton("▶ Start")
-        self._start_btn.setToolTip("Start timer")
+        timer_row.addWidget(self._timer_label); timer_row.addStretch()
+        self._start_btn = QPushButton("Start")
         self._start_btn.setFixedHeight(26)
         self._start_btn.setStyleSheet(
             "background-color:#a6e3a1;color:#1e1e2e;font-weight:bold;"
             "border-radius:4px;padding:2px 10px;font-size:11px;")
         self._start_btn.clicked.connect(self._start_timer)
         timer_row.addWidget(self._start_btn)
-
-        self._stop_btn = QPushButton("■ Stop")
-        self._stop_btn.setToolTip("Stop timer")
+        self._stop_btn = QPushButton("Stop")
         self._stop_btn.setFixedHeight(26)
         self._stop_btn.setStyleSheet(
             "background-color:#f38ba8;color:#1e1e2e;font-weight:bold;"
@@ -4816,61 +5090,53 @@ class LogForm(QWidget):
         self._stop_btn.setEnabled(False)
         self._stop_btn.clicked.connect(self._stop_timer)
         timer_row.addWidget(self._stop_btn)
-
         root.addLayout(timer_row)
 
-        # ── Row 5: Notes + action buttons ──
+        # ── Notes + action buttons ──
         action_row = QHBoxLayout(); action_row.setSpacing(5)
-
-        self._notes_btn = QPushButton("Notes…")
+        self._notes_btn = QPushButton("Notes\u2026")
         self._notes_btn.setObjectName("secondary")
         self._notes_btn.setFixedHeight(26)
         self._notes_btn.clicked.connect(self._open_notes)
-        action_row.addWidget(self._notes_btn)
-
-        action_row.addStretch()
-
+        action_row.addWidget(self._notes_btn); action_row.addStretch()
         self._delete_btn = QPushButton("Delete")
         self._delete_btn.setObjectName("destructive")
         self._delete_btn.setFixedHeight(26)
         self._delete_btn.clicked.connect(self._delete)
         self._delete_btn.setVisible(False)
         action_row.addWidget(self._delete_btn)
-
         self._action_btn = QPushButton("Add")
         self._action_btn.setFixedHeight(26)
         self._action_btn.clicked.connect(self._submit)
         action_row.addWidget(self._action_btn)
-
         root.addLayout(action_row)
 
-    # ── Public ───────────────────────────────────────
+    # ── Public ─────────────────────────────────────
 
     def set_week_start(self, week_start: date):
         self._week_start = week_start
         self._rebuild_day_combo()
 
+    def update_categories(self, categories: list[str]):
+        """Sync pill labels when categories are renamed."""
+        self._quick_cats = categories
+        self._pill_picker.update_categories(categories)
+
     def prefill(self, d: date, hour: float):
-        """Called when user double-clicks empty space on the grid."""
         self._cancel_edit()
         idx = (d - self._week_start).days
-        if 0 <= idx < 7:
-            self.day_combo.setCurrentIndex(idx)
+        if 0 <= idx < 7: self.day_combo.setCurrentIndex(idx)
         h = int(hour); m = int((hour - h) * 60)
         self.start_edit.setTime(QTime(h, m))
         self.end_edit.setTime(QTime(min(h + 1, 23), m))
 
     def load_for_edit(self, activity: Activity):
-        """Populate form fields with an existing activity for editing."""
-        self._editing = activity
+        self._editing       = activity
         self._pending_notes = activity.notes or ""
-
-        idx = self.activity_combo.findText(activity.activity)
-        if idx >= 0: self.activity_combo.setCurrentIndex(idx)
-        else:        self.activity_combo.setCurrentText(activity.activity)
+        self._pill_picker.set_activity(activity.activity)
 
         act_date = date.fromisoformat(activity.date)
-        day_idx = (act_date - self._week_start).days
+        day_idx  = (act_date - self._week_start).days
         if 0 <= day_idx < 7: self.day_combo.setCurrentIndex(day_idx)
 
         sh, sm = map(int, activity.start_time.split(":"))
@@ -4882,8 +5148,9 @@ class LogForm(QWidget):
         self._action_btn.setText("Update")
         self._cancel_btn.setVisible(True)
         self._delete_btn.setVisible(True)
+        self._notes_btn.setText("Notes \u2713" if self._pending_notes else "Notes\u2026")
 
-    # ── Private ──────────────────────────────────────
+    # ── Private ────────────────────────────────────
 
     def _rebuild_day_combo(self):
         self.day_combo.clear()
@@ -4891,10 +5158,8 @@ class LogForm(QWidget):
         today = date.today()
         for i in range(7):
             d = self._week_start + timedelta(days=i)
-            label = f"{day_names[i]} {d.day}"
-            if d == today: label += " ★"
+            label = f"{day_names[i]} {d.day}" + (" \u2605" if d == today else "")
             self.day_combo.addItem(label, d)
-        # Default to today if in range
         idx = (today - self._week_start).days
         if 0 <= idx < 7: self.day_combo.setCurrentIndex(idx)
 
@@ -4903,14 +5168,12 @@ class LogForm(QWidget):
         return d if isinstance(d, date) else self._week_start
 
     def _submit(self):
-        name = self.activity_combo.currentText().strip()
+        name = self._pill_picker.get_activity().strip()
         if not name: return
-
         self._stop_timer()
         start = self.start_edit.time().toString("HH:mm")
         end   = self.end_edit.time().toString("HH:mm")
         d     = self._selected_date()
-
         if self._editing:
             self._editing.activity   = name
             self._editing.date       = d.isoformat()
@@ -4920,18 +5183,19 @@ class LogForm(QWidget):
             self.activity_updated.emit(self._editing)
             self._cancel_edit()
         else:
-            store = ActivityStore()
-            act = store.add(date=d.isoformat(), activity=name,
-                            start_time=start, end_time=end,
-                            notes=self._pending_notes)
+            act = ActivityStore().add(date=d.isoformat(), activity=name,
+                                      start_time=start, end_time=end,
+                                      notes=self._pending_notes)
             self._pending_notes = ""
+            self._notes_btn.setText("Notes\u2026")
             self.activity_added.emit(act)
 
     def _delete(self):
         if not self._editing: return
         reply = QMessageBox.question(
             self, "Delete Activity",
-            f"Delete '{self._editing.activity}' ({self._editing.start_time}–{self._editing.end_time})?",
+            f"Delete '{self._editing.activity}' "
+            f"({self._editing.start_time}\u2013{self._editing.end_time})?",
             QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
         )
         if reply == QMessageBox.StandardButton.Yes:
@@ -4941,15 +5205,19 @@ class LogForm(QWidget):
     def _cancel_edit(self):
         self._editing = None
         self._pending_notes = ""
+        self._pill_picker.clear()
         self._form_title.setText("Log Activity")
         self._action_btn.setText("Add")
         self._cancel_btn.setVisible(False)
         self._delete_btn.setVisible(False)
+        self._notes_btn.setText("Notes\u2026")
 
     def _open_notes(self):
         dlg = NotesDialog(self, self._pending_notes)
-        if dlg.exec():
+        if dlg.exec() == QDialog.DialogCode.Accepted:
             self._pending_notes = dlg.get_notes()
+            self._notes_btn.setText(
+                "Notes \u2713" if self._pending_notes else "Notes\u2026")
 
     def _start_timer(self):
         now = datetime.now()
@@ -4959,20 +5227,17 @@ class LogForm(QWidget):
         self._timer = QTimer(self)
         self._timer.timeout.connect(self._tick)
         self._timer.start(1000)
-        self._start_btn.setEnabled(False)
-        self._stop_btn.setEnabled(True)
+        self._start_btn.setEnabled(False); self._stop_btn.setEnabled(True)
         self._timer_label.setStyleSheet(
             "font-family:monospace;font-size:13px;font-weight:bold;color:#a6e3a1;")
 
     def _stop_timer(self):
-        if self._timer:
-            self._timer.stop(); self._timer = None
+        if self._timer: self._timer.stop(); self._timer = None
         if self._timer_start:
             now = datetime.now()
             self.end_edit.setTime(QTime(now.hour, now.minute))
         self._timer_start = None
-        self._start_btn.setEnabled(True)
-        self._stop_btn.setEnabled(False)
+        self._start_btn.setEnabled(True); self._stop_btn.setEnabled(False)
         self._timer_label.setStyleSheet(
             "font-family:monospace;font-size:13px;font-weight:bold;")
 
@@ -4986,7 +5251,7 @@ class LogForm(QWidget):
 
 
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-#  ActivityPanel  — main panel
+#  ActivityPanel — main panel
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 class ActivityPanel(QWidget):
@@ -4997,62 +5262,67 @@ class ActivityPanel(QWidget):
         self._palette: dict = {}
         self._week_start = date.today() - timedelta(days=date.today().weekday())
         self._activities_by_date: dict[date, list[Activity]] = {}
+
+        self._active_category: str | None = None
+        self._session_start: datetime | None = None
+        self._card_timer: QTimer | None = None
+
+        self._quick_cats = self._load_quick_cats()
         self._build_ui()
         self._refresh()
 
-    # ── Palette ─────────────────────────────────────
+    def _load_quick_cats(self) -> list[str]:
+        cfg = load_config()
+        saved = cfg.get("activity_quick_categories", [])
+        return saved if len(saved) == 6 else list(QUICK_CATEGORIES)
+
+    def _save_quick_cats(self):
+        cfg = load_config()
+        cfg["activity_quick_categories"] = self._quick_cats
+        save_config(cfg)
 
     def set_palette(self, palette: dict):
         self._palette = palette
         self._grid.set_palette(palette)
-        self._efficiency.set_palette(palette)
-
-    # ── Build UI ────────────────────────────────────
+        self._today_breakdown.set_palette(palette)
 
     def _build_ui(self):
         root = QHBoxLayout(self)
-        root.setContentsMargins(0, 0, 0, 0)
-        root.setSpacing(0)
+        root.setContentsMargins(0, 0, 0, 0); root.setSpacing(0)
 
-        # ══ LEFT: scrollable week grid ══
+        # ── LEFT: week grid ──
         left = QWidget()
         left_l = QVBoxLayout(left)
-        left_l.setContentsMargins(0, 10, 0, 10)
-        left_l.setSpacing(8)
+        left_l.setContentsMargins(0, 10, 0, 10); left_l.setSpacing(8)
 
-        # Top bar
         top_bar = QHBoxLayout(); top_bar.setContentsMargins(14, 0, 8, 0)
         title = QLabel("Activity Tracker"); title.setObjectName("sectionTitle")
         top_bar.addWidget(title); top_bar.addStretch()
-
         self._week_label = QLabel()
         self._week_label.setStyleSheet("font-size:12px;font-weight:bold;")
         top_bar.addWidget(self._week_label); top_bar.addSpacing(8)
 
-        btn_prev = QPushButton("‹"); btn_prev.setObjectName("secondary")
-        btn_prev.setFixedSize(28, 28); btn_prev.setToolTip("Previous week")
-        btn_prev.clicked.connect(self._prev_week); top_bar.addWidget(btn_prev)
-
-        btn_today = QPushButton("Today"); btn_today.setObjectName("secondary")
-        btn_today.setFixedHeight(28); btn_today.clicked.connect(self._go_today)
-        top_bar.addWidget(btn_today)
-
-        btn_next = QPushButton("›"); btn_next.setObjectName("secondary")
-        btn_next.setFixedSize(28, 28); btn_next.setToolTip("Next week")
-        btn_next.clicked.connect(self._next_week); top_bar.addWidget(btn_next)
+        for sym, slot, tip in [("\u2190", self._prev_week, "Previous week"),
+                                ("Today", self._go_today,  ""),
+                                ("\u2192", self._next_week, "Next week")]:
+            btn = QPushButton(sym); btn.setObjectName("secondary")
+            btn.setToolTip(tip)
+            if sym in ("\u2190", "\u2192"):
+                btn.setFixedSize(28, 28)
+                btn.setStyleSheet("QPushButton{font-size:14px;font-weight:bold;}")
+            else:
+                btn.setFixedHeight(28)
+            btn.clicked.connect(slot); top_bar.addWidget(btn)
 
         top_bar.addSpacing(8)
-        btn_export = QPushButton("Export…"); btn_export.setObjectName("secondary")
-        btn_export.setFixedHeight(28); btn_export.clicked.connect(self._export)
-        top_bar.addWidget(btn_export)
-
+        btn_exp = QPushButton("Export\u2026"); btn_exp.setObjectName("secondary")
+        btn_exp.setFixedHeight(28); btn_exp.clicked.connect(self._export)
+        top_bar.addWidget(btn_exp)
         left_l.addLayout(top_bar)
 
-        # Grid inside scroll area
         self._grid = WeekBlockWidget()
         self._grid.block_clicked.connect(self._on_block_clicked)
         self._grid.empty_clicked.connect(self._on_empty_clicked)
-
         scroll = QScrollArea(); scroll.setWidgetResizable(True)
         scroll.setWidget(self._grid)
         scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
@@ -5060,33 +5330,134 @@ class ActivityPanel(QWidget):
         left_l.addWidget(scroll, 1)
         root.addWidget(left, 1)
 
-        # ══ RIGHT: efficiency + log form ══
-        right = QWidget(); right.setFixedWidth(310)
+        # ── RIGHT: cards + breakdown + form ──
+        right = QWidget(); right.setFixedWidth(385)
         right_l = QVBoxLayout(right)
-        right_l.setContentsMargins(8, 10, 12, 10)
-        right_l.setSpacing(10)
+        right_l.setContentsMargins(8, 10, 12, 10); right_l.setSpacing(8)
 
-        self._efficiency = EfficiencyPanel()
-        right_l.addWidget(self._efficiency, 1)
+        cards_hdr = QHBoxLayout()
+        cards_title = QLabel("Quick Track")
+        cards_title.setStyleSheet("font-size:12px;font-weight:bold;")
+        cards_hdr.addWidget(cards_title); cards_hdr.addStretch()
+        rename_btn = QPushButton("\u2699"); rename_btn.setObjectName("secondary")
+        rename_btn.setFixedSize(24, 24)
+        rename_btn.setToolTip("Edit category names")
+        rename_btn.clicked.connect(self._rename_categories)
+        cards_hdr.addWidget(rename_btn)
+        right_l.addLayout(cards_hdr)
 
-        div = QFrame(); div.setFrameShape(QFrame.Shape.HLine)
-        div.setObjectName("separator"); right_l.addWidget(div)
+        cards_grid = QGridLayout(); cards_grid.setSpacing(8)
+        self._cards: list[QuickCard] = []
+        for i, cat in enumerate(self._quick_cats):
+            card = QuickCard(cat); card.tapped.connect(self._on_card_tapped)
+            self._cards.append(card)
+            cards_grid.addWidget(card, i // 3, i % 3)
+        right_l.addLayout(cards_grid)
 
-        self._log_form = LogForm(self._week_start)
+        div1 = QFrame(); div1.setFrameShape(QFrame.Shape.HLine)
+        div1.setObjectName("separator"); right_l.addWidget(div1)
+
+        self._today_breakdown = TodayBreakdown()
+        right_l.addWidget(self._today_breakdown)
+
+        div2 = QFrame(); div2.setFrameShape(QFrame.Shape.HLine)
+        div2.setObjectName("separator"); right_l.addWidget(div2)
+
+        self._log_form = LogForm(self._week_start, self._quick_cats)
         self._log_form.activity_added.connect(self._on_activity_added)
         self._log_form.activity_updated.connect(self._on_activity_updated)
         self._log_form.activity_deleted.connect(self._on_activity_deleted)
         right_l.addWidget(self._log_form)
+        right_l.addStretch()
 
         root.addWidget(right)
 
-        # Auto-refresh timer
         self._auto_timer = QTimer(self)
         self._auto_timer.setInterval(60_000)
         self._auto_timer.timeout.connect(self._refresh)
         self._auto_timer.start()
 
-    # ── Navigation ───────────────────────────────────
+    # ── Quick card session management ────────────────
+
+    def _on_card_tapped(self, category: str):
+        if self._active_category == category:
+            self._stop_session(prompt_notes=True)
+        else:
+            self._stop_session(prompt_notes=False)
+            self._start_session(category)
+
+    def _start_session(self, category: str):
+        self._active_category = category
+        self._session_start   = datetime.now()
+        self._card_timer = QTimer(self)
+        self._card_timer.timeout.connect(self._card_tick)
+        self._card_timer.start(1000)
+        self._update_card_states()
+        self._today_breakdown.refresh(
+            self._activities_by_date.get(date.today(), []),
+            self._active_category, self._session_start)
+
+    def _stop_session(self, prompt_notes: bool = True):
+        if not self._active_category or not self._session_start: return
+        if self._card_timer:
+            self._card_timer.stop(); self._card_timer = None
+
+        category  = self._active_category
+        start_dt  = self._session_start
+        end_dt    = datetime.now()
+        start_str = start_dt.strftime("%H:%M")
+        end_str   = "23:59" if end_dt.date() > start_dt.date() else end_dt.strftime("%H:%M")
+
+        notes = ""
+        if prompt_notes:
+            dlg = NotesDialog(self, title=f"Notes for {category}")
+            if dlg.exec() == QDialog.DialogCode.Accepted:
+                notes = dlg.get_notes()
+
+        if int((end_dt - start_dt).total_seconds() // 60) >= 1:
+            self.store.add(date=start_dt.date().isoformat(), activity=category,
+                           start_time=start_str, end_time=end_str, notes=notes)
+
+        self._active_category = None
+        self._session_start   = None
+        for card in self._cards: card.set_active(False)
+        self._refresh()
+
+    def _card_tick(self):
+        if not self._session_start or not self._active_category: return
+        elapsed = int((datetime.now() - self._session_start).total_seconds())
+        for card in self._cards:
+            if card._category == self._active_category:
+                card.tick(elapsed); break
+        self._today_breakdown.refresh(
+            self._activities_by_date.get(date.today(), []),
+            self._active_category, self._session_start)
+
+    def _update_card_states(self):
+        today_acts = self._activities_by_date.get(date.today(), [])
+        for card in self._cards:
+            cat = card._category
+            total_mins = sum(a.duration_minutes for a in today_acts if a.activity == cat)
+            card.set_daily_total(total_mins)
+            if cat == self._active_category:
+                elapsed = int((datetime.now() - self._session_start).total_seconds()) \
+                    if self._session_start else 0
+                card.set_active(True, elapsed)
+            else:
+                card.set_active(False)
+
+    def _rename_categories(self):
+        dlg = RenameCategoriesDialog(self._quick_cats, self)
+        if dlg.exec() == QDialog.DialogCode.Accepted:
+            new_cats = dlg.get_categories()
+            self._quick_cats = new_cats
+            self._save_quick_cats()
+            for card, cat in zip(self._cards, new_cats):
+                card.update_category(cat)
+            self._log_form.update_categories(new_cats)
+            self._update_card_states()
+
+    # ── Navigation ──────────────────────────────────
 
     def _prev_week(self):
         self._week_start -= timedelta(weeks=1)
@@ -5109,18 +5480,18 @@ class ActivityPanel(QWidget):
     def _refresh(self):
         we = self._week_start + timedelta(days=6)
         self._week_label.setText(
-            f"{self._week_start.strftime('%b %d')} – {we.strftime('%b %d, %Y')}"
-        )
-
+            f"{self._week_start.strftime('%b %d')} \u2013 {we.strftime('%b %d, %Y')}")
         self._activities_by_date = {}
         for i in range(7):
             d = self._week_start + timedelta(days=i)
             self._activities_by_date[d] = self.store.get_for_date(d.isoformat())
-
         self._grid.load_week(self._week_start, self._activities_by_date)
-        self._efficiency.update_data(self._week_start, self._activities_by_date)
+        self._update_card_states()
+        self._today_breakdown.refresh(
+            self._activities_by_date.get(date.today(), []),
+            self._active_category, self._session_start)
 
-    # ── Grid callbacks ───────────────────────────────
+    # ── Grid callbacks ──────────────────────────────
 
     def _on_block_clicked(self, activity: Activity):
         self._log_form.load_for_edit(activity)
@@ -5128,61 +5499,51 @@ class ActivityPanel(QWidget):
     def _on_empty_clicked(self, d: date, hour: float):
         self._log_form.prefill(d, hour)
 
-    # ── CRUD callbacks ───────────────────────────────
+    # ── CRUD callbacks ──────────────────────────────
 
-    def _on_activity_added(self, _activity: Activity):
-        self._refresh()
+    def _on_activity_added(self, _: Activity):  self._refresh()
 
     def _on_activity_updated(self, activity: Activity):
-        self.store.update(activity)
-        self._refresh()
+        self.store.update(activity); self._refresh()
 
     def _on_activity_deleted(self, activity_id: str):
-        self.store.delete(activity_id)
-        self._refresh()
+        self.store.delete(activity_id); self._refresh()
 
-    # ── Export ───────────────────────────────────────
+    # ── Export ──────────────────────────────────────
 
     def _export(self):
         cfg = load_config()
         vault_path = cfg.get("obsidian_vault_path", "")
         if not vault_path or not Path(vault_path).is_dir():
-            QMessageBox.warning(
-                self, "No Vault",
-                "Set an Obsidian vault path first (Notes → Set Vault)."
-            )
+            QMessageBox.warning(self, "No Vault",
+                "Set an Obsidian vault path first (Notes \u2192 Set Vault).")
             return
-
         vault = Path(vault_path)
         exported = 0
         for d, activities in self._activities_by_date.items():
             if not activities: continue
-            year_f  = str(d.year)
-            month_f = f"{d.month:02d} - {d.strftime('%B')}"
-            day_f   = f"{d.day:02d} - {d.strftime('%A')}"
-            base = vault / "Activity Tracker" / year_f / month_f / day_f
+            base = (vault / "Activity Tracker" / str(d.year)
+                    / f"{d.month:02d} - {d.strftime('%B')}"
+                    / f"{d.day:02d} - {d.strftime('%A')}")
             base.mkdir(parents=True, exist_ok=True)
-
             total_mins = sum(a.duration_minutes for a in activities)
             h, m = divmod(total_mins, 60)
             lines = [
-                f"# Activity Summary — {d.strftime('%A, %B %d, %Y')}",
+                f"# Activity Summary \u2014 {d.strftime('%A, %B %d, %Y')}",
                 "", f"**Total tracked:** {h}h {m}m", "",
                 "| Time | Activity | Duration | Notes |",
                 "|------|----------|----------|-------|",
             ]
             for a in activities:
-                notes = (a.notes or "").replace("\n"," ").replace("|","/")
-                lines.append(f"| {a.start_time}–{a.end_time} | {a.activity} | {a.duration_minutes}m | {notes} |")
+                notes = (a.notes or "").replace("\n", " ").replace("|", "/")
+                lines.append(f"| {a.start_time}\u2013{a.end_time} | {a.activity} "
+                             f"| {a.duration_minutes}m | {notes} |")
             (base / "_Daily Summary.md").write_text("\n".join(lines), encoding="utf-8")
             exported += len(activities)
-
         we = self._week_start + timedelta(days=6)
-        QMessageBox.information(
-            self, "Exported",
+        QMessageBox.information(self, "Exported",
             f"Exported {exported} activities for week of "
-            f"{self._week_start.strftime('%b %d')} – {we.strftime('%b %d')}."
-        )
+            f"{self._week_start.strftime('%b %d')} \u2013 {we.strftime('%b %d')}.")
 ```
 
 ### `src\ui\modules\calendar_panel.py`
@@ -6657,16 +7018,27 @@ class BirthdayManagerDialog(QDialog):
 ### `src\ui\modules\dashboard_panel.py`
 
 ```python
-"""QA Dashboard panel — overview of tasks, upcoming deadlines, and productivity stats."""
+"""Dashboard panel — overview of tasks, upcoming deadlines, and productivity stats.
 
+New in this version:
+  • SideIncomeGoalSection — prominent month-browsable side income goal tracker
+    with a color-coded progress bar (red → green → blue glow at major goal).
+  • Goal data stored in side_income_goals table via FinanceStore.set_goal()
+"""
+
+import calendar as _calendar
 from datetime import date, datetime, timedelta
 
-from PyQt6.QtCore import Qt
+from PyQt6.QtCore import Qt, QRectF, QTimer
+from PyQt6.QtGui import QPainter, QColor, QBrush, QPen, QFont, QRadialGradient
 from PyQt6.QtWidgets import (
     QWidget, QVBoxLayout, QHBoxLayout, QGridLayout,
     QLabel, QFrame, QScrollArea, QProgressBar,
+    QPushButton, QDialog, QDialogButtonBox, QDoubleSpinBox,
+    QFormLayout, QSizePolicy, QComboBox,
 )
 
+from src.config import load_config
 from src.data.todo_store import TodoStore, PRIORITY_LABELS
 from src.data.calendar_store import CalendarStore
 from src.data.finance_store import FinanceStore
@@ -6674,6 +7046,15 @@ from src.data.finance_store import FinanceStore
 
 PRIORITY_COLORS = {0: "#a6adc8", 1: "#a6e3a1", 2: "#f9e2af", 3: "#f38ba8"}
 
+_MONTH_NAMES = [
+    "", "January", "February", "March", "April", "May", "June",
+    "July", "August", "September", "October", "November", "December",
+]
+
+
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+#  StatCard
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 class StatCard(QFrame):
     """A compact stat card with a big number and label."""
@@ -6681,7 +7062,7 @@ class StatCard(QFrame):
     def __init__(self, value: str, label: str, color: str = "#cdd6f4", parent=None):
         super().__init__(parent)
         self.setStyleSheet(
-            f"StatCard {{ border: 1px solid palette(mid); border-radius: 6px; padding: 8px; }}"
+            "StatCard { border: 1px solid palette(mid); border-radius: 6px; padding: 8px; }"
         )
         layout = QVBoxLayout(self)
         layout.setContentsMargins(12, 10, 12, 10)
@@ -6698,7 +7079,6 @@ class StatCard(QFrame):
         lbl.setAlignment(Qt.AlignmentFlag.AlignCenter)
         lbl.setStyleSheet("font-size: 11px;")
         layout.addWidget(lbl)
-        self._label = lbl
 
     def update_value(self, value: str, color: str | None = None):
         self._value_label.setText(value)
@@ -6708,10 +7088,15 @@ class StatCard(QFrame):
             )
 
 
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+#  UpcomingItem
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
 class UpcomingItem(QFrame):
     """A single upcoming deadline / event in the dashboard."""
 
-    def __init__(self, title: str, subtitle: str, color: str, days_label: str, parent=None):
+    def __init__(self, title: str, subtitle: str, color: str,
+                 days_label: str, parent=None):
         super().__init__(parent)
         layout = QHBoxLayout(self)
         layout.setContentsMargins(8, 4, 8, 4)
@@ -6741,19 +7126,436 @@ class UpcomingItem(QFrame):
         layout.addWidget(badge)
 
 
-class DashboardPanel(QWidget):
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+#  GoalBar — custom painted bar with color states
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+class GoalBar(QWidget):
+    """Paints a progress bar that changes color based on goal thresholds.
+
+    States:
+      current < min_goal  → red/orange gradient fill
+      current >= min_goal → green fill
+      current >= major_goal → blue fill + subtle outer glow
+    """
 
     def __init__(self, parent=None):
         super().__init__(parent)
-        self.todo_store = TodoStore()
-        self.calendar_store = CalendarStore()
-        self.finance_store = FinanceStore()
+        self.setMinimumHeight(28)
+        self.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
+        self._current = 0.0
+        self._min_goal = 1.0
+        self._major_goal = 2.0
         self._palette: dict = {}
+
+    def set_values(self, current: float, min_goal: float, major_goal: float):
+        self._current   = max(current, 0.0)
+        self._min_goal  = max(min_goal, 0.01)
+        self._major_goal = max(major_goal, min_goal + 0.01)
+        self.update()
+
+    def set_palette(self, palette: dict):
+        self._palette = palette
+        self.update()
+
+    def paintEvent(self, event):
+        painter = QPainter(self)
+        painter.setRenderHint(QPainter.RenderHint.Antialiasing)
+
+        w = self.width()
+        bar_h = 20
+        bar_y = (self.height() - bar_h) // 2
+        radius = bar_h / 2
+
+        # Determine fill state
+        at_major = self._current >= self._major_goal
+        at_min   = self._current >= self._min_goal
+
+        # Fill ratio — capped at 100% of major goal for visual purposes
+        cap = self._major_goal * 1.05
+        fill_ratio = min(self._current / cap, 1.0)
+
+        # Color
+        if at_major:
+            fill_color = QColor(self._palette.get("accent", "#89b4fa"))
+        elif at_min:
+            fill_color = QColor(self._palette.get("green", "#a6e3a1"))
+        else:
+            # Blend from dark red to orange based on progress toward min
+            ratio_to_min = self._current / self._min_goal
+            r_start = QColor("#e55050")
+            r_end   = QColor("#f9a040")
+            r = int(r_start.red()   + (r_end.red()   - r_start.red())   * ratio_to_min)
+            g = int(r_start.green() + (r_end.green() - r_start.green()) * ratio_to_min)
+            b = int(r_start.blue()  + (r_end.blue()  - r_start.blue())  * ratio_to_min)
+            fill_color = QColor(r, g, b)
+
+        # Background track
+        bg = QColor(self._palette.get("surface", "#313244"))
+        painter.setPen(Qt.PenStyle.NoPen)
+        painter.setBrush(QBrush(bg))
+        painter.drawRoundedRect(0, bar_y, w, bar_h, radius, radius)
+
+        # Glow effect behind fill if at major goal
+        if at_major and fill_ratio > 0:
+            glow = QColor(fill_color)
+            glow.setAlpha(60)
+            painter.setBrush(QBrush(glow))
+            painter.drawRoundedRect(-3, bar_y - 3, w + 6, bar_h + 6, radius + 3, radius + 3)
+
+        # Fill
+        fill_w = max(int(w * fill_ratio), 0)
+        if fill_w > 0:
+            painter.setBrush(QBrush(fill_color))
+            painter.setPen(Qt.PenStyle.NoPen)
+            painter.drawRoundedRect(0, bar_y, fill_w, bar_h, radius, radius)
+
+        # Min goal marker (white vertical line)
+        min_x = int(w * (self._min_goal / cap))
+        if 0 < min_x < w:
+            marker_pen = QPen(QColor("#ffffff"), 2)
+            painter.setPen(marker_pen)
+            painter.drawLine(min_x, bar_y - 2, min_x, bar_y + bar_h + 2)
+
+        # Major goal marker (gold vertical line)
+        major_x = int(w * (self._major_goal / cap))
+        if 0 < major_x < w:
+            gold = QColor(self._palette.get("yellow", "#f9e2af"))
+            painter.setPen(QPen(gold, 2))
+            painter.drawLine(major_x, bar_y - 4, major_x, bar_y + bar_h + 4)
+
+        painter.end()
+
+
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+#  GoalEditDialog
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+class GoalEditDialog(QDialog):
+    """Set minimum and major monthly side income goals.
+
+    Input can be entered in USD or JPY — get_goals() always returns USD.
+    """
+
+    def __init__(self, min_goal: float, major_goal: float,
+                 year: int, month: int, rate: float, parent=None):
+        super().__init__(parent)
+        self._rate = max(rate, 1.0)
+        self.setWindowTitle(f"Set Goals \u2014 {_MONTH_NAMES[month]} {year}")
+        self.setMinimumWidth(380)
+        self.setModal(True)
+
+        layout = QVBoxLayout(self)
+        layout.setSpacing(10)
+
+        layout.addWidget(QLabel(
+            f"Set side income goals for {_MONTH_NAMES[month]} {year}.\n"
+            "Only Side Job income counts toward these goals."
+        ))
+
+        # ── Currency selector ──
+        cur_row = QHBoxLayout()
+        cur_row.addWidget(QLabel("Enter goals in:"))
+        self._cur_combo = QComboBox()
+        self._cur_combo.addItems(["USD ($)", "JPY (\u00a5)"])
+        self._cur_combo.currentIndexChanged.connect(self._on_currency_changed)
+        cur_row.addWidget(self._cur_combo); cur_row.addStretch()
+        layout.addLayout(cur_row)
+
+        form = QFormLayout(); form.setSpacing(8)
+
+        self._min_spin = QDoubleSpinBox()
+        self._min_spin.setRange(0, 99_999_999)
+        self._min_spin.valueChanged.connect(self._update_hints)
+        form.addRow("Minimum Goal:", self._min_spin)
+        self._min_hint = QLabel()
+        self._min_hint.setStyleSheet("color: palette(mid); font-size: 10px;")
+        form.addRow("", self._min_hint)
+
+        self._major_spin = QDoubleSpinBox()
+        self._major_spin.setRange(0, 99_999_999)
+        self._major_spin.valueChanged.connect(self._update_hints)
+        form.addRow("Major Goal:", self._major_spin)
+        self._major_hint = QLabel()
+        self._major_hint.setStyleSheet("color: palette(mid); font-size: 10px;")
+        form.addRow("", self._major_hint)
+
+        layout.addLayout(form)
+
+        btn_box = QDialogButtonBox(
+            QDialogButtonBox.StandardButton.Ok |
+            QDialogButtonBox.StandardButton.Cancel
+        )
+        btn_box.accepted.connect(self._validate_and_accept)
+        btn_box.rejected.connect(self.reject)
+        layout.addWidget(btn_box)
+
+        # Initialise in USD mode with existing values
+        self._apply_usd_mode()
+        self._min_spin.setValue(min_goal)
+        self._major_spin.setValue(major_goal)
+        self._update_hints()
+
+    # ── Currency mode helpers ─────────────────────────────────────────────────
+
+    def _apply_usd_mode(self):
+        for sp in (self._min_spin, self._major_spin):
+            sp.setDecimals(0); sp.setSingleStep(100); sp.setPrefix("$ ")
+
+    def _apply_jpy_mode(self):
+        for sp in (self._min_spin, self._major_spin):
+            sp.setDecimals(0); sp.setSingleStep(10_000); sp.setPrefix("\u00a5 ")
+
+    def _on_currency_changed(self, idx: int):
+        min_v   = self._min_spin.value()
+        major_v = self._major_spin.value()
+        if idx == 0:   # → USD
+            self._apply_usd_mode()
+            if min_v > 5000:  # looks like JPY, convert
+                self._min_spin.setValue(round(min_v   / self._rate))
+                self._major_spin.setValue(round(major_v / self._rate))
+        else:           # → JPY
+            self._apply_jpy_mode()
+            if min_v < 5000:  # looks like USD, convert
+                self._min_spin.setValue(round(min_v   * self._rate))
+                self._major_spin.setValue(round(major_v * self._rate))
+        self._update_hints()
+
+    def _update_hints(self):
+        rate = self._rate
+        if self._cur_combo.currentIndex() == 0:   # USD mode
+            min_jpy   = int(self._min_spin.value()   * rate)
+            major_jpy = int(self._major_spin.value() * rate)
+            self._min_hint.setText(f"\u2248 \u00a5{min_jpy:,} JPY")
+            self._major_hint.setText(f"\u2248 \u00a5{major_jpy:,} JPY")
+        else:                                       # JPY mode
+            min_usd   = self._min_spin.value()   / rate if rate else 0
+            major_usd = self._major_spin.value() / rate if rate else 0
+            self._min_hint.setText(f"\u2248 ${min_usd:,.2f} USD")
+            self._major_hint.setText(f"\u2248 ${major_usd:,.2f} USD")
+
+    def _validate_and_accept(self):
+        if self._major_spin.value() <= self._min_spin.value():
+            from PyQt6.QtWidgets import QMessageBox
+            QMessageBox.warning(self, "Invalid Goals",
+                "Major goal must be greater than minimum goal.")
+            return
+        self.accept()
+
+    def get_goals(self) -> tuple[float, float]:
+        """Always returns (min_usd, major_usd)."""
+        if self._cur_combo.currentIndex() == 1:   # JPY → convert
+            rate = self._rate
+            return self._min_spin.value() / rate, self._major_spin.value() / rate
+        return self._min_spin.value(), self._major_spin.value()
+
+
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+#  SideIncomeGoalSection
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+class SideIncomeGoalSection(QFrame):
+    """Prominent side income goal tracker with month navigation and color-coded bar."""
+
+    def __init__(self, finance_store: FinanceStore, parent=None):
+        super().__init__(parent)
+        self.store = finance_store
+        self._palette: dict = {}
+        self._year  = date.today().year
+        self._month = date.today().month
+        self._rate  = 150.0   # USD→JPY; updated from config
+
+        self.setObjectName("goalSection")
         self._build_ui()
+        self._load_rate()
         self._refresh()
 
     def set_palette(self, palette: dict):
         self._palette = palette
+        self._bar.set_palette(palette)
+        self._refresh()
+
+    def _load_rate(self):
+        cfg = load_config()
+        self._rate = float(cfg.get("usd_jpy_fallback_rate", 150.0))
+
+    def _build_ui(self):
+        outer = QVBoxLayout(self)
+        outer.setContentsMargins(14, 12, 14, 12)
+        outer.setSpacing(8)
+
+        # ── Header row ──
+        hdr = QHBoxLayout()
+
+        # Month navigation
+        self._prev_btn = QPushButton("\u2190")
+        self._prev_btn.setObjectName("secondary")
+        self._prev_btn.setFixedSize(26, 26)
+        self._prev_btn.setStyleSheet("QPushButton{font-size:14px;font-weight:bold;}")
+        self._prev_btn.clicked.connect(self._prev_month)
+        hdr.addWidget(self._prev_btn)
+
+        self._month_lbl = QLabel()
+        self._month_lbl.setStyleSheet("font-size:14px;font-weight:bold;")
+        self._month_lbl.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        hdr.addWidget(self._month_lbl, 1)
+
+        self._next_btn = QPushButton("\u2192")
+        self._next_btn.setObjectName("secondary")
+        self._next_btn.setFixedSize(26, 26)
+        self._next_btn.setStyleSheet("QPushButton{font-size:14px;font-weight:bold;}")
+        self._next_btn.clicked.connect(self._next_month)
+        hdr.addWidget(self._next_btn)
+
+        hdr.addSpacing(10)
+
+        self._edit_btn = QPushButton("Edit Goals")
+        self._edit_btn.setObjectName("secondary")
+        self._edit_btn.setFixedHeight(26)
+        self._edit_btn.clicked.connect(self._edit_goals)
+        hdr.addWidget(self._edit_btn)
+
+        outer.addLayout(hdr)
+
+        # ── Progress bar ──
+        self._bar = GoalBar()
+        outer.addWidget(self._bar)
+
+        # ── Amount labels row ──
+        self._amount_lbl = QLabel()
+        self._amount_lbl.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self._amount_lbl.setStyleSheet("font-size:12px;")
+        outer.addWidget(self._amount_lbl)
+
+        self._sub_lbl = QLabel()
+        self._sub_lbl.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self._sub_lbl.setStyleSheet("font-size:10px;")
+        outer.addWidget(self._sub_lbl)
+
+        # ── No goal set label ──
+        self._no_goal_lbl = QLabel(
+            "No goals set for this month. Click \u2018Edit Goals\u2019 to get started."
+        )
+        self._no_goal_lbl.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self._no_goal_lbl.setStyleSheet("font-size:11px;")
+        self._no_goal_lbl.setWordWrap(True)
+        outer.addWidget(self._no_goal_lbl)
+
+    def _refresh(self):
+        self._load_rate()
+        self._month_lbl.setText(f"{_MONTH_NAMES[self._month]} {self._year} — Side Income Goal")
+
+        goal = self.store.get_goal(self._year, self._month)
+        earned_usd = self.store.get_side_income(self._year, self._month, self._rate)
+        earned_jpy = int(earned_usd * self._rate)
+
+        if goal is None:
+            self._bar.setVisible(False)
+            self._amount_lbl.setVisible(False)
+            self._sub_lbl.setVisible(False)
+            self._no_goal_lbl.setVisible(True)
+            return
+
+        self._bar.setVisible(True)
+        self._amount_lbl.setVisible(True)
+        self._sub_lbl.setVisible(True)
+        self._no_goal_lbl.setVisible(False)
+
+        self._bar.set_values(earned_usd, goal.min_goal, goal.major_goal)
+        self._bar.set_palette(self._palette)
+
+        min_jpy   = int(goal.min_goal   * self._rate)
+        major_jpy = int(goal.major_goal * self._rate)
+
+        # Percentage toward minimum (capped at 999% for display sanity)
+        pct_min = min(earned_usd / goal.min_goal * 100, 999) if goal.min_goal > 0 else 0
+        pct_major = min(earned_usd / goal.major_goal * 100, 999) if goal.major_goal > 0 else 0
+
+        # Determine status label color
+        if earned_usd >= goal.major_goal:
+            status = "\u2605 Major Goal Reached!"
+            status_color = self._palette.get("accent", "#89b4fa")
+        elif earned_usd >= goal.min_goal:
+            status = "\u2714 Minimum Goal Reached"
+            status_color = self._palette.get("green", "#a6e3a1")
+        else:
+            remaining_usd = goal.min_goal - earned_usd
+            remaining_jpy = int(remaining_usd * self._rate)
+            status = f"${remaining_usd:,.0f} / \u00a5{remaining_jpy:,} until minimum"
+            status_color = "#f38ba8"
+
+        self._amount_lbl.setText(
+            f"${earned_usd:,.2f}  \u00a5{earned_jpy:,}"
+            f"   \u2014   {pct_min:.0f}% of min  ·  {pct_major:.0f}% of major"
+        )
+        self._amount_lbl.setStyleSheet(f"font-size:12px;font-weight:bold;")
+
+        self._sub_lbl.setText(
+            f"Min: ${goal.min_goal:,.0f} (\u00a5{min_jpy:,})   "
+            f"\u00b7   Major: ${goal.major_goal:,.0f} (\u00a5{major_jpy:,})"
+            f"   \u00b7   {status}"
+        )
+        self._sub_lbl.setStyleSheet(f"font-size:10px;color:{status_color};")
+
+    def _prev_month(self):
+        if self._month == 1:
+            self._month = 12
+            self._year -= 1
+        else:
+            self._month -= 1
+        self._refresh()
+
+    def _next_month(self):
+        if self._month == 12:
+            self._month = 1
+            self._year += 1
+        else:
+            self._month += 1
+        self._refresh()
+
+    def _edit_goals(self):
+        goal = self.store.get_goal(self._year, self._month)
+        min_g   = goal.min_goal   if goal else 0.0
+        major_g = goal.major_goal if goal else 0.0
+
+        dlg = GoalEditDialog(
+            min_g, major_g, self._year, self._month, self._rate, self
+        )
+        if dlg.exec() == QDialog.DialogCode.Accepted:
+            min_goal, major_goal = dlg.get_goals()
+            self.store.set_goal(self._year, self._month, min_goal, major_goal)
+            self._refresh()
+
+
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+#  DashboardPanel
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+class DashboardPanel(QWidget):
+
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.todo_store     = TodoStore()
+        self.calendar_store = CalendarStore()
+        self.finance_store  = FinanceStore()
+        self._palette: dict = {}
+        self._build_ui()
+        self._refresh()
+
+        # Auto-refresh every 60 seconds so stats stay current
+        self._auto_timer = QTimer(self)
+        self._auto_timer.setInterval(60_000)
+        self._auto_timer.timeout.connect(self._refresh)
+        self._auto_timer.start()
+
+    def showEvent(self, event):
+        """Refresh immediately whenever the Dashboard tab becomes visible."""
+        super().showEvent(event)
+        self._refresh()
+
+    def set_palette(self, palette: dict):
+        self._palette = palette
+        self._goal_section.set_palette(palette)
         self._refresh()
 
     def _build_ui(self):
@@ -6761,7 +7563,7 @@ class DashboardPanel(QWidget):
         layout.setContentsMargins(16, 12, 16, 12)
         layout.setSpacing(12)
 
-        # Header
+        # ── Header ──
         header = QHBoxLayout()
         title = QLabel("Dashboard")
         title.setObjectName("sectionTitle")
@@ -6772,23 +7574,35 @@ class DashboardPanel(QWidget):
         header.addWidget(self.date_label)
         layout.addLayout(header)
 
-        # Stat cards row
+        # ── Side Income Goal Section (prominent, full-width) ──
+        self._goal_section = SideIncomeGoalSection(self.finance_store)
+        self._goal_section.setStyleSheet(
+            "#goalSection {"
+            "  border: 1px solid palette(mid);"
+            "  border-radius: 8px;"
+            "}"
+        )
+        layout.addWidget(self._goal_section)
+
+        # ── Stat cards row ──
         self._cards_layout = QHBoxLayout()
         self._cards_layout.setSpacing(10)
 
-        self.card_pending = StatCard("0", "Pending Tasks")
-        self.card_done_today = StatCard("0", "Done Today")
-        self.card_overdue = StatCard("0", "Overdue", "#f38ba8")
-        self.card_events_week = StatCard("0", "Events This Week")
-        self.card_earned_month = StatCard("$0", "Earned This Month")
+        self.card_pending       = StatCard("0", "Pending Tasks")
+        self.card_done_today    = StatCard("0", "Done Today")
+        self.card_overdue       = StatCard("0", "Overdue", "#f38ba8")
+        self.card_events_week   = StatCard("0", "Events This Week")
+        self.card_earned_month  = StatCard("$0", "Earned This Month")
 
-        for card in [self.card_pending, self.card_done_today, self.card_overdue,
-                     self.card_events_week, self.card_earned_month]:
+        for card in [
+            self.card_pending, self.card_done_today, self.card_overdue,
+            self.card_events_week, self.card_earned_month,
+        ]:
             self._cards_layout.addWidget(card)
 
         layout.addLayout(self._cards_layout)
 
-        # Progress bar for task completion
+        # ── Task completion progress bar ──
         progress_row = QHBoxLayout()
         progress_row.setSpacing(8)
         progress_lbl = QLabel("Task Completion:")
@@ -6804,7 +7618,7 @@ class DashboardPanel(QWidget):
         progress_row.addWidget(self.progress_pct_label)
         layout.addLayout(progress_row)
 
-        # Two-column area: upcoming deadlines + priority breakdown
+        # ── Two-column area ──
         columns = QHBoxLayout()
         columns.setSpacing(12)
 
@@ -6826,7 +7640,7 @@ class DashboardPanel(QWidget):
         left.addWidget(upcoming_scroll, 1)
         columns.addLayout(left, 3)
 
-        # Right: priority breakdown + category breakdown
+        # Right: priority + category breakdown
         right = QVBoxLayout()
 
         priority_title = QLabel("Tasks by Priority")
@@ -6857,26 +7671,28 @@ class DashboardPanel(QWidget):
         layout.addLayout(columns, 1)
 
     def _refresh(self):
-        green = self._palette.get("green", "#a6e3a1")
-        red = self._palette.get("red", "#f38ba8")
+        green  = self._palette.get("green",  "#a6e3a1")
+        red    = self._palette.get("red",    "#f38ba8")
         accent = self._palette.get("accent", "#4a9eff")
         yellow = self._palette.get("yellow", "#f9e2af")
 
         today = date.today()
         self.date_label.setText(today.strftime("%A, %B %d, %Y"))
 
+        # Refresh goal section
+        self._goal_section._refresh()
+
         # Task stats
         counts = self.todo_store.get_counts()
-        all_tasks = self.todo_store.get_all(include_done=True)
+        all_tasks     = self.todo_store.get_all(include_done=True)
         pending_tasks = [t for t in all_tasks if not t.done and not t.deleted]
-        done_tasks = [t for t in all_tasks if t.done and not t.deleted]
+        done_tasks    = [t for t in all_tasks if t.done and not t.deleted]
 
         overdue = [
             t for t in pending_tasks
             if t.due_date and t.due_date < today.isoformat()
         ]
 
-        # Done today
         today_str = today.isoformat()
         done_today = [
             t for t in done_tasks
@@ -6904,7 +7720,7 @@ class DashboardPanel(QWidget):
 
         # Progress bar
         total = counts["total"]
-        done = counts["done"]
+        done  = counts["done"]
         if total > 0:
             pct = int(done / total * 100)
             self.progress_bar.setValue(pct)
@@ -6913,7 +7729,6 @@ class DashboardPanel(QWidget):
             self.progress_bar.setValue(0)
             self.progress_pct_label.setText("No tasks")
 
-        # Style the progress bar
         self.progress_bar.setStyleSheet(f"""
             QProgressBar {{
                 border: 1px solid palette(mid);
@@ -6927,32 +7742,25 @@ class DashboardPanel(QWidget):
             }}
         """)
 
-        # Upcoming deadlines (tasks with due dates + events in next 7 days)
+        # Upcoming deadlines
         self._clear_layout(self._upcoming_layout)
-
         upcoming_items = []
 
-        # Tasks with due dates (sorted by date)
         for task in sorted(pending_tasks, key=lambda t: t.due_date or "9999"):
             if task.due_date:
                 try:
                     due = date.fromisoformat(task.due_date)
                     delta = (due - today).days
                     if delta < 0:
-                        days_text = f"{-delta}d overdue"
-                        color = red
+                        days_text, color = f"{-delta}d overdue", red
                     elif delta == 0:
-                        days_text = "Today"
-                        color = yellow
+                        days_text, color = "Today", yellow
                     elif delta == 1:
-                        days_text = "Tomorrow"
-                        color = yellow
+                        days_text, color = "Tomorrow", yellow
                     elif delta <= 7:
-                        days_text = f"In {delta}d"
-                        color = accent
+                        days_text, color = f"In {delta}d", accent
                     else:
-                        days_text = f"In {delta}d"
-                        color = green
+                        days_text, color = f"In {delta}d", green
                     cat = f"Task \u00b7 {task.category}" if task.category else "Task"
                     upcoming_items.append((delta, UpcomingItem(
                         task.title, cat, color, days_text
@@ -6960,7 +7768,6 @@ class DashboardPanel(QWidget):
                 except ValueError:
                     pass
 
-        # Events in next 7 days
         next_week = today + timedelta(days=7)
         upcoming_events = self.calendar_store.get_events(
             today.isoformat(), next_week.isoformat() + "T23:59:59"
@@ -6969,12 +7776,9 @@ class DashboardPanel(QWidget):
             try:
                 ev_date = datetime.fromisoformat(ev.start_time).date()
                 delta = (ev_date - today).days
-                if delta == 0:
-                    days_text = "Today"
-                elif delta == 1:
-                    days_text = "Tomorrow"
-                else:
-                    days_text = f"In {delta}d"
+                if delta == 0:   days_text = "Today"
+                elif delta == 1: days_text = "Tomorrow"
+                else:            days_text = f"In {delta}d"
                 time_str = ""
                 if not ev.all_day:
                     time_str = datetime.fromisoformat(ev.start_time).strftime("%H:%M")
@@ -6985,7 +7789,6 @@ class DashboardPanel(QWidget):
             except (ValueError, AttributeError):
                 pass
 
-        # Sort by urgency
         for _, widget in sorted(upcoming_items, key=lambda x: x[0]):
             self._upcoming_layout.addWidget(widget)
 
@@ -7039,7 +7842,9 @@ class DashboardPanel(QWidget):
         if cat_counts:
             max_cat = max(cat_counts.values())
             bar_colors = [accent, green, "#cba6f7", "#fab387", yellow, "#94e2d5"]
-            for i, (cat, count) in enumerate(sorted(cat_counts.items(), key=lambda x: -x[1])):
+            for i, (cat, count) in enumerate(
+                sorted(cat_counts.items(), key=lambda x: -x[1])
+            ):
                 row = QHBoxLayout()
                 label = QLabel(cat)
                 label.setFixedWidth(80)
@@ -7073,7 +7878,6 @@ class DashboardPanel(QWidget):
             child = layout.takeAt(0)
             if child.widget():
                 child.widget().deleteLater()
-
 ```
 
 ### `src\ui\modules\finance_charts.py`
@@ -7081,7 +7885,12 @@ class DashboardPanel(QWidget):
 ```python
 """Finance charts — custom painted graphs for earnings data visualization.
 
-Uses QPainter for zero-dependency chart rendering: line chart, bar chart, pie chart.
+Uses QPainter for zero-dependency chart rendering: line chart, bar chart,
+pie chart, and activity stacked bar chart.
+
+Tabs:
+  Finance  — monthly line chart, earnings by source bar, category pie
+  Activity — stacked daily bar chart of time spent per quick category
 """
 
 import calendar
@@ -7092,16 +7901,22 @@ from PyQt6.QtCore import Qt, QRectF, QPointF
 from PyQt6.QtGui import QPainter, QPen, QColor, QBrush, QFont, QPainterPath
 from PyQt6.QtWidgets import (
     QWidget, QVBoxLayout, QHBoxLayout,
-    QLabel, QComboBox, QFrame, QSizePolicy,
+    QLabel, QComboBox, QFrame, QSizePolicy, QTabWidget,
 )
 
 from src.data.finance_store import FinanceStore
+from src.data.activity_store import ActivityStore, ACTIVITY_COLORS, DEFAULT_COLOR, QUICK_CATEGORIES
+from src.config import load_config
 
 CHART_COLORS = [
     "#4a9eff", "#a6e3a1", "#cba6f7", "#fab387", "#f9e2af",
     "#94e2d5", "#f38ba8", "#f5c2e7", "#89b4fa", "#74c7ec",
 ]
 
+
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+#  LineChart
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 class LineChart(QWidget):
     """Monthly earnings line chart with area fill."""
@@ -7110,7 +7925,7 @@ class LineChart(QWidget):
         super().__init__(parent)
         self.setMinimumHeight(200)
         self.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
-        self._data: list[tuple[str, float]] = []  # (month_label, amount)
+        self._data: list[tuple[str, float]] = []
         self._title = "Monthly Earnings"
         self._color = QColor("#4a9eff")
 
@@ -7138,7 +7953,6 @@ class LineChart(QWidget):
             painter.end()
             return
 
-        # Title
         painter.setPen(QPen(QColor("#cdd6f4")))
         font = QFont()
         font.setBold(True)
@@ -7156,7 +7970,6 @@ class LineChart(QWidget):
             painter.end()
             return
 
-        # Grid lines + Y axis labels
         font.setBold(False)
         font.setPixelSize(10)
         painter.setFont(font)
@@ -7176,15 +7989,12 @@ class LineChart(QWidget):
                 f"${val:,.0f}",
             )
 
-        # Build points
         points = []
         step = chart_w / (n - 1)
         for i, (label, val) in enumerate(self._data):
             x = margin_left + i * step
             y = margin_top + chart_h - (val / max_val * chart_h)
             points.append(QPointF(x, y))
-
-            # X axis label
             painter.setPen(label_pen)
             painter.drawText(
                 QRectF(x - 20, h - margin_bottom + 6, 40, 16),
@@ -7192,7 +8002,6 @@ class LineChart(QWidget):
                 label,
             )
 
-        # Area fill
         area_path = QPainterPath()
         area_path.moveTo(points[0].x(), margin_top + chart_h)
         for pt in points:
@@ -7204,19 +8013,21 @@ class LineChart(QWidget):
         fill_color.setAlpha(40)
         painter.fillPath(area_path, QBrush(fill_color))
 
-        # Line
         line_pen = QPen(self._color, 2)
         painter.setPen(line_pen)
         for i in range(len(points) - 1):
             painter.drawLine(points[i], points[i + 1])
 
-        # Dots
         painter.setBrush(QBrush(self._color))
         for pt in points:
             painter.drawEllipse(pt, 4, 4)
 
         painter.end()
 
+
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+#  BarChart
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 class BarChart(QWidget):
     """Vertical bar chart for category or monthly comparisons."""
@@ -7256,7 +8067,6 @@ class BarChart(QWidget):
             painter.end()
             return
 
-        # Title
         painter.setPen(QPen(QColor("#cdd6f4")))
         font = QFont()
         font.setBold(True)
@@ -7278,7 +8088,6 @@ class BarChart(QWidget):
         bar_gap = 6
         bar_w = max((chart_w - bar_gap * (n + 1)) / n, 8)
 
-        # Grid
         font.setBold(False)
         font.setPixelSize(10)
         painter.setFont(font)
@@ -7297,28 +8106,21 @@ class BarChart(QWidget):
                 f"${val:,.0f}",
             )
 
-        # Bars
         for i, (label, val) in enumerate(self._data):
             x = margin_left + bar_gap + i * (bar_w + bar_gap)
             bar_h = (val / max_val) * chart_h
             y = margin_top + chart_h - bar_h
-
             color = QColor(self._colors[i % len(self._colors)])
             painter.setPen(Qt.PenStyle.NoPen)
             painter.setBrush(QBrush(color))
             painter.drawRoundedRect(QRectF(x, y, bar_w, bar_h), 3, 3)
-
-            # Label below
             painter.setPen(label_pen)
-            # Truncate long labels
             display_label = label if len(label) <= 8 else label[:7] + ".."
             painter.drawText(
                 QRectF(x - 4, margin_top + chart_h + 4, bar_w + 8, 30),
                 Qt.AlignmentFlag.AlignHCenter | Qt.AlignmentFlag.AlignTop,
                 display_label,
             )
-
-            # Value on top
             painter.drawText(
                 QRectF(x - 4, y - 16, bar_w + 8, 14),
                 Qt.AlignmentFlag.AlignCenter,
@@ -7327,6 +8129,10 @@ class BarChart(QWidget):
 
         painter.end()
 
+
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+#  PieChart
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 class PieChart(QWidget):
     """Donut/pie chart for category distribution."""
@@ -7359,7 +8165,6 @@ class PieChart(QWidget):
             painter.end()
             return
 
-        # Title
         painter.setPen(QPen(QColor("#cdd6f4")))
         font = QFont()
         font.setBold(True)
@@ -7378,7 +8183,7 @@ class PieChart(QWidget):
             painter.end()
             return
 
-        start_angle = 90 * 16  # Qt uses 1/16th degree units, start from top
+        start_angle = 90 * 16
         rect = QRectF(cx - radius, cy - radius, radius * 2, radius * 2)
         inner_rect = QRectF(cx - inner_radius, cy - inner_radius,
                             inner_radius * 2, inner_radius * 2)
@@ -7390,33 +8195,24 @@ class PieChart(QWidget):
         for i, (label, val) in enumerate(self._data):
             span = int(val / total * 360 * 16)
             color = QColor(self._colors[i % len(self._colors)])
-
             painter.setPen(Qt.PenStyle.NoPen)
             painter.setBrush(QBrush(color))
-
-            # Draw pie slice
             path = QPainterPath()
             path.moveTo(cx, cy)
             path.arcTo(rect, start_angle / 16, span / 16)
             path.lineTo(cx, cy)
             painter.drawPath(path)
-
             start_angle += span
 
-        # Cut out center for donut
         painter.setBrush(QBrush(QColor("#1e1e2e")))
         painter.drawEllipse(inner_rect)
 
-        # Center text
         painter.setPen(QPen(QColor("#cdd6f4")))
         font.setPixelSize(16)
         font.setBold(True)
         painter.setFont(font)
-        painter.drawText(
-            inner_rect, Qt.AlignmentFlag.AlignCenter, f"${total:,.0f}"
-        )
+        painter.drawText(inner_rect, Qt.AlignmentFlag.AlignCenter, f"${total:,.0f}")
 
-        # Legend
         font.setPixelSize(10)
         font.setBold(False)
         painter.setFont(font)
@@ -7428,11 +8224,9 @@ class PieChart(QWidget):
             y = legend_y + i * 18
             if y > h - 10:
                 break
-
             painter.setPen(Qt.PenStyle.NoPen)
             painter.setBrush(QBrush(color))
             painter.drawRoundedRect(QRectF(legend_x, y, 10, 10), 2, 2)
-
             pct = val / total * 100 if total > 0 else 0
             painter.setPen(QPen(QColor("#a6adc8")))
             painter.drawText(
@@ -7444,8 +8238,298 @@ class PieChart(QWidget):
         painter.end()
 
 
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+#  StackedActivityChart — daily stacked bar (hours)
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+class StackedActivityChart(QWidget):
+    """Stacked bar chart: one bar per day, segments per quick category."""
+
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.setMinimumHeight(260)
+        self.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
+        # List of (day_label, {category: minutes})
+        self._days: list[tuple[str, dict[str, float]]] = []
+        self._categories: list[str] = []
+        self._title = "Daily Activity Breakdown"
+        self._palette: dict = {}
+
+    def set_data(self, days: list[tuple[str, dict[str, float]]],
+                 categories: list[str], title: str = "Daily Activity Breakdown"):
+        self._days = days
+        self._categories = categories
+        self._title = title
+        self.update()
+
+    def set_palette(self, palette: dict):
+        self._palette = palette
+        self.update()
+
+    def paintEvent(self, event):
+        painter = QPainter(self)
+        painter.setRenderHint(QPainter.RenderHint.Antialiasing)
+
+        w = self.width()
+        h = self.height()
+        margin_left   = 52
+        margin_right  = 16
+        margin_top    = 30
+        margin_bottom = 54   # room for day labels + legend
+        chart_w = w - margin_left - margin_right
+        chart_h = h - margin_top - margin_bottom
+
+        fg_color = QColor(self._palette.get("fg", "#cdd6f4"))
+        muted_c  = QColor(self._palette.get("muted", "#7f849c"))
+        grid_c   = QColor(self._palette.get("border", "#45475a"))
+
+        if chart_w < 60 or chart_h < 60:
+            painter.end()
+            return
+
+        # Title
+        font = QFont(); font.setBold(True); font.setPixelSize(13)
+        painter.setFont(font)
+        painter.setPen(QPen(fg_color))
+        painter.drawText(margin_left, 18, self._title)
+
+        if not self._days:
+            font.setBold(False); font.setPixelSize(11); painter.setFont(font)
+            painter.setPen(QPen(muted_c))
+            painter.drawText(
+                QRectF(margin_left, margin_top, chart_w, chart_h),
+                Qt.AlignmentFlag.AlignCenter, "No activity data for this period"
+            )
+            painter.end()
+            return
+
+        # Max total minutes across all days
+        max_mins = max(
+            sum(cats.values()) for _, cats in self._days
+        ) if self._days else 1
+        if max_mins == 0:
+            max_mins = 60  # default 1h axis
+
+        # Round up to nearest hour for nicer grid
+        max_hours = (int(max_mins // 60) + 1)
+        max_mins_axis = max_hours * 60
+
+        # Y grid lines (hours)
+        font.setBold(False); font.setPixelSize(9); painter.setFont(font)
+        grid_pen = QPen(grid_c, 1, Qt.PenStyle.DotLine)
+
+        for hh in range(max_hours + 1):
+            y = margin_top + chart_h - (hh / max_hours * chart_h)
+            painter.setPen(grid_pen)
+            painter.drawLine(int(margin_left), int(y), int(w - margin_right), int(y))
+            painter.setPen(QPen(muted_c))
+            painter.drawText(
+                QRectF(0, y - 8, margin_left - 4, 16),
+                Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter,
+                f"{hh}h",
+            )
+
+        # Bars
+        n = len(self._days)
+        bar_gap = 8
+        bar_w = max((chart_w - bar_gap * (n + 1)) / n, 10)
+
+        for i, (day_label, cat_mins) in enumerate(self._days):
+            x = margin_left + bar_gap + i * (bar_w + bar_gap)
+            y_cursor = margin_top + chart_h  # start from bottom
+
+            for cat in self._categories:
+                mins = cat_mins.get(cat, 0.0)
+                if mins <= 0:
+                    continue
+                seg_h = (mins / max_mins_axis) * chart_h
+                color = QColor(ACTIVITY_COLORS.get(cat, DEFAULT_COLOR))
+                painter.setPen(Qt.PenStyle.NoPen)
+                painter.setBrush(QBrush(color))
+                painter.drawRoundedRect(
+                    QRectF(x, y_cursor - seg_h, bar_w, seg_h), 2, 2
+                )
+                # Label inside segment if tall enough
+                if seg_h >= 16:
+                    lbl_font = QFont(); lbl_font.setPixelSize(9)
+                    painter.setFont(lbl_font)
+                    text_c = QColor("#11111b") if color.lightness() > 128 else QColor("#cdd6f4")
+                    painter.setPen(QPen(text_c))
+                    short = cat[:4]
+                    painter.drawText(
+                        QRectF(x + 2, y_cursor - seg_h + 2, bar_w - 4, seg_h - 4),
+                        Qt.AlignmentFlag.AlignCenter, short
+                    )
+                y_cursor -= seg_h
+
+            # Day label below
+            font.setBold(False); font.setPixelSize(10); painter.setFont(font)
+            painter.setPen(QPen(muted_c))
+            painter.drawText(
+                QRectF(x - 4, margin_top + chart_h + 4, bar_w + 8, 20),
+                Qt.AlignmentFlag.AlignHCenter | Qt.AlignmentFlag.AlignTop,
+                day_label,
+            )
+
+        # Legend row at very bottom
+        legend_y = h - 18
+        legend_x = margin_left
+        font.setPixelSize(9); painter.setFont(font)
+        for cat in self._categories:
+            color = QColor(ACTIVITY_COLORS.get(cat, DEFAULT_COLOR))
+            painter.setPen(Qt.PenStyle.NoPen)
+            painter.setBrush(QBrush(color))
+            painter.drawRoundedRect(QRectF(legend_x, legend_y, 9, 9), 2, 2)
+            painter.setPen(QPen(muted_c))
+            painter.drawText(
+                QRectF(legend_x + 11, legend_y - 2, 65, 14),
+                Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter,
+                cat[:8],
+            )
+            legend_x += 78
+            if legend_x > w - 60:
+                break
+
+        painter.end()
+
+
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+#  ActivityChartsPanel — the Activity tab content
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+class ActivityChartsPanel(QWidget):
+    """Activity stacked bar chart view."""
+
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.store = ActivityStore()
+        self._palette: dict = {}
+        self._build_ui()
+        self._refresh()
+
+    def set_palette(self, palette: dict):
+        self._palette = palette
+        self._chart.set_palette(palette)
+        self._refresh()
+
+    def _build_ui(self):
+        layout = QVBoxLayout(self)
+        layout.setContentsMargins(16, 12, 16, 12)
+        layout.setSpacing(10)
+
+        header = QHBoxLayout()
+        title = QLabel("Activity Charts")
+        title.setObjectName("sectionTitle")
+        header.addWidget(title)
+        header.addStretch()
+
+        header.addWidget(QLabel("Period:"))
+        self.period_combo = QComboBox()
+        self.period_combo.addItems(["This Week", "Last Week", "Last 4 Weeks"])
+        self.period_combo.currentTextChanged.connect(self._refresh)
+        header.addWidget(self.period_combo)
+        layout.addLayout(header)
+
+        self._chart = StackedActivityChart()
+        layout.addWidget(self._chart, 1)
+
+        # Summary label
+        self._summary_lbl = QLabel("")
+        self._summary_lbl.setStyleSheet("font-size:11px;")
+        self._summary_lbl.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        layout.addWidget(self._summary_lbl)
+
+    def _refresh(self):
+        today = date.today()
+        period = self.period_combo.currentText()
+        cfg = load_config()
+        quick_cats = cfg.get("activity_quick_categories", list(QUICK_CATEGORIES))
+
+        if period == "This Week":
+            week_start = today - timedelta(days=today.weekday())
+            days_range = [(week_start + timedelta(days=i)) for i in range(7)]
+        elif period == "Last Week":
+            week_start = today - timedelta(days=today.weekday() + 7)
+            days_range = [(week_start + timedelta(days=i)) for i in range(7)]
+        else:  # Last 4 Weeks
+            start = today - timedelta(days=27)
+            days_range = [(start + timedelta(days=i)) for i in range(28)]
+
+        # Build data: one entry per day
+        day_data: list[tuple[str, dict[str, float]]] = []
+        total_by_cat: dict[str, float] = {c: 0.0 for c in quick_cats}
+
+        for d in days_range:
+            acts = self.store.get_for_date(d.isoformat())
+            cat_mins: dict[str, float] = {c: 0.0 for c in quick_cats}
+            for a in acts:
+                if a.activity in cat_mins:
+                    mins = max(a.duration_minutes, 0)
+                    cat_mins[a.activity] += mins
+                    total_by_cat[a.activity] += mins
+            if period == "Last 4 Weeks":
+                label = d.strftime("%m/%d")
+            else:
+                label = d.strftime("%a")
+            day_data.append((label, cat_mins))
+
+        self._chart.set_data(day_data, quick_cats)
+        self._chart.set_palette(self._palette)
+
+        # Summary text
+        total_mins = sum(total_by_cat.values())
+        h, m = divmod(int(total_mins), 60)
+        parts = [f"{c}: {int(v)//60}h{int(v)%60:02d}m"
+                 for c, v in total_by_cat.items() if v > 0]
+        summary = f"Total: {h}h {m}m   |   " + "  ·  ".join(parts) if parts else "No data"
+        self._summary_lbl.setText(summary)
+
+
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+#  FinanceChartsPanel — tabbed container
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
 class FinanceChartsPanel(QWidget):
-    """Charts view for the finance data."""
+    """Tabbed charts panel: Finance tab + Activity tab."""
+
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self._palette: dict = {}
+        self._build_ui()
+
+    def set_palette(self, palette: dict):
+        self._palette = palette
+        self._finance_tab.set_palette(palette)
+        self._activity_tab.set_palette(palette)
+
+    def _build_ui(self):
+        layout = QVBoxLayout(self)
+        layout.setContentsMargins(0, 0, 0, 0)
+
+        self._tabs = QTabWidget()
+        self._tabs.setDocumentMode(True)
+
+        # Finance tab (original content)
+        self._finance_tab = _FinanceChartsContent()
+        self._tabs.addTab(self._finance_tab, "Finance")
+
+        # Activity tab (new)
+        self._activity_tab = ActivityChartsPanel()
+        self._tabs.addTab(self._activity_tab, "Activity")
+
+        layout.addWidget(self._tabs)
+
+    def refresh(self):
+        self._finance_tab._refresh()
+        self._activity_tab._refresh()
+
+
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+#  _FinanceChartsContent — original finance charts
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+class _FinanceChartsContent(QWidget):
+    """Original finance charts: line chart, bar chart, pie chart."""
 
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -7463,7 +8547,6 @@ class FinanceChartsPanel(QWidget):
         layout.setContentsMargins(16, 12, 16, 12)
         layout.setSpacing(10)
 
-        # Header
         header = QHBoxLayout()
         title = QLabel("Financial Charts")
         title.setObjectName("sectionTitle")
@@ -7472,18 +8555,17 @@ class FinanceChartsPanel(QWidget):
 
         header.addWidget(QLabel("Period:"))
         self.period_combo = QComboBox()
-        self.period_combo.addItems(["Last 6 Months", "Last 12 Months", "This Year", "All Time"])
+        self.period_combo.addItems([
+            "Last 6 Months", "Last 12 Months", "This Year", "All Time"
+        ])
         self.period_combo.currentTextChanged.connect(self._refresh)
         header.addWidget(self.period_combo)
-
         layout.addLayout(header)
 
-        # Top row: line chart
         self.line_chart = LineChart()
         self.line_chart.setMinimumHeight(220)
         layout.addWidget(self.line_chart, 2)
 
-        # Bottom row: bar chart + pie chart
         bottom = QHBoxLayout()
         bottom.setSpacing(12)
 
@@ -7506,31 +8588,24 @@ class FinanceChartsPanel(QWidget):
             start = today - timedelta(days=365)
         elif period == "This Year":
             start = today.replace(month=1, day=1)
-        else:  # All Time
+        else:
             start = date(2020, 1, 1)
         return start.isoformat(), today.isoformat()
 
     def _refresh(self):
         green = self._palette.get("green", "#a6e3a1")
-        accent = self._palette.get("accent", "#4a9eff")
 
         start, end = self._get_date_range()
         txns = self.store.get_transactions(start, end)
 
-        # Monthly earnings line chart
         monthly: dict[str, float] = {}
-        monthly_expense: dict[str, float] = {}
         for t in txns:
-            month_key = t.date[:7]  # YYYY-MM
+            month_key = t.date[:7]
             if t.type == "income":
                 monthly[month_key] = monthly.get(month_key, 0) + t.amount
-            else:
-                monthly_expense[month_key] = monthly_expense.get(month_key, 0) + t.amount
 
-        # Ensure we have all months in range
-        all_months = sorted(set(list(monthly.keys()) + list(monthly_expense.keys())))
+        all_months = sorted(monthly.keys())
         if not all_months:
-            # Generate last 6 months even if no data
             today = date.today()
             for i in range(5, -1, -1):
                 m = today - timedelta(days=30 * i)
@@ -7538,7 +8613,7 @@ class FinanceChartsPanel(QWidget):
 
         line_data = []
         for m in all_months:
-            short_label = m[5:]  # MM from YYYY-MM
+            short_label = m[5:]
             try:
                 month_num = int(short_label)
                 short_label = calendar.month_abbr[month_num]
@@ -7549,10 +8624,9 @@ class FinanceChartsPanel(QWidget):
         self.line_chart._title = "Monthly Earnings"
         self.line_chart.set_data(line_data, green)
 
-        # Category bar chart (income sources)
         summary = self.store.get_summary(start, end)
         by_cat = summary["by_category"]
-        # Split into income and expense categories
+
         income_by_cat: dict[str, float] = {}
         for t in txns:
             if t.type == "income":
@@ -7564,68 +8638,126 @@ class FinanceChartsPanel(QWidget):
             title="Earnings by Source",
         )
 
-        # Pie chart — all categories
         pie_data = sorted(by_cat.items(), key=lambda x: -x[1])[:8]
         self.pie_chart.set_data(pie_data, title="Spending Distribution")
-
         self.update()
-
 ```
 
 ### `src\ui\modules\finance_panel.py`
 
 ```python
-"""Earnings Tracker module UI — freelance income tracking with summaries.
+"""Earnings Tracker module UI.
 
-Features:
-- Quick-log preset jobs with one click (job pay, does not count toward goals)
-- Manual earning / expense entry with USD or JPY currency selection
-- Live USD→JPY exchange rate via open.er-api.com with offline fallback
-- Dual-currency display throughout (USD + ¥JPY)
-- Month's Goal section: Base Goal + Extra Goal progress bars
-  (only additional income, not job pay, counts toward goals)
-- Quick date-range buttons (This Month / Last Month / This Year / All Time)
-- Period summary panel with category bars
+Changes in this version:
+  • Income categories simplified to "Main Job" / "Side Job"
+  • Preset manager: category picker (Main Job / Side Job) per preset
+  • log_preset respects preset.category for is_job_pay
+  • Monthly Expenses dialog: recurring expense templates with one-click monthly logging
+    — tagged [Monthly] for easy 確定申告 filtering
+  • GoalEditDialog: JPY/USD currency toggle for goal entry
+  • Dropdown QSS fix applied everywhere
 """
 
 import threading
 import urllib.request
-import urllib.error
 import json
 from datetime import date, timedelta
 
-from PyQt6.QtCore import Qt, QDate, QTimer, pyqtSignal, QObject
-from PyQt6.QtGui import QColor, QBrush, QPainter, QPen, QFont
+from PyQt6.QtCore import Qt, QDate, pyqtSignal, QObject
+from PyQt6.QtGui import QColor, QBrush, QPainter, QPen
 from PyQt6.QtWidgets import (
     QWidget, QVBoxLayout, QHBoxLayout, QSplitter,
     QLabel, QPushButton, QDialog, QLineEdit, QComboBox,
     QDateEdit, QDoubleSpinBox, QTableWidget, QTableWidgetItem,
-    QHeaderView, QFrame, QMessageBox, QScrollArea, QSpinBox,
-    QFormLayout, QSizePolicy, QAbstractItemView,
+    QHeaderView, QFrame, QMessageBox, QScrollArea,
+    QFormLayout, QSizePolicy, QAbstractItemView, QInputDialog,
+    QDialogButtonBox, QCheckBox, QGridLayout, QSpinBox,
 )
 
 from src.config import load_config, save_config
-from src.data.finance_store import FinanceStore, Transaction, JobPreset, DEFAULT_CATEGORIES
+from src.data.finance_store import (
+    FinanceStore, Transaction, JobPreset,
+    INCOME_CATEGORIES, EXPENSE_CATEGORIES,
+)
 
-# ── Default fallback exchange rate ────────────────────────────────────────────
 _FALLBACK_RATE = 150.0
 
+_MONTH_NAMES = ["", "January", "February", "March", "April", "May", "June",
+                "July", "August", "September", "October", "November", "December"]
 
-# ── Exchange Rate Manager ─────────────────────────────────────────────────────
+# ── Default monthly expense templates ─────────────────────────────────────────
+# Stored in config key "monthly_expense_presets".  amount=0 means the user
+# fills in the actual amount each month (bills vary slightly).
+_DEFAULT_MONTHLY_PRESETS: list[dict] = [
+    {"name": "Rent",               "amount": 0, "currency": "JPY", "category": "Rent / Housing"},
+    {"name": "Kids Extracurriculars","amount": 0, "currency": "JPY", "category": "Education"},
+    {"name": "Schooling",          "amount": 0, "currency": "JPY", "category": "Education"},
+    {"name": "Power",              "amount": 0, "currency": "JPY", "category": "Utilities"},
+    {"name": "Water",              "amount": 0, "currency": "JPY", "category": "Utilities"},
+    {"name": "Internet",           "amount": 0, "currency": "JPY", "category": "Subscriptions"},
+    {"name": "Phone",              "amount": 0, "currency": "JPY", "category": "Subscriptions"},
+    {"name": "Gas",                "amount": 0, "currency": "JPY", "category": "Utilities"},
+]
+
+# ── Dropdown / DateEdit QSS ───────────────────────────────────────────────────
+_COMBO_QSS = """
+QComboBox {
+    border: 1px solid palette(mid);
+    border-radius: 4px;
+    padding: 3px 6px;
+    background-color: palette(base);
+    color: palette(text);
+    min-height: 24px;
+}
+QComboBox:focus { border-color: palette(highlight); }
+QComboBox::drop-down {
+    subcontrol-origin: padding;
+    subcontrol-position: top right;
+    width: 22px;
+    border-left: 1px solid palette(mid);
+    border-top-right-radius: 4px;
+    border-bottom-right-radius: 4px;
+}
+QComboBox QAbstractItemView {
+    background-color: palette(base);
+    color: palette(text);
+    selection-background-color: palette(highlight);
+    selection-color: palette(highlighted-text);
+    border: 1px solid palette(mid);
+    outline: none;
+}
+QDateEdit {
+    border: 1px solid palette(mid);
+    border-radius: 4px;
+    padding: 3px 6px;
+    background-color: palette(base);
+    color: palette(text);
+    min-height: 24px;
+}
+QDateEdit::drop-down {
+    subcontrol-origin: padding;
+    subcontrol-position: top right;
+    width: 22px;
+    border-left: 1px solid palette(mid);
+}
+"""
+
+
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+#  Exchange Rate Manager
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 class RateSignals(QObject):
     updated = pyqtSignal(float)
-    error = pyqtSignal(str)
+    error   = pyqtSignal(str)
 
 
 class ExchangeRateManager:
-    """Fetches USD→JPY rate in a background thread. Thread-safe."""
-
     _API_URL = "https://open.er-api.com/v6/latest/USD"
 
     def __init__(self):
-        self.signals = RateSignals()
-        self._rate: float = _FALLBACK_RATE
+        self.signals   = RateSignals()
+        self._rate     = _FALLBACK_RATE
         self._fetching = False
 
     @property
@@ -7636,16 +8768,12 @@ class ExchangeRateManager:
         self._rate = max(rate, 1.0)
 
     def refresh(self):
-        if self._fetching:
-            return
+        if self._fetching: return
         self._fetching = True
-
         def _fetch():
             try:
                 req = urllib.request.Request(
-                    self._API_URL,
-                    headers={"User-Agent": "LocalSync/1.0"},
-                )
+                    self._API_URL, headers={"User-Agent": "LocalSync/1.0"})
                 with urllib.request.urlopen(req, timeout=8) as resp:
                     data = json.loads(resp.read().decode())
                 rate = float(data["rates"]["JPY"])
@@ -7655,137 +8783,99 @@ class ExchangeRateManager:
                 self.signals.error.emit(str(e))
             finally:
                 self._fetching = False
-
         threading.Thread(target=_fetch, daemon=True).start()
 
 
-# Module-level singleton so the panel and dialogs share one rate
 _rate_mgr = ExchangeRateManager()
 
 
-# ── Goal Progress Bar ─────────────────────────────────────────────────────────
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+#  Goal Progress Bar
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 class GoalProgressBar(QWidget):
-    """Paints a two-tier progress bar: base goal and extra goal."""
-
     def __init__(self, parent=None):
         super().__init__(parent)
         self.setMinimumHeight(36)
         self.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
-        self._current = 0.0
-        self._base = 1000.0
-        self._extra = 2000.0
-        self._green = "#a6e3a1"
-        self._gold = "#f9e2af"
-        self._accent = "#4a9eff"
+        self._current = 0.0; self._base = 1000.0; self._extra = 2000.0
+        self._green = "#a6e3a1"; self._gold = "#f9e2af"; self._accent = "#4a9eff"
 
-    def set_values(self, current: float, base: float, extra: float,
-                   green: str = "#a6e3a1", gold: str = "#f9e2af",
-                   accent: str = "#4a9eff"):
+    def set_values(self, current, base, extra,
+                   green="#a6e3a1", gold="#f9e2af", accent="#4a9eff"):
         self._current = max(current, 0.0)
-        self._base = max(base, 1.0)
-        self._extra = max(extra, self._base + 1.0)
-        self._green = green
-        self._gold = gold
-        self._accent = accent
+        self._base    = max(base, 1.0)
+        self._extra   = max(extra, self._base + 1.0)
+        self._green = green; self._gold = gold; self._accent = accent
         self.update()
 
     def paintEvent(self, event):
         painter = QPainter(self)
         painter.setRenderHint(QPainter.RenderHint.Antialiasing)
-
-        w = self.width()
-        bar_h = 18
-        bar_y = (self.height() - bar_h) // 2
-
-        cap = self._extra * 1.05   # a little breathing room past extra goal
-        fill_ratio = min(self._current / cap, 1.0)
-        base_ratio = self._base / cap
-        extra_ratio = self._extra / cap
-
-        # Background track
+        w = self.width(); bar_h = 18; bar_y = (self.height() - bar_h) // 2
+        cap = self._extra * 1.05
         painter.setPen(Qt.PenStyle.NoPen)
         painter.setBrush(QBrush(QColor("#313244")))
         painter.drawRoundedRect(0, bar_y, w, bar_h, bar_h // 2, bar_h // 2)
-
-        # Filled portion — colour shifts from accent → green (base) → gold (extra)
-        fill_w = int(w * fill_ratio)
+        fill_w = int(w * min(self._current / cap, 1.0))
         if fill_w > 0:
-            if self._current >= self._extra:
-                fill_color = QColor(self._gold)
-            elif self._current >= self._base:
-                fill_color = QColor(self._green)
-            else:
-                fill_color = QColor(self._accent)
-            painter.setBrush(QBrush(fill_color))
+            fc = QColor(self._gold   if self._current >= self._extra else
+                        self._green  if self._current >= self._base  else
+                        self._accent)
+            painter.setBrush(QBrush(fc))
             painter.drawRoundedRect(0, bar_y, fill_w, bar_h, bar_h // 2, bar_h // 2)
-
-        # Base goal marker
-        base_x = int(w * base_ratio)
-        pen = QPen(QColor("#cdd6f4"), 2)
-        painter.setPen(pen)
-        painter.drawLine(base_x, bar_y - 3, base_x, bar_y + bar_h + 3)
-
-        # Extra goal marker
-        extra_x = int(w * extra_ratio)
-        pen.setColor(QColor(self._gold))
-        painter.setPen(pen)
-        painter.drawLine(extra_x, bar_y - 3, extra_x, bar_y + bar_h + 3)
-
+        bx = int(w * self._base  / cap)
+        ex = int(w * self._extra / cap)
+        painter.setPen(QPen(QColor("#cdd6f4"), 2))
+        painter.drawLine(bx, bar_y - 3, bx, bar_y + bar_h + 3)
+        painter.setPen(QPen(QColor(self._gold), 2))
+        painter.drawLine(ex, bar_y - 3, ex, bar_y + bar_h + 3)
         painter.end()
 
 
-# ── Category Bar ──────────────────────────────────────────────────────────────
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+#  CategoryBar (summary panel)
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 class CategoryBar(QWidget):
-
-    def __init__(self, label: str, amount_usd: float, max_amount: float,
-                 rate: float, bar_color: str = "#4a9eff", parent=None):
+    def __init__(self, label, amount_usd, max_amount, rate,
+                 bar_color="#4a9eff", parent=None):
         super().__init__(parent)
         layout = QHBoxLayout(self)
-        layout.setContentsMargins(0, 2, 0, 2)
-        layout.setSpacing(8)
-
-        name_label = QLabel(label)
-        name_label.setFixedWidth(110)
+        layout.setContentsMargins(0, 2, 0, 2); layout.setSpacing(8)
+        name_label = QLabel(label); name_label.setFixedWidth(130)
         layout.addWidget(name_label)
-
-        bar_frame = QFrame()
-        width_pct = (amount_usd / max_amount * 100) if max_amount > 0 else 0
-        bar_frame.setStyleSheet(
-            f"background-color: {bar_color}; border-radius: 3px; min-height: 14px;"
-        )
-        bar_frame.setFixedWidth(max(int(width_pct * 1.5), 4))
-        layout.addWidget(bar_frame)
-
+        bar = QFrame()
+        pct = (amount_usd / max_amount * 100) if max_amount > 0 else 0
+        bar.setStyleSheet(
+            f"background-color:{bar_color};border-radius:3px;min-height:14px;")
+        bar.setFixedWidth(max(int(pct * 1.5), 4))
+        layout.addWidget(bar)
         jpy = int(amount_usd * rate)
-        amt_label = QLabel(f"${amount_usd:,.0f}  ¥{jpy:,}")
-        amt_label.setObjectName("subtitle")
-        amt_label.setAlignment(Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter)
-        amt_label.setFixedWidth(140)
-        layout.addWidget(amt_label)
-
-        layout.addStretch()
+        amt = QLabel(f"${amount_usd:,.0f}  \u00a5{jpy:,}")
+        amt.setObjectName("subtitle")
+        amt.setAlignment(Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter)
+        amt.setFixedWidth(140)
+        layout.addWidget(amt); layout.addStretch()
 
 
-# ── Preset Manager Dialog ─────────────────────────────────────────────────────
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+#  PresetManagerDialog — with category selector
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 class PresetManagerDialog(QDialog):
-    """Add / edit / delete job presets."""
-
     def __init__(self, store: FinanceStore, parent=None):
         super().__init__(parent)
         self.store = store
         self.setWindowTitle("Manage Job Presets")
-        self.setMinimumSize(460, 360)
-        self._build_ui()
-        self._refresh()
+        self.setMinimumSize(480, 380)
+        self.setStyleSheet(_COMBO_QSS)
+        self._preset_ids: list[str] = []
+        self._build_ui(); self._refresh()
 
     def _build_ui(self):
-        layout = QVBoxLayout(self)
-        layout.setSpacing(10)
+        layout = QVBoxLayout(self); layout.setSpacing(10)
 
-        # List
         self.table = QTableWidget()
         self.table.setColumnCount(3)
         self.table.setHorizontalHeaderLabels(["Name", "Amount (USD)", "Category"])
@@ -7795,56 +8885,38 @@ class PresetManagerDialog(QDialog):
         self.table.setAlternatingRowColors(True)
         layout.addWidget(self.table)
 
-        # Add row
-        add_frame = QFrame()
-        add_frame.setObjectName("separator")
-        add_frame.setFrameShape(QFrame.Shape.HLine)
-        layout.addWidget(add_frame)
+        sep = QFrame(); sep.setFrameShape(QFrame.Shape.HLine)
+        sep.setObjectName("separator"); layout.addWidget(sep)
 
-        form = QFormLayout()
-        form.setSpacing(6)
+        form = QFormLayout(); form.setSpacing(6)
+
         self.name_edit = QLineEdit()
-        self.name_edit.setPlaceholderText("e.g. Submission")
+        self.name_edit.setPlaceholderText("e.g. Article Submission")
         form.addRow("Name:", self.name_edit)
 
         self.amount_spin = QDoubleSpinBox()
-        self.amount_spin.setRange(0.01, 999999.99)
-        self.amount_spin.setDecimals(2)
-        self.amount_spin.setPrefix("$ ")
+        self.amount_spin.setRange(0.01, 999_999.99)
+        self.amount_spin.setDecimals(2); self.amount_spin.setPrefix("$ ")
         self.amount_spin.setValue(300.00)
         form.addRow("Amount (USD):", self.amount_spin)
 
         self.cat_combo = QComboBox()
-        self.cat_combo.addItems(DEFAULT_CATEGORIES)
-        self.cat_combo.setCurrentText("Contract")
-        self.cat_combo.setEditable(True)
+        self.cat_combo.addItems(INCOME_CATEGORIES)  # Main Job / Side Job
         form.addRow("Category:", self.cat_combo)
 
         layout.addLayout(form)
 
         btn_row = QHBoxLayout()
-        add_btn = QPushButton("Add Preset")
-        add_btn.clicked.connect(self._add_preset)
+        add_btn = QPushButton("Add Preset"); add_btn.clicked.connect(self._add_preset)
         btn_row.addWidget(add_btn)
-
-        edit_btn = QPushButton("Edit Selected")
-        edit_btn.setObjectName("secondary")
-        edit_btn.clicked.connect(self._edit_selected)
-        btn_row.addWidget(edit_btn)
-
-        del_btn = QPushButton("Delete Selected")
-        del_btn.setObjectName("destructive")
-        del_btn.clicked.connect(self._delete_selected)
-        btn_row.addWidget(del_btn)
-
+        edit_btn = QPushButton("Edit Selected"); edit_btn.setObjectName("secondary")
+        edit_btn.clicked.connect(self._edit_selected); btn_row.addWidget(edit_btn)
+        del_btn = QPushButton("Delete Selected"); del_btn.setObjectName("destructive")
+        del_btn.clicked.connect(self._delete_selected); btn_row.addWidget(del_btn)
         btn_row.addStretch()
-        close_btn = QPushButton("Close")
-        close_btn.setObjectName("secondary")
-        close_btn.clicked.connect(self.accept)
-        btn_row.addWidget(close_btn)
+        close_btn = QPushButton("Close"); close_btn.setObjectName("secondary")
+        close_btn.clicked.connect(self.accept); btn_row.addWidget(close_btn)
         layout.addLayout(btn_row)
-
-        self._preset_ids: list[str] = []
 
     def _refresh(self):
         presets = self.store.get_presets()
@@ -7865,279 +8937,729 @@ class PresetManagerDialog(QDialog):
             amount_usd=self.amount_spin.value(),
             category=self.cat_combo.currentText(),
         )
-        self.name_edit.clear()
-        self._refresh()
+        self.name_edit.clear(); self._refresh()
 
     def _edit_selected(self):
         rows = self.table.selectionModel().selectedRows()
-        if not rows:
-            return
+        if not rows: return
         idx = rows[0].row()
-        if idx >= len(self._preset_ids):
-            return
+        if idx >= len(self._preset_ids): return
         presets = self.store.get_presets()
         preset = next((p for p in presets if p.id == self._preset_ids[idx]), None)
-        if not preset:
-            return
+        if not preset: return
         self.name_edit.setText(preset.name)
         self.amount_spin.setValue(preset.amount_usd)
         self.cat_combo.setCurrentText(preset.category)
-        # Remove old and add updated
-        self.store.delete_preset(preset.id)
-        self._refresh()
+        self.store.delete_preset(preset.id); self._refresh()
 
     def _delete_selected(self):
         rows = self.table.selectionModel().selectedRows()
-        if not rows:
-            return
-        reply = QMessageBox.question(
-            self, "Delete Preset", "Delete selected preset(s)?",
-            QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
-        )
-        if reply == QMessageBox.StandardButton.Yes:
+        if not rows: return
+        if QMessageBox.question(
+                self, "Delete Preset", "Delete selected preset(s)?",
+                QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No
+                ) == QMessageBox.StandardButton.Yes:
             for r in rows:
                 if r.row() < len(self._preset_ids):
                     self.store.delete_preset(self._preset_ids[r.row()])
             self._refresh()
 
 
-# ── Goal Settings Dialog ──────────────────────────────────────────────────────
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+#  MonthlyExpenseTemplatesDialog — manage the template list
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+class MonthlyExpenseTemplatesDialog(QDialog):
+    """Add / edit / delete recurring expense templates."""
+
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.setWindowTitle("Manage Monthly Expense Templates")
+        self.setMinimumSize(560, 420)
+        self.setStyleSheet(_COMBO_QSS)
+        self._build_ui(); self._refresh()
+
+    @staticmethod
+    def _load() -> list[dict]:
+        presets = load_config().get("monthly_expense_presets", [])
+        return presets if presets else list(_DEFAULT_MONTHLY_PRESETS)
+
+    @staticmethod
+    def _save(presets: list[dict]):
+        cfg = load_config()
+        cfg["monthly_expense_presets"] = presets
+        save_config(cfg)
+
+    @staticmethod
+    def _load_expense_cats() -> list[str]:
+        cats = load_config().get("expense_categories", [])
+        return cats if cats else list(EXPENSE_CATEGORIES)
+
+    def _build_ui(self):
+        layout = QVBoxLayout(self); layout.setSpacing(10)
+
+        info = QLabel(
+            "These templates are used in the Monthly Expenses log dialog.\n"
+            "Set your typical amounts here — you can adjust them per month when logging.")
+        info.setObjectName("subtitle"); info.setWordWrap(True)
+        layout.addWidget(info)
+
+        self.table = QTableWidget()
+        self.table.setColumnCount(4)
+        self.table.setHorizontalHeaderLabels(["Name", "Default Amount", "Currency", "Category"])
+        hh = self.table.horizontalHeader()
+        hh.setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
+        hh.setSectionResizeMode(2, QHeaderView.ResizeMode.ResizeToContents)
+        self.table.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectRows)
+        self.table.setEditTriggers(QAbstractItemView.EditTrigger.NoEditTriggers)
+        self.table.setAlternatingRowColors(True)
+        layout.addWidget(self.table)
+
+        sep = QFrame(); sep.setFrameShape(QFrame.Shape.HLine)
+        sep.setObjectName("separator"); layout.addWidget(sep)
+
+        form = QFormLayout(); form.setSpacing(6)
+
+        self._name_edit = QLineEdit()
+        self._name_edit.setPlaceholderText("e.g. Gym Membership")
+        form.addRow("Name:", self._name_edit)
+
+        amt_row = QHBoxLayout(); amt_row.setSpacing(6)
+        self._amount_spin = QDoubleSpinBox()
+        self._amount_spin.setRange(0, 9_999_999); self._amount_spin.setDecimals(0)
+        self._amount_spin.setSingleStep(1000); self._amount_spin.setValue(0)
+        amt_row.addWidget(self._amount_spin, 1)
+        self._currency_combo = QComboBox()
+        self._currency_combo.addItems(["JPY", "USD"])
+        self._currency_combo.currentTextChanged.connect(self._on_currency_changed)
+        amt_row.addWidget(self._currency_combo)
+        form.addRow("Default Amount:", amt_row)
+
+        self._cat_combo = QComboBox()
+        self._cat_combo.addItems(self._load_expense_cats())
+        form.addRow("Category:", self._cat_combo)
+
+        layout.addLayout(form)
+
+        btn_row = QHBoxLayout()
+        add_btn = QPushButton("Add Template"); add_btn.clicked.connect(self._add)
+        btn_row.addWidget(add_btn)
+        edit_btn = QPushButton("Edit Selected"); edit_btn.setObjectName("secondary")
+        edit_btn.clicked.connect(self._edit_selected); btn_row.addWidget(edit_btn)
+        del_btn = QPushButton("Delete Selected"); del_btn.setObjectName("destructive")
+        del_btn.clicked.connect(self._delete_selected); btn_row.addWidget(del_btn)
+        btn_row.addStretch()
+        reset_btn = QPushButton("Reset Defaults"); reset_btn.setObjectName("secondary")
+        reset_btn.clicked.connect(self._reset_defaults); btn_row.addWidget(reset_btn)
+        close_btn = QPushButton("Done"); close_btn.clicked.connect(self.accept)
+        btn_row.addWidget(close_btn)
+        layout.addLayout(btn_row)
+
+    def _on_currency_changed(self, cur: str):
+        if cur == "JPY":
+            self._amount_spin.setDecimals(0); self._amount_spin.setSingleStep(1000)
+        else:
+            self._amount_spin.setDecimals(2); self._amount_spin.setSingleStep(10)
+
+    def _refresh(self):
+        presets = self._load()
+        self.table.setRowCount(len(presets))
+        for i, p in enumerate(presets):
+            self.table.setItem(i, 0, QTableWidgetItem(p["name"]))
+            sym = "\u00a5" if p["currency"] == "JPY" else "$"
+            amt = int(p["amount"]) if p["currency"] == "JPY" else p["amount"]
+            self.table.setItem(i, 1, QTableWidgetItem(f"{sym}{amt:,}"))
+            self.table.setItem(i, 2, QTableWidgetItem(p["currency"]))
+            self.table.setItem(i, 3, QTableWidgetItem(p["category"]))
+
+    def _add(self):
+        name = self._name_edit.text().strip()
+        if not name:
+            QMessageBox.warning(self, "Missing Name", "Please enter a template name.")
+            return
+        presets = self._load()
+        presets.append({
+            "name":     name,
+            "amount":   self._amount_spin.value(),
+            "currency": self._currency_combo.currentText(),
+            "category": self._cat_combo.currentText(),
+        })
+        self._save(presets)
+        self._name_edit.clear(); self._refresh()
+
+    def _edit_selected(self):
+        rows = self.table.selectionModel().selectedRows()
+        if not rows: return
+        idx = rows[0].row()
+        presets = self._load()
+        if idx >= len(presets): return
+        p = presets[idx]
+        self._name_edit.setText(p["name"])
+        self._amount_spin.setValue(p["amount"])
+        self._currency_combo.setCurrentText(p["currency"])
+        self._cat_combo.setCurrentText(p["category"])
+        presets.pop(idx); self._save(presets); self._refresh()
+
+    def _delete_selected(self):
+        rows = self.table.selectionModel().selectedRows()
+        if not rows: return
+        if QMessageBox.question(
+                self, "Delete", "Delete selected template(s)?",
+                QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No
+                ) == QMessageBox.StandardButton.Yes:
+            presets = self._load()
+            for r in sorted(rows, key=lambda x: -x.row()):
+                if r.row() < len(presets):
+                    presets.pop(r.row())
+            self._save(presets); self._refresh()
+
+    def _reset_defaults(self):
+        if QMessageBox.question(
+                self, "Reset", "Reset templates to defaults? This will remove custom entries.",
+                QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No
+                ) == QMessageBox.StandardButton.Yes:
+            self._save(list(_DEFAULT_MONTHLY_PRESETS)); self._refresh()
+
+
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+#  MonthlyExpensesDialog — log a month's expenses in one go
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+class MonthlyExpensesDialog(QDialog):
+    """One-click monthly expense logger for recurring bills.
+
+    Transactions are tagged [Monthly] <name> in the description field,
+    making them easy to filter for 確定申告 year-end reporting.
+    """
+
+    def __init__(self, store: FinanceStore, parent=None):
+        super().__init__(parent)
+        self.store = store
+        self.setWindowTitle("Monthly Expenses")
+        self.setMinimumSize(600, 500)
+        self.setStyleSheet(_COMBO_QSS)
+        self._year  = date.today().year
+        self._month = date.today().month
+        self._rows: list[dict] = []   # {check, amount_spin, preset_dict}
+        self._build_ui()
+        self._reload()
+
+    @staticmethod
+    def _load_presets() -> list[dict]:
+        presets = load_config().get("monthly_expense_presets", [])
+        return presets if presets else list(_DEFAULT_MONTHLY_PRESETS)
+
+    def _build_ui(self):
+        layout = QVBoxLayout(self); layout.setSpacing(10)
+
+        # ── Month navigation ──
+        nav = QHBoxLayout()
+        prev_btn = QPushButton("\u2190"); prev_btn.setObjectName("secondary")
+        prev_btn.setFixedSize(28, 28)
+        prev_btn.setStyleSheet("QPushButton{font-size:14px;font-weight:bold;}")
+        prev_btn.clicked.connect(self._prev_month)
+        nav.addWidget(prev_btn)
+        self._month_lbl = QLabel()
+        self._month_lbl.setStyleSheet("font-size:14px;font-weight:bold;")
+        self._month_lbl.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        nav.addWidget(self._month_lbl, 1)
+        next_btn = QPushButton("\u2192"); next_btn.setObjectName("secondary")
+        next_btn.setFixedSize(28, 28)
+        next_btn.setStyleSheet("QPushButton{font-size:14px;font-weight:bold;}")
+        next_btn.clicked.connect(self._next_month)
+        nav.addWidget(next_btn)
+        layout.addLayout(nav)
+
+        # ── Duplicate warning ──
+        self._warn_lbl = QLabel("")
+        self._warn_lbl.setStyleSheet("color:#f9e2af;font-size:11px;")
+        self._warn_lbl.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self._warn_lbl.setWordWrap(True)
+        layout.addWidget(self._warn_lbl)
+
+        # ── Expense rows (scrollable) ──
+        scroll = QScrollArea(); scroll.setWidgetResizable(True)
+        scroll.setFrameShape(QFrame.Shape.NoFrame)
+        scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+        self._rows_widget = QWidget()
+        self._rows_layout = QVBoxLayout(self._rows_widget)
+        self._rows_layout.setContentsMargins(4, 4, 4, 4); self._rows_layout.setSpacing(6)
+        scroll.setWidget(self._rows_widget)
+        layout.addWidget(scroll, 1)
+
+        sep = QFrame(); sep.setObjectName("separator")
+        sep.setFrameShape(QFrame.Shape.HLine); layout.addWidget(sep)
+
+        # ── Column header labels ──
+        hdr = QHBoxLayout(); hdr.setSpacing(0)
+        hdr.addWidget(_hdr_lbl("", 24))
+        hdr.addWidget(_hdr_lbl("Expense", 0), 1)
+        hdr.addWidget(_hdr_lbl("Amount", 120))
+        hdr.addWidget(_hdr_lbl("Currency", 60))
+        hdr.addWidget(_hdr_lbl("Category", 140))
+        layout.insertLayout(2, hdr)   # insert after nav and warn_lbl
+
+        # ── Totals row ──
+        totals_row = QHBoxLayout()
+        totals_row.addStretch()
+        self._total_lbl = QLabel("Total: \u00a50  /  $0.00")
+        self._total_lbl.setStyleSheet("font-size:12px;font-weight:bold;")
+        totals_row.addWidget(self._total_lbl)
+        layout.addLayout(totals_row)
+
+        # ── Action buttons ──
+        btn_row = QHBoxLayout()
+        manage_btn = QPushButton("\u2699 Manage Templates")
+        manage_btn.setObjectName("secondary")
+        manage_btn.clicked.connect(self._manage_templates)
+        btn_row.addWidget(manage_btn)
+        check_all_btn = QPushButton("Check All"); check_all_btn.setObjectName("secondary")
+        check_all_btn.clicked.connect(lambda: self._set_all_checked(True))
+        btn_row.addWidget(check_all_btn)
+        uncheck_btn = QPushButton("Uncheck All"); uncheck_btn.setObjectName("secondary")
+        uncheck_btn.clicked.connect(lambda: self._set_all_checked(False))
+        btn_row.addWidget(uncheck_btn)
+        btn_row.addStretch()
+        cancel_btn = QPushButton("Cancel"); cancel_btn.setObjectName("secondary")
+        cancel_btn.clicked.connect(self.reject); btn_row.addWidget(cancel_btn)
+        self._log_btn = QPushButton("\u2714 Log Selected")
+        self._log_btn.clicked.connect(self._log_selected)
+        btn_row.addWidget(self._log_btn)
+        layout.addLayout(btn_row)
+
+    def _reload(self):
+        """Rebuild the expense rows from the current template list."""
+        # Clear existing rows
+        while self._rows_layout.count():
+            child = self._rows_layout.takeAt(0)
+            if child.widget(): child.widget().deleteLater()
+        self._rows = []
+
+        presets = self._load_presets()
+        for p in presets:
+            row_widget = QWidget()
+            row_l = QHBoxLayout(row_widget)
+            row_l.setContentsMargins(0, 2, 0, 2); row_l.setSpacing(8)
+
+            chk = QCheckBox(); chk.setChecked(True); chk.setFixedWidth(24)
+            row_l.addWidget(chk)
+
+            name_lbl = QLabel(p["name"]); name_lbl.setStyleSheet("font-size:12px;")
+            row_l.addWidget(name_lbl, 1)
+
+            amount_spin = QDoubleSpinBox()
+            amount_spin.setFixedWidth(120)
+            if p["currency"] == "JPY":
+                amount_spin.setRange(0, 9_999_999); amount_spin.setDecimals(0)
+                amount_spin.setSingleStep(1000); amount_spin.setPrefix("\u00a5 ")
+            else:
+                amount_spin.setRange(0, 99_999); amount_spin.setDecimals(2)
+                amount_spin.setSingleStep(10); amount_spin.setPrefix("$ ")
+            amount_spin.setValue(p["amount"])
+            amount_spin.valueChanged.connect(self._update_total)
+            chk.toggled.connect(self._update_total)
+            row_l.addWidget(amount_spin)
+
+            cur_lbl = QLabel(p["currency"]); cur_lbl.setFixedWidth(60)
+            cur_lbl.setObjectName("subtitle"); cur_lbl.setAlignment(Qt.AlignmentFlag.AlignCenter)
+            row_l.addWidget(cur_lbl)
+
+            cat_lbl = QLabel(p["category"]); cat_lbl.setFixedWidth(140)
+            cat_lbl.setObjectName("subtitle")
+            cat_lbl.setStyleSheet("font-size:10px;")
+            row_l.addWidget(cat_lbl)
+
+            self._rows_layout.addWidget(row_widget)
+            self._rows.append({
+                "check":       chk,
+                "amount_spin": amount_spin,
+                "preset":      p,
+            })
+
+        self._rows_layout.addStretch()
+        self._update_month_label()
+        self._update_total()
+
+    def _update_month_label(self):
+        self._month_lbl.setText(f"{_MONTH_NAMES[self._month]} {self._year}")
+        already = self.store.has_monthly_tag(self._year, self._month)
+        if already:
+            self._warn_lbl.setText(
+                "\u26a0\ufe0f  Monthly expenses have already been logged for this month. "
+                "Logging again will create duplicate entries.")
+        else:
+            self._warn_lbl.setText("")
+
+    def _update_total(self):
+        rate = _rate_mgr.rate
+        total_jpy = 0.0
+        for r in self._rows:
+            if not r["check"].isChecked(): continue
+            amt = r["amount_spin"].value()
+            if r["preset"]["currency"] == "JPY":
+                total_jpy += amt
+            else:
+                total_jpy += amt * rate
+        total_usd = total_jpy / rate if rate > 0 else 0
+        self._total_lbl.setText(
+            f"Total: \u00a5{int(total_jpy):,}  /  ${total_usd:,.2f}")
+
+    def _set_all_checked(self, state: bool):
+        for r in self._rows:
+            r["check"].setChecked(state)
+
+    def _prev_month(self):
+        if self._month == 1: self._month = 12; self._year -= 1
+        else: self._month -= 1
+        self._update_month_label()
+
+    def _next_month(self):
+        if self._month == 12: self._month = 1; self._year += 1
+        else: self._month += 1
+        self._update_month_label()
+
+    def _manage_templates(self):
+        dlg = MonthlyExpenseTemplatesDialog(self)
+        dlg.exec()
+        self._reload()
+
+    def _log_selected(self):
+        import calendar as _cal
+        selected = [r for r in self._rows if r["check"].isChecked()]
+        if not selected:
+            QMessageBox.warning(self, "Nothing Selected",
+                "Please check at least one expense to log."); return
+
+        # Use the last day of the selected month as the transaction date
+        last_day = _cal.monthrange(self._year, self._month)[1]
+        log_date = date(self._year, self._month, last_day).isoformat()
+
+        count = 0
+        for r in selected:
+            p = r["preset"]
+            amt = r["amount_spin"].value()
+            if amt <= 0: continue
+            self.store.add_transaction(
+                date=log_date,
+                amount=amt,
+                txn_type="expense",
+                category=p["category"],
+                description=f"[Monthly] {p['name']}",
+                currency=p["currency"],
+                is_job_pay=False,
+            )
+            count += 1
+
+        QMessageBox.information(self, "Logged",
+            f"Logged {count} expense(s) for "
+            f"{_MONTH_NAMES[self._month]} {self._year}.\n\n"
+            f"These are tagged [Monthly] and will appear in the transaction list. "
+            f"Filter by description to export for 確定申告.")
+        self.accept()
+
+
+def _hdr_lbl(text: str, width: int) -> QLabel:
+    lbl = QLabel(text)
+    lbl.setStyleSheet("font-size:10px;font-weight:bold;color:palette(mid);")
+    lbl.setAlignment(Qt.AlignmentFlag.AlignCenter)
+    if width > 0: lbl.setFixedWidth(width)
+    return lbl
+
+
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+#  GoalSettingsDialog — USD or JPY input
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 class GoalSettingsDialog(QDialog):
-    """Set base and extra monthly income goals (USD)."""
+    """Set monthly side-income goals.  Input can be in USD or JPY."""
 
     def __init__(self, base: float, extra: float, parent=None):
         super().__init__(parent)
-        self.setWindowTitle("Set Monthly Goals")
-        self.setMinimumWidth(320)
-        self._build_ui(base, extra)
-
-    def _build_ui(self, base: float, extra: float):
-        layout = QVBoxLayout(self)
-        layout.setSpacing(12)
+        self.setWindowTitle("Set Monthly Goals"); self.setMinimumWidth(360)
+        self.setStyleSheet(_COMBO_QSS)
+        self._rate = _rate_mgr.rate
+        layout = QVBoxLayout(self); layout.setSpacing(10)
 
         info = QLabel(
-            "Goals track additional income only.\n"
-            "Job Pay (preset completions) does not count."
-        )
-        info.setObjectName("subtitle")
-        info.setWordWrap(True)
-        layout.addWidget(info)
+            "Goals track Side Job income only.\n"
+            "Main Job pay does not count toward goals.")
+        info.setObjectName("subtitle"); info.setWordWrap(True); layout.addWidget(info)
 
-        form = QFormLayout()
-        form.setSpacing(8)
+        # Currency selector
+        cur_row = QHBoxLayout()
+        cur_row.addWidget(QLabel("Enter goals in:"))
+        self._cur_combo = QComboBox()
+        self._cur_combo.addItems(["USD ($)", "JPY (\u00a5)"])
+        self._cur_combo.currentIndexChanged.connect(self._on_currency_changed)
+        cur_row.addWidget(self._cur_combo); cur_row.addStretch()
+        layout.addLayout(cur_row)
+
+        form = QFormLayout(); form.setSpacing(8)
 
         self.base_spin = QDoubleSpinBox()
-        self.base_spin.setRange(1.0, 9999999.0)
-        self.base_spin.setDecimals(0)
-        self.base_spin.setPrefix("$ ")
-        self.base_spin.setSingleStep(100)
-        self.base_spin.setValue(base)
-        form.addRow("Base Goal (USD):", self.base_spin)
+        self.base_spin.setRange(1, 99_999_999)
+        self.base_spin.valueChanged.connect(self._update_hints)
+        form.addRow("Base Goal:", self.base_spin)
+
+        self._base_hint = QLabel()
+        self._base_hint.setObjectName("subtitle")
+        self._base_hint.setStyleSheet("font-size:10px;")
+        form.addRow("", self._base_hint)
 
         self.extra_spin = QDoubleSpinBox()
-        self.extra_spin.setRange(1.0, 9999999.0)
-        self.extra_spin.setDecimals(0)
-        self.extra_spin.setPrefix("$ ")
-        self.extra_spin.setSingleStep(100)
-        self.extra_spin.setValue(extra)
-        form.addRow("Extra Goal (USD):", self.extra_spin)
+        self.extra_spin.setRange(1, 99_999_999)
+        self.extra_spin.valueChanged.connect(self._update_hints)
+        form.addRow("Extra Goal:", self.extra_spin)
+
+        self._extra_hint = QLabel()
+        self._extra_hint.setObjectName("subtitle")
+        self._extra_hint.setStyleSheet("font-size:10px;")
+        form.addRow("", self._extra_hint)
 
         layout.addLayout(form)
 
-        sep = QFrame()
-        sep.setObjectName("separator")
-        sep.setFrameShape(QFrame.Shape.HLine)
-        layout.addWidget(sep)
+        sep = QFrame(); sep.setObjectName("separator")
+        sep.setFrameShape(QFrame.Shape.HLine); layout.addWidget(sep)
 
-        btn_row = QHBoxLayout()
-        btn_row.addStretch()
-        cancel_btn = QPushButton("Cancel")
-        cancel_btn.setObjectName("secondary")
-        cancel_btn.clicked.connect(self.reject)
-        btn_row.addWidget(cancel_btn)
-        save_btn = QPushButton("Save")
-        save_btn.clicked.connect(self._validate_and_accept)
-        btn_row.addWidget(save_btn)
-        layout.addLayout(btn_row)
+        btn_row = QHBoxLayout(); btn_row.addStretch()
+        cancel_btn = QPushButton("Cancel"); cancel_btn.setObjectName("secondary")
+        cancel_btn.clicked.connect(self.reject); btn_row.addWidget(cancel_btn)
+        save_btn = QPushButton("Save"); save_btn.clicked.connect(self._validate_and_accept)
+        btn_row.addWidget(save_btn); layout.addLayout(btn_row)
+
+        # Initialise spinboxes with USD values
+        self._apply_usd_mode()
+        self.base_spin.setValue(base)
+        self.extra_spin.setValue(extra)
+        self._update_hints()
+
+    def _apply_usd_mode(self):
+        for sp in (self.base_spin, self.extra_spin):
+            sp.setDecimals(0); sp.setSingleStep(100); sp.setPrefix("$ ")
+
+    def _apply_jpy_mode(self):
+        for sp in (self.base_spin, self.extra_spin):
+            sp.setDecimals(0); sp.setSingleStep(10_000); sp.setPrefix("\u00a5 ")
+
+    def _on_currency_changed(self, idx: int):
+        rate = self._rate
+        # Convert current values to the new currency
+        base_usd  = self.base_spin.value()
+        extra_usd = self.extra_spin.value()
+        if idx == 0:   # switching to USD
+            self._apply_usd_mode()
+            # If previous values look like JPY (large), convert; otherwise keep
+            if base_usd > 5000:
+                self.base_spin.setValue(round(base_usd / rate))
+                self.extra_spin.setValue(round(extra_usd / rate))
+        else:           # switching to JPY
+            self._apply_jpy_mode()
+            if base_usd < 5000:
+                self.base_spin.setValue(round(base_usd * rate))
+                self.extra_spin.setValue(round(extra_usd * rate))
+        self._update_hints()
+
+    def _update_hints(self):
+        rate = self._rate
+        if self._cur_combo.currentIndex() == 0:  # USD mode
+            b_jpy = int(self.base_spin.value() * rate)
+            e_jpy = int(self.extra_spin.value() * rate)
+            self._base_hint.setText(f"\u2248 \u00a5{b_jpy:,} JPY")
+            self._extra_hint.setText(f"\u2248 \u00a5{e_jpy:,} JPY")
+        else:                                     # JPY mode
+            b_usd = self.base_spin.value() / rate if rate else 0
+            e_usd = self.extra_spin.value() / rate if rate else 0
+            self._base_hint.setText(f"\u2248 ${b_usd:,.2f} USD")
+            self._extra_hint.setText(f"\u2248 ${e_usd:,.2f} USD")
 
     def _validate_and_accept(self):
         if self.extra_spin.value() <= self.base_spin.value():
-            QMessageBox.warning(
-                self, "Invalid Goals",
-                "Extra goal must be greater than base goal.",
-            )
-            return
+            QMessageBox.warning(self, "Invalid Goals",
+                "Extra goal must be greater than base goal."); return
         self.accept()
 
     def get_goals(self) -> tuple[float, float]:
+        """Always return (base_usd, extra_usd)."""
+        rate = self._rate if self._rate else _FALLBACK_RATE
+        if self._cur_combo.currentIndex() == 1:   # JPY → convert to USD
+            return self.base_spin.value() / rate, self.extra_spin.value() / rate
         return self.base_spin.value(), self.extra_spin.value()
 
 
-# ── Transaction Dialog ────────────────────────────────────────────────────────
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+#  TransactionDialog
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 class TransactionDialog(QDialog):
-    """Dialog to add/edit a transaction (earning or expense)."""
-
-    def __init__(self, parent=None, txn: Transaction | None = None):
+    def __init__(self, parent=None, txn: Transaction | None = None,
+                 initial_type: str = "income"):
         super().__init__(parent)
         self.setWindowTitle("Edit Entry" if txn else "New Entry")
-        self.setMinimumWidth(400)
+        self.setMinimumWidth(420)
         self.txn = txn
-        self._build_ui()
+        self.setStyleSheet(_COMBO_QSS)
+        self._build_ui(initial_type)
 
-    def _build_ui(self):
-        layout = QVBoxLayout(self)
-        layout.setSpacing(10)
+    @staticmethod
+    def _load_expense_cats() -> list[str]:
+        cats = load_config().get("expense_categories", [])
+        return cats if cats else list(EXPENSE_CATEGORIES)
 
-        form = QFormLayout()
-        form.setSpacing(8)
+    @staticmethod
+    def _save_expense_cats(cats: list[str]):
+        cfg = load_config(); cfg["expense_categories"] = cats; save_config(cfg)
 
-        # Type
+    def _build_ui(self, initial_type: str):
+        layout = QVBoxLayout(self); layout.setSpacing(10)
+        form = QFormLayout(); form.setSpacing(8)
+
         self.type_combo = QComboBox()
         self.type_combo.addItems(["income", "expense"])
-        if self.txn:
-            self.type_combo.setCurrentText(self.txn.type)
+        self.type_combo.setCurrentText(self.txn.type if self.txn else initial_type)
         self.type_combo.currentTextChanged.connect(self._on_type_changed)
         form.addRow("Type:", self.type_combo)
 
-        # Currency
         self.currency_combo = QComboBox()
         self.currency_combo.addItems(["USD", "JPY"])
-        if self.txn:
-            self.currency_combo.setCurrentText(self.txn.currency)
+        if self.txn: self.currency_combo.setCurrentText(self.txn.currency)
         self.currency_combo.currentTextChanged.connect(self._on_currency_changed)
         form.addRow("Currency:", self.currency_combo)
 
-        # Amount
         self.amount_spin = QDoubleSpinBox()
-        self.amount_spin.setRange(0.01, 99999999.99)
-        self.amount_spin.setDecimals(2)
-        if self.txn:
-            self.amount_spin.setValue(self.txn.amount)
+        self.amount_spin.setRange(0.01, 99_999_999.99); self.amount_spin.setDecimals(2)
+        if self.txn: self.amount_spin.setValue(self.txn.amount)
         form.addRow("Amount:", self.amount_spin)
 
-        # Date
-        self.date_edit = QDateEdit()
-        self.date_edit.setCalendarPopup(True)
+        self.date_edit = QDateEdit(); self.date_edit.setCalendarPopup(True)
         if self.txn:
-            parts = self.txn.date.split("-")
-            self.date_edit.setDate(QDate(int(parts[0]), int(parts[1]), int(parts[2])))
+            y, mo, d = (int(x) for x in self.txn.date.split("-"))
+            self.date_edit.setDate(QDate(y, mo, d))
         else:
-            today = date.today()
-            self.date_edit.setDate(QDate(today.year, today.month, today.day))
+            t = date.today()
+            self.date_edit.setDate(QDate(t.year, t.month, t.day))
         form.addRow("Date:", self.date_edit)
 
-        # Category
-        self.cat_label = QLabel("Source")
-        self.cat_combo = QComboBox()
-        self.cat_combo.addItems(DEFAULT_CATEGORIES)
-        self.cat_combo.setEditable(True)
-        if self.txn:
-            self.cat_combo.setCurrentText(self.txn.category)
-        form.addRow(self.cat_label, self.cat_combo)
+        self.cat_label = QLabel("Category")
+        cat_row = QHBoxLayout(); cat_row.setSpacing(4)
+        self.cat_combo = QComboBox(); self.cat_combo.setEditable(False)
+        cat_row.addWidget(self.cat_combo, 1)
+        self._add_cat_btn = QPushButton("+")
+        self._add_cat_btn.setFixedSize(26, 26)
+        self._add_cat_btn.setToolTip("Add a new expense category")
+        self._add_cat_btn.setObjectName("secondary")
+        self._add_cat_btn.clicked.connect(self._add_expense_cat)
+        cat_row.addWidget(self._add_cat_btn)
+        cat_container = QWidget(); cat_container.setLayout(cat_row)
+        form.addRow(self.cat_label, cat_container)
 
-        # Description
         self.desc_edit = QLineEdit()
-        self.desc_edit.setPlaceholderText("Client name, project, invoice #...")
-        if self.txn:
-            self.desc_edit.setText(self.txn.description)
+        self.desc_edit.setPlaceholderText("Client, project, invoice #\u2026")
+        if self.txn: self.desc_edit.setText(self.txn.description)
         form.addRow("Description:", self.desc_edit)
 
-        # Rate hint
-        self.rate_hint = QLabel("")
-        self.rate_hint.setObjectName("subtitle")
+        self.rate_hint = QLabel(""); self.rate_hint.setObjectName("subtitle")
         form.addRow("", self.rate_hint)
 
         layout.addLayout(form)
+        sep = QFrame(); sep.setObjectName("separator")
+        sep.setFrameShape(QFrame.Shape.HLine); layout.addWidget(sep)
 
-        sep = QFrame()
-        sep.setObjectName("separator")
-        sep.setFrameShape(QFrame.Shape.HLine)
-        layout.addWidget(sep)
-
-        btn_row = QHBoxLayout()
-        btn_row.addStretch()
-        cancel_btn = QPushButton("Cancel")
-        cancel_btn.setObjectName("secondary")
-        cancel_btn.clicked.connect(self.reject)
-        btn_row.addWidget(cancel_btn)
-        save_btn = QPushButton("Save")
-        save_btn.clicked.connect(self.accept)
-        btn_row.addWidget(save_btn)
-        layout.addLayout(btn_row)
+        btn_box = QDialogButtonBox(
+            QDialogButtonBox.StandardButton.Save | QDialogButtonBox.StandardButton.Cancel)
+        btn_box.accepted.connect(self.accept); btn_box.rejected.connect(self.reject)
+        layout.addWidget(btn_box)
 
         self._on_type_changed(self.type_combo.currentText())
         self._on_currency_changed(self.currency_combo.currentText())
 
+        if self.txn:
+            idx = self.cat_combo.findText(self.txn.category)
+            if idx >= 0: self.cat_combo.setCurrentIndex(idx)
+            else:
+                self.cat_combo.addItem(self.txn.category)
+                self.cat_combo.setCurrentText(self.txn.category)
+
     def _on_type_changed(self, txn_type: str):
         self.cat_label.setText("Source" if txn_type == "income" else "Category")
+        self.cat_combo.clear()
+        if txn_type == "income":
+            self.cat_combo.addItems(INCOME_CATEGORIES); self._add_cat_btn.setVisible(False)
+        else:
+            self.cat_combo.addItems(self._load_expense_cats()); self._add_cat_btn.setVisible(True)
 
     def _on_currency_changed(self, currency: str):
         rate = _rate_mgr.rate
         if currency == "JPY":
-            self.amount_spin.setPrefix("¥ ")
-            self.amount_spin.setDecimals(0)
+            self.amount_spin.setPrefix("\u00a5 "); self.amount_spin.setDecimals(0)
             self.amount_spin.setSingleStep(1000)
-            self.rate_hint.setText(f"Rate: 1 USD = ¥{rate:,.0f}")
+            self.rate_hint.setText(f"Rate: 1 USD = \u00a5{rate:,.0f}")
         else:
-            self.amount_spin.setPrefix("$ ")
-            self.amount_spin.setDecimals(2)
+            self.amount_spin.setPrefix("$ "); self.amount_spin.setDecimals(2)
             self.amount_spin.setSingleStep(10)
-            self.rate_hint.setText(f"Rate: ¥{rate:,.0f} = 1 USD")
+            self.rate_hint.setText(f"Rate: \u00a5{rate:,.0f} = 1 USD")
+
+    def _add_expense_cat(self):
+        name, ok = QInputDialog.getText(self, "New Expense Category", "Category name:")
+        if not ok or not name.strip(): return
+        name = name.strip()
+        cats = self._load_expense_cats()
+        if name not in cats: cats.append(name); self._save_expense_cats(cats)
+        self.cat_combo.clear(); self.cat_combo.addItems(cats)
+        idx = self.cat_combo.findText(name)
+        if idx >= 0: self.cat_combo.setCurrentIndex(idx)
 
     def get_data(self) -> dict:
         qd = self.date_edit.date()
+        txn_type = self.type_combo.currentText()
+        category = self.cat_combo.currentText()
         return {
-            "date": f"{qd.year():04d}-{qd.month():02d}-{qd.day():02d}",
-            "amount": self.amount_spin.value(),
-            "txn_type": self.type_combo.currentText(),
-            "category": self.cat_combo.currentText(),
+            "date":        f"{qd.year():04d}-{qd.month():02d}-{qd.day():02d}",
+            "amount":      self.amount_spin.value(),
+            "txn_type":    txn_type,
+            "category":    category,
             "description": self.desc_edit.text(),
-            "currency": self.currency_combo.currentText(),
-            "is_job_pay": False,
+            "currency":    self.currency_combo.currentText(),
+            "is_job_pay":  (txn_type == "income" and category == "Main Job"),
         }
 
 
-# ── Quick Log Button ──────────────────────────────────────────────────────────
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+#  PresetButton
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 class PresetButton(QWidget):
-    """A card-style button for one-click job logging."""
-
-    clicked = pyqtSignal(object)  # emits JobPreset
+    clicked = pyqtSignal(object)
 
     def __init__(self, preset: JobPreset, rate: float, parent=None):
         super().__init__(parent)
         self.preset = preset
         layout = QVBoxLayout(self)
-        layout.setContentsMargins(8, 6, 8, 6)
-        layout.setSpacing(2)
-
+        layout.setContentsMargins(8, 6, 8, 6); layout.setSpacing(2)
         name_lbl = QLabel(preset.name)
         name_lbl.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        name_lbl.setStyleSheet("font-weight: bold; font-size: 12px;")
+        name_lbl.setStyleSheet("font-weight:bold;font-size:12px;")
         layout.addWidget(name_lbl)
-
         jpy = int(preset.amount_usd * rate)
-        amt_lbl = QLabel(f"${preset.amount_usd:,.0f}  ¥{jpy:,}")
+        amt_lbl = QLabel(f"${preset.amount_usd:,.0f}  \u00a5{jpy:,}")
         amt_lbl.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        amt_lbl.setObjectName("subtitle")
-        layout.addWidget(amt_lbl)
-
-        log_btn = QPushButton("+ Log")
-        log_btn.setFixedHeight(26)
+        amt_lbl.setObjectName("subtitle"); layout.addWidget(amt_lbl)
+        cat_lbl = QLabel(preset.category)
+        cat_lbl.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        cat_lbl.setStyleSheet("font-size:9px;")
+        cat_lbl.setObjectName("subtitle"); layout.addWidget(cat_lbl)
+        log_btn = QPushButton("+ Log"); log_btn.setFixedHeight(24)
         log_btn.clicked.connect(lambda: self.clicked.emit(self.preset))
         layout.addWidget(log_btn)
-
         self.setStyleSheet(
-            "PresetButton { border: 1px solid #45475a; border-radius: 6px;"
-            " background-color: #1e1e2e; }"
-            "PresetButton:hover { background-color: #313244; }"
-        )
+            "PresetButton{border:1px solid #45475a;border-radius:6px;"
+            "background-color:#1e1e2e;}"
+            "PresetButton:hover{background-color:#313244;}")
         self.setFixedWidth(150)
 
 
-# ── Main Finance Panel ────────────────────────────────────────────────────────
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+#  FinancePanel
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 class FinancePanel(QWidget):
 
@@ -8147,243 +9669,169 @@ class FinancePanel(QWidget):
         self._palette: dict = {}
         self._cfg = load_config()
         self._txn_ids: list[str] = []
-
-        # Load fallback rate from config
         fallback = float(self._cfg.get("usd_jpy_fallback_rate", _FALLBACK_RATE))
         _rate_mgr.set_fallback(fallback)
         _rate_mgr.signals.updated.connect(self._on_rate_updated)
         _rate_mgr.signals.error.connect(self._on_rate_error)
-
         self._build_ui()
         self._refresh()
-
-        # Fetch rate on startup (non-blocking)
         _rate_mgr.refresh()
 
     def set_palette(self, palette: dict):
-        self._palette = palette
+        self._palette = palette; self._refresh()
+
+    def showEvent(self, event):
+        super().showEvent(event)
         self._refresh()
 
     # ── UI Construction ───────────────────────────────────────────────────────
 
     def _build_ui(self):
         layout = QVBoxLayout(self)
-        layout.setContentsMargins(16, 12, 16, 12)
-        layout.setSpacing(8)
-
+        layout.setContentsMargins(16, 12, 16, 12); layout.setSpacing(8)
         layout.addLayout(self._build_header())
         layout.addWidget(self._build_quick_log_bar())
         layout.addLayout(self._build_filter_row())
         layout.addWidget(self._build_goal_section())
-
-        # Main content: table + summary
         content = QSplitter(Qt.Orientation.Horizontal)
         content.addWidget(self._build_table())
         content.addWidget(self._build_summary_panel())
         content.setSizes([560, 300])
         layout.addWidget(content, 1)
-
         layout.addWidget(self._build_rate_bar())
 
     def _build_header(self) -> QHBoxLayout:
         header = QHBoxLayout()
-
         title_col = QVBoxLayout()
-        title = QLabel("Earnings Tracker")
-        title.setObjectName("sectionTitle")
+        title = QLabel("Earnings Tracker"); title.setObjectName("sectionTitle")
         title_col.addWidget(title)
-        subtitle = QLabel("Freelance income & expenses")
-        subtitle.setObjectName("subtitle")
-        title_col.addWidget(subtitle)
-        header.addLayout(title_col)
+        sub = QLabel("Freelance income & expenses"); sub.setObjectName("subtitle")
+        title_col.addWidget(sub)
+        header.addLayout(title_col); header.addStretch()
 
-        header.addStretch()
-
-        # All-time badge (stacked USD + JPY)
-        badge_col = QVBoxLayout()
-        badge_col.setSpacing(0)
+        badge_col = QVBoxLayout(); badge_col.setSpacing(0)
         self.all_time_usd_label = QLabel("$0")
         self.all_time_usd_label.setStyleSheet(
-            "font-size: 26px; font-weight: bold; padding: 2px 12px 0 12px;"
-        )
-        self.all_time_usd_label.setToolTip("Total earned all-time (USD)")
+            "font-size:26px;font-weight:bold;padding:2px 12px 0 12px;")
         badge_col.addWidget(self.all_time_usd_label)
-        self.all_time_jpy_label = QLabel("¥0")
-        self.all_time_jpy_label.setStyleSheet(
-            "font-size: 13px; padding: 0 12px 2px 12px;"
-        )
+        self.all_time_jpy_label = QLabel("\u00a50")
+        self.all_time_jpy_label.setStyleSheet("font-size:13px;padding:0 12px 2px 12px;")
         self.all_time_jpy_label.setObjectName("subtitle")
         badge_col.addWidget(self.all_time_jpy_label)
         header.addLayout(badge_col)
-
-        caption = QLabel("earned\nall-time")
-        caption.setObjectName("subtitle")
+        caption = QLabel("earned\nall-time"); caption.setObjectName("subtitle")
         caption.setAlignment(Qt.AlignmentFlag.AlignVCenter)
-        header.addWidget(caption)
+        header.addWidget(caption); header.addSpacing(16)
 
-        header.addSpacing(16)
-
-        btn_add_income = QPushButton("+ Earning")
-        btn_add_income.setToolTip("Log a new earning")
-        btn_add_income.clicked.connect(self._add_earning)
-        header.addWidget(btn_add_income)
-
-        btn_add_expense = QPushButton("+ Expense")
-        btn_add_expense.setObjectName("secondary")
-        btn_add_expense.setToolTip("Log a new expense")
-        btn_add_expense.clicked.connect(self._add_expense)
-        header.addWidget(btn_add_expense)
-
-        btn_delete = QPushButton("Delete")
-        btn_delete.setObjectName("destructive")
-        btn_delete.setToolTip("Delete selected row(s)")
-        btn_delete.clicked.connect(self._delete_transaction)
-        header.addWidget(btn_delete)
-
+        btn_earn = QPushButton("+ Earning"); btn_earn.setToolTip("Log a new earning")
+        btn_earn.clicked.connect(self._add_earning); header.addWidget(btn_earn)
+        btn_exp = QPushButton("+ Expense"); btn_exp.setObjectName("secondary")
+        btn_exp.setToolTip("Log a new expense")
+        btn_exp.clicked.connect(self._add_expense); header.addWidget(btn_exp)
+        btn_del = QPushButton("Delete"); btn_del.setObjectName("destructive")
+        btn_del.setToolTip("Delete selected row(s)")
+        btn_del.clicked.connect(self._delete_transaction); header.addWidget(btn_del)
         return header
 
     def _build_quick_log_bar(self) -> QWidget:
         container = QWidget()
         outer = QVBoxLayout(container)
-        outer.setContentsMargins(0, 4, 0, 4)
-        outer.setSpacing(4)
+        outer.setContentsMargins(0, 4, 0, 4); outer.setSpacing(4)
 
         title_row = QHBoxLayout()
-        lbl = QLabel("Quick Log — Job Pay")
-        lbl.setStyleSheet("font-weight: bold; font-size: 12px;")
-        title_row.addWidget(lbl)
-        title_row.addStretch()
-        manage_btn = QPushButton("⚙ Manage Presets")
-        manage_btn.setObjectName("secondary")
-        manage_btn.setFixedHeight(22)
+        lbl = QLabel("Quick Log \u2014 Job Pay")
+        lbl.setStyleSheet("font-weight:bold;font-size:12px;")
+        title_row.addWidget(lbl); title_row.addStretch()
+
+        manage_btn = QPushButton("\u2699 Manage Presets")
+        manage_btn.setObjectName("secondary"); manage_btn.setFixedHeight(22)
         manage_btn.clicked.connect(self._open_preset_manager)
         title_row.addWidget(manage_btn)
+
+        monthly_btn = QPushButton("\U0001f4cb Monthly Expenses")
+        monthly_btn.setObjectName("secondary"); monthly_btn.setFixedHeight(22)
+        monthly_btn.setToolTip("Log recurring monthly bills in one go")
+        monthly_btn.clicked.connect(self._open_monthly_expenses)
+        title_row.addWidget(monthly_btn)
+
         outer.addLayout(title_row)
 
-        # Scrollable row of preset buttons
         self._preset_scroll = QScrollArea()
-        self._preset_scroll.setWidgetResizable(True)
-        self._preset_scroll.setFixedHeight(100)
+        self._preset_scroll.setWidgetResizable(True); self._preset_scroll.setFixedHeight(110)
         self._preset_scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAsNeeded)
         self._preset_scroll.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
-
         self._preset_row_widget = QWidget()
         self._preset_row_layout = QHBoxLayout(self._preset_row_widget)
         self._preset_row_layout.setContentsMargins(4, 4, 4, 4)
-        self._preset_row_layout.setSpacing(8)
-        self._preset_row_layout.addStretch()
-
+        self._preset_row_layout.setSpacing(8); self._preset_row_layout.addStretch()
         self._preset_scroll.setWidget(self._preset_row_widget)
         outer.addWidget(self._preset_scroll)
 
-        sep = QFrame()
-        sep.setObjectName("separator")
-        sep.setFrameShape(QFrame.Shape.HLine)
-        outer.addWidget(sep)
-
+        sep = QFrame(); sep.setObjectName("separator")
+        sep.setFrameShape(QFrame.Shape.HLine); outer.addWidget(sep)
         return container
 
     def _build_filter_row(self) -> QHBoxLayout:
-        row = QHBoxLayout()
-        row.setSpacing(6)
-
-        # Quick range buttons
-        for label, fn in [
-            ("This Month", self._filter_this_month),
-            ("Last Month", self._filter_last_month),
-            ("This Year", self._filter_this_year),
-            ("All Time", self._filter_all_time),
-        ]:
-            btn = QPushButton(label)
-            btn.setObjectName("secondary")
-            btn.setFixedHeight(26)
-            btn.clicked.connect(fn)
-            row.addWidget(btn)
-
-        row.addSpacing(12)
-        row.addWidget(QLabel("Show:"))
+        row = QHBoxLayout(); row.setSpacing(6)
+        for label, fn in [("This Month", self._filter_this_month),
+                           ("Last Month",  self._filter_last_month),
+                           ("This Year",   self._filter_this_year),
+                           ("All Time",    self._filter_all_time)]:
+            btn = QPushButton(label); btn.setObjectName("secondary")
+            btn.setFixedHeight(26); btn.clicked.connect(fn); row.addWidget(btn)
+        row.addSpacing(12); row.addWidget(QLabel("Show:"))
         self.filter_type = QComboBox()
         self.filter_type.addItems(["All", "income", "expense"])
+        self.filter_type.setStyleSheet(_COMBO_QSS)
         self.filter_type.currentTextChanged.connect(self._refresh)
         row.addWidget(self.filter_type)
-
-        row.addSpacing(8)
-        row.addWidget(QLabel("From:"))
-        self.filter_start = QDateEdit()
-        self.filter_start.setCalendarPopup(True)
+        row.addSpacing(8); row.addWidget(QLabel("From:"))
+        self.filter_start = QDateEdit(); self.filter_start.setCalendarPopup(True)
+        self.filter_start.setStyleSheet(_COMBO_QSS)
         today = date.today()
         self.filter_start.setDate(QDate(today.year, today.month, 1))
-        self.filter_start.dateChanged.connect(self._refresh)
-        row.addWidget(self.filter_start)
-
+        self.filter_start.dateChanged.connect(self._refresh); row.addWidget(self.filter_start)
         row.addWidget(QLabel("To:"))
-        self.filter_end = QDateEdit()
-        self.filter_end.setCalendarPopup(True)
+        self.filter_end = QDateEdit(); self.filter_end.setCalendarPopup(True)
+        self.filter_end.setStyleSheet(_COMBO_QSS)
         self.filter_end.setDate(QDate(today.year, today.month, today.day))
-        self.filter_end.dateChanged.connect(self._refresh)
-        row.addWidget(self.filter_end)
-
+        self.filter_end.dateChanged.connect(self._refresh); row.addWidget(self.filter_end)
         row.addStretch()
         return row
 
     def _build_goal_section(self) -> QWidget:
-        container = QFrame()
-        container.setObjectName("separator")
-        container.setFrameShape(QFrame.Shape.NoFrame)
-        container.setStyleSheet("background-color: #1e1e2e; border-radius: 8px; padding: 4px;")
-
+        container = QFrame(); container.setFrameShape(QFrame.Shape.NoFrame)
+        container.setStyleSheet("background-color:#1e1e2e;border-radius:8px;padding:4px;")
         vbox = QVBoxLayout(container)
-        vbox.setContentsMargins(12, 8, 12, 8)
-        vbox.setSpacing(6)
-
+        vbox.setContentsMargins(12, 8, 12, 8); vbox.setSpacing(6)
         title_row = QHBoxLayout()
-        goal_title = QLabel("Month's Goal  —  Additional Income")
-        goal_title.setStyleSheet("font-weight: bold; font-size: 13px;")
-        title_row.addWidget(goal_title)
-        title_row.addStretch()
-
-        self.goal_status_label = QLabel("")
-        self.goal_status_label.setObjectName("subtitle")
+        goal_title = QLabel("Month\u2019s Goal \u2014 Side Income")
+        goal_title.setStyleSheet("font-weight:bold;font-size:13px;")
+        title_row.addWidget(goal_title); title_row.addStretch()
+        self.goal_status_label = QLabel(""); self.goal_status_label.setObjectName("subtitle")
         title_row.addWidget(self.goal_status_label)
-
-        set_btn = QPushButton("⚙ Set Goals")
-        set_btn.setObjectName("secondary")
-        set_btn.setFixedHeight(24)
-        set_btn.clicked.connect(self._open_goal_settings)
-        title_row.addWidget(set_btn)
-        vbox.addLayout(title_row)
-
-        self.goal_bar = GoalProgressBar()
-        vbox.addWidget(self.goal_bar)
-
+        set_btn = QPushButton("\u2699 Set Goals"); set_btn.setObjectName("secondary")
+        set_btn.setFixedHeight(24); set_btn.clicked.connect(self._open_goal_settings)
+        title_row.addWidget(set_btn); vbox.addLayout(title_row)
+        self.goal_bar = GoalProgressBar(); vbox.addWidget(self.goal_bar)
         legend_row = QHBoxLayout()
-        self.goal_base_label = QLabel("Base: $0")
-        self.goal_base_label.setObjectName("subtitle")
+        self.goal_base_label    = QLabel("Base: $0");    self.goal_base_label.setObjectName("subtitle")
+        self.goal_extra_label   = QLabel("Extra: $0");   self.goal_extra_label.setObjectName("subtitle")
+        self.goal_current_label = QLabel("Progress: $0"); self.goal_current_label.setObjectName("subtitle")
         legend_row.addWidget(self.goal_base_label)
-        legend_row.addSpacing(16)
-        self.goal_extra_label = QLabel("Extra: $0")
-        self.goal_extra_label.setObjectName("subtitle")
-        legend_row.addWidget(self.goal_extra_label)
-        legend_row.addStretch()
-        self.goal_current_label = QLabel("Progress: $0")
-        self.goal_current_label.setObjectName("subtitle")
-        legend_row.addWidget(self.goal_current_label)
+        legend_row.addSpacing(16); legend_row.addWidget(self.goal_extra_label)
+        legend_row.addStretch(); legend_row.addWidget(self.goal_current_label)
         vbox.addLayout(legend_row)
-
         return container
 
     def _build_table(self) -> QWidget:
-        self.table = QTableWidget()
-        self.table.setColumnCount(6)
+        self.table = QTableWidget(); self.table.setColumnCount(6)
         self.table.setHorizontalHeaderLabels(
-            ["Date", "Type", "Source", "Amount", "¥ Amount", "Description"]
-        )
+            ["Date", "Type", "Category", "Amount", "\u00a5 Amount", "Description"])
         hh = self.table.horizontalHeader()
         hh.setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
-        hh.setSectionResizeMode(0, QHeaderView.ResizeMode.ResizeToContents)
-        hh.setSectionResizeMode(1, QHeaderView.ResizeMode.ResizeToContents)
-        hh.setSectionResizeMode(3, QHeaderView.ResizeMode.ResizeToContents)
-        hh.setSectionResizeMode(4, QHeaderView.ResizeMode.ResizeToContents)
+        for col in (0, 1, 3, 4):
+            hh.setSectionResizeMode(col, QHeaderView.ResizeMode.ResizeToContents)
         self.table.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectRows)
         self.table.setEditTriggers(QAbstractItemView.EditTrigger.NoEditTriggers)
         self.table.setAlternatingRowColors(True)
@@ -8391,408 +9839,263 @@ class FinancePanel(QWidget):
         return self.table
 
     def _build_summary_panel(self) -> QWidget:
-        summary_widget = QWidget()
-        self.summary_layout = QVBoxLayout(summary_widget)
-        self.summary_layout.setContentsMargins(16, 12, 16, 12)
-        self.summary_layout.setSpacing(8)
-
-        period_title = QLabel("Period Summary")
-        period_title.setObjectName("sectionTitle")
+        w = QWidget(); self.summary_layout = QVBoxLayout(w)
+        self.summary_layout.setContentsMargins(16, 12, 16, 12); self.summary_layout.setSpacing(8)
+        period_title = QLabel("Period Summary"); period_title.setObjectName("sectionTitle")
         self.summary_layout.addWidget(period_title)
-
         self.earned_usd_label = QLabel("Earned: $0")
-        self.earned_usd_label.setStyleSheet("font-size: 18px; font-weight: bold;")
+        self.earned_usd_label.setStyleSheet("font-size:18px;font-weight:bold;")
         self.summary_layout.addWidget(self.earned_usd_label)
-
-        self.earned_jpy_label = QLabel("¥0")
-        self.earned_jpy_label.setObjectName("subtitle")
-        self.earned_jpy_label.setStyleSheet("font-size: 13px; padding-left: 2px;")
+        self.earned_jpy_label = QLabel("\u00a50"); self.earned_jpy_label.setObjectName("subtitle")
+        self.earned_jpy_label.setStyleSheet("font-size:13px;padding-left:2px;")
         self.summary_layout.addWidget(self.earned_jpy_label)
-
         self.spent_label = QLabel("Spent: $0")
-        self.spent_label.setStyleSheet("font-size: 15px; font-weight: bold;")
+        self.spent_label.setStyleSheet("font-size:15px;font-weight:bold;")
         self.summary_layout.addWidget(self.spent_label)
-
-        sep = QFrame()
-        sep.setObjectName("separator")
-        sep.setFrameShape(QFrame.Shape.HLine)
-        self.summary_layout.addWidget(sep)
-
+        sep = QFrame(); sep.setObjectName("separator")
+        sep.setFrameShape(QFrame.Shape.HLine); self.summary_layout.addWidget(sep)
         self.net_label = QLabel("Net: $0")
-        self.net_label.setStyleSheet("font-size: 20px; font-weight: bold;")
+        self.net_label.setStyleSheet("font-size:20px;font-weight:bold;")
         self.summary_layout.addWidget(self.net_label)
-
-        self.net_jpy_label = QLabel("¥0")
-        self.net_jpy_label.setObjectName("subtitle")
+        self.net_jpy_label = QLabel("\u00a50"); self.net_jpy_label.setObjectName("subtitle")
         self.summary_layout.addWidget(self.net_jpy_label)
-
-        self.txn_count_label = QLabel("0 transactions")
-        self.txn_count_label.setObjectName("subtitle")
+        self.txn_count_label = QLabel("0 transactions"); self.txn_count_label.setObjectName("subtitle")
         self.summary_layout.addWidget(self.txn_count_label)
-
-        sep2 = QFrame()
-        sep2.setObjectName("separator")
-        sep2.setFrameShape(QFrame.Shape.HLine)
-        self.summary_layout.addWidget(sep2)
-
-        cat_title = QLabel("By Source / Category")
-        cat_title.setStyleSheet("font-weight: bold; font-size: 13px;")
+        sep2 = QFrame(); sep2.setObjectName("separator")
+        sep2.setFrameShape(QFrame.Shape.HLine); self.summary_layout.addWidget(sep2)
+        cat_title = QLabel("By Category"); cat_title.setStyleSheet("font-weight:bold;font-size:13px;")
         self.summary_layout.addWidget(cat_title)
-
         self.cat_bars_container = QWidget()
         self.cat_bars_layout = QVBoxLayout(self.cat_bars_container)
-        self.cat_bars_layout.setContentsMargins(0, 0, 0, 0)
-        self.cat_bars_layout.setSpacing(2)
+        self.cat_bars_layout.setContentsMargins(0, 0, 0, 0); self.cat_bars_layout.setSpacing(2)
         self.summary_layout.addWidget(self.cat_bars_container)
-
         self.summary_layout.addStretch()
-        return summary_widget
+        return w
 
     def _build_rate_bar(self) -> QWidget:
-        bar = QFrame()
-        bar.setFrameShape(QFrame.Shape.NoFrame)
-        row = QHBoxLayout(bar)
-        row.setContentsMargins(0, 2, 0, 2)
-        row.setSpacing(8)
-
-        self.rate_label = QLabel(f"USD → JPY: ¥{_rate_mgr.rate:,.0f}  (fallback)")
-        self.rate_label.setObjectName("subtitle")
-        row.addWidget(self.rate_label)
-
-        refresh_btn = QPushButton("↻ Refresh Rate")
-        refresh_btn.setObjectName("secondary")
-        refresh_btn.setFixedHeight(22)
-        refresh_btn.clicked.connect(self._refresh_rate)
-        row.addWidget(refresh_btn)
-
-        row.addStretch()
+        bar = QFrame(); bar.setFrameShape(QFrame.Shape.NoFrame)
+        row = QHBoxLayout(bar); row.setContentsMargins(0, 2, 0, 2); row.setSpacing(8)
+        self.rate_label = QLabel(f"USD \u2192 JPY: \u00a5{_rate_mgr.rate:,.0f}  (fallback)")
+        self.rate_label.setObjectName("subtitle"); row.addWidget(self.rate_label)
+        refresh_btn = QPushButton("\u21bb Refresh Rate"); refresh_btn.setObjectName("secondary")
+        refresh_btn.setFixedHeight(22); refresh_btn.clicked.connect(self._refresh_rate)
+        row.addWidget(refresh_btn); row.addStretch()
         return bar
 
-    # ── Quick date range helpers ───────────────────────────────────────────────
+    # ── Date filters ─────────────────────────────────────────────────────────
 
     def _set_date_range(self, start: date, end: date):
-        # Block signals while setting both to avoid double-refresh
-        self.filter_start.blockSignals(True)
-        self.filter_end.blockSignals(True)
+        self.filter_start.blockSignals(True); self.filter_end.blockSignals(True)
         self.filter_start.setDate(QDate(start.year, start.month, start.day))
         self.filter_end.setDate(QDate(end.year, end.month, end.day))
-        self.filter_start.blockSignals(False)
-        self.filter_end.blockSignals(False)
+        self.filter_start.blockSignals(False); self.filter_end.blockSignals(False)
         self._refresh()
 
     def _filter_this_month(self):
-        today = date.today()
-        self._set_date_range(today.replace(day=1), today)
+        today = date.today(); self._set_date_range(today.replace(day=1), today)
 
     def _filter_last_month(self):
-        today = date.today()
-        first_this = today.replace(day=1)
-        last_prev = first_this - timedelta(days=1)
-        self._set_date_range(last_prev.replace(day=1), last_prev)
+        today = date.today(); fp = today.replace(day=1); lp = fp - timedelta(days=1)
+        self._set_date_range(lp.replace(day=1), lp)
 
     def _filter_this_year(self):
-        today = date.today()
-        self._set_date_range(today.replace(month=1, day=1), today)
+        today = date.today(); self._set_date_range(today.replace(month=1, day=1), today)
 
     def _filter_all_time(self):
         self._set_date_range(date(2000, 1, 1), date.today())
 
-    # ── Rate helpers ──────────────────────────────────────────────────────────
+    # ── Rate ─────────────────────────────────────────────────────────────────
 
     def _refresh_rate(self):
-        self.rate_label.setText("Fetching rate…")
-        _rate_mgr.refresh()
+        self.rate_label.setText("Fetching rate\u2026"); _rate_mgr.refresh()
 
     def _on_rate_updated(self, rate: float):
-        # Save as new fallback
-        self._cfg["usd_jpy_fallback_rate"] = rate
-        save_config(self._cfg)
-        self.rate_label.setText(f"USD → JPY: ¥{rate:,.2f}  (live)")
+        self._cfg["usd_jpy_fallback_rate"] = rate; save_config(self._cfg)
+        self.rate_label.setText(f"USD \u2192 JPY: \u00a5{rate:,.2f}  (live)")
         self._refresh()
 
     def _on_rate_error(self, msg: str):
-        rate = _rate_mgr.rate
-        self.rate_label.setText(f"USD → JPY: ¥{rate:,.0f}  (offline – {msg[:40]})")
+        self.rate_label.setText(
+            f"USD \u2192 JPY: \u00a5{_rate_mgr.rate:,.0f}  (offline \u2013 {msg[:40]})")
 
-    # ── Preset helpers ────────────────────────────────────────────────────────
+    # ── Presets ───────────────────────────────────────────────────────────────
 
     def _rebuild_preset_buttons(self):
-        """Clear and repopulate the Quick Log button row."""
-        # Remove all except the trailing stretch
         while self._preset_row_layout.count() > 1:
             item = self._preset_row_layout.takeAt(0)
-            if item.widget():
-                item.widget().deleteLater()
-
-        presets = self.store.get_presets()
-        rate = _rate_mgr.rate
+            if item.widget(): item.widget().deleteLater()
+        presets = self.store.get_presets(); rate = _rate_mgr.rate
         for preset in presets:
-            btn = PresetButton(preset, rate)
-            btn.clicked.connect(self._log_preset)
+            btn = PresetButton(preset, rate); btn.clicked.connect(self._log_preset)
             self._preset_row_layout.insertWidget(
-                self._preset_row_layout.count() - 1, btn
-            )
-
+                self._preset_row_layout.count() - 1, btn)
         if not presets:
-            placeholder = QLabel("No presets yet — click ⚙ Manage Presets to add one.")
-            placeholder.setObjectName("subtitle")
-            self._preset_row_layout.insertWidget(0, placeholder)
+            ph = QLabel("No presets yet \u2014 click \u2699 Manage Presets to add one.")
+            ph.setObjectName("subtitle"); self._preset_row_layout.insertWidget(0, ph)
 
     def _log_preset(self, preset: JobPreset):
-        today_str = date.today().isoformat()
-        self.store.log_preset(preset, count=1, on_date=today_str)
+        self.store.log_preset(preset, count=1, on_date=date.today().isoformat())
         self._refresh()
 
     def _open_preset_manager(self):
-        dlg = PresetManagerDialog(self.store, self)
-        dlg.exec()
-        self._rebuild_preset_buttons()
-        self._refresh()
+        PresetManagerDialog(self.store, self).exec()
+        self._rebuild_preset_buttons(); self._refresh()
 
-    # ── Goal helpers ──────────────────────────────────────────────────────────
+    def _open_monthly_expenses(self):
+        dlg = MonthlyExpensesDialog(self.store, self)
+        if dlg.exec() == QDialog.DialogCode.Accepted:
+            self._refresh()
+
+    # ── Goals ─────────────────────────────────────────────────────────────────
 
     def _open_goal_settings(self):
-        base = float(self._cfg.get("monthly_base_goal", 500.0))
+        base  = float(self._cfg.get("monthly_base_goal",  500.0))
         extra = float(self._cfg.get("monthly_extra_goal", 1000.0))
         dlg = GoalSettingsDialog(base, extra, self)
         if dlg.exec():
-            new_base, new_extra = dlg.get_goals()
-            self._cfg["monthly_base_goal"] = new_base
-            self._cfg["monthly_extra_goal"] = new_extra
-            save_config(self._cfg)
-            self._refresh()
+            nb, ne = dlg.get_goals()
+            self._cfg["monthly_base_goal"] = nb; self._cfg["monthly_extra_goal"] = ne
+            save_config(self._cfg); self._refresh()
 
     def _update_goal_section(self):
-        base = float(self._cfg.get("monthly_base_goal", 500.0))
+        base  = float(self._cfg.get("monthly_base_goal",  500.0))
         extra = float(self._cfg.get("monthly_extra_goal", 1000.0))
-        rate = _rate_mgr.rate
-        green = self._palette.get("green", "#a6e3a1")
-        gold = "#f9e2af"
+        rate  = _rate_mgr.rate
+        green  = self._palette.get("green",  "#a6e3a1")
+        gold   = "#f9e2af"
         accent = self._palette.get("accent", "#4a9eff")
-
         today = date.today()
-        month_start = today.replace(day=1).isoformat()
-        month_end = today.isoformat()
-        current = self.store.get_goal_income(month_start, month_end, rate)
-
+        current = self.store.get_goal_income(
+            today.replace(day=1).isoformat(), today.isoformat(), rate)
         self.goal_bar.set_values(current, base, extra, green, gold, accent)
-
-        jpy_base = int(base * rate)
-        jpy_extra = int(extra * rate)
-        self.goal_base_label.setText(f"● Base: ${base:,.0f}  ¥{jpy_base:,}")
-        self.goal_extra_label.setText(f"★ Extra: ${extra:,.0f}  ¥{jpy_extra:,}")
-
-        jpy_current = int(current * rate)
-        self.goal_current_label.setText(
-            f"Progress: ${current:,.0f}  ¥{jpy_current:,}"
-        )
-
+        jpy_b = int(base * rate); jpy_e = int(extra * rate); jpy_c = int(current * rate)
+        self.goal_base_label.setText(f"\u25cf Base: ${base:,.0f}  \u00a5{jpy_b:,}")
+        self.goal_extra_label.setText(f"\u2605 Extra: ${extra:,.0f}  \u00a5{jpy_e:,}")
+        self.goal_current_label.setText(f"Progress: ${current:,.0f}  \u00a5{jpy_c:,}")
         if current >= extra:
-            self.goal_status_label.setText("★ Extra goal reached!")
-            self.goal_status_label.setStyleSheet(f"color: {gold}; font-weight: bold;")
+            self.goal_status_label.setText("\u2605 Extra goal reached!")
+            self.goal_status_label.setStyleSheet(f"color:{gold};font-weight:bold;")
         elif current >= base:
-            self.goal_status_label.setText("✓ Base goal reached!")
-            self.goal_status_label.setStyleSheet(f"color: {green}; font-weight: bold;")
+            self.goal_status_label.setText("\u2713 Base goal reached!")
+            self.goal_status_label.setStyleSheet(f"color:{green};font-weight:bold;")
         else:
-            remaining = base - current
             pct = int(current / base * 100) if base > 0 else 0
             self.goal_status_label.setText(
-                f"{pct}% — ${remaining:,.0f} to base goal"
-            )
-            self.goal_status_label.setStyleSheet(f"color: {accent};")
+                f"{pct}% \u2014 ${base - current:,.0f} to base goal")
+            self.goal_status_label.setStyleSheet(f"color:{accent};")
 
-    # ── Main refresh ──────────────────────────────────────────────────────────
+    # ── Refresh ───────────────────────────────────────────────────────────────
 
     def _get_filters(self) -> tuple[str, str, str | None]:
-        qs = self.filter_start.date()
-        qe = self.filter_end.date()
+        qs = self.filter_start.date(); qe = self.filter_end.date()
         start = f"{qs.year():04d}-{qs.month():02d}-{qs.day():02d}"
-        end = f"{qe.year():04d}-{qe.month():02d}-{qe.day():02d}"
-        txn_type = self.filter_type.currentText()
-        if txn_type == "All":
-            txn_type = None
-        return start, end, txn_type
+        end   = f"{qe.year():04d}-{qe.month():02d}-{qe.day():02d}"
+        t = self.filter_type.currentText()
+        return start, end, (None if t == "All" else t)
 
     def _refresh(self):
-        self._cfg = load_config()
-        rate = _rate_mgr.rate
+        self._cfg = load_config(); rate = _rate_mgr.rate
         start, end, txn_type = self._get_filters()
         txns = self.store.get_transactions(start, end, txn_type)
+        green  = self._palette.get("green",  "#a6e3a1")
+        red    = self._palette.get("red",    "#f38ba8")
+        gold   = "#f9e2af"
 
-        green = self._palette.get("green", "#a6e3a1")
-        red = self._palette.get("red", "#f38ba8")
-        accent = self._palette.get("accent", "#4a9eff")
-        gold = "#f9e2af"
-
-        # ── All-time badge ────────────────────────────────────────────────────
-        all_time_usd = self.store.get_all_time_earned_usd(rate)
-        all_time_jpy = int(all_time_usd * rate)
-        self.all_time_usd_label.setText(f"${all_time_usd:,.0f}")
+        atUSD = self.store.get_all_time_earned_usd(rate)
+        self.all_time_usd_label.setText(f"${atUSD:,.0f}")
         self.all_time_usd_label.setStyleSheet(
-            f"color: {green}; font-size: 26px; font-weight: bold;"
-            " padding: 2px 12px 0 12px;"
-        )
-        self.all_time_jpy_label.setText(f"¥{all_time_jpy:,}")
+            f"color:{green};font-size:26px;font-weight:bold;padding:2px 12px 0 12px;")
+        self.all_time_jpy_label.setText(f"\u00a5{int(atUSD * rate):,}")
 
-        # ── Table ─────────────────────────────────────────────────────────────
-        self.table.setRowCount(len(txns))
-        self._txn_ids = []
-        for row_idx, txn in enumerate(txns):
+        self.table.setRowCount(len(txns)); self._txn_ids = []
+        for ri, txn in enumerate(txns):
             self._txn_ids.append(txn.id)
-
-            self.table.setItem(row_idx, 0, QTableWidgetItem(txn.date))
-
-            type_text = "Earned" if txn.type == "income" else "Spent"
+            self.table.setItem(ri, 0, QTableWidgetItem(txn.date))
             if txn.is_job_pay:
-                type_text = "Job Pay"
-            type_item = QTableWidgetItem(type_text)
-            color = QColor(green if txn.type == "income" else red)
-            if txn.is_job_pay:
-                color = QColor(gold)
-            type_item.setForeground(QBrush(color))
-            self.table.setItem(row_idx, 1, type_item)
-
-            self.table.setItem(row_idx, 2, QTableWidgetItem(txn.category))
-
-            # USD amount column
-            prefix = "+" if txn.type == "income" else "-"
-            curr_sym = "¥" if txn.currency == "JPY" else "$"
-            if txn.currency == "JPY":
-                amt_str = f"{prefix}{curr_sym}{int(txn.amount):,}"
+                type_text, clr = "Main Job", QColor(gold)
+            elif txn.type == "income":
+                type_text, clr = "Side Job", QColor(green)
             else:
-                amt_str = f"{prefix}{curr_sym}{txn.amount:,.2f}"
-            amt_item = QTableWidgetItem(amt_str)
-            amt_item.setForeground(QBrush(color))
-            amt_item.setTextAlignment(
-                Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter
-            )
-            self.table.setItem(row_idx, 3, amt_item)
+                type_text, clr = "Expense",  QColor(red)
+            ti = QTableWidgetItem(type_text); ti.setForeground(QBrush(clr))
+            self.table.setItem(ri, 1, ti)
+            self.table.setItem(ri, 2, QTableWidgetItem(txn.category))
+            pfx = "+" if txn.type == "income" else "-"
+            sym = "\u00a5" if txn.currency == "JPY" else "$"
+            amt_str = (f"{pfx}{sym}{int(txn.amount):,}" if txn.currency == "JPY"
+                       else f"{pfx}{sym}{txn.amount:,.2f}")
+            ai = QTableWidgetItem(amt_str); ai.setForeground(QBrush(clr))
+            ai.setTextAlignment(Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter)
+            self.table.setItem(ri, 3, ai)
+            jpy_v = int(txn.amount) if txn.currency == "JPY" else int(txn.amount * rate)
+            ji = QTableWidgetItem(f"{pfx}\u00a5{jpy_v:,}"); ji.setForeground(QBrush(clr))
+            ji.setTextAlignment(Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter)
+            self.table.setItem(ri, 4, ji)
+            self.table.setItem(ri, 5, QTableWidgetItem(txn.description))
 
-            # JPY column
-            if txn.currency == "JPY":
-                jpy_val = int(txn.amount)
-            else:
-                jpy_val = int(txn.amount * rate)
-            jpy_item = QTableWidgetItem(f"{prefix}¥{jpy_val:,}")
-            jpy_item.setForeground(QBrush(color))
-            jpy_item.setTextAlignment(
-                Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter
-            )
-            self.table.setItem(row_idx, 4, jpy_item)
-
-            self.table.setItem(row_idx, 5, QTableWidgetItem(txn.description))
-
-        # ── Summary panel ─────────────────────────────────────────────────────
         summary = self.store.get_summary(start, end)
-        earned_usd = summary["earned"]
-        spent_usd = summary["spent"]
-        net_usd = summary["net"]
-
-        earned_jpy = int(earned_usd * rate)
-        spent_jpy = int(spent_usd * rate)
-        net_jpy = int(net_usd * rate)
-
+        earned_usd = summary["earned"]; spent_usd = summary["spent"]; net_usd = summary["net"]
         self.earned_usd_label.setText(f"Earned: ${earned_usd:,.2f}")
-        self.earned_usd_label.setStyleSheet(
-            f"color: {green}; font-size: 18px; font-weight: bold;"
-        )
-        self.earned_jpy_label.setText(f"¥{earned_jpy:,}")
-
+        self.earned_usd_label.setStyleSheet(f"color:{green};font-size:18px;font-weight:bold;")
+        self.earned_jpy_label.setText(f"\u00a5{int(earned_usd * rate):,}")
         self.spent_label.setText(f"Spent: ${spent_usd:,.2f}")
-        self.spent_label.setStyleSheet(
-            f"color: {red}; font-size: 15px; font-weight: bold;"
-        )
-
-        net_color = green if net_usd >= 0 else red
-        sign = "+" if net_usd >= 0 else ""
+        self.spent_label.setStyleSheet(f"color:{red};font-size:15px;font-weight:bold;")
+        nc = green if net_usd >= 0 else red; sign = "+" if net_usd >= 0 else ""
         self.net_label.setText(f"Net: {sign}${net_usd:,.2f}")
-        self.net_label.setStyleSheet(
-            f"color: {net_color}; font-size: 20px; font-weight: bold;"
-        )
-        net_sign_jpy = "+" if net_jpy >= 0 else ""
-        self.net_jpy_label.setText(f"{net_sign_jpy}¥{net_jpy:,}")
-
+        self.net_label.setStyleSheet(f"color:{nc};font-size:20px;font-weight:bold;")
+        nj = int(net_usd * rate); njs = "+" if nj >= 0 else ""
+        self.net_jpy_label.setText(f"{njs}\u00a5{nj:,}")
         self.txn_count_label.setText(f"{summary['count']} transaction(s) in period")
 
-        # Category bars
         while self.cat_bars_layout.count():
             child = self.cat_bars_layout.takeAt(0)
-            if child.widget():
-                child.widget().deleteLater()
-
+            if child.widget(): child.widget().deleteLater()
         by_cat = summary["by_category"]
         if by_cat:
-            max_amount = max(by_cat.values())
-            bar_colors = [
-                accent, green, "#cba6f7", "#fab387",
-                "#f9e2af", "#94e2d5", red, "#f5c2e7",
-            ]
-            for i, (cat, amount) in enumerate(
-                sorted(by_cat.items(), key=lambda x: -x[1])
-            ):
-                bar = CategoryBar(
-                    cat, amount, max_amount, rate,
-                    bar_colors[i % len(bar_colors)],
-                )
-                self.cat_bars_layout.addWidget(bar)
+            mx = max(by_cat.values())
+            bar_colors = [self._palette.get("accent","#4a9eff"), green,
+                          "#cba6f7","#fab387","#f9e2af","#94e2d5",red,"#f5c2e7"]
+            for i, (cat, amt) in enumerate(sorted(by_cat.items(), key=lambda x: -x[1])):
+                self.cat_bars_layout.addWidget(
+                    CategoryBar(cat, amt, mx, rate, bar_colors[i % len(bar_colors)]))
         else:
-            no_data = QLabel("No transactions in this period")
-            no_data.setObjectName("subtitle")
-            self.cat_bars_layout.addWidget(no_data)
+            nd = QLabel("No transactions in this period"); nd.setObjectName("subtitle")
+            self.cat_bars_layout.addWidget(nd)
 
-        # ── Goal section ──────────────────────────────────────────────────────
         self._update_goal_section()
-
-        # ── Preset buttons ────────────────────────────────────────────────────
         self._rebuild_preset_buttons()
 
-    # ── CRUD actions ──────────────────────────────────────────────────────────
+    # ── CRUD ─────────────────────────────────────────────────────────────────
 
     def _add_earning(self):
-        dlg = TransactionDialog(self)
-        dlg.type_combo.setCurrentText("income")
-        if dlg.exec():
-            self.store.add_transaction(**dlg.get_data())
-            self._refresh()
+        dlg = TransactionDialog(self, initial_type="income")
+        if dlg.exec(): self.store.add_transaction(**dlg.get_data()); self._refresh()
 
     def _add_expense(self):
-        dlg = TransactionDialog(self)
-        dlg.type_combo.setCurrentText("expense")
-        if dlg.exec():
-            self.store.add_transaction(**dlg.get_data())
-            self._refresh()
+        dlg = TransactionDialog(self, initial_type="expense")
+        if dlg.exec(): self.store.add_transaction(**dlg.get_data()); self._refresh()
 
     def _edit_transaction(self, index):
         row = index.row()
-        if row < 0 or row >= len(self._txn_ids):
-            return
-        txn_id = self._txn_ids[row]
-        txns = self.store.get_transactions()
-        txn = next((t for t in txns if t.id == txn_id), None)
-        if not txn:
-            return
+        if row < 0 or row >= len(self._txn_ids): return
+        txn = next((t for t in self.store.get_transactions()
+                    if t.id == self._txn_ids[row]), None)
+        if not txn: return
         dlg = TransactionDialog(self, txn)
         if dlg.exec():
-            data = dlg.get_data()
-            txn.date = data["date"]
-            txn.amount = data["amount"]
-            txn.type = data["txn_type"]
-            txn.category = data["category"]
-            txn.description = data["description"]
-            txn.currency = data["currency"]
-            self.store.update_transaction(txn)
-            self._refresh()
+            d = dlg.get_data()
+            txn.date = d["date"]; txn.amount = d["amount"]; txn.type = d["txn_type"]
+            txn.category = d["category"]; txn.description = d["description"]
+            txn.currency = d["currency"]; txn.is_job_pay = d["is_job_pay"]
+            self.store.update_transaction(txn); self._refresh()
 
     def _delete_transaction(self):
         rows = self.table.selectionModel().selectedRows()
-        if not rows:
-            return
-        reply = QMessageBox.question(
-            self, "Delete",
-            f"Delete {len(rows)} entry/entries?",
-            QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
-        )
-        if reply == QMessageBox.StandardButton.Yes:
+        if not rows: return
+        if QMessageBox.question(
+                self, "Delete", f"Delete {len(rows)} entry/entries?",
+                QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No
+                ) == QMessageBox.StandardButton.Yes:
             for idx in rows:
                 if idx.row() < len(self._txn_ids):
                     self.store.delete_transaction(self._txn_ids[idx.row()])
