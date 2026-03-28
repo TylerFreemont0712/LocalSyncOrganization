@@ -37,6 +37,7 @@ from src.sync.deletion_manifest import (
     record_deletion as _record_vault_del,
     remove_deletion as _remove_vault_del,
 )
+from src.sync.vault_watcher import mark_sync_written as _mark_vault_written
 
 logger = logging.getLogger(__name__)
 
@@ -636,9 +637,10 @@ class SyncEngine(QThread):
             else:
                 should_write = True
             if should_write:
-                local_path.parent.mkdir(parents=True, exist_ok=True)
-                local_path.write_text(rnote["content"], encoding="utf-8")
-                changes += 1
+                    local_path.parent.mkdir(parents=True, exist_ok=True)
+                    local_path.write_text(rnote["content"], encoding="utf-8")
+                    _mark_vault_written(rel_posix)   # guard: watcher skips this path next poll
+                    changes += 1
 
         # Merge Obsidian vault notes
         vault_path = cfg.get("obsidian_vault_path", "")
