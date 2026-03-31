@@ -13,17 +13,19 @@ Changes in this version:
 import threading
 import urllib.request
 import json
+import csv
 from datetime import date, timedelta
+from pathlib import Path
 
 from PyQt6.QtCore import Qt, QDate, pyqtSignal, QObject
 from PyQt6.QtGui import QColor, QBrush, QPainter, QPen
 from PyQt6.QtWidgets import (
-    QWidget, QVBoxLayout, QHBoxLayout, QSplitter,
+    QWidget, QVBoxLayout, QHBoxLayout, QSplitter, QFileDialog,
     QLabel, QPushButton, QDialog, QLineEdit, QComboBox,
     QDateEdit, QDoubleSpinBox, QTableWidget, QTableWidgetItem,
     QHeaderView, QFrame, QMessageBox, QScrollArea,
     QFormLayout, QSizePolicy, QAbstractItemView, QInputDialog,
-    QDialogButtonBox, QCheckBox, QGridLayout, QSpinBox,
+    QDialogButtonBox, QCheckBox, QGridLayout, QSpinBox, QButtonGroup, QRadioButton
 )
 
 from src.config import load_config, save_config
@@ -748,25 +750,25 @@ class GoalSettingsDialog(QDialog):
 
         form = QFormLayout(); form.setSpacing(8)
 
-        self.base_spin = QDoubleSpinBox()
-        self.base_spin.setRange(1, 99_999_999)
-        self.base_spin.valueChanged.connect(self._update_hints)
-        form.addRow("Base Goal:", self.base_spin)
+        self.min_spin = QDoubleSpinBox()
+        self.min_spin.setRange(1, 99_999_999)
+        self.min_spin.valueChanged.connect(self._update_hints)
+        form.addRow("Minimum Goal:", self.min_spin)
 
-        self._base_hint = QLabel()
-        self._base_hint.setObjectName("subtitle")
-        self._base_hint.setStyleSheet("font-size:10px;")
-        form.addRow("", self._base_hint)
+        self._min_hint = QLabel()
+        self._min_hint.setObjectName("subtitle")
+        self._min_hint.setStyleSheet("font-size:10px;")
+        form.addRow("", self._min_hint)
 
-        self.extra_spin = QDoubleSpinBox()
-        self.extra_spin.setRange(1, 99_999_999)
-        self.extra_spin.valueChanged.connect(self._update_hints)
-        form.addRow("Extra Goal:", self.extra_spin)
+        self.major_spin = QDoubleSpinBox()
+        self.major_spin.setRange(1, 99_999_999)
+        self.major_spin.valueChanged.connect(self._update_hints)
+        form.addRow("Extra Goal:", self.major_spin)
 
-        self._extra_hint = QLabel()
-        self._extra_hint.setObjectName("subtitle")
-        self._extra_hint.setStyleSheet("font-size:10px;")
-        form.addRow("", self._extra_hint)
+        self._major_hint = QLabel()
+        self._major_hint.setObjectName("subtitle")
+        self._major_hint.setStyleSheet("font-size:10px;")
+        form.addRow("", self._major_hint)
 
         layout.addLayout(form)
 
@@ -781,61 +783,61 @@ class GoalSettingsDialog(QDialog):
 
         # Initialise spinboxes with USD values
         self._apply_usd_mode()
-        self.base_spin.setValue(base)
-        self.extra_spin.setValue(extra)
+        self.min_spin.setValue(base)
+        self.major_spin.setValue(extra)
         self._update_hints()
 
     def _apply_usd_mode(self):
-        for sp in (self.base_spin, self.extra_spin):
+        for sp in (self.min_spin, self.major_spin):
             sp.setDecimals(0); sp.setSingleStep(100); sp.setPrefix("$ ")
 
     def _apply_jpy_mode(self):
-        for sp in (self.base_spin, self.extra_spin):
+        for sp in (self.min_spin, self.major_spin):
             sp.setDecimals(0); sp.setSingleStep(10_000); sp.setPrefix("\u00a5 ")
 
     def _on_currency_changed(self, idx: int):
         rate = self._rate
         # Convert current values to the new currency
-        base_usd  = self.base_spin.value()
-        extra_usd = self.extra_spin.value()
+        base_usd  = self.min_spin.value()
+        extra_usd = self.major_spin.value()
         if idx == 0:   # switching to USD
             self._apply_usd_mode()
             # If previous values look like JPY (large), convert; otherwise keep
             if base_usd > 5000:
-                self.base_spin.setValue(round(base_usd / rate))
-                self.extra_spin.setValue(round(extra_usd / rate))
+                self.min_spin.setValue(round(base_usd / rate))
+                self.major_spin.setValue(round(extra_usd / rate))
         else:           # switching to JPY
             self._apply_jpy_mode()
             if base_usd < 5000:
-                self.base_spin.setValue(round(base_usd * rate))
-                self.extra_spin.setValue(round(extra_usd * rate))
+                self.min_spin.setValue(round(base_usd * rate))
+                self.major_spin.setValue(round(extra_usd * rate))
         self._update_hints()
 
     def _update_hints(self):
         rate = self._rate
         if self._cur_combo.currentIndex() == 0:  # USD mode
-            b_jpy = int(self.base_spin.value() * rate)
-            e_jpy = int(self.extra_spin.value() * rate)
-            self._base_hint.setText(f"\u2248 \u00a5{b_jpy:,} JPY")
-            self._extra_hint.setText(f"\u2248 \u00a5{e_jpy:,} JPY")
+            b_jpy = int(self.min_spin.value() * rate)
+            e_jpy = int(self.major_spin.value() * rate)
+            self._min_hint.setText(f"\u2248 \u00a5{b_jpy:,} JPY")
+            self._major_hint.setText(f"\u2248 \u00a5{e_jpy:,} JPY")
         else:                                     # JPY mode
-            b_usd = self.base_spin.value() / rate if rate else 0
-            e_usd = self.extra_spin.value() / rate if rate else 0
-            self._base_hint.setText(f"\u2248 ${b_usd:,.2f} USD")
-            self._extra_hint.setText(f"\u2248 ${e_usd:,.2f} USD")
+            b_usd = self.min_spin.value() / rate if rate else 0
+            e_usd = self.major_spin.value() / rate if rate else 0
+            self._min_hint.setText(f"\u2248 ${b_usd:,.2f} USD")
+            self._major_hint.setText(f"\u2248 ${e_usd:,.2f} USD")
 
     def _validate_and_accept(self):
-        if self.extra_spin.value() <= self.base_spin.value():
+        if self.major_spin.value() <= self.min_spin.value():
             QMessageBox.warning(self, "Invalid Goals",
-                "Extra goal must be greater than base goal."); return
+                "Major goal must be greater than minimum goal."); return
         self.accept()
 
     def get_goals(self) -> tuple[float, float]:
-        """Always return (base_usd, extra_usd)."""
+        """Always return (min_usd, major_usd)."""
         rate = self._rate if self._rate else _FALLBACK_RATE
         if self._cur_combo.currentIndex() == 1:   # JPY → convert to USD
-            return self.base_spin.value() / rate, self.extra_spin.value() / rate
-        return self.base_spin.value(), self.extra_spin.value()
+            return self.min_spin.value() / rate, self.major_spin.value() / rate
+        return self.min_spin.value(), self.major_spin.value()
 
 
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -1008,6 +1010,126 @@ class PresetButton(QWidget):
             "PresetButton:hover{background-color:#313244;}")
         self.setFixedWidth(150)
 
+"""Task 8 Fix C — TaxExportDialog.
+
+Paste this class into finance_panel.py BEFORE the FinancePanel class.
+Then add the export button in FinancePanel._build_header() as shown below.
+"""
+
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+#  TaxExportDialog — 確定申告 CSV export
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+class TaxExportDialog(QDialog):
+    """Export transaction data for 確定申告 (annual tax filing)."""
+
+    def __init__(self, parent, finance_store):
+        super().__init__(parent)
+        self.store = finance_store
+        self.setWindowTitle("Export for 確定申告")
+        self.setMinimumWidth(400)
+        self.setModal(True)
+
+        layout = QVBoxLayout(self)
+        layout.setSpacing(12)
+        layout.setContentsMargins(16, 14, 16, 14)
+
+        layout.addWidget(QLabel("Export transaction data for tax filing."))
+
+        # Year selector
+        year_row = QHBoxLayout()
+        year_row.addWidget(QLabel("Year:"))
+        self._year_spin = QSpinBox()
+        self._year_spin.setRange(2020, 2035)
+        self._year_spin.setValue(date.today().year)
+        year_row.addWidget(self._year_spin)
+        year_row.addStretch()
+        layout.addLayout(year_row)
+
+        # Filter radio buttons
+        self._filter_group = QButtonGroup(self)
+        self._radio_all = QRadioButton("All transactions")
+        self._radio_all.setChecked(True)
+        self._radio_monthly = QRadioButton("[Monthly] tagged only")
+        self._filter_group.addButton(self._radio_all)
+        self._filter_group.addButton(self._radio_monthly)
+        layout.addWidget(self._radio_all)
+        layout.addWidget(self._radio_monthly)
+
+        sep = QFrame()
+        sep.setObjectName("separator")
+        sep.setFrameShape(QFrame.Shape.HLine)
+        layout.addWidget(sep)
+
+        # Export button
+        btn_row = QHBoxLayout()
+        btn_row.addStretch()
+        cancel_btn = QPushButton("Cancel")
+        cancel_btn.setObjectName("secondary")
+        cancel_btn.clicked.connect(self.reject)
+        btn_row.addWidget(cancel_btn)
+        export_btn = QPushButton("Export CSV")
+        export_btn.clicked.connect(self._export)
+        btn_row.addWidget(export_btn)
+        layout.addLayout(btn_row)
+
+    def _export(self):
+        year = self._year_spin.value()
+        start = f"{year}-01-01"
+        end = f"{year}-12-31"
+
+        txns = self.store.get_transactions(start, end)
+
+        # Apply filter
+        if self._radio_monthly.isChecked():
+            txns = [t for t in txns if "[Monthly]" in t.description]
+
+        if not txns:
+            QMessageBox.information(self, "No Data",
+                f"No matching transactions found for {year}.")
+            return
+
+        # File dialog
+        default_name = f"確定申告_{year}.csv"
+        path, _ = QFileDialog.getSaveFileName(
+            self, "Save CSV", str(Path.home() / default_name),
+            "CSV Files (*.csv);;All Files (*)",
+        )
+        if not path:
+            return
+
+        # Get rate for conversion
+        from src.config import load_config
+        cfg = load_config()
+        rate = float(cfg.get("usd_jpy_fallback_rate", 150.0))
+
+        try:
+            with open(path, "w", newline="", encoding="utf-8-sig") as f:
+                writer = csv.writer(f)
+                writer.writerow([
+                    "Date", "Type", "Category", "Description",
+                    "Amount (Original)", "Currency",
+                    "Amount (USD)", "Amount (JPY)", "Is Job Pay",
+                ])
+                for t in txns:
+                    if t.currency == "JPY":
+                        amt_jpy = t.amount
+                        amt_usd = t.amount / rate if rate else 0
+                    else:
+                        amt_usd = t.amount
+                        amt_jpy = t.amount * rate
+                    writer.writerow([
+                        t.date, t.type, t.category, t.description,
+                        t.amount, t.currency,
+                        f"{amt_usd:.2f}", f"{amt_jpy:.0f}",
+                        "Yes" if t.is_job_pay else "No",
+                    ])
+
+            QMessageBox.information(self, "Exported",
+                f"Exported {len(txns)} transaction(s) to:\n{path}")
+            self.accept()
+        except OSError as e:
+            QMessageBox.warning(self, "Error", f"Failed to write file:\n{e}")
 
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 #  FinancePanel
@@ -1083,6 +1205,11 @@ class FinancePanel(QWidget):
         btn_del = QPushButton("Delete"); btn_del.setObjectName("destructive")
         btn_del.setToolTip("Delete selected row(s)")
         btn_del.clicked.connect(self._delete_transaction); header.addWidget(btn_del)
+        export_btn = QPushButton("Export for 確定申告 \U0001f4ca")
+        export_btn.setObjectName("secondary")
+        export_btn.setToolTip("Export transactions for tax filing")
+        export_btn.clicked.connect(self._open_tax_export)
+        header.addWidget(export_btn)
         return header
 
     def _build_quick_log_bar(self) -> QWidget:
@@ -1100,7 +1227,8 @@ class FinancePanel(QWidget):
         manage_btn.clicked.connect(self._open_preset_manager)
         title_row.addWidget(manage_btn)
 
-        monthly_btn = QPushButton("\U0001f4cb Monthly Expenses")
+        self._monthly_expenses_btn = QPushButton("\U0001f4cb Monthly Expenses")
+        monthly_btn = self._monthly_expenses_btn
         monthly_btn.setObjectName("secondary"); monthly_btn.setFixedHeight(22)
         monthly_btn.setToolTip("Log recurring monthly bills in one go")
         monthly_btn.clicked.connect(self._open_monthly_expenses)
@@ -1175,6 +1303,9 @@ class FinancePanel(QWidget):
         legend_row.addStretch(); legend_row.addWidget(self.goal_current_label)
         vbox.addLayout(legend_row)
         return container
+
+    def _open_tax_export(self):
+        TaxExportDialog(self, self.store).exec()
 
     def _build_table(self) -> QWidget:
         self.table = QTableWidget(); self.table.setColumnCount(6)
@@ -1284,6 +1415,25 @@ class FinancePanel(QWidget):
         if not presets:
             ph = QLabel("No presets yet \u2014 click \u2699 Manage Presets to add one.")
             ph.setObjectName("subtitle"); self._preset_row_layout.insertWidget(0, ph)
+
+    def _update_month_gate(self):
+        """Disable Quick Log and Monthly Expenses buttons when viewing a non-current month."""
+        qs = self.filter_start.date()
+        today = date.today()
+        is_current = (qs.year() == today.year and qs.month() == today.month)
+
+        # Gate preset buttons
+        for i in range(self._preset_row_layout.count()):
+            w = self._preset_row_layout.itemAt(i).widget()
+            if w and isinstance(w, PresetButton):
+                w.setEnabled(is_current)
+                w.setToolTip("" if is_current else "Switch to the current month to log income")
+
+        # Gate monthly expenses button
+        self._monthly_expenses_btn.setEnabled(is_current)
+        self._monthly_expenses_btn.setToolTip(
+            "" if is_current else "Switch to the current month to log income"
+        )
 
     def _log_preset(self, preset: JobPreset):
         self.store.log_preset(preset, count=1, on_date=date.today().isoformat())
@@ -1416,6 +1566,7 @@ class FinancePanel(QWidget):
 
         self._update_goal_section()
         self._rebuild_preset_buttons()
+        self._update_month_gate()
 
     # ── CRUD ─────────────────────────────────────────────────────────────────
 

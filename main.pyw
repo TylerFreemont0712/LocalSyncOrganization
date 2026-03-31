@@ -1,5 +1,9 @@
 #!/usr/bin/env python3
-"""LocalSync — Personal productivity app entry point."""
+"""LocalSync — Personal productivity desktop app.
+
+Entry point: initializes the database, starts the Qt application,
+launches sync engine and vault watcher, and displays the main window.
+"""
 
 import logging
 import sys
@@ -53,8 +57,18 @@ def main():
         sync_engine.stop()
         sync_engine.wait(5000)
 
-    sys.exit(exit_code)
+    return exit_code
 
 
 if __name__ == "__main__":
-    main()
+    try:
+        sys.exit(main())
+    except Exception:
+        import traceback
+        try:
+            from PyQt6.QtWidgets import QApplication, QMessageBox
+            app = QApplication.instance() or QApplication(sys.argv)
+            QMessageBox.critical(None, "Fatal Error", traceback.format_exc())
+        except Exception:
+            print(traceback.format_exc())
+        sys.exit(1)

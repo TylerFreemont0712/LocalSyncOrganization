@@ -161,6 +161,10 @@ class SyncEngine(QThread):
         # Just interrupt the sleep by setting a flag — next iteration runs immediately
         # We achieve this by starting a one-shot thread
         threading.Thread(target=self._force_sync_once, daemon=True).start()
+    def force_scan(self):
+        """Trigger an immediate subnet peer discovery scan without a full data sync."""
+        self._log("Manual subnet scan triggered")
+        threading.Thread(target=self._scan_subnet, daemon=True).start()
 
     def _force_sync_once(self):
         self.status_changed.emit("force syncing...")

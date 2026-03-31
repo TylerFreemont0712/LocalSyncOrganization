@@ -6,7 +6,12 @@ that mimics Obsidian's file explorer layout.
 
 import json
 import logging
+import os
+import subprocess
+import sys
 import threading
+import urllib.parse
+import urllib.request
 from collections import defaultdict
 from pathlib import Path, PurePosixPath
 
@@ -14,9 +19,9 @@ from PyQt6.QtCore import Qt, QTimer
 from PyQt6.QtGui import QFont, QIcon
 from PyQt6.QtWidgets import (
     QWidget, QVBoxLayout, QHBoxLayout, QSplitter,
-    QTreeWidget, QTreeWidgetItem, QPlainTextEdit,
+    QTreeWidget, QTreeWidgetItem, QPlainTextEdit, QTextBrowser,
     QLineEdit, QPushButton, QLabel, QMessageBox, QInputDialog,
-    QFrame, QFileDialog,
+    QFrame, QFileDialog, QStackedWidget,
 )
 
 from src.config import load_config, save_config
@@ -41,7 +46,6 @@ class ObsidianAPI:
 
     def is_available(self) -> bool:
         try:
-            import urllib.request
             req = urllib.request.Request(
                 f"{self.base_url}/", headers=self._headers(), method="GET",
             )
@@ -52,7 +56,6 @@ class ObsidianAPI:
 
     def list_files(self, folder: str = "/") -> list[str]:
         try:
-            import urllib.request
             req = urllib.request.Request(
                 f"{self.base_url}/vault{folder}",
                 headers=self._headers(), method="GET",
@@ -66,7 +69,6 @@ class ObsidianAPI:
 
     def read_note(self, path: str) -> str:
         try:
-            import urllib.request, urllib.parse
             encoded_path = urllib.parse.quote(path, safe="/")
             headers = self._headers()
             headers["Accept"] = "text/markdown"
@@ -82,7 +84,6 @@ class ObsidianAPI:
 
     def create_note(self, path: str, content: str) -> bool:
         try:
-            import urllib.request, urllib.parse
             encoded_path = urllib.parse.quote(path, safe="/")
             headers = self._headers()
             headers["Content-Type"] = "text/markdown"
@@ -99,7 +100,6 @@ class ObsidianAPI:
 
     def append_note(self, path: str, content: str) -> bool:
         try:
-            import urllib.request, urllib.parse
             encoded_path = urllib.parse.quote(path, safe="/")
             headers = self._headers()
             headers["Content-Type"] = "text/markdown"
@@ -116,9 +116,6 @@ class ObsidianAPI:
 
     def open_in_obsidian(self, path: str):
         """Open a note in the Obsidian desktop app via URI scheme."""
-        import subprocess
-        import sys
-        import urllib.parse
         cfg = load_config()
         vault_path = cfg.get("obsidian_vault_path", "")
         vault_name = Path(vault_path).name if vault_path else ""
@@ -208,6 +205,8 @@ class NotesPanel(QWidget):
         self._save_timer.setSingleShot(True)
         self._save_timer.setInterval(500)
         self._save_timer.timeout.connect(self._save_current)
+        self._palette: dict = {}
+        self._preview_mode: bool = False
         self._obsidian_api: ObsidianAPI | None = None
         self._obsidian_status = "not configured"
         self._build_ui()
@@ -344,6 +343,7 @@ class NotesPanel(QWidget):
         # ── Right side: editor ───────────────────────
         editor_widget = QWidget()
         editor_layout = QVBoxLayout(editor_widget)
+#        editor_layout.addWidget(self._preview, 1)  # same stretch as editor
         editor_layout.setContentsMargins(4, 8, 8, 8)
         editor_layout.setSpacing(4)
 
@@ -377,6 +377,11 @@ class NotesPanel(QWidget):
         sep.setObjectName("separator")
         sep.setFrameShape(QFrame.Shape.HLine)
         editor_layout.addWidget(sep)
+        
+        self._preview = QTextBrowser()
+        self._preview.setReadOnly(True)
+        self._preview.setOpenExternalLinks(True)
+        self._preview.setVisible(False)
 
         self.editor = QPlainTextEdit()
         self.editor.setPlaceholderText(
@@ -499,6 +504,50 @@ class NotesPanel(QWidget):
             self.editor.blockSignals(False)
             self._update_footer(note)
 
+    def set_palette(self, palette: dict):
+        self._palette = palette
+        # If currently in preview mode, re-render with new palette
+        if self._preview_mode:
+            self._render_preview()
+
+    def _toggle_preview(self):
+        self._preview_mode = not self._preview_mode
+        if self._preview_mode:
+            self.editor.setVisible(False)
+            self._preview.setVisible(True)
+            self._preview_btn.setText("\u270f Edit")
+            self._render_preview()
+        else:
+            self._preview.setVisible(False)
+            self.editor.setVisible(True)
+            self._preview_btn.setText("\U0001f441 Preview")
+
+    def _render_preview(self):
+        try:
+            import mistune
+            md = mistune.create_markdown()
+            html = md(self.editor.toPlainText())
+        except ImportError:
+            html = "<p><i>Install mistune for Markdown preview: pip install mistune</i></p>"
+            html += "<pre>" + self.editor.toPlainText().replace("<", "&lt;") + "</pre>"
+
+        bg = self._palette.get("bg", "#1e1e2e")
+        fg = self._palette.get("fg", "#cdd6f4")
+        surface = self._palette.get("surface", "#313244")
+        accent = self._palette.get("accent", "#89b4fa")
+
+        css = (
+            f"<style>"
+            f"body {{ background: {bg}; color: {fg}; font-family: sans-serif; padding: 12px; }}"
+            f"code {{ background: {surface}; padding: 2px 4px; border-radius: 3px; }}"
+            f"pre {{ background: {surface}; padding: 8px; border-radius: 4px; overflow-x: auto; }}"
+            f"a {{ color: {accent}; }}"
+            f"h1, h2, h3 {{ color: {fg}; }}"
+            f"blockquote {{ border-left: 3px solid {accent}; padding-left: 8px; margin-left: 0; }}"
+            f"</style>"
+        )
+        self._preview.setHtml(css + html)
+
     # ── Status labels ──────────────────────────────────
 
     def _update_status_label(self):
@@ -570,9 +619,6 @@ class NotesPanel(QWidget):
         """Open the current note in Obsidian via obsidian:// URI scheme."""
         if not self.current_note_path:
             return
-        import subprocess
-        import sys
-        import urllib.parse
         vault_path = self.cfg.get("obsidian_vault_path", "")
         vault_name = Path(vault_path).name if vault_path else ""
         if not vault_name:
@@ -641,6 +687,12 @@ class NotesPanel(QWidget):
         self.btn_rename.setVisible(False)
         self.btn_delete.setVisible(False)
         self.btn_open_obsidian.setVisible(False)
+        self._preview_btn = QPushButton("\U0001f441 Preview")
+        self._preview_btn.setObjectName("secondary")
+        self._preview_btn.setFixedHeight(24)
+        self._preview_btn.clicked.connect(self._toggle_preview)
+        # Add to the editor header row, e.g.:
+        # editor_header.addWidget(self._preview_btn)
 
     # ── Editing ────────────────────────────────────────
 

@@ -65,7 +65,7 @@ def record_deletion(rel_posix: str, vault: Path | None = None):
     now = time.time()
 
     if rel_posix not in existing_paths:
-        entries.append({"path": rel_posix, "deleted_at": now})
+        entries.append({"path": rel_posix, "deleted_at": now, "deleted_at_ts": now})
         logger.info(f"Recorded vault deletion: {rel_posix}")
 
     # Prune old entries

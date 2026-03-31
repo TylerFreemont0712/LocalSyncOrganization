@@ -50,7 +50,7 @@ This document contains the full context of the repository, formatted for optimal
 
 ## 📊 Project Summary
 - Total Python files: **33**
-- Total lines of code: **10951**
+- Total lines of code: **11085**
 
 ## 🔗 Dependency Graph
 ### main.pyw
@@ -144,9 +144,11 @@ This document contains the full context of the repository, formatted for optimal
 - src.data.database
 - src.utils.timestamps
 - src.sync.deletion_manifest
+- src.sync.vault_watcher
 
 ### src\sync\vault_watcher.py
 - logging
+- threading
 - time
 - pathlib
 - PyQt6.QtCore
@@ -597,22 +599,37 @@ Uses a polling approach (no inotify dependency) to watch for .md file changes
 in the configured vault directory. When changes are detected, emits a signal
 so the sync engine can broadcast them to peers.
 
+Sync-safety features:
+  • 10-second poll interval — relaxed for a personal two-machine setup.
+  • Deletion debounce — a file must be absent for 2 consecutive polls (≥20 s)
+    before its deletion is recorded.  This prevents Obsidian's atomic-save
+    behaviour (delete + recreate within milliseconds) from being misread as a
+    real deletion.
+  • Sync-write guard — when the engine writes a vault file it calls
+    mark_sync_written(); the watcher skips that path for the next poll cycle
+    so it does not re-trigger a sync for data that arrived from a peer.
+  • Quiet-period gate — vault_changed is only emitted after one full poll with
+    no new activity.  Rapid sequences (move = delete + create) are collapsed
+    into a single signal.
+  • Move detection — if a pending-deletion's file size matches a newly
+    appeared file in the same poll cycle the operation is treated as a rename
+    and the deletion manifest entry is suppressed.
+
 **Classes:**
 - `VaultWatcher`: Polls the Obsidian vault for file changes and signals when detected.
 
 **Functions:**
+- `mark_sync_written`: Register a vault-relative path that the sync engine just wrote to disk.
+
+The watcher will ignore this path for the next poll cycle so that incoming
+peer data does not immediately re-trigger a sync.  Call from any thread.
+- `_pop_sync_written`: Drain and return the current sync-written set (called once per poll).
 - `__init__`: (No docstring)
 - `_load_vault_path`: (No docstring)
 - `reload_config`: Reload vault path from config (called after settings change).
-- `_scan_vault`: Build a dict of {posix_relative_path: mtime} for all .md files in vault.
-
-Always uses forward slashes so Windows/Linux snapshots are comparable.
+- `_scan_vault`: Return {posix_relative_path: (mtime, size)} for all visible .md files.
 - `run`: (No docstring)
-- `_has_changes`: Compare current scan against previous snapshot.
-- `_record_deletions`: When files disappear from the vault, record them in the deletion manifest.
-
-Uses the shared deletion_manifest module. Skips paths already recorded
-(e.g. by the UI doing an immediate delete/rename).
+- `_poll`: One full poll cycle: detect changes, debounce, maybe emit.
 - `stop`: (No docstring)
 
 ### src\ui\__init__.py
@@ -2966,6 +2983,7 @@ from src.sync.deletion_manifest import (
     record_deletion as _record_vault_del,
     remove_deletion as _remove_vault_del,
 )
+from src.sync.vault_watcher import mark_sync_written as _mark_vault_written
 
 logger = logging.getLogger(__name__)
 
@@ -3565,9 +3583,10 @@ class SyncEngine(QThread):
             else:
                 should_write = True
             if should_write:
-                local_path.parent.mkdir(parents=True, exist_ok=True)
-                local_path.write_text(rnote["content"], encoding="utf-8")
-                changes += 1
+                    local_path.parent.mkdir(parents=True, exist_ok=True)
+                    local_path.write_text(rnote["content"], encoding="utf-8")
+                    _mark_vault_written(rel_posix)   # guard: watcher skips this path next poll
+                    changes += 1
 
         # Merge Obsidian vault notes
         vault_path = cfg.get("obsidian_vault_path", "")
@@ -3763,9 +3782,26 @@ class SyncEngine(QThread):
 Uses a polling approach (no inotify dependency) to watch for .md file changes
 in the configured vault directory. When changes are detected, emits a signal
 so the sync engine can broadcast them to peers.
+
+Sync-safety features:
+  • 10-second poll interval — relaxed for a personal two-machine setup.
+  • Deletion debounce — a file must be absent for 2 consecutive polls (≥20 s)
+    before its deletion is recorded.  This prevents Obsidian's atomic-save
+    behaviour (delete + recreate within milliseconds) from being misread as a
+    real deletion.
+  • Sync-write guard — when the engine writes a vault file it calls
+    mark_sync_written(); the watcher skips that path for the next poll cycle
+    so it does not re-trigger a sync for data that arrived from a peer.
+  • Quiet-period gate — vault_changed is only emitted after one full poll with
+    no new activity.  Rapid sequences (move = delete + create) are collapsed
+    into a single signal.
+  • Move detection — if a pending-deletion's file size matches a newly
+    appeared file in the same poll cycle the operation is treated as a rename
+    and the deletion manifest entry is suppressed.
 """
 
 import logging
+import threading
 import time
 from pathlib import Path, PurePosixPath
 
@@ -3776,9 +3812,36 @@ from src.sync.deletion_manifest import record_deletion, read_manifest
 
 logger = logging.getLogger(__name__)
 
-# How often to poll the vault directory for changes (seconds)
-POLL_INTERVAL = 3
+# ── Tuning constants ────────────────────────────────────────────────────────
+POLL_INTERVAL          = 10  # seconds between each vault scan
+DELETION_CONFIRM_POLLS = 2   # polls a file must be absent before deletion confirmed (~20 s)
+QUIET_POLLS_BEFORE_EMIT = 1  # polls of silence required before emitting vault_changed
 
+
+# ── Sync-write guard (module-level so engine.py can call without a reference) ─
+_sync_written: set[str] = set()
+_sync_written_lock = threading.Lock()
+
+
+def mark_sync_written(rel_posix: str) -> None:
+    """Register a vault-relative path that the sync engine just wrote to disk.
+
+    The watcher will ignore this path for the next poll cycle so that incoming
+    peer data does not immediately re-trigger a sync.  Call from any thread.
+    """
+    with _sync_written_lock:
+        _sync_written.add(rel_posix)
+
+
+def _pop_sync_written() -> set[str]:
+    """Drain and return the current sync-written set (called once per poll)."""
+    with _sync_written_lock:
+        result = set(_sync_written)
+        _sync_written.clear()
+        return result
+
+
+# ── Watcher thread ──────────────────────────────────────────────────────────
 
 class VaultWatcher(QThread):
     """Polls the Obsidian vault for file changes and signals when detected."""
@@ -3789,11 +3852,26 @@ class VaultWatcher(QThread):
     def __init__(self, parent=None):
         super().__init__(parent)
         self._running = True
-        self._snapshot: dict[str, float] = {}  # rel_path -> mtime
+
+        # rel_posix -> (mtime, size)
+        self._snapshot: dict[str, tuple[float, int]] = {}
+
         self._vault_path: Path | None = None
+
+        # Deletion debounce: rel_posix -> number of polls the file has been absent
+        self._pending_deletions: dict[str, int] = {}
+        # Size of the file when it was last seen (for move detection)
+        self._pending_deletion_sizes: dict[str, int] = {}
+
+        # Quiet-period state
+        self._changes_pending: bool = False  # we have unsent changes
+        self._quiet_polls: int = 0           # polls since last new-change detection
+
         self._load_vault_path()
 
-    def _load_vault_path(self):
+    # ── Config ───────────────────────────────────────────────────────────────
+
+    def _load_vault_path(self) -> None:
         cfg = load_config()
         vault = cfg.get("obsidian_vault_path", "")
         if vault and Path(vault).is_dir():
@@ -3801,61 +3879,59 @@ class VaultWatcher(QThread):
         else:
             self._vault_path = None
 
-    def reload_config(self):
+    def reload_config(self) -> None:
         """Reload vault path from config (called after settings change)."""
         self._load_vault_path()
         self._snapshot.clear()
+        self._pending_deletions.clear()
+        self._pending_deletion_sizes.clear()
+        self._changes_pending = False
+        self._quiet_polls = 0
         if self._vault_path:
             self._snapshot = self._scan_vault()
 
-    def _scan_vault(self) -> dict[str, float]:
-        """Build a dict of {posix_relative_path: mtime} for all .md files in vault.
+    # ── Vault scanning ───────────────────────────────────────────────────────
 
-        Always uses forward slashes so Windows/Linux snapshots are comparable.
-        """
+    def _scan_vault(self) -> dict[str, tuple[float, int]]:
+        """Return {posix_relative_path: (mtime, size)} for all visible .md files."""
         if not self._vault_path or not self._vault_path.is_dir():
             return {}
-        result = {}
+        result: dict[str, tuple[float, int]] = {}
         try:
             for md in self._vault_path.rglob("*.md"):
-                # Skip hidden dirs like .obsidian, .trash
                 rel = md.relative_to(self._vault_path)
-                parts = rel.parts
-                if any(p.startswith(".") for p in parts):
+                # Skip hidden dirs (.obsidian, .trash, etc.)
+                if any(p.startswith(".") for p in rel.parts):
                     continue
-                # Normalize to forward slashes
                 rel_posix = str(PurePosixPath(rel))
                 try:
-                    result[rel_posix] = md.stat().st_mtime
+                    st = md.stat()
+                    result[rel_posix] = (st.st_mtime, st.st_size)
                 except OSError:
                     pass
         except OSError as e:
             logger.warning(f"Vault scan error: {e}")
         return result
 
-    def run(self):
+    # ── Main thread loop ─────────────────────────────────────────────────────
+
+    def run(self) -> None:
         logger.info("Vault watcher started")
 
-        # Take initial snapshot
         if self._vault_path:
             self._snapshot = self._scan_vault()
-            logger.info(f"Watching vault: {self._vault_path} ({len(self._snapshot)} files)")
+            logger.info(
+                f"Watching vault: {self._vault_path}  "
+                f"({len(self._snapshot)} files)"
+            )
         else:
             logger.info("No vault configured, watcher idle")
 
         while self._running:
             if self._vault_path and self._vault_path.is_dir():
-                current = self._scan_vault()
-                if self._has_changes(current):
-                    # Record any deletions before updating the snapshot
-                    self._record_deletions(current)
-                    logger.info("Vault changes detected, triggering sync")
-                    self._snapshot = current
-                    self.vault_changed.emit()
-                else:
-                    self._snapshot = current
+                self._poll()
             else:
-                # Re-check config periodically in case vault was set
+                # Re-check config periodically in case vault is set later
                 self._load_vault_path()
                 if self._vault_path:
                     self._snapshot = self._scan_vault()
@@ -3869,41 +3945,115 @@ class VaultWatcher(QThread):
 
         logger.info("Vault watcher stopped")
 
-    def _has_changes(self, current: dict[str, float]) -> bool:
-        """Compare current scan against previous snapshot."""
-        # New or modified files
-        for path, mtime in current.items():
-            prev_mtime = self._snapshot.get(path)
-            if prev_mtime is None or mtime > prev_mtime:
-                return True
-        # Deleted files
-        for path in self._snapshot:
-            if path not in current:
-                return True
-        return False
+    # ── Poll logic ───────────────────────────────────────────────────────────
 
-    def _record_deletions(self, current: dict[str, float]):
-        """When files disappear from the vault, record them in the deletion manifest.
+    def _poll(self) -> None:
+        """One full poll cycle: detect changes, debounce, maybe emit."""
+        current  = self._scan_vault()
+        skip_set = _pop_sync_written()   # paths the engine just wrote — ignore
 
-        Uses the shared deletion_manifest module. Skips paths already recorded
-        (e.g. by the UI doing an immediate delete/rename).
-        """
-        if not self._vault_path:
-            return
-        deleted = set(self._snapshot.keys()) - set(current.keys())
-        if not deleted:
-            return
+        new_activity_this_poll = False   # did we find anything new *this* poll?
 
-        # Read manifest once to check what's already recorded
-        existing_paths = {d["path"] for d in read_manifest(self._vault_path)}
+        # ── 1. New / modified files ─────────────────────────────────────────
+        # Track sizes of genuinely new files for move detection later.
+        new_file_sizes: set[int] = set()
 
-        for path in deleted:
-            if path not in existing_paths:
-                record_deletion(path, self._vault_path)
+        for path, (mtime, size) in current.items():
+            if path in skip_set:
+                # Written by the sync engine — don't react to our own writes
+                continue
 
-    def stop(self):
+            prev = self._snapshot.get(path)
+            if prev is None:
+                # File is brand-new (or re-appeared after a move)
+                new_file_sizes.add(size)
+                new_activity_this_poll = True
+                logger.debug(f"New file detected: {path}")
+            elif mtime > prev[0]:
+                # File was modified
+                new_activity_this_poll = True
+                logger.debug(f"Modified file: {path}")
+
+        # ── 2. Deletion debounce ────────────────────────────────────────────
+        gone_now = set(self._snapshot.keys()) - set(current.keys())
+
+        # Files that came back this poll (Obsidian atomic save — ignore them)
+        returned = set(self._pending_deletions.keys()) & set(current.keys())
+        for path in returned:
+            logger.debug(
+                f"'{path}' reappeared after being absent — "
+                "likely an atomic save, clearing pending deletion"
+            )
+            self._pending_deletions.pop(path, None)
+            self._pending_deletion_sizes.pop(path, None)
+
+        # Increment absence counter for files still gone
+        for path in gone_now:
+            if path in skip_set:
+                # Engine deleted it as part of a remote deletion — ignore
+                self._pending_deletions.pop(path, None)
+                self._pending_deletion_sizes.pop(path, None)
+                continue
+
+            count = self._pending_deletions.get(path, 0) + 1
+            self._pending_deletions[path] = count
+
+            # Cache the file's last known size so we can detect moves
+            if path not in self._pending_deletion_sizes and path in self._snapshot:
+                self._pending_deletion_sizes[path] = self._snapshot[path][1]
+
+            logger.debug(f"'{path}' absent for {count} poll(s) (confirm at {DELETION_CONFIRM_POLLS})")
+
+        # ── 3. Confirm deletions that have been gone long enough ────────────
+        for path in list(self._pending_deletions.keys()):
+            if path in current:
+                continue  # came back — handled above
+            if self._pending_deletions[path] < DELETION_CONFIRM_POLLS:
+                continue  # not yet confirmed
+
+            # ── Move detection ──────────────────────────────────────────────
+            del_size = self._pending_deletion_sizes.get(path)
+            is_move  = (del_size is not None) and (del_size in new_file_sizes)
+
+            if is_move:
+                logger.info(
+                    f"Move detected: '{path}' disappeared but a new file of the "
+                    f"same size ({del_size} bytes) appeared — skipping deletion record"
+                )
+            else:
+                # Genuine deletion — record in manifest and flag as changed
+                if self._vault_path:
+                    existing_paths = {d["path"] for d in read_manifest(self._vault_path)}
+                    if path not in existing_paths:
+                        record_deletion(path, self._vault_path)
+                        logger.info(f"Confirmed deletion recorded: {path}")
+                new_activity_this_poll = True
+
+            self._pending_deletions.pop(path)
+            self._pending_deletion_sizes.pop(path, None)
+
+        # ── 4. Quiet-period gate ────────────────────────────────────────────
+        if new_activity_this_poll:
+            self._changes_pending = True
+            self._quiet_polls = 0          # reset — we're still seeing changes
+        elif self._changes_pending:
+            self._quiet_polls += 1         # one more quiet poll
+            if self._quiet_polls >= QUIET_POLLS_BEFORE_EMIT:
+                logger.info(
+                    "Vault stable — emitting vault_changed "
+                    f"(quiet for {self._quiet_polls} poll(s))"
+                )
+                self._changes_pending = False
+                self._quiet_polls = 0
+                self.vault_changed.emit()
+
+        # ── 5. Advance snapshot ─────────────────────────────────────────────
+        self._snapshot = current
+
+    # ── Lifecycle ────────────────────────────────────────────────────────────
+
+    def stop(self) -> None:
         self._running = False
-
 ```
 
 ### `src\ui\__init__.py`

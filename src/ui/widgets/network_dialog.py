@@ -346,7 +346,7 @@ class NetworkDialog(QDialog):
     def _force_scan(self):
         if self.sync_engine:
             self._append_log("Forcing subnet scan...")
-            self.sync_engine.force_sync()
+            self.sync_engine.force_scan()
 
     def _force_sync(self):
         if self.sync_engine:
