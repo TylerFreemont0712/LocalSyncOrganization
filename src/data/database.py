@@ -1,4 +1,4 @@
-"""SQLite database setup and connection for Calendar and Finance modules."""
+"""SQLite database setup and connection for all LocalSync modules."""
 
 import sqlite3
 from pathlib import Path
@@ -49,6 +49,36 @@ def _migrate(conn: sqlite3.Connection):
         conn.execute("ALTER TABLE transactions ADD COLUMN currency TEXT DEFAULT 'USD'")
     if "is_job_pay" not in txn_cols:
         conn.execute("ALTER TABLE transactions ADD COLUMN is_job_pay INTEGER DEFAULT 0")
+
+    # --- activities table ---
+    act_cols = {r["name"] for r in conn.execute("PRAGMA table_info(activities)").fetchall()}
+    # Future activity migrations go here
+
+    # --- soft event tables (new tables, guard via sqlite_master) ---
+    tables = {r["name"] for r in conn.execute(
+        "SELECT name FROM sqlite_master WHERE type='table'"
+    ).fetchall()}
+    if "soft_event_templates" not in tables:
+        conn.executescript("""
+            CREATE TABLE IF NOT EXISTS soft_event_templates (
+                id          TEXT PRIMARY KEY,
+                title       TEXT NOT NULL,
+                note        TEXT DEFAULT '',
+                color       TEXT DEFAULT '#a6e3a1',
+                recurrence  TEXT DEFAULT '',
+                updated_at  TEXT NOT NULL,
+                deleted     INTEGER DEFAULT 0
+            );
+            CREATE TABLE IF NOT EXISTS soft_event_logs (
+                id           TEXT PRIMARY KEY,
+                template_id  TEXT NOT NULL,
+                log_date     TEXT NOT NULL,
+                log_text     TEXT DEFAULT '',
+                updated_at   TEXT NOT NULL,
+                deleted      INTEGER DEFAULT 0,
+                UNIQUE(template_id, log_date)
+            );
+        """)
 
 
 _SCHEMA = """
@@ -137,5 +167,25 @@ CREATE TABLE IF NOT EXISTS side_income_goals (
 CREATE TABLE IF NOT EXISTS sync_meta (
     key   TEXT PRIMARY KEY,
     value TEXT
+);
+
+CREATE TABLE IF NOT EXISTS soft_event_templates (
+    id          TEXT PRIMARY KEY,
+    title       TEXT NOT NULL,
+    note        TEXT DEFAULT '',
+    color       TEXT DEFAULT '#a6e3a1',
+    recurrence  TEXT DEFAULT '',
+    updated_at  TEXT NOT NULL,
+    deleted     INTEGER DEFAULT 0
+);
+
+CREATE TABLE IF NOT EXISTS soft_event_logs (
+    id           TEXT PRIMARY KEY,
+    template_id  TEXT NOT NULL,
+    log_date     TEXT NOT NULL,
+    log_text     TEXT DEFAULT '',
+    updated_at   TEXT NOT NULL,
+    deleted      INTEGER DEFAULT 0,
+    UNIQUE(template_id, log_date)
 );
 """

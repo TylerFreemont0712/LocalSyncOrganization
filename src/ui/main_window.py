@@ -1,13 +1,20 @@
-"""Main application window with menu bar, sidebar, theme selector, and sync integration."""
+"""Main application window with menu bar, sidebar, theme selector, and sync integration.
+
+Changes in this version:
+  • Store injection — all stores instantiated once and passed to panels
+  • System tray icon — programmatic theme-aware icon, minimize to tray
+  • Close-to-tray behaviour controlled by config key 'minimize_to_tray'
+"""
 
 from datetime import datetime
 
-from PyQt6.QtCore import Qt, QTimer
-from PyQt6.QtGui import QKeySequence, QShortcut, QAction
+from PyQt6.QtCore import Qt, QTimer, QEvent
+from PyQt6.QtGui import QKeySequence, QShortcut, QAction, QPainter, QColor, QPixmap
 from PyQt6.QtWidgets import (
     QMainWindow, QWidget, QHBoxLayout, QVBoxLayout,
     QStackedWidget, QPushButton, QLabel, QFrame,
-    QComboBox, QStatusBar, QMenuBar,
+    QComboBox, QStatusBar, QMenuBar, QSystemTrayIcon,
+    QMenu, QApplication,
 )
 
 from src.config import APP_NAME, APP_VERSION, load_config, save_config
@@ -19,6 +26,12 @@ from src.ui.modules.todo_panel import TodoPanel
 from src.ui.modules.dashboard_panel import DashboardPanel
 from src.ui.modules.finance_charts import FinanceChartsPanel
 from src.ui.modules.activity_panel import ActivityPanel
+
+from src.data.todo_store import TodoStore
+from src.data.calendar_store import CalendarStore
+from src.data.finance_store import FinanceStore
+from src.data.activity_store import ActivityStore
+from src.data.soft_events_store import SoftEventStore
 
 
 class SidebarButton(QPushButton):
@@ -58,20 +71,34 @@ class MainWindow(QMainWindow):
         super().__init__()
         self.cfg = load_config()
         self.sync_engine = None  # Set by main.py after construction
+
+        # ── Instantiate all stores once ──
+        self.todo_store = TodoStore()
+        self.calendar_store = CalendarStore()
+        self.finance_store = FinanceStore()
+        self.activity_store = ActivityStore()
+        self.soft_events_store = SoftEventStore()
+
         self.setWindowTitle(f"{APP_NAME} v{APP_VERSION}")
         self.setMinimumSize(1000, 650)
         self.resize(1200, 750)
+
+        self._palette: dict = {}
+        self._tray = None  # initialized properly in _setup_tray()
 
         self._build_menu_bar()
         self._build_central()
         self._build_status_bar()
 
-        # Apply theme and default to Notes
+        # Apply theme and default to Dashboard
         current_theme = self.cfg.get("theme", "Catppuccin Dark")
         if current_theme in ("dark", "light"):
             current_theme = "Catppuccin Dark" if current_theme == "dark" else "Catppuccin Light"
         self._apply_theme(current_theme)
         self._navigate("Dashboard")
+
+        # ── System tray ──
+        self._setup_tray()
 
     # ── Menu bar ───────────────────────────────────────
 
@@ -208,14 +235,22 @@ class MainWindow(QMainWindow):
 
         main_layout.addWidget(self.sidebar)
 
-        # ── Content stack ────────────────────────────
+        # ── Content stack (panels receive injected stores) ──
         self.stack = QStackedWidget()
-        self.dashboard_panel = DashboardPanel()
+        self.dashboard_panel = DashboardPanel(
+            todo_store=self.todo_store,
+            calendar_store=self.calendar_store,
+            finance_store=self.finance_store,
+            soft_events_store=self.soft_events_store,
+        )
         self.notes_panel = NotesPanel()
-        self.calendar_panel = CalendarPanel()
+        self.calendar_panel = CalendarPanel(
+            calendar_store=self.calendar_store,
+            soft_events_store=self.soft_events_store,
+        )
         self.finance_panel = FinancePanel()
         self.charts_panel = FinanceChartsPanel()
-        self.todo_panel = TodoPanel()
+        self.todo_panel = TodoPanel(todo_store=self.todo_store)
         self.activity_panel = ActivityPanel()
 
         self.stack.addWidget(self.dashboard_panel)   # 0
@@ -246,6 +281,77 @@ class MainWindow(QMainWindow):
         now = datetime.now()
         self.clock_label.setText(now.strftime("%A, %b %d  %H:%M"))
 
+    # ── System tray ────────────────────────────────────
+
+    def _setup_tray(self):
+        if not QSystemTrayIcon.isSystemTrayAvailable():
+            self._tray = None
+            return
+
+        self._tray = QSystemTrayIcon(self)
+        self._tray.setToolTip("LocalSync")
+        self._update_tray_icon()
+
+        # Context menu
+        tray_menu = QMenu()
+        show_action = tray_menu.addAction("Show")
+        show_action.triggered.connect(self._tray_show)
+        tray_menu.addSeparator()
+        quit_action = tray_menu.addAction("Quit")
+        quit_action.triggered.connect(QApplication.quit)
+        self._tray.setContextMenu(tray_menu)
+
+        # Double-click to show
+        self._tray.activated.connect(self._on_tray_activated)
+
+    def _update_tray_icon(self):
+        """Generate a 32x32 theme-aware tray icon (solid circle)."""
+        if not self._tray:
+            return
+        accent = self._palette.get("accent", "#89b4fa")
+        bg = self._palette.get("bg", "#1e1e2e")
+
+        pixmap = QPixmap(32, 32)
+        pixmap.fill(QColor(bg))
+        painter = QPainter(pixmap)
+        painter.setRenderHint(QPainter.RenderHint.Antialiasing)
+        painter.setBrush(QColor(accent))
+        painter.setPen(Qt.PenStyle.NoPen)
+        painter.drawEllipse(4, 4, 24, 24)
+        painter.end()
+
+        from PyQt6.QtGui import QIcon
+        self._tray.setIcon(QIcon(pixmap))
+
+    def _tray_show(self):
+        self.show()
+        self.raise_()
+        self.activateWindow()
+
+    def _on_tray_activated(self, reason):
+        if reason == QSystemTrayIcon.ActivationReason.DoubleClick:
+            self._tray_show()
+
+    # ── Close / minimize to tray ───────────────────────
+
+    def closeEvent(self, event):
+        minimize_to_tray = self.cfg.get("minimize_to_tray", True)
+        if minimize_to_tray and self._tray:
+            event.ignore()
+            self.hide()
+            self._tray.show()
+        else:
+            super().closeEvent(event)
+
+    def changeEvent(self, event):
+        if (event.type() == QEvent.Type.WindowStateChange
+                and self.isMinimized()
+                and self.cfg.get("minimize_to_tray", True)
+                and self._tray):
+            self.hide()
+            self._tray.show()
+        super().changeEvent(event)
+
     # ── Navigation ─────────────────────────────────────
 
     def _navigate(self, name: str):
@@ -275,6 +381,7 @@ class MainWindow(QMainWindow):
     def _apply_theme(self, name: str):
         sheet = THEMES.get(name, THEMES["Catppuccin Dark"])
         palette = PALETTES.get(name, PALETTES["Catppuccin Dark"])
+        self._palette = palette
         self.setStyleSheet(sheet)
         self.sidebar.setStyleSheet(
             f"QWidget#sidebar {{ background-color: {palette['header_bg']}; }}"
@@ -293,6 +400,11 @@ class MainWindow(QMainWindow):
             self.charts_panel.set_palette(palette)
         if hasattr(self.activity_panel, 'set_palette'):
             self.activity_panel.set_palette(palette)
+        if hasattr(self.notes_panel, 'set_palette'):
+            self.notes_panel.set_palette(palette)
+
+        # Update tray icon with new theme colors
+        self._update_tray_icon()
 
     # ── Sync integration ───────────────────────────────
 

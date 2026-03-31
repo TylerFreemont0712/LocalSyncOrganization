@@ -4,6 +4,8 @@ New in this version:
   • SideIncomeGoalSection — prominent month-browsable side income goal tracker
     with a color-coded progress bar (red → green → blue glow at major goal).
   • Goal data stored in side_income_goals table via FinanceStore.set_goal()
+  • "Coming Up (Next 7 Days)" section for soft event reminders
+  • Store injection — all stores passed in from main_window
 """
 
 import calendar as _calendar
@@ -15,16 +17,20 @@ from PyQt6.QtWidgets import (
     QWidget, QVBoxLayout, QHBoxLayout, QGridLayout,
     QLabel, QFrame, QScrollArea, QProgressBar,
     QPushButton, QDialog, QDialogButtonBox, QDoubleSpinBox,
-    QFormLayout, QSizePolicy, QComboBox,
+    QFormLayout, QSizePolicy, QComboBox, QTextEdit,
 )
 
 from src.config import load_config
 from src.data.todo_store import TodoStore, PRIORITY_LABELS
 from src.data.calendar_store import CalendarStore
 from src.data.finance_store import FinanceStore
+from src.data.soft_events_store import SoftEventStore
 
 
 PRIORITY_COLORS = {0: "#a6adc8", 1: "#a6e3a1", 2: "#f9e2af", 3: "#f38ba8"}
+
+# Sentinel → palette key map for store-layer color strings
+SENTINEL_COLORS = {"birthday": "red", "holiday": "yellow", "trip": "accent"}
 
 _MONTH_NAMES = [
     "", "January", "February", "March", "April", "May", "June",
@@ -147,21 +153,17 @@ class GoalBar(QWidget):
         bar_y = (self.height() - bar_h) // 2
         radius = bar_h / 2
 
-        # Determine fill state
         at_major = self._current >= self._major_goal
         at_min   = self._current >= self._min_goal
 
-        # Fill ratio — capped at 100% of major goal for visual purposes
         cap = self._major_goal * 1.05
         fill_ratio = min(self._current / cap, 1.0)
 
-        # Color
         if at_major:
             fill_color = QColor(self._palette.get("accent", "#89b4fa"))
         elif at_min:
             fill_color = QColor(self._palette.get("green", "#a6e3a1"))
         else:
-            # Blend from dark red to orange based on progress toward min
             ratio_to_min = self._current / self._min_goal
             r_start = QColor("#e55050")
             r_end   = QColor("#f9a040")
@@ -170,34 +172,29 @@ class GoalBar(QWidget):
             b = int(r_start.blue()  + (r_end.blue()  - r_start.blue())  * ratio_to_min)
             fill_color = QColor(r, g, b)
 
-        # Background track
         bg = QColor(self._palette.get("surface", "#313244"))
         painter.setPen(Qt.PenStyle.NoPen)
         painter.setBrush(QBrush(bg))
         painter.drawRoundedRect(0, bar_y, w, bar_h, radius, radius)
 
-        # Glow effect behind fill if at major goal
         if at_major and fill_ratio > 0:
             glow = QColor(fill_color)
             glow.setAlpha(60)
             painter.setBrush(QBrush(glow))
             painter.drawRoundedRect(-3, bar_y - 3, w + 6, bar_h + 6, radius + 3, radius + 3)
 
-        # Fill
         fill_w = max(int(w * fill_ratio), 0)
         if fill_w > 0:
             painter.setBrush(QBrush(fill_color))
             painter.setPen(Qt.PenStyle.NoPen)
             painter.drawRoundedRect(0, bar_y, fill_w, bar_h, radius, radius)
 
-        # Min goal marker (white vertical line)
         min_x = int(w * (self._min_goal / cap))
         if 0 < min_x < w:
             marker_pen = QPen(QColor("#ffffff"), 2)
             painter.setPen(marker_pen)
             painter.drawLine(min_x, bar_y - 2, min_x, bar_y + bar_h + 2)
 
-        # Major goal marker (gold vertical line)
         major_x = int(w * (self._major_goal / cap))
         if 0 < major_x < w:
             gold = QColor(self._palette.get("yellow", "#f9e2af"))
@@ -233,7 +230,6 @@ class GoalEditDialog(QDialog):
             "Only Side Job income counts toward these goals."
         ))
 
-        # ── Currency selector ──
         cur_row = QHBoxLayout()
         cur_row.addWidget(QLabel("Enter goals in:"))
         self._cur_combo = QComboBox()
@@ -270,13 +266,10 @@ class GoalEditDialog(QDialog):
         btn_box.rejected.connect(self.reject)
         layout.addWidget(btn_box)
 
-        # Initialise in USD mode with existing values
         self._apply_usd_mode()
         self._min_spin.setValue(min_goal)
         self._major_spin.setValue(major_goal)
         self._update_hints()
-
-    # ── Currency mode helpers ─────────────────────────────────────────────────
 
     def _apply_usd_mode(self):
         for sp in (self._min_spin, self._major_spin):
@@ -289,26 +282,26 @@ class GoalEditDialog(QDialog):
     def _on_currency_changed(self, idx: int):
         min_v   = self._min_spin.value()
         major_v = self._major_spin.value()
-        if idx == 0:   # → USD
+        if idx == 0:
             self._apply_usd_mode()
-            if min_v > 5000:  # looks like JPY, convert
+            if min_v > 5000:
                 self._min_spin.setValue(round(min_v   / self._rate))
                 self._major_spin.setValue(round(major_v / self._rate))
-        else:           # → JPY
+        else:
             self._apply_jpy_mode()
-            if min_v < 5000:  # looks like USD, convert
+            if min_v < 5000:
                 self._min_spin.setValue(round(min_v   * self._rate))
                 self._major_spin.setValue(round(major_v * self._rate))
         self._update_hints()
 
     def _update_hints(self):
         rate = self._rate
-        if self._cur_combo.currentIndex() == 0:   # USD mode
+        if self._cur_combo.currentIndex() == 0:
             min_jpy   = int(self._min_spin.value()   * rate)
             major_jpy = int(self._major_spin.value() * rate)
             self._min_hint.setText(f"\u2248 \u00a5{min_jpy:,} JPY")
             self._major_hint.setText(f"\u2248 \u00a5{major_jpy:,} JPY")
-        else:                                       # JPY mode
+        else:
             min_usd   = self._min_spin.value()   / rate if rate else 0
             major_usd = self._major_spin.value() / rate if rate else 0
             self._min_hint.setText(f"\u2248 ${min_usd:,.2f} USD")
@@ -324,7 +317,7 @@ class GoalEditDialog(QDialog):
 
     def get_goals(self) -> tuple[float, float]:
         """Always returns (min_usd, major_usd)."""
-        if self._cur_combo.currentIndex() == 1:   # JPY → convert
+        if self._cur_combo.currentIndex() == 1:
             rate = self._rate
             return self._min_spin.value() / rate, self._major_spin.value() / rate
         return self._min_spin.value(), self._major_spin.value()
@@ -343,7 +336,7 @@ class SideIncomeGoalSection(QFrame):
         self._palette: dict = {}
         self._year  = date.today().year
         self._month = date.today().month
-        self._rate  = 150.0   # USD→JPY; updated from config
+        self._rate  = 150.0
 
         self.setObjectName("goalSection")
         self._build_ui()
@@ -364,10 +357,8 @@ class SideIncomeGoalSection(QFrame):
         outer.setContentsMargins(14, 12, 14, 12)
         outer.setSpacing(8)
 
-        # ── Header row ──
         hdr = QHBoxLayout()
 
-        # Month navigation
         self._prev_btn = QPushButton("\u2190")
         self._prev_btn.setObjectName("secondary")
         self._prev_btn.setFixedSize(26, 26)
@@ -397,11 +388,9 @@ class SideIncomeGoalSection(QFrame):
 
         outer.addLayout(hdr)
 
-        # ── Progress bar ──
         self._bar = GoalBar()
         outer.addWidget(self._bar)
 
-        # ── Amount labels row ──
         self._amount_lbl = QLabel()
         self._amount_lbl.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self._amount_lbl.setStyleSheet("font-size:12px;")
@@ -412,7 +401,6 @@ class SideIncomeGoalSection(QFrame):
         self._sub_lbl.setStyleSheet("font-size:10px;")
         outer.addWidget(self._sub_lbl)
 
-        # ── No goal set label ──
         self._no_goal_lbl = QLabel(
             "No goals set for this month. Click \u2018Edit Goals\u2019 to get started."
         )
@@ -423,7 +411,7 @@ class SideIncomeGoalSection(QFrame):
 
     def _refresh(self):
         self._load_rate()
-        self._month_lbl.setText(f"{_MONTH_NAMES[self._month]} {self._year} — Side Income Goal")
+        self._month_lbl.setText(f"{_MONTH_NAMES[self._month]} {self._year} \u2014 Side Income Goal")
 
         goal = self.store.get_goal(self._year, self._month)
         earned_usd = self.store.get_side_income(self._year, self._month, self._rate)
@@ -447,11 +435,9 @@ class SideIncomeGoalSection(QFrame):
         min_jpy   = int(goal.min_goal   * self._rate)
         major_jpy = int(goal.major_goal * self._rate)
 
-        # Percentage toward minimum (capped at 999% for display sanity)
         pct_min = min(earned_usd / goal.min_goal * 100, 999) if goal.min_goal > 0 else 0
         pct_major = min(earned_usd / goal.major_goal * 100, 999) if goal.major_goal > 0 else 0
 
-        # Determine status label color
         if earned_usd >= goal.major_goal:
             status = "\u2605 Major Goal Reached!"
             status_color = self._palette.get("accent", "#89b4fa")
@@ -462,13 +448,13 @@ class SideIncomeGoalSection(QFrame):
             remaining_usd = goal.min_goal - earned_usd
             remaining_jpy = int(remaining_usd * self._rate)
             status = f"${remaining_usd:,.0f} / \u00a5{remaining_jpy:,} until minimum"
-            status_color = "#f38ba8"
+            status_color = self._palette.get("red", "#f38ba8")
 
         self._amount_lbl.setText(
             f"${earned_usd:,.2f}  \u00a5{earned_jpy:,}"
-            f"   \u2014   {pct_min:.0f}% of min  ·  {pct_major:.0f}% of major"
+            f"   \u2014   {pct_min:.0f}% of min  \u00b7  {pct_major:.0f}% of major"
         )
-        self._amount_lbl.setStyleSheet(f"font-size:12px;font-weight:bold;")
+        self._amount_lbl.setStyleSheet("font-size:12px;font-weight:bold;")
 
         self._sub_lbl.setText(
             f"Min: ${goal.min_goal:,.0f} (\u00a5{min_jpy:,})   "
@@ -479,16 +465,14 @@ class SideIncomeGoalSection(QFrame):
 
     def _prev_month(self):
         if self._month == 1:
-            self._month = 12
-            self._year -= 1
+            self._month = 12; self._year -= 1
         else:
             self._month -= 1
         self._refresh()
 
     def _next_month(self):
         if self._month == 12:
-            self._month = 1
-            self._year += 1
+            self._month = 1; self._year += 1
         else:
             self._month += 1
         self._refresh()
@@ -508,21 +492,126 @@ class SideIncomeGoalSection(QFrame):
 
 
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+#  SoftEventLogDialog — per-day log editor for a soft event
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+class SoftEventLogDialog(QDialog):
+    """Edit the per-day log for a soft event occurrence."""
+
+    def __init__(self, parent, soft_events_store: SoftEventStore,
+                 template, log_date: date):
+        super().__init__(parent)
+        self._store = soft_events_store
+        self._template = template
+        self._log_date = log_date
+        self._palette: dict = getattr(parent, '_palette', {})
+
+        date_str = log_date.isoformat()
+        self.setWindowTitle(f"{template.title} \u2014 {date_str}")
+        self.setMinimumSize(420, 360)
+        self.setModal(True)
+
+        layout = QVBoxLayout(self)
+        layout.setSpacing(10)
+        layout.setContentsMargins(16, 14, 16, 14)
+
+        # Template universal note (read-only)
+        if template.note:
+            note_lbl = QLabel(template.note)
+            note_lbl.setWordWrap(True)
+            muted = self._palette.get("muted", "#7f849c")
+            note_lbl.setStyleSheet(f"color: {muted}; font-style: italic; font-size: 11px;")
+            layout.addWidget(note_lbl)
+
+            sep = QFrame()
+            sep.setObjectName("separator")
+            sep.setFrameShape(QFrame.Shape.HLine)
+            layout.addWidget(sep)
+
+        # Editable log text
+        self._log_entry = self._store.get_or_create_log(template.id, date_str)
+        self._editor = QTextEdit()
+        self._editor.setPlainText(self._log_entry.log_text)
+        layout.addWidget(self._editor, 1)
+
+        # Buttons
+        btn_row = QHBoxLayout()
+        btn_row.addStretch()
+        cancel_btn = QPushButton("Cancel")
+        cancel_btn.setObjectName("secondary")
+        cancel_btn.clicked.connect(self.reject)
+        btn_row.addWidget(cancel_btn)
+        save_btn = QPushButton("Save")
+        save_btn.clicked.connect(self._save)
+        btn_row.addWidget(save_btn)
+        layout.addLayout(btn_row)
+
+    def _save(self):
+        self._log_entry.log_text = self._editor.toPlainText()
+        self._store.update_log(self._log_entry)
+        self.accept()
+
+
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+#  ComingUpRow — a single soft event in the Coming Up section
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+class _ComingUpRow(QFrame):
+    """A single soft event reminder row."""
+
+    def __init__(self, template, occurrence_date: date,
+                 relative_label: str, parent_panel, parent=None):
+        super().__init__(parent)
+        self._template = template
+        self._date = occurrence_date
+        self._panel = parent_panel
+        self.setCursor(Qt.CursorShape.PointingHandCursor)
+
+        layout = QHBoxLayout(self)
+        layout.setContentsMargins(6, 3, 6, 3)
+        layout.setSpacing(6)
+
+        dot = QLabel("\u25cf")
+        dot.setStyleSheet(f"color: {template.color}; font-size: 12px;")
+        dot.setFixedWidth(14)
+        layout.addWidget(dot)
+
+        title = QLabel(template.title)
+        title.setStyleSheet("font-size: 12px; font-weight: bold;")
+        layout.addWidget(title, 1)
+
+        rel = QLabel(relative_label)
+        rel.setObjectName("subtitle")
+        rel.setStyleSheet("font-size: 10px;")
+        rel.setAlignment(Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter)
+        layout.addWidget(rel)
+
+    def mousePressEvent(self, ev):
+        dlg = SoftEventLogDialog(
+            self._panel, self._panel.soft_events_store,
+            self._template, self._date,
+        )
+        dlg.exec()
+
+
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 #  DashboardPanel
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 class DashboardPanel(QWidget):
 
-    def __init__(self, parent=None):
+    def __init__(self, todo_store=None, calendar_store=None,
+                 finance_store=None, soft_events_store=None, parent=None):
         super().__init__(parent)
-        self.todo_store     = TodoStore()
-        self.calendar_store = CalendarStore()
-        self.finance_store  = FinanceStore()
+        self.todo_store     = todo_store     or TodoStore()
+        self.calendar_store = calendar_store or CalendarStore()
+        self.finance_store  = finance_store  or FinanceStore()
+        self.soft_events_store = soft_events_store or SoftEventStore()
         self._palette: dict = {}
         self._build_ui()
         self._refresh()
 
-        # Auto-refresh every 60 seconds so stats stay current
+        # Auto-refresh every 60 seconds
         self._auto_timer = QTimer(self)
         self._auto_timer.setInterval(60_000)
         self._auto_timer.timeout.connect(self._refresh)
@@ -554,7 +643,7 @@ class DashboardPanel(QWidget):
         header.addWidget(self.date_label)
         layout.addLayout(header)
 
-        # ── Side Income Goal Section (prominent, full-width) ──
+        # ── Side Income Goal Section ──
         self._goal_section = SideIncomeGoalSection(self.finance_store)
         self._goal_section.setStyleSheet(
             "#goalSection {"
@@ -618,6 +707,18 @@ class DashboardPanel(QWidget):
         upcoming_scroll.setWidget(self._upcoming_container)
         upcoming_scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
         left.addWidget(upcoming_scroll, 1)
+
+        # ── Coming Up (Next 7 Days) section ──
+        coming_up_title = QLabel("Coming Up (Next 7 Days)")
+        coming_up_title.setStyleSheet("font-weight: bold; font-size: 13px;")
+        left.addWidget(coming_up_title)
+
+        self._coming_up_container = QWidget()
+        self._coming_up_layout = QVBoxLayout(self._coming_up_container)
+        self._coming_up_layout.setContentsMargins(0, 0, 0, 0)
+        self._coming_up_layout.setSpacing(2)
+        left.addWidget(self._coming_up_container)
+
         columns.addLayout(left, 3)
 
         # Right: priority + category breakdown
@@ -722,9 +823,9 @@ class DashboardPanel(QWidget):
             }}
         """)
 
-        # Upcoming deadlines
+        # Upcoming deadlines (extended: 30 days, 12 items)
         self._clear_layout(self._upcoming_layout)
-        upcoming_items = []
+        upcoming_items: list[tuple[int, QWidget]] = []
 
         for task in sorted(pending_tasks, key=lambda t: t.due_date or "9999"):
             if task.due_date:
@@ -747,6 +848,22 @@ class DashboardPanel(QWidget):
                     )))
                 except ValueError:
                     pass
+
+        # Major events — 30-day lookahead, 12 items
+        majors = self.calendar_store.get_next_major_events(today, limit=12)
+        thirty_days = today + timedelta(days=30)
+        for ev_date, ev_title, category, color, item_id, is_birthday in majors:
+            if ev_date > thirty_days:
+                continue
+            delta = (ev_date - today).days
+            if delta == 0:   days_text = "Today"
+            elif delta == 1: days_text = "Tomorrow"
+            else:            days_text = f"In {delta}d"
+            # Resolve sentinel colors
+            resolved = self._palette.get(SENTINEL_COLORS.get(color, "accent"), color)
+            upcoming_items.append((delta, UpcomingItem(
+                ev_title, category.title(), resolved, days_text
+            )))
 
         next_week = today + timedelta(days=7)
         upcoming_events = self.calendar_store.get_events(
@@ -778,6 +895,34 @@ class DashboardPanel(QWidget):
             self._upcoming_layout.addWidget(no_items)
 
         self._upcoming_layout.addStretch()
+
+        # ── Coming Up (Next 7 Days) — soft events ──
+        self._clear_layout(self._coming_up_layout)
+        try:
+            soft_upcoming = self.soft_events_store.get_upcoming(today, days_ahead=7)
+        except Exception:
+            soft_upcoming = []
+
+        if soft_upcoming:
+            for occ_date, tpl in soft_upcoming:
+                delta = (occ_date - today).days
+                if delta == 0:
+                    rel_text = "Today"
+                elif delta == 1:
+                    rel_text = "Tomorrow"
+                elif delta <= 6:
+                    rel_text = f"Next {occ_date.strftime('%A')}"
+                else:
+                    rel_text = f"In {delta} days"
+                row = _ComingUpRow(tpl, occ_date, rel_text, self)
+                self._coming_up_layout.addWidget(row)
+        else:
+            muted = self._palette.get("muted", "#7f849c")
+            no_soft = QLabel("No reminders in the next 7 days.")
+            no_soft.setStyleSheet(f"color: {muted}; font-size: 11px; padding: 4px 0;")
+            self._coming_up_layout.addWidget(no_soft)
+
+        self._coming_up_layout.addStretch()
 
         # Priority breakdown
         self._clear_layout(self._priority_layout)

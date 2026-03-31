@@ -25,7 +25,7 @@ def _build_theme(c: dict) -> str:
 QMainWindow, QWidget {{
     background-color: {c['bg']};
     color: {c['fg']};
-    font-family: "Segoe UI", "Ubuntu", "Noto Sans", sans-serif;
+    font-family: "Segoe UI", "Meiryo UI", "Ubuntu", "Noto Sans", sans-serif;
     font-size: 12px;
 }}
 

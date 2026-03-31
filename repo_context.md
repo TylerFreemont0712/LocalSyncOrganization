@@ -23,6 +23,7 @@ This document contains the full context of the repository, formatted for optimal
     - finance_store.py
     - holidays_jp.py
     - notes_store.py
+    - soft_events_store.py
     - todo_store.py
     - __init__.py
     - deletion_manifest.py
@@ -49,8 +50,8 @@ This document contains the full context of the repository, formatted for optimal
 ```
 
 ## 📊 Project Summary
-- Total Python files: **33**
-- Total lines of code: **10951**
+- Total Python files: **34**
+- Total lines of code: **12197**
 
 ## 🔗 Dependency Graph
 ### main.pyw
@@ -62,6 +63,8 @@ This document contains the full context of the repository, formatted for optimal
 - src.ui.main_window
 - src.sync.engine
 - src.sync.vault_watcher
+- traceback
+- PyQt6.QtWidgets
 
 ### src\__init__.py
 - src.config
@@ -114,6 +117,14 @@ This document contains the full context of the repository, formatted for optimal
 - pathlib
 - src.config
 
+### src\data\soft_events_store.py
+- uuid
+- dataclasses
+- datetime
+- src.data.database
+- src.data.calendar_store
+- src.utils.timestamps
+
 ### src\data\todo_store.py
 - uuid
 - dataclasses
@@ -144,9 +155,11 @@ This document contains the full context of the repository, formatted for optimal
 - src.data.database
 - src.utils.timestamps
 - src.sync.deletion_manifest
+- src.sync.vault_watcher
 
 ### src\sync\vault_watcher.py
 - logging
+- threading
 - time
 - pathlib
 - PyQt6.QtCore
@@ -196,6 +209,11 @@ This document contains the full context of the repository, formatted for optimal
 - PyQt6.QtGui
 - PyQt6.QtWidgets
 - src.data.calendar_store
+- PyQt6.QtWidgets
+- PyQt6.QtCore
+- src.data.soft_events_store
+- src.ui.modules.dashboard_panel
+- PyQt6.QtGui
 - src.data.holidays_jp
 
 ### src\ui\modules\dashboard_panel.py
@@ -208,6 +226,7 @@ This document contains the full context of the repository, formatted for optimal
 - src.data.todo_store
 - src.data.calendar_store
 - src.data.finance_store
+- src.data.soft_events_store
 - PyQt6.QtWidgets
 
 ### src\ui\modules\finance_charts.py
@@ -225,18 +244,26 @@ This document contains the full context of the repository, formatted for optimal
 - threading
 - urllib.request
 - json
+- csv
 - datetime
+- pathlib
 - PyQt6.QtCore
 - PyQt6.QtGui
 - PyQt6.QtWidgets
 - src.config
 - src.data.finance_store
 - calendar
+- src.config
 
 ### src\ui\modules\notes_panel.py
 - json
 - logging
+- os
+- subprocess
+- sys
 - threading
+- urllib.parse
+- urllib.request
 - collections
 - pathlib
 - PyQt6.QtCore
@@ -245,20 +272,7 @@ This document contains the full context of the repository, formatted for optimal
 - src.config
 - src.data.notes_store
 - src.sync.deletion_manifest
-- subprocess
-- sys
-- urllib.parse
-- subprocess
-- sys
-- urllib.parse
-- urllib.request
-- urllib.request
-- urllib.request
-- urllib.parse
-- urllib.request
-- urllib.parse
-- urllib.request
-- urllib.parse
+- mistune
 - os
 - os
 
@@ -296,7 +310,10 @@ This document contains the full context of the repository, formatted for optimal
 ## 📝 Docstring Summary
 ### main.pyw
 **Module docstring:**
-LocalSync — Personal productivity app entry point.
+LocalSync — Personal productivity desktop app.
+
+Entry point: initializes the database, starts the Qt application,
+launches sync engine and vault watcher, and displays the main window.
 
 **Classes:**
 - (None)
@@ -395,7 +412,7 @@ Results are sorted by date ascending.
 
 ### src\data\database.py
 **Module docstring:**
-SQLite database setup and connection for Calendar and Finance modules.
+SQLite database setup and connection for all LocalSync modules.
 
 **Classes:**
 - (None)
@@ -475,6 +492,34 @@ File-based notes storage — Obsidian-compatible markdown files.
 - `search`: Simple case-insensitive search across titles and content.
 - `_load_note`: (No docstring)
 - `_extract_tags`: Extract #tags from markdown content.
+
+### src\data\soft_events_store.py
+**Module docstring:**
+Soft event storage — lightweight recurring reminders with per-day logs.
+
+**Classes:**
+- `SoftEventTemplate`: (No docstring)
+- `SoftEventLog`: (No docstring)
+- `SoftEventStore`: (No docstring)
+
+**Functions:**
+- `add_template`: (No docstring)
+- `update_template`: (No docstring)
+- `delete_template`: Soft-delete a template.
+- `get_templates`: Return all non-deleted templates.
+- `get_template`: (No docstring)
+- `get_upcoming`: Expand each template's recurrence and return sorted (date, template) tuples.
+
+For templates with empty recurrence, they are skipped (no base date to anchor).
+days_ahead=0 means only from_date itself is checked.
+- `get_or_create_log`: Return existing log or create a new one with a date header.
+- `update_log`: (No docstring)
+- `get_log`: (No docstring)
+- `get_logs_for_template`: Return all non-deleted logs for a template, sorted newest first.
+- `_upsert_template`: (No docstring)
+- `_upsert_log`: (No docstring)
+- `_row_to_template`: (No docstring)
+- `_row_to_log`: (No docstring)
 
 ### src\data\todo_store.py
 **Module docstring:**
@@ -559,6 +604,7 @@ Designed for your setup:
 - `run`: (No docstring)
 - `stop`: (No docstring)
 - `force_sync`: Trigger an immediate sync cycle (called from UI).
+- `force_scan`: Trigger an immediate subnet peer discovery scan without a full data sync.
 - `_force_sync_once`: (No docstring)
 - `trigger_vault_sync`: Called by the vault watcher when local vault files changed.
 
@@ -597,22 +643,37 @@ Uses a polling approach (no inotify dependency) to watch for .md file changes
 in the configured vault directory. When changes are detected, emits a signal
 so the sync engine can broadcast them to peers.
 
+Sync-safety features:
+  • 10-second poll interval — relaxed for a personal two-machine setup.
+  • Deletion debounce — a file must be absent for 2 consecutive polls (≥20 s)
+    before its deletion is recorded.  This prevents Obsidian's atomic-save
+    behaviour (delete + recreate within milliseconds) from being misread as a
+    real deletion.
+  • Sync-write guard — when the engine writes a vault file it calls
+    mark_sync_written(); the watcher skips that path for the next poll cycle
+    so it does not re-trigger a sync for data that arrived from a peer.
+  • Quiet-period gate — vault_changed is only emitted after one full poll with
+    no new activity.  Rapid sequences (move = delete + create) are collapsed
+    into a single signal.
+  • Move detection — if a pending-deletion's file size matches a newly
+    appeared file in the same poll cycle the operation is treated as a rename
+    and the deletion manifest entry is suppressed.
+
 **Classes:**
 - `VaultWatcher`: Polls the Obsidian vault for file changes and signals when detected.
 
 **Functions:**
+- `mark_sync_written`: Register a vault-relative path that the sync engine just wrote to disk.
+
+The watcher will ignore this path for the next poll cycle so that incoming
+peer data does not immediately re-trigger a sync.  Call from any thread.
+- `_pop_sync_written`: Drain and return the current sync-written set (called once per poll).
 - `__init__`: (No docstring)
 - `_load_vault_path`: (No docstring)
 - `reload_config`: Reload vault path from config (called after settings change).
-- `_scan_vault`: Build a dict of {posix_relative_path: mtime} for all .md files in vault.
-
-Always uses forward slashes so Windows/Linux snapshots are comparable.
+- `_scan_vault`: Return {posix_relative_path: (mtime, size)} for all visible .md files.
 - `run`: (No docstring)
-- `_has_changes`: Compare current scan against previous snapshot.
-- `_record_deletions`: When files disappear from the vault, record them in the deletion manifest.
-
-Uses the shared deletion_manifest module. Skips paths already recorded
-(e.g. by the UI doing an immediate delete/rename).
+- `_poll`: One full poll cycle: detect changes, debounce, maybe emit.
 - `stop`: (No docstring)
 
 ### src\ui\__init__.py
@@ -798,6 +859,10 @@ Layout (positions unchanged):
 - `DayEventRow`: (No docstring)
 - `CalendarPanel`: (No docstring)
 - `BirthdayManagerDialog`: (No docstring)
+- `RecurrenceWidget`: Reusable recurrence picker: combo + weekday buttons.
+- `TemplateEditDialog`: Edit fields for a soft event template.
+- `ViewLogDialog`: Read-only view of all log entries for a soft event template.
+- `SoftEventManagerDialog`: Manage soft event templates — list, add, edit, delete, view log.
 
 **Functions:**
 - `_p`: Return current palette value for *key*.
@@ -861,11 +926,13 @@ Layout (positions unchanged):
 - `set_palette`: (No docstring)
 - `_build_ui`: (No docstring)
 - `_today_btn`: (No docstring)
+- `_manage_soft_events`: (No docstring)
 - `_refresh`: (No docstring)
 - `_get_week_start`: (No docstring)
 - `_render_week`: (No docstring)
 - `_render_day_detail`: (No docstring)
 - `_render_major_events`: (No docstring)
+- `_open_soft_log`: (No docstring)
 - `_update_mini_month_events`: (No docstring)
 - `_prev_week`: (No docstring)
 - `_next_week`: (No docstring)
@@ -884,6 +951,23 @@ Layout (positions unchanged):
 - `_make_row`: (No docstring)
 - `_add_birthday`: (No docstring)
 - `_edit_birthday`: (No docstring)
+- `__init__`: (No docstring)
+- `get_recurrence`: Return a recurrence string like 'weekly:0,1,4' or 'daily'.
+- `set_recurrence`: Pre-fill from a recurrence string.
+- `__init__`: (No docstring)
+- `_update_color_btn`: (No docstring)
+- `_pick_color`: (No docstring)
+- `_on_save`: (No docstring)
+- `get_data`: (No docstring)
+- `__init__`: (No docstring)
+- `__init__`: (No docstring)
+- `_build_ui`: (No docstring)
+- `_load`: (No docstring)
+- `_selected_template`: (No docstring)
+- `_add`: (No docstring)
+- `_edit`: (No docstring)
+- `_delete`: (No docstring)
+- `_view_log`: (No docstring)
 - `sk`: (No docstring)
 
 ### src\ui\modules\dashboard_panel.py
@@ -894,6 +978,8 @@ New in this version:
   • SideIncomeGoalSection — prominent month-browsable side income goal tracker
     with a color-coded progress bar (red → green → blue glow at major goal).
   • Goal data stored in side_income_goals table via FinanceStore.set_goal()
+  • "Coming Up (Next 7 Days)" section for soft event reminders
+  • Store injection — all stores passed in from main_window
 
 **Classes:**
 - `StatCard`: A compact stat card with a big number and label.
@@ -908,6 +994,8 @@ States:
 
 Input can be entered in USD or JPY — get_goals() always returns USD.
 - `SideIncomeGoalSection`: Prominent side income goal tracker with month navigation and color-coded bar.
+- `SoftEventLogDialog`: Edit the per-day log for a soft event occurrence.
+- `_ComingUpRow`: A single soft event reminder row.
 - `DashboardPanel`: (No docstring)
 
 **Functions:**
@@ -933,6 +1021,10 @@ Input can be entered in USD or JPY — get_goals() always returns USD.
 - `_prev_month`: (No docstring)
 - `_next_month`: (No docstring)
 - `_edit_goals`: (No docstring)
+- `__init__`: (No docstring)
+- `_save`: (No docstring)
+- `__init__`: (No docstring)
+- `mousePressEvent`: (No docstring)
 - `__init__`: (No docstring)
 - `showEvent`: Refresh immediately whenever the Dashboard tab becomes visible.
 - `set_palette`: (No docstring)
@@ -1015,6 +1107,7 @@ making them easy to filter for 確定申告 year-end reporting.
 - `GoalSettingsDialog`: Set monthly side-income goals.  Input can be in USD or JPY.
 - `TransactionDialog`: (No docstring)
 - `PresetButton`: (No docstring)
+- `TaxExportDialog`: Export transaction data for 確定申告 (annual tax filing).
 - `FinancePanel`: (No docstring)
 
 **Functions:**
@@ -1061,7 +1154,7 @@ making them easy to filter for 確定申告 year-end reporting.
 - `_on_currency_changed`: (No docstring)
 - `_update_hints`: (No docstring)
 - `_validate_and_accept`: (No docstring)
-- `get_goals`: Always return (base_usd, extra_usd).
+- `get_goals`: Always return (min_usd, major_usd).
 - `__init__`: (No docstring)
 - `_load_expense_cats`: (No docstring)
 - `_save_expense_cats`: (No docstring)
@@ -1072,6 +1165,8 @@ making them easy to filter for 確定申告 year-end reporting.
 - `get_data`: (No docstring)
 - `__init__`: (No docstring)
 - `__init__`: (No docstring)
+- `_export`: (No docstring)
+- `__init__`: (No docstring)
 - `set_palette`: (No docstring)
 - `showEvent`: (No docstring)
 - `_build_ui`: (No docstring)
@@ -1079,6 +1174,7 @@ making them easy to filter for 確定申告 year-end reporting.
 - `_build_quick_log_bar`: (No docstring)
 - `_build_filter_row`: (No docstring)
 - `_build_goal_section`: (No docstring)
+- `_open_tax_export`: (No docstring)
 - `_build_table`: (No docstring)
 - `_build_summary_panel`: (No docstring)
 - `_build_rate_bar`: (No docstring)
@@ -1091,6 +1187,7 @@ making them easy to filter for 確定申告 year-end reporting.
 - `_on_rate_updated`: (No docstring)
 - `_on_rate_error`: (No docstring)
 - `_rebuild_preset_buttons`: (No docstring)
+- `_update_month_gate`: Disable Quick Log and Monthly Expenses buttons when viewing a non-current month.
 - `_log_preset`: (No docstring)
 - `_open_preset_manager`: (No docstring)
 - `_open_monthly_expenses`: (No docstring)
@@ -1140,6 +1237,9 @@ Returns: {"_files": [Note, ...], "subfolder": {"_files": [...], ...}}
 - `_select_note_in_tree`: Find and select a note in the tree by its relative path.
 - `_find_tree_item`: (No docstring)
 - `_reload_if_changed_on_disk`: If the currently open note was modified externally, reload it.
+- `set_palette`: (No docstring)
+- `_toggle_preview`: (No docstring)
+- `_render_preview`: (No docstring)
 - `_update_status_label`: (No docstring)
 - `_set_vault_path`: (No docstring)
 - `_configure_api`: (No docstring)
@@ -1167,6 +1267,7 @@ Todo list module UI — modern task manager with priorities, categories, and due
 - `TodoPanel`: (No docstring)
 
 **Functions:**
+- `_hex_to_rgb`: Convert a hex color string like '#f38ba8' to (r, g, b) ints.
 - `__init__`: (No docstring)
 - `_build_ui`: (No docstring)
 - `get_data`: (No docstring)
@@ -1183,6 +1284,7 @@ Todo list module UI — modern task manager with priorities, categories, and due
 - `_edit_item`: (No docstring)
 - `_toggle_item`: (No docstring)
 - `_clear_done`: (No docstring)
+- `_sort_key`: (No docstring)
 
 ### src\ui\themes\__init__.py
 **Module docstring:**
@@ -1304,7 +1406,11 @@ Tests for LocalSync.
 
 ```python
 #!/usr/bin/env python3
-"""LocalSync — Personal productivity app entry point."""
+"""LocalSync — Personal productivity desktop app.
+
+Entry point: initializes the database, starts the Qt application,
+launches sync engine and vault watcher, and displays the main window.
+"""
 
 import logging
 import sys
@@ -1358,12 +1464,21 @@ def main():
         sync_engine.stop()
         sync_engine.wait(5000)
 
-    sys.exit(exit_code)
+    return exit_code
 
 
 if __name__ == "__main__":
-    main()
-
+    try:
+        sys.exit(main())
+    except Exception:
+        import traceback
+        try:
+            from PyQt6.QtWidgets import QApplication, QMessageBox
+            app = QApplication.instance() or QApplication(sys.argv)
+            QMessageBox.critical(None, "Fatal Error", traceback.format_exc())
+        except Exception:
+            print(traceback.format_exc())
+        sys.exit(1)
 ```
 
 ### `src\__init__.py`
@@ -1984,7 +2099,7 @@ class CalendarStore:
                     candidate = date(today.year + 1, b.month, b.day)
                 except ValueError:
                     continue
-            results.append((candidate, b.name, "birthday", "#f38ba8", b.id, True))
+            results.append((candidate, b.name, "birthday", "birthday", b.id, True))
 
         results.sort(key=lambda x: x[0])
         return results[:limit]
@@ -1994,7 +2109,7 @@ class CalendarStore:
 ### `src\data\database.py`
 
 ```python
-"""SQLite database setup and connection for Calendar and Finance modules."""
+"""SQLite database setup and connection for all LocalSync modules."""
 
 import sqlite3
 from pathlib import Path
@@ -2045,6 +2160,36 @@ def _migrate(conn: sqlite3.Connection):
         conn.execute("ALTER TABLE transactions ADD COLUMN currency TEXT DEFAULT 'USD'")
     if "is_job_pay" not in txn_cols:
         conn.execute("ALTER TABLE transactions ADD COLUMN is_job_pay INTEGER DEFAULT 0")
+
+    # --- activities table ---
+    act_cols = {r["name"] for r in conn.execute("PRAGMA table_info(activities)").fetchall()}
+    # Future activity migrations go here
+
+    # --- soft event tables (new tables, guard via sqlite_master) ---
+    tables = {r["name"] for r in conn.execute(
+        "SELECT name FROM sqlite_master WHERE type='table'"
+    ).fetchall()}
+    if "soft_event_templates" not in tables:
+        conn.executescript("""
+            CREATE TABLE IF NOT EXISTS soft_event_templates (
+                id          TEXT PRIMARY KEY,
+                title       TEXT NOT NULL,
+                note        TEXT DEFAULT '',
+                color       TEXT DEFAULT '#a6e3a1',
+                recurrence  TEXT DEFAULT '',
+                updated_at  TEXT NOT NULL,
+                deleted     INTEGER DEFAULT 0
+            );
+            CREATE TABLE IF NOT EXISTS soft_event_logs (
+                id           TEXT PRIMARY KEY,
+                template_id  TEXT NOT NULL,
+                log_date     TEXT NOT NULL,
+                log_text     TEXT DEFAULT '',
+                updated_at   TEXT NOT NULL,
+                deleted      INTEGER DEFAULT 0,
+                UNIQUE(template_id, log_date)
+            );
+        """)
 
 
 _SCHEMA = """
@@ -2133,6 +2278,26 @@ CREATE TABLE IF NOT EXISTS side_income_goals (
 CREATE TABLE IF NOT EXISTS sync_meta (
     key   TEXT PRIMARY KEY,
     value TEXT
+);
+
+CREATE TABLE IF NOT EXISTS soft_event_templates (
+    id          TEXT PRIMARY KEY,
+    title       TEXT NOT NULL,
+    note        TEXT DEFAULT '',
+    color       TEXT DEFAULT '#a6e3a1',
+    recurrence  TEXT DEFAULT '',
+    updated_at  TEXT NOT NULL,
+    deleted     INTEGER DEFAULT 0
+);
+
+CREATE TABLE IF NOT EXISTS soft_event_logs (
+    id           TEXT PRIMARY KEY,
+    template_id  TEXT NOT NULL,
+    log_date     TEXT NOT NULL,
+    log_text     TEXT DEFAULT '',
+    updated_at   TEXT NOT NULL,
+    deleted      INTEGER DEFAULT 0,
+    UNIQUE(template_id, log_date)
 );
 """
 ```
@@ -2680,6 +2845,233 @@ class NotesStore:
 
 ```
 
+### `src\data\soft_events_store.py`
+
+```python
+"""Soft event storage — lightweight recurring reminders with per-day logs."""
+
+import uuid
+from dataclasses import dataclass
+from datetime import date, timedelta
+
+from src.data.database import get_connection
+from src.data.calendar_store import expand_recurring_to_range, Event, parse_recurrence
+from src.utils.timestamps import now_utc
+
+
+@dataclass
+class SoftEventTemplate:
+    id: str
+    title: str
+    note: str = ""
+    color: str = "#a6e3a1"
+    recurrence: str = ""
+    updated_at: str = ""
+    deleted: bool = False
+
+
+@dataclass
+class SoftEventLog:
+    id: str
+    template_id: str
+    log_date: str        # YYYY-MM-DD
+    log_text: str = ""
+    updated_at: str = ""
+    deleted: bool = False
+
+
+class SoftEventStore:
+
+    # ── Template CRUD ────────────────────────────────────
+
+    def add_template(self, title: str, note: str = "", color: str = "#a6e3a1",
+                     recurrence: str = "") -> SoftEventTemplate:
+        now = now_utc()
+        tpl = SoftEventTemplate(
+            id=str(uuid.uuid4()), title=title, note=note,
+            color=color, recurrence=recurrence, updated_at=now,
+        )
+        self._upsert_template(tpl)
+        return tpl
+
+    def update_template(self, template: SoftEventTemplate) -> SoftEventTemplate:
+        template.updated_at = now_utc()
+        self._upsert_template(template)
+        return template
+
+    def delete_template(self, template_id: str):
+        """Soft-delete a template."""
+        conn = get_connection()
+        try:
+            conn.execute(
+                "UPDATE soft_event_templates SET deleted=1, updated_at=? WHERE id=?",
+                (now_utc(), template_id),
+            )
+            conn.commit()
+        finally:
+            conn.close()
+
+    def get_templates(self) -> list[SoftEventTemplate]:
+        """Return all non-deleted templates."""
+        conn = get_connection()
+        try:
+            rows = conn.execute(
+                "SELECT * FROM soft_event_templates WHERE deleted=0 ORDER BY title"
+            ).fetchall()
+            return [self._row_to_template(r) for r in rows]
+        finally:
+            conn.close()
+
+    def get_template(self, template_id: str) -> SoftEventTemplate | None:
+        conn = get_connection()
+        try:
+            row = conn.execute(
+                "SELECT * FROM soft_event_templates WHERE id=?", (template_id,)
+            ).fetchone()
+            return self._row_to_template(row) if row else None
+        finally:
+            conn.close()
+
+    def get_upcoming(self, from_date: date, days_ahead: int = 7) -> list[tuple[date, SoftEventTemplate]]:
+        """Expand each template's recurrence and return sorted (date, template) tuples.
+
+        For templates with empty recurrence, they are skipped (no base date to anchor).
+        days_ahead=0 means only from_date itself is checked.
+        """
+        templates = self.get_templates()
+        range_end = from_date + timedelta(days=max(days_ahead, 0))
+        results: list[tuple[date, SoftEventTemplate]] = []
+
+        for tpl in templates:
+            rec = parse_recurrence(tpl.recurrence)
+            if rec["type"] == "none":
+                # No recurrence — skip (no base date to match)
+                continue
+
+            # Build a lightweight Event-like object for expand_recurring_to_range
+            # We need a start_time in ISO format; use epoch start as a safe anchor
+            # for daily/weekly, or use recurrence info for monthly/yearly.
+            # The expand function reads start_time to extract the anchor date.
+            # We'll use 2020-01-01 as a generic anchor for daily/weekly,
+            # which still produces correct results since those patterns
+            # are relative to weekday, not an absolute date.
+            dummy_event = Event(
+                id=tpl.id, title=tpl.title,
+                start_time="2020-01-01T00:00:00",
+                recurrence=tpl.recurrence,
+            )
+            dates = expand_recurring_to_range(dummy_event, from_date, range_end)
+            for d in dates:
+                results.append((d, tpl))
+
+        results.sort(key=lambda x: x[0])
+        return results
+
+    # ── Log CRUD ─────────────────────────────────────────
+
+    def get_or_create_log(self, template_id: str, log_date: str) -> SoftEventLog:
+        """Return existing log or create a new one with a date header."""
+        existing = self.get_log(template_id, log_date)
+        if existing:
+            return existing
+        now = now_utc()
+        log = SoftEventLog(
+            id=str(uuid.uuid4()),
+            template_id=template_id,
+            log_date=log_date,
+            log_text=f"— {log_date} —",
+            updated_at=now,
+        )
+        self._upsert_log(log)
+        return log
+
+    def update_log(self, log: SoftEventLog) -> SoftEventLog:
+        log.updated_at = now_utc()
+        self._upsert_log(log)
+        return log
+
+    def get_log(self, template_id: str, log_date: str) -> SoftEventLog | None:
+        conn = get_connection()
+        try:
+            row = conn.execute(
+                "SELECT * FROM soft_event_logs WHERE template_id=? AND log_date=? AND deleted=0",
+                (template_id, log_date),
+            ).fetchone()
+            return self._row_to_log(row) if row else None
+        finally:
+            conn.close()
+
+    def get_logs_for_template(self, template_id: str) -> list[SoftEventLog]:
+        """Return all non-deleted logs for a template, sorted newest first."""
+        conn = get_connection()
+        try:
+            rows = conn.execute(
+                "SELECT * FROM soft_event_logs WHERE template_id=? AND deleted=0 "
+                "ORDER BY log_date DESC",
+                (template_id,),
+            ).fetchall()
+            return [self._row_to_log(r) for r in rows]
+        finally:
+            conn.close()
+
+    # ── Internal helpers ─────────────────────────────────
+
+    def _upsert_template(self, tpl: SoftEventTemplate):
+        conn = get_connection()
+        try:
+            conn.execute(
+                """INSERT INTO soft_event_templates
+                   (id, title, note, color, recurrence, updated_at, deleted)
+                   VALUES (?, ?, ?, ?, ?, ?, ?)
+                   ON CONFLICT(id) DO UPDATE SET
+                   title=excluded.title, note=excluded.note, color=excluded.color,
+                   recurrence=excluded.recurrence, updated_at=excluded.updated_at,
+                   deleted=excluded.deleted""",
+                (tpl.id, tpl.title, tpl.note, tpl.color,
+                 tpl.recurrence, tpl.updated_at, int(tpl.deleted)),
+            )
+            conn.commit()
+        finally:
+            conn.close()
+
+    def _upsert_log(self, log: SoftEventLog):
+        conn = get_connection()
+        try:
+            conn.execute(
+                """INSERT INTO soft_event_logs
+                   (id, template_id, log_date, log_text, updated_at, deleted)
+                   VALUES (?, ?, ?, ?, ?, ?)
+                   ON CONFLICT(id) DO UPDATE SET
+                   template_id=excluded.template_id, log_date=excluded.log_date,
+                   log_text=excluded.log_text, updated_at=excluded.updated_at,
+                   deleted=excluded.deleted""",
+                (log.id, log.template_id, log.log_date,
+                 log.log_text, log.updated_at, int(log.deleted)),
+            )
+            conn.commit()
+        finally:
+            conn.close()
+
+    @staticmethod
+    def _row_to_template(row) -> SoftEventTemplate:
+        return SoftEventTemplate(
+            id=row["id"], title=row["title"],
+            note=row["note"] or "", color=row["color"] or "#a6e3a1",
+            recurrence=row["recurrence"] or "",
+            updated_at=row["updated_at"],
+            deleted=bool(row["deleted"]),
+        )
+
+    @staticmethod
+    def _row_to_log(row) -> SoftEventLog:
+        return SoftEventLog(
+            id=row["id"], template_id=row["template_id"],
+            log_date=row["log_date"], log_text=row["log_text"] or "",
+            updated_at=row["updated_at"],
+            deleted=bool(row["deleted"]),
+        )
+```
+
 ### `src\data\todo_store.py`
 
 ```python
@@ -2892,7 +3284,7 @@ def record_deletion(rel_posix: str, vault: Path | None = None):
     now = time.time()
 
     if rel_posix not in existing_paths:
-        entries.append({"path": rel_posix, "deleted_at": now})
+        entries.append({"path": rel_posix, "deleted_at": now, "deleted_at_ts": now})
         logger.info(f"Recorded vault deletion: {rel_posix}")
 
     # Prune old entries
@@ -2966,6 +3358,7 @@ from src.sync.deletion_manifest import (
     record_deletion as _record_vault_del,
     remove_deletion as _remove_vault_del,
 )
+from src.sync.vault_watcher import mark_sync_written as _mark_vault_written
 
 logger = logging.getLogger(__name__)
 
@@ -3089,6 +3482,10 @@ class SyncEngine(QThread):
         # Just interrupt the sleep by setting a flag — next iteration runs immediately
         # We achieve this by starting a one-shot thread
         threading.Thread(target=self._force_sync_once, daemon=True).start()
+    def force_scan(self):
+        """Trigger an immediate subnet peer discovery scan without a full data sync."""
+        self._log("Manual subnet scan triggered")
+        threading.Thread(target=self._scan_subnet, daemon=True).start()
 
     def _force_sync_once(self):
         self.status_changed.emit("force syncing...")
@@ -3565,9 +3962,10 @@ class SyncEngine(QThread):
             else:
                 should_write = True
             if should_write:
-                local_path.parent.mkdir(parents=True, exist_ok=True)
-                local_path.write_text(rnote["content"], encoding="utf-8")
-                changes += 1
+                    local_path.parent.mkdir(parents=True, exist_ok=True)
+                    local_path.write_text(rnote["content"], encoding="utf-8")
+                    _mark_vault_written(rel_posix)   # guard: watcher skips this path next poll
+                    changes += 1
 
         # Merge Obsidian vault notes
         vault_path = cfg.get("obsidian_vault_path", "")
@@ -3763,9 +4161,26 @@ class SyncEngine(QThread):
 Uses a polling approach (no inotify dependency) to watch for .md file changes
 in the configured vault directory. When changes are detected, emits a signal
 so the sync engine can broadcast them to peers.
+
+Sync-safety features:
+  • 10-second poll interval — relaxed for a personal two-machine setup.
+  • Deletion debounce — a file must be absent for 2 consecutive polls (≥20 s)
+    before its deletion is recorded.  This prevents Obsidian's atomic-save
+    behaviour (delete + recreate within milliseconds) from being misread as a
+    real deletion.
+  • Sync-write guard — when the engine writes a vault file it calls
+    mark_sync_written(); the watcher skips that path for the next poll cycle
+    so it does not re-trigger a sync for data that arrived from a peer.
+  • Quiet-period gate — vault_changed is only emitted after one full poll with
+    no new activity.  Rapid sequences (move = delete + create) are collapsed
+    into a single signal.
+  • Move detection — if a pending-deletion's file size matches a newly
+    appeared file in the same poll cycle the operation is treated as a rename
+    and the deletion manifest entry is suppressed.
 """
 
 import logging
+import threading
 import time
 from pathlib import Path, PurePosixPath
 
@@ -3776,9 +4191,36 @@ from src.sync.deletion_manifest import record_deletion, read_manifest
 
 logger = logging.getLogger(__name__)
 
-# How often to poll the vault directory for changes (seconds)
-POLL_INTERVAL = 3
+# ── Tuning constants ────────────────────────────────────────────────────────
+POLL_INTERVAL          = 10  # seconds between each vault scan
+DELETION_CONFIRM_POLLS = 2   # polls a file must be absent before deletion confirmed (~20 s)
+QUIET_POLLS_BEFORE_EMIT = 1  # polls of silence required before emitting vault_changed
 
+
+# ── Sync-write guard (module-level so engine.py can call without a reference) ─
+_sync_written: set[str] = set()
+_sync_written_lock = threading.Lock()
+
+
+def mark_sync_written(rel_posix: str) -> None:
+    """Register a vault-relative path that the sync engine just wrote to disk.
+
+    The watcher will ignore this path for the next poll cycle so that incoming
+    peer data does not immediately re-trigger a sync.  Call from any thread.
+    """
+    with _sync_written_lock:
+        _sync_written.add(rel_posix)
+
+
+def _pop_sync_written() -> set[str]:
+    """Drain and return the current sync-written set (called once per poll)."""
+    with _sync_written_lock:
+        result = set(_sync_written)
+        _sync_written.clear()
+        return result
+
+
+# ── Watcher thread ──────────────────────────────────────────────────────────
 
 class VaultWatcher(QThread):
     """Polls the Obsidian vault for file changes and signals when detected."""
@@ -3789,11 +4231,26 @@ class VaultWatcher(QThread):
     def __init__(self, parent=None):
         super().__init__(parent)
         self._running = True
-        self._snapshot: dict[str, float] = {}  # rel_path -> mtime
+
+        # rel_posix -> (mtime, size)
+        self._snapshot: dict[str, tuple[float, int]] = {}
+
         self._vault_path: Path | None = None
+
+        # Deletion debounce: rel_posix -> number of polls the file has been absent
+        self._pending_deletions: dict[str, int] = {}
+        # Size of the file when it was last seen (for move detection)
+        self._pending_deletion_sizes: dict[str, int] = {}
+
+        # Quiet-period state
+        self._changes_pending: bool = False  # we have unsent changes
+        self._quiet_polls: int = 0           # polls since last new-change detection
+
         self._load_vault_path()
 
-    def _load_vault_path(self):
+    # ── Config ───────────────────────────────────────────────────────────────
+
+    def _load_vault_path(self) -> None:
         cfg = load_config()
         vault = cfg.get("obsidian_vault_path", "")
         if vault and Path(vault).is_dir():
@@ -3801,61 +4258,59 @@ class VaultWatcher(QThread):
         else:
             self._vault_path = None
 
-    def reload_config(self):
+    def reload_config(self) -> None:
         """Reload vault path from config (called after settings change)."""
         self._load_vault_path()
         self._snapshot.clear()
+        self._pending_deletions.clear()
+        self._pending_deletion_sizes.clear()
+        self._changes_pending = False
+        self._quiet_polls = 0
         if self._vault_path:
             self._snapshot = self._scan_vault()
 
-    def _scan_vault(self) -> dict[str, float]:
-        """Build a dict of {posix_relative_path: mtime} for all .md files in vault.
+    # ── Vault scanning ───────────────────────────────────────────────────────
 
-        Always uses forward slashes so Windows/Linux snapshots are comparable.
-        """
+    def _scan_vault(self) -> dict[str, tuple[float, int]]:
+        """Return {posix_relative_path: (mtime, size)} for all visible .md files."""
         if not self._vault_path or not self._vault_path.is_dir():
             return {}
-        result = {}
+        result: dict[str, tuple[float, int]] = {}
         try:
             for md in self._vault_path.rglob("*.md"):
-                # Skip hidden dirs like .obsidian, .trash
                 rel = md.relative_to(self._vault_path)
-                parts = rel.parts
-                if any(p.startswith(".") for p in parts):
+                # Skip hidden dirs (.obsidian, .trash, etc.)
+                if any(p.startswith(".") for p in rel.parts):
                     continue
-                # Normalize to forward slashes
                 rel_posix = str(PurePosixPath(rel))
                 try:
-                    result[rel_posix] = md.stat().st_mtime
+                    st = md.stat()
+                    result[rel_posix] = (st.st_mtime, st.st_size)
                 except OSError:
                     pass
         except OSError as e:
             logger.warning(f"Vault scan error: {e}")
         return result
 
-    def run(self):
+    # ── Main thread loop ─────────────────────────────────────────────────────
+
+    def run(self) -> None:
         logger.info("Vault watcher started")
 
-        # Take initial snapshot
         if self._vault_path:
             self._snapshot = self._scan_vault()
-            logger.info(f"Watching vault: {self._vault_path} ({len(self._snapshot)} files)")
+            logger.info(
+                f"Watching vault: {self._vault_path}  "
+                f"({len(self._snapshot)} files)"
+            )
         else:
             logger.info("No vault configured, watcher idle")
 
         while self._running:
             if self._vault_path and self._vault_path.is_dir():
-                current = self._scan_vault()
-                if self._has_changes(current):
-                    # Record any deletions before updating the snapshot
-                    self._record_deletions(current)
-                    logger.info("Vault changes detected, triggering sync")
-                    self._snapshot = current
-                    self.vault_changed.emit()
-                else:
-                    self._snapshot = current
+                self._poll()
             else:
-                # Re-check config periodically in case vault was set
+                # Re-check config periodically in case vault is set later
                 self._load_vault_path()
                 if self._vault_path:
                     self._snapshot = self._scan_vault()
@@ -3869,41 +4324,115 @@ class VaultWatcher(QThread):
 
         logger.info("Vault watcher stopped")
 
-    def _has_changes(self, current: dict[str, float]) -> bool:
-        """Compare current scan against previous snapshot."""
-        # New or modified files
-        for path, mtime in current.items():
-            prev_mtime = self._snapshot.get(path)
-            if prev_mtime is None or mtime > prev_mtime:
-                return True
-        # Deleted files
-        for path in self._snapshot:
-            if path not in current:
-                return True
-        return False
+    # ── Poll logic ───────────────────────────────────────────────────────────
 
-    def _record_deletions(self, current: dict[str, float]):
-        """When files disappear from the vault, record them in the deletion manifest.
+    def _poll(self) -> None:
+        """One full poll cycle: detect changes, debounce, maybe emit."""
+        current  = self._scan_vault()
+        skip_set = _pop_sync_written()   # paths the engine just wrote — ignore
 
-        Uses the shared deletion_manifest module. Skips paths already recorded
-        (e.g. by the UI doing an immediate delete/rename).
-        """
-        if not self._vault_path:
-            return
-        deleted = set(self._snapshot.keys()) - set(current.keys())
-        if not deleted:
-            return
+        new_activity_this_poll = False   # did we find anything new *this* poll?
 
-        # Read manifest once to check what's already recorded
-        existing_paths = {d["path"] for d in read_manifest(self._vault_path)}
+        # ── 1. New / modified files ─────────────────────────────────────────
+        # Track sizes of genuinely new files for move detection later.
+        new_file_sizes: set[int] = set()
 
-        for path in deleted:
-            if path not in existing_paths:
-                record_deletion(path, self._vault_path)
+        for path, (mtime, size) in current.items():
+            if path in skip_set:
+                # Written by the sync engine — don't react to our own writes
+                continue
 
-    def stop(self):
+            prev = self._snapshot.get(path)
+            if prev is None:
+                # File is brand-new (or re-appeared after a move)
+                new_file_sizes.add(size)
+                new_activity_this_poll = True
+                logger.debug(f"New file detected: {path}")
+            elif mtime > prev[0]:
+                # File was modified
+                new_activity_this_poll = True
+                logger.debug(f"Modified file: {path}")
+
+        # ── 2. Deletion debounce ────────────────────────────────────────────
+        gone_now = set(self._snapshot.keys()) - set(current.keys())
+
+        # Files that came back this poll (Obsidian atomic save — ignore them)
+        returned = set(self._pending_deletions.keys()) & set(current.keys())
+        for path in returned:
+            logger.debug(
+                f"'{path}' reappeared after being absent — "
+                "likely an atomic save, clearing pending deletion"
+            )
+            self._pending_deletions.pop(path, None)
+            self._pending_deletion_sizes.pop(path, None)
+
+        # Increment absence counter for files still gone
+        for path in gone_now:
+            if path in skip_set:
+                # Engine deleted it as part of a remote deletion — ignore
+                self._pending_deletions.pop(path, None)
+                self._pending_deletion_sizes.pop(path, None)
+                continue
+
+            count = self._pending_deletions.get(path, 0) + 1
+            self._pending_deletions[path] = count
+
+            # Cache the file's last known size so we can detect moves
+            if path not in self._pending_deletion_sizes and path in self._snapshot:
+                self._pending_deletion_sizes[path] = self._snapshot[path][1]
+
+            logger.debug(f"'{path}' absent for {count} poll(s) (confirm at {DELETION_CONFIRM_POLLS})")
+
+        # ── 3. Confirm deletions that have been gone long enough ────────────
+        for path in list(self._pending_deletions.keys()):
+            if path in current:
+                continue  # came back — handled above
+            if self._pending_deletions[path] < DELETION_CONFIRM_POLLS:
+                continue  # not yet confirmed
+
+            # ── Move detection ──────────────────────────────────────────────
+            del_size = self._pending_deletion_sizes.get(path)
+            is_move  = (del_size is not None) and (del_size in new_file_sizes)
+
+            if is_move:
+                logger.info(
+                    f"Move detected: '{path}' disappeared but a new file of the "
+                    f"same size ({del_size} bytes) appeared — skipping deletion record"
+                )
+            else:
+                # Genuine deletion — record in manifest and flag as changed
+                if self._vault_path:
+                    existing_paths = {d["path"] for d in read_manifest(self._vault_path)}
+                    if path not in existing_paths:
+                        record_deletion(path, self._vault_path)
+                        logger.info(f"Confirmed deletion recorded: {path}")
+                new_activity_this_poll = True
+
+            self._pending_deletions.pop(path)
+            self._pending_deletion_sizes.pop(path, None)
+
+        # ── 4. Quiet-period gate ────────────────────────────────────────────
+        if new_activity_this_poll:
+            self._changes_pending = True
+            self._quiet_polls = 0          # reset — we're still seeing changes
+        elif self._changes_pending:
+            self._quiet_polls += 1         # one more quiet poll
+            if self._quiet_polls >= QUIET_POLLS_BEFORE_EMIT:
+                logger.info(
+                    "Vault stable — emitting vault_changed "
+                    f"(quiet for {self._quiet_polls} poll(s))"
+                )
+                self._changes_pending = False
+                self._quiet_polls = 0
+                self.vault_changed.emit()
+
+        # ── 5. Advance snapshot ─────────────────────────────────────────────
+        self._snapshot = current
+
+    # ── Lifecycle ────────────────────────────────────────────────────────────
+
+    def stop(self) -> None:
         self._running = False
-
 ```
 
 ### `src\ui\__init__.py`
@@ -6518,9 +7047,11 @@ class DayEventRow(QFrame):
 
 class CalendarPanel(QWidget):
 
-    def __init__(self, parent=None):
+    def __init__(self, calendar_store=None, soft_events_store=None, parent=None):
         super().__init__(parent)
-        self.store = CalendarStore()
+        self.store = calendar_store or CalendarStore()
+        from src.data.soft_events_store import SoftEventStore
+        self.soft_events_store = soft_events_store or SoftEventStore()
         self._selected_date = date.today()
         self._build_ui(); self._refresh()
         self._auto_timer = QTimer(self)
@@ -6636,6 +7167,13 @@ class CalendarPanel(QWidget):
         btn_jump = QPushButton("Go to date…"); btn_jump.setObjectName("secondary")
         btn_jump.clicked.connect(self._jump_to_date); action_row.addWidget(btn_jump)
         right_l.addLayout(action_row); right_l.addSpacing(8)
+        
+        soft_btn = QPushButton("Soft Events \u25b8")
+        soft_btn.setObjectName("secondary")
+        soft_btn.setFixedHeight(26)
+        soft_btn.clicked.connect(self._manage_soft_events)
+        # Add to the toolbar layout (next to the Birthdays button)
+        action_row.addWidget(soft_btn)
 
         rdiv1 = QFrame(); rdiv1.setFrameShape(QFrame.Shape.HLine)
         rdiv1.setStyleSheet(f"border:none;border-top:1px solid {_p('border')};")
@@ -6665,6 +7203,10 @@ class CalendarPanel(QWidget):
         btn.setFixedHeight(28); btn.clicked.connect(self._go_today)
         return btn
 
+    def _manage_soft_events(self):
+        dlg = SoftEventManagerDialog(self.soft_events_store, self)
+        dlg.exec()
+        self._refresh()
     # ── Refresh ─────────────────────────────────────
 
     def _refresh(self):
@@ -6727,7 +7269,13 @@ class CalendarPanel(QWidget):
         for b in self.store.get_birthdays():
             if b.month == d.month and b.day == d.day:
                 age = (d.year - b.year) if b.year else None
-                age_str = f" (turns {age})" if age else ""
+                today = date.today()
+                if d < today:
+                    age_str = f" (turned {age})" if age else ""
+                elif d == today:
+                    age_str = f" (turns {age} today)" if age else ""
+                else:
+                    age_str = f" (turns {age})" if age else ""
                 bday_evs.append(Event(
                     id=b.id,
                     title=f"🎂 {b.name} 🎂{age_str}",
@@ -6751,6 +7299,38 @@ class CalendarPanel(QWidget):
                 else:
                     row.edit_requested.connect(self._edit_event)
                 self._day_list_layout.addWidget(row)
+                
+        # ── Soft event reminders for this day ──
+        try:
+            soft_occ = self.soft_events_store.get_upcoming(d, days_ahead=0)
+        except Exception:
+            soft_occ = []
+
+        if soft_occ:
+            sep_lbl = QLabel("Reminders")
+            muted = _p("muted")
+            sep_lbl.setStyleSheet(
+                f"color:{muted};font-size:11px;font-weight:bold;"
+                f"border-top:1px solid {_p('border')};padding-top:6px;margin-top:4px;"
+            )
+            self._day_list_layout.addWidget(sep_lbl)
+
+            for occ_date, tpl in soft_occ:
+                row = QWidget()
+                row_l = QHBoxLayout(row)
+                row_l.setContentsMargins(4, 2, 4, 2)
+                row_l.setSpacing(6)
+                dot = QLabel("\u25cf")
+                dot.setStyleSheet(f"color: {tpl.color}; font-size: 12px;")
+                dot.setFixedWidth(14)
+                row_l.addWidget(dot)
+                title = QLabel(tpl.title)
+                title.setStyleSheet("font-size: 12px;")
+                row_l.addWidget(title, 1)
+                row.setCursor(Qt.CursorShape.PointingHandCursor)
+                row.mousePressEvent = lambda ev, t=tpl, od=occ_date: self._open_soft_log(t, od)
+                self._day_list_layout.addWidget(row)
+
         self._day_list_layout.addStretch()
 
     def _render_major_events(self):
@@ -6769,6 +7349,11 @@ class CalendarPanel(QWidget):
                 card.clicked.connect(self._open_major_event)
                 self._major_list_layout.addWidget(card)
         self._major_list_layout.addStretch()
+
+    def _open_soft_log(self, template, log_date):
+        from src.ui.modules.dashboard_panel import SoftEventLogDialog
+        dlg = SoftEventLogDialog(self, self.soft_events_store, template, log_date)
+        dlg.exec()
 
     def _update_mini_month_events(self):
         vy, vm = self.mini_month._view_year, self.mini_month._view_month
@@ -6896,13 +7481,13 @@ class BirthdayManagerDialog(QDialog):
         layout = QVBoxLayout(self)
         layout.setContentsMargins(16, 16, 16, 16); layout.setSpacing(10)
 
+
         hdr = QHBoxLayout()
         title = QLabel("🎂  Birthdays")
         title.setStyleSheet("font-size:15px;font-weight:bold;")
         hdr.addWidget(title); hdr.addStretch()
         add_btn = QPushButton("＋ Add"); add_btn.clicked.connect(self._add_birthday)
-        hdr.addWidget(add_btn); layout.addLayout(hdr)
-
+        hdr.addWidget(add_btn); layout.addLayout(hdr)     
         self._search = QLineEdit(); self._search.setPlaceholderText("Search by name…")
         self._search.textChanged.connect(self._filter); layout.addWidget(self._search)
 
@@ -6917,6 +7502,11 @@ class BirthdayManagerDialog(QDialog):
 
     def _load(self):
         self._birthdays = self.store.get_birthdays(); self._filter(self._search.text())
+
+#    def _manage_soft_events(self):
+        dlg = SoftEventManagerDialog(self.soft_events_store, self)
+        dlg.exec()
+        self._refresh()
 
     def _filter(self, text: str):
         _clear_layout(self._list_layout); q = text.lower(); today = date.today()
@@ -7013,6 +7603,345 @@ class BirthdayManagerDialog(QDialog):
             birthday.day   = data["day"];   birthday.year  = data["year"]
             birthday.note  = data["note"]
             self.store.update_birthday(birthday); self._load()
+
+"""Task 9 Fix C — SoftEventManagerDialog and RecurrenceWidget.
+
+Paste these classes into calendar_panel.py after BirthdayManagerDialog.
+Also add the required imports at the top of calendar_panel.py:
+  from src.data.soft_events_store import SoftEventStore, SoftEventTemplate
+  from src.data.calendar_store import build_recurrence, parse_recurrence
+  (build_recurrence and parse_recurrence should already be imported)
+"""
+
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+#  RecurrenceWidget — reusable recurrence picker
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+from PyQt6.QtWidgets import (
+    QWidget, QVBoxLayout, QHBoxLayout, QLabel, QComboBox,
+    QFrame, QToolButton, QDialog, QListWidget, QListWidgetItem,
+    QPushButton, QLineEdit, QTextEdit, QColorDialog, QMessageBox,
+)
+from PyQt6.QtCore import Qt
+
+RECURRENCE_OPTIONS = [
+    ("", "No repeat"),
+    ("daily", "Daily"),
+    ("weekly", "Weekly"),
+    ("monthly", "Monthly"),
+    ("yearly", "Yearly"),
+]
+
+WEEKDAY_LABELS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
+
+
+class RecurrenceWidget(QWidget):
+    """Reusable recurrence picker: combo + weekday buttons."""
+
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        layout = QVBoxLayout(self)
+        layout.setContentsMargins(0, 0, 0, 0)
+        layout.setSpacing(4)
+
+        layout.addWidget(QLabel("Repeat pattern"))
+        self.rec_combo = QComboBox()
+        for val, label in RECURRENCE_OPTIONS:
+            self.rec_combo.addItem(label, val)
+        layout.addWidget(self.rec_combo)
+
+        self.rec_combo.currentIndexChanged.connect(
+            lambda _: self._weekday_frame.setVisible(
+                self.rec_combo.currentData() == "weekly"))
+
+        self._weekday_frame = QFrame()
+        wdf = QHBoxLayout(self._weekday_frame)
+        wdf.setContentsMargins(0, 4, 0, 0)
+        wdf.setSpacing(4)
+        self._weekday_btns: list[QToolButton] = []
+        for label in WEEKDAY_LABELS:
+            btn = QToolButton()
+            btn.setText(label)
+            btn.setCheckable(True)
+            btn.setFixedSize(42, 30)
+            self._weekday_btns.append(btn)
+            wdf.addWidget(btn)
+        wdf.addStretch()
+        layout.addWidget(self._weekday_frame)
+        self._weekday_frame.setVisible(False)
+
+    def get_recurrence(self) -> str:
+        """Return a recurrence string like 'weekly:0,1,4' or 'daily'."""
+        val = self.rec_combo.currentData()
+        if val == "weekly":
+            days = [i for i, b in enumerate(self._weekday_btns) if b.isChecked()]
+            if not days:
+                return ""
+            return "weekly:" + ",".join(str(d) for d in sorted(days))
+        if val:
+            return val
+        return ""
+
+    def set_recurrence(self, rec_str: str):
+        """Pre-fill from a recurrence string."""
+        if not rec_str:
+            self.rec_combo.setCurrentIndex(0)
+            return
+        if rec_str == "daily":
+            self.rec_combo.setCurrentIndex(1)
+        elif rec_str.startswith("weekly:"):
+            self.rec_combo.setCurrentIndex(2)
+            for d in [int(x) for x in rec_str.split(":")[1].split(",") if x.strip()]:
+                if 0 <= d < len(self._weekday_btns):
+                    self._weekday_btns[d].setChecked(True)
+        elif rec_str == "monthly":
+            self.rec_combo.setCurrentIndex(3)
+        elif rec_str == "yearly":
+            self.rec_combo.setCurrentIndex(4)
+
+
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+#  TemplateEditDialog — edit a single soft event template
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+class TemplateEditDialog(QDialog):
+    """Edit fields for a soft event template."""
+
+    def __init__(self, parent=None, template=None):
+        super().__init__(parent)
+        self._template = template
+        self.setWindowTitle("Edit Template" if template else "New Template")
+        self.setMinimumWidth(400)
+        self.setModal(True)
+
+        layout = QVBoxLayout(self)
+        layout.setSpacing(10)
+        layout.setContentsMargins(14, 12, 14, 12)
+
+        # Title
+        layout.addWidget(QLabel("Title"))
+        self._title_edit = QLineEdit()
+        self._title_edit.setPlaceholderText("e.g. Weekly Review")
+        if template:
+            self._title_edit.setText(template.title)
+        layout.addWidget(self._title_edit)
+
+        # Universal note
+        layout.addWidget(QLabel("Note (shown on every occurrence)"))
+        self._note_edit = QTextEdit()
+        self._note_edit.setMaximumHeight(80)
+        self._note_edit.setPlaceholderText("Optional universal note...")
+        if template:
+            self._note_edit.setPlainText(template.note)
+        layout.addWidget(self._note_edit)
+
+        # Color
+        color_row = QHBoxLayout()
+        color_row.addWidget(QLabel("Color"))
+        self._color = template.color if template else "#a6e3a1"
+        self._color_btn = QPushButton(self._color)
+        self._color_btn.setFixedSize(100, 28)
+        self._update_color_btn()
+        self._color_btn.clicked.connect(self._pick_color)
+        color_row.addWidget(self._color_btn)
+        color_row.addStretch()
+        layout.addLayout(color_row)
+
+        # Recurrence
+        self._rec_widget = RecurrenceWidget()
+        if template:
+            self._rec_widget.set_recurrence(template.recurrence)
+        layout.addWidget(self._rec_widget)
+
+        # Buttons
+        sep = QFrame()
+        sep.setObjectName("separator")
+        sep.setFrameShape(QFrame.Shape.HLine)
+        layout.addWidget(sep)
+
+        btn_row = QHBoxLayout()
+        btn_row.addStretch()
+        cancel = QPushButton("Cancel")
+        cancel.setObjectName("secondary")
+        cancel.clicked.connect(self.reject)
+        btn_row.addWidget(cancel)
+        save = QPushButton("Save")
+        save.clicked.connect(self._on_save)
+        btn_row.addWidget(save)
+        layout.addLayout(btn_row)
+
+    def _update_color_btn(self):
+        self._color_btn.setText(self._color)
+        self._color_btn.setStyleSheet(
+            f"background-color: {self._color}; color: #000; font-weight: bold; "
+            f"border-radius: 4px; border: 1px solid #555;"
+        )
+
+    def _pick_color(self):
+        from PyQt6.QtGui import QColor
+        c = QColorDialog.getColor(QColor(self._color), self, "Pick Template Color")
+        if c.isValid():
+            self._color = c.name()
+            self._update_color_btn()
+
+    def _on_save(self):
+        if not self._title_edit.text().strip():
+            QMessageBox.warning(self, "Missing Title", "Please enter a title.")
+            return
+        self.accept()
+
+    def get_data(self) -> dict:
+        return {
+            "title": self._title_edit.text().strip(),
+            "note": self._note_edit.toPlainText(),
+            "color": self._color,
+            "recurrence": self._rec_widget.get_recurrence(),
+        }
+
+
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+#  ViewLogDialog — read-only log viewer for a template
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+class ViewLogDialog(QDialog):
+    """Read-only view of all log entries for a soft event template."""
+
+    def __init__(self, store, template, parent=None):
+        super().__init__(parent)
+        self.setWindowTitle(f"Log \u2014 {template.title}")
+        self.setMinimumSize(440, 400)
+        self.setModal(True)
+
+        layout = QVBoxLayout(self)
+        layout.setContentsMargins(14, 12, 14, 12)
+
+        logs = store.get_logs_for_template(template.id)
+        text_parts = []
+        for log in logs:
+            text_parts.append(f"=== {log.log_date} ===")
+            text_parts.append(log.log_text)
+            text_parts.append("")
+
+        viewer = QTextEdit()
+        viewer.setReadOnly(True)
+        viewer.setPlainText("\n".join(text_parts) if text_parts else "No log entries yet.")
+        layout.addWidget(viewer, 1)
+
+        close_btn = QPushButton("Close")
+        close_btn.setObjectName("secondary")
+        close_btn.clicked.connect(self.accept)
+        btn_row = QHBoxLayout()
+        btn_row.addStretch()
+        btn_row.addWidget(close_btn)
+        layout.addLayout(btn_row)
+
+
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+#  SoftEventManagerDialog
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+class SoftEventManagerDialog(QDialog):
+    """Manage soft event templates — list, add, edit, delete, view log."""
+
+    def __init__(self, soft_events_store, parent=None):
+        super().__init__(parent)
+        self.store = soft_events_store
+        self.setWindowTitle("Soft Events — Template Manager")
+        self.setMinimumSize(500, 420)
+        self.setModal(True)
+        self._build_ui()
+        self._load()
+
+    def _build_ui(self):
+        layout = QVBoxLayout(self)
+        layout.setSpacing(10)
+        layout.setContentsMargins(14, 12, 14, 12)
+
+        layout.addWidget(QLabel(
+            "Soft events are lightweight recurring reminders with per-day logs."
+        ))
+
+        self._list = QListWidget()
+        layout.addWidget(self._list, 1)
+
+        btn_row = QHBoxLayout()
+        new_btn = QPushButton("New")
+        new_btn.clicked.connect(self._add)
+        btn_row.addWidget(new_btn)
+        edit_btn = QPushButton("Edit")
+        edit_btn.setObjectName("secondary")
+        edit_btn.clicked.connect(self._edit)
+        btn_row.addWidget(edit_btn)
+        del_btn = QPushButton("Delete")
+        del_btn.setObjectName("destructive")
+        del_btn.clicked.connect(self._delete)
+        btn_row.addWidget(del_btn)
+        log_btn = QPushButton("View Log")
+        log_btn.setObjectName("secondary")
+        log_btn.clicked.connect(self._view_log)
+        btn_row.addWidget(log_btn)
+        btn_row.addStretch()
+        close_btn = QPushButton("Close")
+        close_btn.setObjectName("secondary")
+        close_btn.clicked.connect(self.accept)
+        btn_row.addWidget(close_btn)
+        layout.addLayout(btn_row)
+
+    def _load(self):
+        self._list.clear()
+        self._templates = self.store.get_templates()
+        for tpl in self._templates:
+            item = QListWidgetItem(f"\u25cf {tpl.title}")
+            item.setForeground(self._list.palette().text())
+            # Store template id for retrieval
+            item.setData(Qt.ItemDataRole.UserRole, tpl.id)
+            self._list.addItem(item)
+
+    def _selected_template(self):
+        row = self._list.currentRow()
+        if 0 <= row < len(self._templates):
+            return self._templates[row]
+        return None
+
+    def _add(self):
+        dlg = TemplateEditDialog(self)
+        if dlg.exec() == QDialog.DialogCode.Accepted:
+            data = dlg.get_data()
+            self.store.add_template(**data)
+            self._load()
+
+    def _edit(self):
+        tpl = self._selected_template()
+        if not tpl:
+            return
+        dlg = TemplateEditDialog(self, tpl)
+        if dlg.exec() == QDialog.DialogCode.Accepted:
+            data = dlg.get_data()
+            tpl.title = data["title"]
+            tpl.note = data["note"]
+            tpl.color = data["color"]
+            tpl.recurrence = data["recurrence"]
+            self.store.update_template(tpl)
+            self._load()
+
+    def _delete(self):
+        tpl = self._selected_template()
+        if not tpl:
+            return
+        reply = QMessageBox.question(
+            self, "Delete Template",
+            f"Delete '{tpl.title}'? Log entries will be preserved.",
+            QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
+        )
+        if reply == QMessageBox.StandardButton.Yes:
+            self.store.delete_template(tpl.id)
+            self._load()
+
+    def _view_log(self):
+        tpl = self._selected_template()
+        if not tpl:
+            return
+        ViewLogDialog(self.store, tpl, self).exec()
 ```
 
 ### `src\ui\modules\dashboard_panel.py`
@@ -7024,6 +7953,8 @@ New in this version:
   • SideIncomeGoalSection — prominent month-browsable side income goal tracker
     with a color-coded progress bar (red → green → blue glow at major goal).
   • Goal data stored in side_income_goals table via FinanceStore.set_goal()
+  • "Coming Up (Next 7 Days)" section for soft event reminders
+  • Store injection — all stores passed in from main_window
 """
 
 import calendar as _calendar
@@ -7035,16 +7966,20 @@ from PyQt6.QtWidgets import (
     QWidget, QVBoxLayout, QHBoxLayout, QGridLayout,
     QLabel, QFrame, QScrollArea, QProgressBar,
     QPushButton, QDialog, QDialogButtonBox, QDoubleSpinBox,
-    QFormLayout, QSizePolicy, QComboBox,
+    QFormLayout, QSizePolicy, QComboBox, QTextEdit,
 )
 
 from src.config import load_config
 from src.data.todo_store import TodoStore, PRIORITY_LABELS
 from src.data.calendar_store import CalendarStore
 from src.data.finance_store import FinanceStore
+from src.data.soft_events_store import SoftEventStore
 
 
 PRIORITY_COLORS = {0: "#a6adc8", 1: "#a6e3a1", 2: "#f9e2af", 3: "#f38ba8"}
+
+# Sentinel → palette key map for store-layer color strings
+SENTINEL_COLORS = {"birthday": "red", "holiday": "yellow", "trip": "accent"}
 
 _MONTH_NAMES = [
     "", "January", "February", "March", "April", "May", "June",
@@ -7167,21 +8102,17 @@ class GoalBar(QWidget):
         bar_y = (self.height() - bar_h) // 2
         radius = bar_h / 2
 
-        # Determine fill state
         at_major = self._current >= self._major_goal
         at_min   = self._current >= self._min_goal
 
-        # Fill ratio — capped at 100% of major goal for visual purposes
         cap = self._major_goal * 1.05
         fill_ratio = min(self._current / cap, 1.0)
 
-        # Color
         if at_major:
             fill_color = QColor(self._palette.get("accent", "#89b4fa"))
         elif at_min:
             fill_color = QColor(self._palette.get("green", "#a6e3a1"))
         else:
-            # Blend from dark red to orange based on progress toward min
             ratio_to_min = self._current / self._min_goal
             r_start = QColor("#e55050")
             r_end   = QColor("#f9a040")
@@ -7190,34 +8121,29 @@ class GoalBar(QWidget):
             b = int(r_start.blue()  + (r_end.blue()  - r_start.blue())  * ratio_to_min)
             fill_color = QColor(r, g, b)
 
-        # Background track
         bg = QColor(self._palette.get("surface", "#313244"))
         painter.setPen(Qt.PenStyle.NoPen)
         painter.setBrush(QBrush(bg))
         painter.drawRoundedRect(0, bar_y, w, bar_h, radius, radius)
 
-        # Glow effect behind fill if at major goal
         if at_major and fill_ratio > 0:
             glow = QColor(fill_color)
             glow.setAlpha(60)
             painter.setBrush(QBrush(glow))
             painter.drawRoundedRect(-3, bar_y - 3, w + 6, bar_h + 6, radius + 3, radius + 3)
 
-        # Fill
         fill_w = max(int(w * fill_ratio), 0)
         if fill_w > 0:
             painter.setBrush(QBrush(fill_color))
             painter.setPen(Qt.PenStyle.NoPen)
             painter.drawRoundedRect(0, bar_y, fill_w, bar_h, radius, radius)
 
-        # Min goal marker (white vertical line)
         min_x = int(w * (self._min_goal / cap))
         if 0 < min_x < w:
             marker_pen = QPen(QColor("#ffffff"), 2)
             painter.setPen(marker_pen)
             painter.drawLine(min_x, bar_y - 2, min_x, bar_y + bar_h + 2)
 
-        # Major goal marker (gold vertical line)
         major_x = int(w * (self._major_goal / cap))
         if 0 < major_x < w:
             gold = QColor(self._palette.get("yellow", "#f9e2af"))
@@ -7253,7 +8179,6 @@ class GoalEditDialog(QDialog):
             "Only Side Job income counts toward these goals."
         ))
 
-        # ── Currency selector ──
         cur_row = QHBoxLayout()
         cur_row.addWidget(QLabel("Enter goals in:"))
         self._cur_combo = QComboBox()
@@ -7290,13 +8215,10 @@ class GoalEditDialog(QDialog):
         btn_box.rejected.connect(self.reject)
         layout.addWidget(btn_box)
 
-        # Initialise in USD mode with existing values
         self._apply_usd_mode()
         self._min_spin.setValue(min_goal)
         self._major_spin.setValue(major_goal)
         self._update_hints()
-
-    # ── Currency mode helpers ─────────────────────────────────────────────────
 
     def _apply_usd_mode(self):
         for sp in (self._min_spin, self._major_spin):
@@ -7309,26 +8231,26 @@ class GoalEditDialog(QDialog):
     def _on_currency_changed(self, idx: int):
         min_v   = self._min_spin.value()
         major_v = self._major_spin.value()
-        if idx == 0:   # → USD
+        if idx == 0:
             self._apply_usd_mode()
-            if min_v > 5000:  # looks like JPY, convert
+            if min_v > 5000:
                 self._min_spin.setValue(round(min_v   / self._rate))
                 self._major_spin.setValue(round(major_v / self._rate))
-        else:           # → JPY
+        else:
             self._apply_jpy_mode()
-            if min_v < 5000:  # looks like USD, convert
+            if min_v < 5000:
                 self._min_spin.setValue(round(min_v   * self._rate))
                 self._major_spin.setValue(round(major_v * self._rate))
         self._update_hints()
 
     def _update_hints(self):
         rate = self._rate
-        if self._cur_combo.currentIndex() == 0:   # USD mode
+        if self._cur_combo.currentIndex() == 0:
             min_jpy   = int(self._min_spin.value()   * rate)
             major_jpy = int(self._major_spin.value() * rate)
             self._min_hint.setText(f"\u2248 \u00a5{min_jpy:,} JPY")
             self._major_hint.setText(f"\u2248 \u00a5{major_jpy:,} JPY")
-        else:                                       # JPY mode
+        else:
             min_usd   = self._min_spin.value()   / rate if rate else 0
             major_usd = self._major_spin.value() / rate if rate else 0
             self._min_hint.setText(f"\u2248 ${min_usd:,.2f} USD")
@@ -7344,7 +8266,7 @@ class GoalEditDialog(QDialog):
 
     def get_goals(self) -> tuple[float, float]:
         """Always returns (min_usd, major_usd)."""
-        if self._cur_combo.currentIndex() == 1:   # JPY → convert
+        if self._cur_combo.currentIndex() == 1:
             rate = self._rate
             return self._min_spin.value() / rate, self._major_spin.value() / rate
         return self._min_spin.value(), self._major_spin.value()
@@ -7363,7 +8285,7 @@ class SideIncomeGoalSection(QFrame):
         self._palette: dict = {}
         self._year  = date.today().year
         self._month = date.today().month
-        self._rate  = 150.0   # USD→JPY; updated from config
+        self._rate  = 150.0
 
         self.setObjectName("goalSection")
         self._build_ui()
@@ -7384,10 +8306,8 @@ class SideIncomeGoalSection(QFrame):
         outer.setContentsMargins(14, 12, 14, 12)
         outer.setSpacing(8)
 
-        # ── Header row ──
         hdr = QHBoxLayout()
 
-        # Month navigation
         self._prev_btn = QPushButton("\u2190")
         self._prev_btn.setObjectName("secondary")
         self._prev_btn.setFixedSize(26, 26)
@@ -7417,11 +8337,9 @@ class SideIncomeGoalSection(QFrame):
 
         outer.addLayout(hdr)
 
-        # ── Progress bar ──
         self._bar = GoalBar()
         outer.addWidget(self._bar)
 
-        # ── Amount labels row ──
         self._amount_lbl = QLabel()
         self._amount_lbl.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self._amount_lbl.setStyleSheet("font-size:12px;")
@@ -7432,7 +8350,6 @@ class SideIncomeGoalSection(QFrame):
         self._sub_lbl.setStyleSheet("font-size:10px;")
         outer.addWidget(self._sub_lbl)
 
-        # ── No goal set label ──
         self._no_goal_lbl = QLabel(
             "No goals set for this month. Click \u2018Edit Goals\u2019 to get started."
         )
@@ -7443,7 +8360,7 @@ class SideIncomeGoalSection(QFrame):
 
     def _refresh(self):
         self._load_rate()
-        self._month_lbl.setText(f"{_MONTH_NAMES[self._month]} {self._year} — Side Income Goal")
+        self._month_lbl.setText(f"{_MONTH_NAMES[self._month]} {self._year} \u2014 Side Income Goal")
 
         goal = self.store.get_goal(self._year, self._month)
         earned_usd = self.store.get_side_income(self._year, self._month, self._rate)
@@ -7467,11 +8384,9 @@ class SideIncomeGoalSection(QFrame):
         min_jpy   = int(goal.min_goal   * self._rate)
         major_jpy = int(goal.major_goal * self._rate)
 
-        # Percentage toward minimum (capped at 999% for display sanity)
         pct_min = min(earned_usd / goal.min_goal * 100, 999) if goal.min_goal > 0 else 0
         pct_major = min(earned_usd / goal.major_goal * 100, 999) if goal.major_goal > 0 else 0
 
-        # Determine status label color
         if earned_usd >= goal.major_goal:
             status = "\u2605 Major Goal Reached!"
             status_color = self._palette.get("accent", "#89b4fa")
@@ -7482,13 +8397,13 @@ class SideIncomeGoalSection(QFrame):
             remaining_usd = goal.min_goal - earned_usd
             remaining_jpy = int(remaining_usd * self._rate)
             status = f"${remaining_usd:,.0f} / \u00a5{remaining_jpy:,} until minimum"
-            status_color = "#f38ba8"
+            status_color = self._palette.get("red", "#f38ba8")
 
         self._amount_lbl.setText(
             f"${earned_usd:,.2f}  \u00a5{earned_jpy:,}"
-            f"   \u2014   {pct_min:.0f}% of min  ·  {pct_major:.0f}% of major"
+            f"   \u2014   {pct_min:.0f}% of min  \u00b7  {pct_major:.0f}% of major"
         )
-        self._amount_lbl.setStyleSheet(f"font-size:12px;font-weight:bold;")
+        self._amount_lbl.setStyleSheet("font-size:12px;font-weight:bold;")
 
         self._sub_lbl.setText(
             f"Min: ${goal.min_goal:,.0f} (\u00a5{min_jpy:,})   "
@@ -7499,16 +8414,14 @@ class SideIncomeGoalSection(QFrame):
 
     def _prev_month(self):
         if self._month == 1:
-            self._month = 12
-            self._year -= 1
+            self._month = 12; self._year -= 1
         else:
             self._month -= 1
         self._refresh()
 
     def _next_month(self):
         if self._month == 12:
-            self._month = 1
-            self._year += 1
+            self._month = 1; self._year += 1
         else:
             self._month += 1
         self._refresh()
@@ -7528,21 +8441,126 @@ class SideIncomeGoalSection(QFrame):
 
 
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+#  SoftEventLogDialog — per-day log editor for a soft event
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+class SoftEventLogDialog(QDialog):
+    """Edit the per-day log for a soft event occurrence."""
+
+    def __init__(self, parent, soft_events_store: SoftEventStore,
+                 template, log_date: date):
+        super().__init__(parent)
+        self._store = soft_events_store
+        self._template = template
+        self._log_date = log_date
+        self._palette: dict = getattr(parent, '_palette', {})
+
+        date_str = log_date.isoformat()
+        self.setWindowTitle(f"{template.title} \u2014 {date_str}")
+        self.setMinimumSize(420, 360)
+        self.setModal(True)
+
+        layout = QVBoxLayout(self)
+        layout.setSpacing(10)
+        layout.setContentsMargins(16, 14, 16, 14)
+
+        # Template universal note (read-only)
+        if template.note:
+            note_lbl = QLabel(template.note)
+            note_lbl.setWordWrap(True)
+            muted = self._palette.get("muted", "#7f849c")
+            note_lbl.setStyleSheet(f"color: {muted}; font-style: italic; font-size: 11px;")
+            layout.addWidget(note_lbl)
+
+            sep = QFrame()
+            sep.setObjectName("separator")
+            sep.setFrameShape(QFrame.Shape.HLine)
+            layout.addWidget(sep)
+
+        # Editable log text
+        self._log_entry = self._store.get_or_create_log(template.id, date_str)
+        self._editor = QTextEdit()
+        self._editor.setPlainText(self._log_entry.log_text)
+        layout.addWidget(self._editor, 1)
+
+        # Buttons
+        btn_row = QHBoxLayout()
+        btn_row.addStretch()
+        cancel_btn = QPushButton("Cancel")
+        cancel_btn.setObjectName("secondary")
+        cancel_btn.clicked.connect(self.reject)
+        btn_row.addWidget(cancel_btn)
+        save_btn = QPushButton("Save")
+        save_btn.clicked.connect(self._save)
+        btn_row.addWidget(save_btn)
+        layout.addLayout(btn_row)
+
+    def _save(self):
+        self._log_entry.log_text = self._editor.toPlainText()
+        self._store.update_log(self._log_entry)
+        self.accept()
+
+
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+#  ComingUpRow — a single soft event in the Coming Up section
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+class _ComingUpRow(QFrame):
+    """A single soft event reminder row."""
+
+    def __init__(self, template, occurrence_date: date,
+                 relative_label: str, parent_panel, parent=None):
+        super().__init__(parent)
+        self._template = template
+        self._date = occurrence_date
+        self._panel = parent_panel
+        self.setCursor(Qt.CursorShape.PointingHandCursor)
+
+        layout = QHBoxLayout(self)
+        layout.setContentsMargins(6, 3, 6, 3)
+        layout.setSpacing(6)
+
+        dot = QLabel("\u25cf")
+        dot.setStyleSheet(f"color: {template.color}; font-size: 12px;")
+        dot.setFixedWidth(14)
+        layout.addWidget(dot)
+
+        title = QLabel(template.title)
+        title.setStyleSheet("font-size: 12px; font-weight: bold;")
+        layout.addWidget(title, 1)
+
+        rel = QLabel(relative_label)
+        rel.setObjectName("subtitle")
+        rel.setStyleSheet("font-size: 10px;")
+        rel.setAlignment(Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter)
+        layout.addWidget(rel)
+
+    def mousePressEvent(self, ev):
+        dlg = SoftEventLogDialog(
+            self._panel, self._panel.soft_events_store,
+            self._template, self._date,
+        )
+        dlg.exec()
+
+
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 #  DashboardPanel
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 class DashboardPanel(QWidget):
 
-    def __init__(self, parent=None):
+    def __init__(self, todo_store=None, calendar_store=None,
+                 finance_store=None, soft_events_store=None, parent=None):
         super().__init__(parent)
-        self.todo_store     = TodoStore()
-        self.calendar_store = CalendarStore()
-        self.finance_store  = FinanceStore()
+        self.todo_store     = todo_store     or TodoStore()
+        self.calendar_store = calendar_store or CalendarStore()
+        self.finance_store  = finance_store  or FinanceStore()
+        self.soft_events_store = soft_events_store or SoftEventStore()
         self._palette: dict = {}
         self._build_ui()
         self._refresh()
 
-        # Auto-refresh every 60 seconds so stats stay current
+        # Auto-refresh every 60 seconds
         self._auto_timer = QTimer(self)
         self._auto_timer.setInterval(60_000)
         self._auto_timer.timeout.connect(self._refresh)
@@ -7574,7 +8592,7 @@ class DashboardPanel(QWidget):
         header.addWidget(self.date_label)
         layout.addLayout(header)
 
-        # ── Side Income Goal Section (prominent, full-width) ──
+        # ── Side Income Goal Section ──
         self._goal_section = SideIncomeGoalSection(self.finance_store)
         self._goal_section.setStyleSheet(
             "#goalSection {"
@@ -7638,6 +8656,18 @@ class DashboardPanel(QWidget):
         upcoming_scroll.setWidget(self._upcoming_container)
         upcoming_scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
         left.addWidget(upcoming_scroll, 1)
+
+        # ── Coming Up (Next 7 Days) section ──
+        coming_up_title = QLabel("Coming Up (Next 7 Days)")
+        coming_up_title.setStyleSheet("font-weight: bold; font-size: 13px;")
+        left.addWidget(coming_up_title)
+
+        self._coming_up_container = QWidget()
+        self._coming_up_layout = QVBoxLayout(self._coming_up_container)
+        self._coming_up_layout.setContentsMargins(0, 0, 0, 0)
+        self._coming_up_layout.setSpacing(2)
+        left.addWidget(self._coming_up_container)
+
         columns.addLayout(left, 3)
 
         # Right: priority + category breakdown
@@ -7742,9 +8772,9 @@ class DashboardPanel(QWidget):
             }}
         """)
 
-        # Upcoming deadlines
+        # Upcoming deadlines (extended: 30 days, 12 items)
         self._clear_layout(self._upcoming_layout)
-        upcoming_items = []
+        upcoming_items: list[tuple[int, QWidget]] = []
 
         for task in sorted(pending_tasks, key=lambda t: t.due_date or "9999"):
             if task.due_date:
@@ -7767,6 +8797,22 @@ class DashboardPanel(QWidget):
                     )))
                 except ValueError:
                     pass
+
+        # Major events — 30-day lookahead, 12 items
+        majors = self.calendar_store.get_next_major_events(today, limit=12)
+        thirty_days = today + timedelta(days=30)
+        for ev_date, ev_title, category, color, item_id, is_birthday in majors:
+            if ev_date > thirty_days:
+                continue
+            delta = (ev_date - today).days
+            if delta == 0:   days_text = "Today"
+            elif delta == 1: days_text = "Tomorrow"
+            else:            days_text = f"In {delta}d"
+            # Resolve sentinel colors
+            resolved = self._palette.get(SENTINEL_COLORS.get(color, "accent"), color)
+            upcoming_items.append((delta, UpcomingItem(
+                ev_title, category.title(), resolved, days_text
+            )))
 
         next_week = today + timedelta(days=7)
         upcoming_events = self.calendar_store.get_events(
@@ -7798,6 +8844,34 @@ class DashboardPanel(QWidget):
             self._upcoming_layout.addWidget(no_items)
 
         self._upcoming_layout.addStretch()
+
+        # ── Coming Up (Next 7 Days) — soft events ──
+        self._clear_layout(self._coming_up_layout)
+        try:
+            soft_upcoming = self.soft_events_store.get_upcoming(today, days_ahead=7)
+        except Exception:
+            soft_upcoming = []
+
+        if soft_upcoming:
+            for occ_date, tpl in soft_upcoming:
+                delta = (occ_date - today).days
+                if delta == 0:
+                    rel_text = "Today"
+                elif delta == 1:
+                    rel_text = "Tomorrow"
+                elif delta <= 6:
+                    rel_text = f"Next {occ_date.strftime('%A')}"
+                else:
+                    rel_text = f"In {delta} days"
+                row = _ComingUpRow(tpl, occ_date, rel_text, self)
+                self._coming_up_layout.addWidget(row)
+        else:
+            muted = self._palette.get("muted", "#7f849c")
+            no_soft = QLabel("No reminders in the next 7 days.")
+            no_soft.setStyleSheet(f"color: {muted}; font-size: 11px; padding: 4px 0;")
+            self._coming_up_layout.addWidget(no_soft)
+
+        self._coming_up_layout.addStretch()
 
         # Priority breakdown
         self._clear_layout(self._priority_layout)
@@ -8661,17 +9735,19 @@ Changes in this version:
 import threading
 import urllib.request
 import json
+import csv
 from datetime import date, timedelta
+from pathlib import Path
 
 from PyQt6.QtCore import Qt, QDate, pyqtSignal, QObject
 from PyQt6.QtGui import QColor, QBrush, QPainter, QPen
 from PyQt6.QtWidgets import (
-    QWidget, QVBoxLayout, QHBoxLayout, QSplitter,
+    QWidget, QVBoxLayout, QHBoxLayout, QSplitter, QFileDialog,
     QLabel, QPushButton, QDialog, QLineEdit, QComboBox,
     QDateEdit, QDoubleSpinBox, QTableWidget, QTableWidgetItem,
     QHeaderView, QFrame, QMessageBox, QScrollArea,
     QFormLayout, QSizePolicy, QAbstractItemView, QInputDialog,
-    QDialogButtonBox, QCheckBox, QGridLayout, QSpinBox,
+    QDialogButtonBox, QCheckBox, QGridLayout, QSpinBox, QButtonGroup, QRadioButton
 )
 
 from src.config import load_config, save_config
@@ -9396,25 +10472,25 @@ class GoalSettingsDialog(QDialog):
 
         form = QFormLayout(); form.setSpacing(8)
 
-        self.base_spin = QDoubleSpinBox()
-        self.base_spin.setRange(1, 99_999_999)
-        self.base_spin.valueChanged.connect(self._update_hints)
-        form.addRow("Base Goal:", self.base_spin)
+        self.min_spin = QDoubleSpinBox()
+        self.min_spin.setRange(1, 99_999_999)
+        self.min_spin.valueChanged.connect(self._update_hints)
+        form.addRow("Minimum Goal:", self.min_spin)
 
-        self._base_hint = QLabel()
-        self._base_hint.setObjectName("subtitle")
-        self._base_hint.setStyleSheet("font-size:10px;")
-        form.addRow("", self._base_hint)
+        self._min_hint = QLabel()
+        self._min_hint.setObjectName("subtitle")
+        self._min_hint.setStyleSheet("font-size:10px;")
+        form.addRow("", self._min_hint)
 
-        self.extra_spin = QDoubleSpinBox()
-        self.extra_spin.setRange(1, 99_999_999)
-        self.extra_spin.valueChanged.connect(self._update_hints)
-        form.addRow("Extra Goal:", self.extra_spin)
+        self.major_spin = QDoubleSpinBox()
+        self.major_spin.setRange(1, 99_999_999)
+        self.major_spin.valueChanged.connect(self._update_hints)
+        form.addRow("Extra Goal:", self.major_spin)
 
-        self._extra_hint = QLabel()
-        self._extra_hint.setObjectName("subtitle")
-        self._extra_hint.setStyleSheet("font-size:10px;")
-        form.addRow("", self._extra_hint)
+        self._major_hint = QLabel()
+        self._major_hint.setObjectName("subtitle")
+        self._major_hint.setStyleSheet("font-size:10px;")
+        form.addRow("", self._major_hint)
 
         layout.addLayout(form)
 
@@ -9429,61 +10505,61 @@ class GoalSettingsDialog(QDialog):
 
         # Initialise spinboxes with USD values
         self._apply_usd_mode()
-        self.base_spin.setValue(base)
-        self.extra_spin.setValue(extra)
+        self.min_spin.setValue(base)
+        self.major_spin.setValue(extra)
         self._update_hints()
 
     def _apply_usd_mode(self):
-        for sp in (self.base_spin, self.extra_spin):
+        for sp in (self.min_spin, self.major_spin):
             sp.setDecimals(0); sp.setSingleStep(100); sp.setPrefix("$ ")
 
     def _apply_jpy_mode(self):
-        for sp in (self.base_spin, self.extra_spin):
+        for sp in (self.min_spin, self.major_spin):
             sp.setDecimals(0); sp.setSingleStep(10_000); sp.setPrefix("\u00a5 ")
 
     def _on_currency_changed(self, idx: int):
         rate = self._rate
         # Convert current values to the new currency
-        base_usd  = self.base_spin.value()
-        extra_usd = self.extra_spin.value()
+        base_usd  = self.min_spin.value()
+        extra_usd = self.major_spin.value()
         if idx == 0:   # switching to USD
             self._apply_usd_mode()
             # If previous values look like JPY (large), convert; otherwise keep
             if base_usd > 5000:
-                self.base_spin.setValue(round(base_usd / rate))
-                self.extra_spin.setValue(round(extra_usd / rate))
+                self.min_spin.setValue(round(base_usd / rate))
+                self.major_spin.setValue(round(extra_usd / rate))
         else:           # switching to JPY
             self._apply_jpy_mode()
             if base_usd < 5000:
-                self.base_spin.setValue(round(base_usd * rate))
-                self.extra_spin.setValue(round(extra_usd * rate))
+                self.min_spin.setValue(round(base_usd * rate))
+                self.major_spin.setValue(round(extra_usd * rate))
         self._update_hints()
 
     def _update_hints(self):
         rate = self._rate
         if self._cur_combo.currentIndex() == 0:  # USD mode
-            b_jpy = int(self.base_spin.value() * rate)
-            e_jpy = int(self.extra_spin.value() * rate)
-            self._base_hint.setText(f"\u2248 \u00a5{b_jpy:,} JPY")
-            self._extra_hint.setText(f"\u2248 \u00a5{e_jpy:,} JPY")
+            b_jpy = int(self.min_spin.value() * rate)
+            e_jpy = int(self.major_spin.value() * rate)
+            self._min_hint.setText(f"\u2248 \u00a5{b_jpy:,} JPY")
+            self._major_hint.setText(f"\u2248 \u00a5{e_jpy:,} JPY")
         else:                                     # JPY mode
-            b_usd = self.base_spin.value() / rate if rate else 0
-            e_usd = self.extra_spin.value() / rate if rate else 0
-            self._base_hint.setText(f"\u2248 ${b_usd:,.2f} USD")
-            self._extra_hint.setText(f"\u2248 ${e_usd:,.2f} USD")
+            b_usd = self.min_spin.value() / rate if rate else 0
+            e_usd = self.major_spin.value() / rate if rate else 0
+            self._min_hint.setText(f"\u2248 ${b_usd:,.2f} USD")
+            self._major_hint.setText(f"\u2248 ${e_usd:,.2f} USD")
 
     def _validate_and_accept(self):
-        if self.extra_spin.value() <= self.base_spin.value():
+        if self.major_spin.value() <= self.min_spin.value():
             QMessageBox.warning(self, "Invalid Goals",
-                "Extra goal must be greater than base goal."); return
+                "Major goal must be greater than minimum goal."); return
         self.accept()
 
     def get_goals(self) -> tuple[float, float]:
-        """Always return (base_usd, extra_usd)."""
+        """Always return (min_usd, major_usd)."""
         rate = self._rate if self._rate else _FALLBACK_RATE
         if self._cur_combo.currentIndex() == 1:   # JPY → convert to USD
-            return self.base_spin.value() / rate, self.extra_spin.value() / rate
-        return self.base_spin.value(), self.extra_spin.value()
+            return self.min_spin.value() / rate, self.major_spin.value() / rate
+        return self.min_spin.value(), self.major_spin.value()
 
 
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -9656,6 +10732,126 @@ class PresetButton(QWidget):
             "PresetButton:hover{background-color:#313244;}")
         self.setFixedWidth(150)
 
+"""Task 8 Fix C — TaxExportDialog.
+
+Paste this class into finance_panel.py BEFORE the FinancePanel class.
+Then add the export button in FinancePanel._build_header() as shown below.
+"""
+
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+#  TaxExportDialog — 確定申告 CSV export
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+class TaxExportDialog(QDialog):
+    """Export transaction data for 確定申告 (annual tax filing)."""
+
+    def __init__(self, parent, finance_store):
+        super().__init__(parent)
+        self.store = finance_store
+        self.setWindowTitle("Export for 確定申告")
+        self.setMinimumWidth(400)
+        self.setModal(True)
+
+        layout = QVBoxLayout(self)
+        layout.setSpacing(12)
+        layout.setContentsMargins(16, 14, 16, 14)
+
+        layout.addWidget(QLabel("Export transaction data for tax filing."))
+
+        # Year selector
+        year_row = QHBoxLayout()
+        year_row.addWidget(QLabel("Year:"))
+        self._year_spin = QSpinBox()
+        self._year_spin.setRange(2020, 2035)
+        self._year_spin.setValue(date.today().year)
+        year_row.addWidget(self._year_spin)
+        year_row.addStretch()
+        layout.addLayout(year_row)
+
+        # Filter radio buttons
+        self._filter_group = QButtonGroup(self)
+        self._radio_all = QRadioButton("All transactions")
+        self._radio_all.setChecked(True)
+        self._radio_monthly = QRadioButton("[Monthly] tagged only")
+        self._filter_group.addButton(self._radio_all)
+        self._filter_group.addButton(self._radio_monthly)
+        layout.addWidget(self._radio_all)
+        layout.addWidget(self._radio_monthly)
+
+        sep = QFrame()
+        sep.setObjectName("separator")
+        sep.setFrameShape(QFrame.Shape.HLine)
+        layout.addWidget(sep)
+
+        # Export button
+        btn_row = QHBoxLayout()
+        btn_row.addStretch()
+        cancel_btn = QPushButton("Cancel")
+        cancel_btn.setObjectName("secondary")
+        cancel_btn.clicked.connect(self.reject)
+        btn_row.addWidget(cancel_btn)
+        export_btn = QPushButton("Export CSV")
+        export_btn.clicked.connect(self._export)
+        btn_row.addWidget(export_btn)
+        layout.addLayout(btn_row)
+
+    def _export(self):
+        year = self._year_spin.value()
+        start = f"{year}-01-01"
+        end = f"{year}-12-31"
+
+        txns = self.store.get_transactions(start, end)
+
+        # Apply filter
+        if self._radio_monthly.isChecked():
+            txns = [t for t in txns if "[Monthly]" in t.description]
+
+        if not txns:
+            QMessageBox.information(self, "No Data",
+                f"No matching transactions found for {year}.")
+            return
+
+        # File dialog
+        default_name = f"確定申告_{year}.csv"
+        path, _ = QFileDialog.getSaveFileName(
+            self, "Save CSV", str(Path.home() / default_name),
+            "CSV Files (*.csv);;All Files (*)",
+        )
+        if not path:
+            return
+
+        # Get rate for conversion
+        from src.config import load_config
+        cfg = load_config()
+        rate = float(cfg.get("usd_jpy_fallback_rate", 150.0))
+
+        try:
+            with open(path, "w", newline="", encoding="utf-8-sig") as f:
+                writer = csv.writer(f)
+                writer.writerow([
+                    "Date", "Type", "Category", "Description",
+                    "Amount (Original)", "Currency",
+                    "Amount (USD)", "Amount (JPY)", "Is Job Pay",
+                ])
+                for t in txns:
+                    if t.currency == "JPY":
+                        amt_jpy = t.amount
+                        amt_usd = t.amount / rate if rate else 0
+                    else:
+                        amt_usd = t.amount
+                        amt_jpy = t.amount * rate
+                    writer.writerow([
+                        t.date, t.type, t.category, t.description,
+                        t.amount, t.currency,
+                        f"{amt_usd:.2f}", f"{amt_jpy:.0f}",
+                        "Yes" if t.is_job_pay else "No",
+                    ])
+
+            QMessageBox.information(self, "Exported",
+                f"Exported {len(txns)} transaction(s) to:\n{path}")
+            self.accept()
+        except OSError as e:
+            QMessageBox.warning(self, "Error", f"Failed to write file:\n{e}")
 
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 #  FinancePanel
@@ -9731,6 +10927,11 @@ class FinancePanel(QWidget):
         btn_del = QPushButton("Delete"); btn_del.setObjectName("destructive")
         btn_del.setToolTip("Delete selected row(s)")
         btn_del.clicked.connect(self._delete_transaction); header.addWidget(btn_del)
+        export_btn = QPushButton("Export for 確定申告 \U0001f4ca")
+        export_btn.setObjectName("secondary")
+        export_btn.setToolTip("Export transactions for tax filing")
+        export_btn.clicked.connect(self._open_tax_export)
+        header.addWidget(export_btn)
         return header
 
     def _build_quick_log_bar(self) -> QWidget:
@@ -9748,7 +10949,8 @@ class FinancePanel(QWidget):
         manage_btn.clicked.connect(self._open_preset_manager)
         title_row.addWidget(manage_btn)
 
-        monthly_btn = QPushButton("\U0001f4cb Monthly Expenses")
+        self._monthly_expenses_btn = QPushButton("\U0001f4cb Monthly Expenses")
+        monthly_btn = self._monthly_expenses_btn
         monthly_btn.setObjectName("secondary"); monthly_btn.setFixedHeight(22)
         monthly_btn.setToolTip("Log recurring monthly bills in one go")
         monthly_btn.clicked.connect(self._open_monthly_expenses)
@@ -9823,6 +11025,9 @@ class FinancePanel(QWidget):
         legend_row.addStretch(); legend_row.addWidget(self.goal_current_label)
         vbox.addLayout(legend_row)
         return container
+
+    def _open_tax_export(self):
+        TaxExportDialog(self, self.store).exec()
 
     def _build_table(self) -> QWidget:
         self.table = QTableWidget(); self.table.setColumnCount(6)
@@ -9932,6 +11137,25 @@ class FinancePanel(QWidget):
         if not presets:
             ph = QLabel("No presets yet \u2014 click \u2699 Manage Presets to add one.")
             ph.setObjectName("subtitle"); self._preset_row_layout.insertWidget(0, ph)
+
+    def _update_month_gate(self):
+        """Disable Quick Log and Monthly Expenses buttons when viewing a non-current month."""
+        qs = self.filter_start.date()
+        today = date.today()
+        is_current = (qs.year() == today.year and qs.month() == today.month)
+
+        # Gate preset buttons
+        for i in range(self._preset_row_layout.count()):
+            w = self._preset_row_layout.itemAt(i).widget()
+            if w and isinstance(w, PresetButton):
+                w.setEnabled(is_current)
+                w.setToolTip("" if is_current else "Switch to the current month to log income")
+
+        # Gate monthly expenses button
+        self._monthly_expenses_btn.setEnabled(is_current)
+        self._monthly_expenses_btn.setToolTip(
+            "" if is_current else "Switch to the current month to log income"
+        )
 
     def _log_preset(self, preset: JobPreset):
         self.store.log_preset(preset, count=1, on_date=date.today().isoformat())
@@ -10064,6 +11288,7 @@ class FinancePanel(QWidget):
 
         self._update_goal_section()
         self._rebuild_preset_buttons()
+        self._update_month_gate()
 
     # ── CRUD ─────────────────────────────────────────────────────────────────
 
@@ -10113,7 +11338,12 @@ that mimics Obsidian's file explorer layout.
 
 import json
 import logging
+import os
+import subprocess
+import sys
 import threading
+import urllib.parse
+import urllib.request
 from collections import defaultdict
 from pathlib import Path, PurePosixPath
 
@@ -10121,9 +11351,9 @@ from PyQt6.QtCore import Qt, QTimer
 from PyQt6.QtGui import QFont, QIcon
 from PyQt6.QtWidgets import (
     QWidget, QVBoxLayout, QHBoxLayout, QSplitter,
-    QTreeWidget, QTreeWidgetItem, QPlainTextEdit,
+    QTreeWidget, QTreeWidgetItem, QPlainTextEdit, QTextBrowser,
     QLineEdit, QPushButton, QLabel, QMessageBox, QInputDialog,
-    QFrame, QFileDialog,
+    QFrame, QFileDialog, QStackedWidget,
 )
 
 from src.config import load_config, save_config
@@ -10148,7 +11378,6 @@ class ObsidianAPI:
 
     def is_available(self) -> bool:
         try:
-            import urllib.request
             req = urllib.request.Request(
                 f"{self.base_url}/", headers=self._headers(), method="GET",
             )
@@ -10159,7 +11388,6 @@ class ObsidianAPI:
 
     def list_files(self, folder: str = "/") -> list[str]:
         try:
-            import urllib.request
             req = urllib.request.Request(
                 f"{self.base_url}/vault{folder}",
                 headers=self._headers(), method="GET",
@@ -10173,7 +11401,6 @@ class ObsidianAPI:
 
     def read_note(self, path: str) -> str:
         try:
-            import urllib.request, urllib.parse
             encoded_path = urllib.parse.quote(path, safe="/")
             headers = self._headers()
             headers["Accept"] = "text/markdown"
@@ -10189,7 +11416,6 @@ class ObsidianAPI:
 
     def create_note(self, path: str, content: str) -> bool:
         try:
-            import urllib.request, urllib.parse
             encoded_path = urllib.parse.quote(path, safe="/")
             headers = self._headers()
             headers["Content-Type"] = "text/markdown"
@@ -10206,7 +11432,6 @@ class ObsidianAPI:
 
     def append_note(self, path: str, content: str) -> bool:
         try:
-            import urllib.request, urllib.parse
             encoded_path = urllib.parse.quote(path, safe="/")
             headers = self._headers()
             headers["Content-Type"] = "text/markdown"
@@ -10223,9 +11448,6 @@ class ObsidianAPI:
 
     def open_in_obsidian(self, path: str):
         """Open a note in the Obsidian desktop app via URI scheme."""
-        import subprocess
-        import sys
-        import urllib.parse
         cfg = load_config()
         vault_path = cfg.get("obsidian_vault_path", "")
         vault_name = Path(vault_path).name if vault_path else ""
@@ -10315,6 +11537,8 @@ class NotesPanel(QWidget):
         self._save_timer.setSingleShot(True)
         self._save_timer.setInterval(500)
         self._save_timer.timeout.connect(self._save_current)
+        self._palette: dict = {}
+        self._preview_mode: bool = False
         self._obsidian_api: ObsidianAPI | None = None
         self._obsidian_status = "not configured"
         self._build_ui()
@@ -10451,6 +11675,7 @@ class NotesPanel(QWidget):
         # ── Right side: editor ───────────────────────
         editor_widget = QWidget()
         editor_layout = QVBoxLayout(editor_widget)
+#        editor_layout.addWidget(self._preview, 1)  # same stretch as editor
         editor_layout.setContentsMargins(4, 8, 8, 8)
         editor_layout.setSpacing(4)
 
@@ -10484,6 +11709,11 @@ class NotesPanel(QWidget):
         sep.setObjectName("separator")
         sep.setFrameShape(QFrame.Shape.HLine)
         editor_layout.addWidget(sep)
+        
+        self._preview = QTextBrowser()
+        self._preview.setReadOnly(True)
+        self._preview.setOpenExternalLinks(True)
+        self._preview.setVisible(False)
 
         self.editor = QPlainTextEdit()
         self.editor.setPlaceholderText(
@@ -10606,6 +11836,50 @@ class NotesPanel(QWidget):
             self.editor.blockSignals(False)
             self._update_footer(note)
 
+    def set_palette(self, palette: dict):
+        self._palette = palette
+        # If currently in preview mode, re-render with new palette
+        if self._preview_mode:
+            self._render_preview()
+
+    def _toggle_preview(self):
+        self._preview_mode = not self._preview_mode
+        if self._preview_mode:
+            self.editor.setVisible(False)
+            self._preview.setVisible(True)
+            self._preview_btn.setText("\u270f Edit")
+            self._render_preview()
+        else:
+            self._preview.setVisible(False)
+            self.editor.setVisible(True)
+            self._preview_btn.setText("\U0001f441 Preview")
+
+    def _render_preview(self):
+        try:
+            import mistune
+            md = mistune.create_markdown()
+            html = md(self.editor.toPlainText())
+        except ImportError:
+            html = "<p><i>Install mistune for Markdown preview: pip install mistune</i></p>"
+            html += "<pre>" + self.editor.toPlainText().replace("<", "&lt;") + "</pre>"
+
+        bg = self._palette.get("bg", "#1e1e2e")
+        fg = self._palette.get("fg", "#cdd6f4")
+        surface = self._palette.get("surface", "#313244")
+        accent = self._palette.get("accent", "#89b4fa")
+
+        css = (
+            f"<style>"
+            f"body {{ background: {bg}; color: {fg}; font-family: sans-serif; padding: 12px; }}"
+            f"code {{ background: {surface}; padding: 2px 4px; border-radius: 3px; }}"
+            f"pre {{ background: {surface}; padding: 8px; border-radius: 4px; overflow-x: auto; }}"
+            f"a {{ color: {accent}; }}"
+            f"h1, h2, h3 {{ color: {fg}; }}"
+            f"blockquote {{ border-left: 3px solid {accent}; padding-left: 8px; margin-left: 0; }}"
+            f"</style>"
+        )
+        self._preview.setHtml(css + html)
+
     # ── Status labels ──────────────────────────────────
 
     def _update_status_label(self):
@@ -10677,9 +11951,6 @@ class NotesPanel(QWidget):
         """Open the current note in Obsidian via obsidian:// URI scheme."""
         if not self.current_note_path:
             return
-        import subprocess
-        import sys
-        import urllib.parse
         vault_path = self.cfg.get("obsidian_vault_path", "")
         vault_name = Path(vault_path).name if vault_path else ""
         if not vault_name:
@@ -10748,6 +12019,12 @@ class NotesPanel(QWidget):
         self.btn_rename.setVisible(False)
         self.btn_delete.setVisible(False)
         self.btn_open_obsidian.setVisible(False)
+        self._preview_btn = QPushButton("\U0001f441 Preview")
+        self._preview_btn.setObjectName("secondary")
+        self._preview_btn.setFixedHeight(24)
+        self._preview_btn.clicked.connect(self._toggle_preview)
+        # Add to the editor header row, e.g.:
+        # editor_header.addWidget(self._preview_btn)
 
     # ── Editing ────────────────────────────────────────
 
@@ -10878,6 +12155,14 @@ PRIORITY_COLORS = {0: "#a6adc8", 1: "#a6e3a1", 2: "#f9e2af", 3: "#f38ba8"}
 PRIORITY_ICONS = {0: "", 1: "!", 2: "!!", 3: "!!!"}
 
 
+def _hex_to_rgb(hex_str: str) -> tuple[int, int, int]:
+    """Convert a hex color string like '#f38ba8' to (r, g, b) ints."""
+    h = hex_str.lstrip("#")
+    if len(h) == 6:
+        return int(h[0:2], 16), int(h[2:4], 16), int(h[4:6], 16)
+    return (200, 100, 100)  # fallback
+
+
 class TodoDialog(QDialog):
     """Dialog to add/edit a todo item."""
 
@@ -10989,11 +12274,12 @@ class TodoDialog(QDialog):
 class TodoItemWidget(QFrame):
     """A single todo item rendered as a compact card."""
 
-    def __init__(self, item: TodoItem, parent_panel):
+    def __init__(self, item: TodoItem, parent_panel, palette: dict | None = None):
         super().__init__()
         self.item = item
         self.panel = parent_panel
         self.setCursor(Qt.CursorShape.PointingHandCursor)
+        palette = palette or {}
 
         layout = QHBoxLayout(self)
         layout.setContentsMargins(8, 4, 8, 4)
@@ -11029,7 +12315,10 @@ class TodoItemWidget(QFrame):
         meta_parts = []
         if item.category:
             meta_parts.append(item.category)
-        if item.due_date:
+        if item.due_date and not item.done:
+            # Don't repeat due date here — we have a dedicated label on the right
+            pass
+        elif item.due_date:
             meta_parts.append(f"Due: {item.due_date}")
         if meta_parts:
             meta = QLabel(" \u00b7 ".join(meta_parts))
@@ -11038,6 +12327,32 @@ class TodoItemWidget(QFrame):
             info.addWidget(meta)
 
         layout.addLayout(info, 1)
+
+        # Due date label (right-aligned)
+        if item.due_date:
+            today = date.today()
+            try:
+                due = date.fromisoformat(item.due_date)
+                delta = (due - today).days
+                if delta < 0 and not item.done:
+                    due_text = f"Overdue {-delta}d"
+                    due_color = palette.get("red", "#f38ba8")
+                elif delta == 0:
+                    due_text = "Due Today"
+                    due_color = palette.get("yellow", "#f9e2af")
+                else:
+                    due_text = f"Due {due.strftime('%b %d')}"
+                    due_color = palette.get("muted", "#7f849c")
+
+                due_lbl = QLabel(due_text)
+                due_lbl.setStyleSheet(
+                    f"font-size: 10px; font-weight: bold; color: {due_color}; "
+                    f"padding: 1px 4px;"
+                )
+                due_lbl.setAlignment(Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter)
+                layout.addWidget(due_lbl)
+            except ValueError:
+                pass
 
         # Edit button
         edit_btn = QPushButton("Edit")
@@ -11049,10 +12364,25 @@ class TodoItemWidget(QFrame):
 
         # Priority color stripe on left
         border_color = PRIORITY_COLORS.get(item.priority, "transparent")
+        style_parts = []
         if item.priority > 0:
+            style_parts.append(f"border-left: 3px solid {border_color};")
+            style_parts.append("border-radius: 4px;")
+
+        # Overdue background tint (15% alpha of palette red)
+        if item.due_date and not item.done:
+            try:
+                due = date.fromisoformat(item.due_date)
+                if due < today:
+                    red_hex = palette.get("red", "#f38ba8")
+                    r, g, b = _hex_to_rgb(red_hex)
+                    style_parts.append(f"background-color: rgba({r},{g},{b}, 38);")
+            except ValueError:
+                pass
+
+        if style_parts:
             self.setStyleSheet(
-                f"TodoItemWidget {{ border-left: 3px solid {border_color}; "
-                f"border-radius: 4px; }}"
+                "TodoItemWidget { " + " ".join(style_parts) + " }"
             )
 
     def _on_toggle(self, checked):
@@ -11067,15 +12397,16 @@ class TodoItemWidget(QFrame):
 
 class TodoPanel(QWidget):
 
-    def __init__(self, parent=None):
+    def __init__(self, todo_store=None, parent=None):
         super().__init__(parent)
-        self.store = TodoStore()
+        self.store = todo_store or TodoStore()
         self._palette: dict = {}
         self._build_ui()
         self._refresh()
 
     def set_palette(self, palette: dict):
         self._palette = palette
+        self._refresh()
 
     def _build_ui(self):
         layout = QVBoxLayout(self)
@@ -11153,8 +12484,28 @@ class TodoPanel(QWidget):
         if filter_mode == "Completed":
             items = [i for i in items if i.done]
 
+        # Sort: overdue incomplete first, then priority desc, then created_at asc
+        today_iso = date.today().isoformat()
+
+        def _sort_key(item: TodoItem):
+            is_overdue_incomplete = (
+                not item.done
+                and bool(item.due_date)
+                and item.due_date < today_iso
+            )
+            # 0 = overdue incomplete (top), 1 = done, 2 = not done but not overdue
+            if item.done:
+                group = 2
+            elif is_overdue_incomplete:
+                group = 0
+            else:
+                group = 1
+            return (group, -item.priority, item.created_at or "")
+
+        items.sort(key=_sort_key)
+
         for item in items:
-            widget = TodoItemWidget(item, self)
+            widget = TodoItemWidget(item, self, self._palette)
             self._list_layout.addWidget(widget)
 
         self._list_layout.addStretch()
@@ -11209,7 +12560,6 @@ class TodoPanel(QWidget):
             for item in done_items:
                 self.store.delete(item.id)
             self._refresh()
-
 ```
 
 ### `src\ui\themes\__init__.py`
@@ -12341,7 +13691,7 @@ class NetworkDialog(QDialog):
     def _force_scan(self):
         if self.sync_engine:
             self._append_log("Forcing subnet scan...")
-            self.sync_engine.force_sync()
+            self.sync_engine.force_scan()
 
     def _force_sync(self):
         if self.sync_engine:

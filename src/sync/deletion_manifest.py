@@ -54,6 +54,8 @@ def record_deletion(rel_posix: str, vault: Path | None = None):
     """Immediately record a file deletion in the vault manifest.
 
     Safe to call from any thread. If vault is None, reads from config.
+    Includes both deleted_at (legacy) and deleted_at_ts (float unix timestamp)
+    so engine.py LWW comparisons work.
     """
     if vault is None:
         vault = get_vault_path()
@@ -65,7 +67,11 @@ def record_deletion(rel_posix: str, vault: Path | None = None):
     now = time.time()
 
     if rel_posix not in existing_paths:
-        entries.append({"path": rel_posix, "deleted_at": now})
+        entries.append({
+            "path": rel_posix,
+            "deleted_at": now,
+            "deleted_at_ts": now,
+        })
         logger.info(f"Recorded vault deletion: {rel_posix}")
 
     # Prune old entries

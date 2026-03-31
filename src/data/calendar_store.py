@@ -358,7 +358,7 @@ class CalendarStore:
                     candidate = date(today.year + 1, b.month, b.day)
                 except ValueError:
                     continue
-            results.append((candidate, b.name, "birthday", "#f38ba8", b.id, True))
+            results.append((candidate, b.name, "birthday", "birthday", b.id, True))
 
         results.sort(key=lambda x: x[0])
         return results[:limit]

@@ -20,6 +20,14 @@ PRIORITY_COLORS = {0: "#a6adc8", 1: "#a6e3a1", 2: "#f9e2af", 3: "#f38ba8"}
 PRIORITY_ICONS = {0: "", 1: "!", 2: "!!", 3: "!!!"}
 
 
+def _hex_to_rgb(hex_str: str) -> tuple[int, int, int]:
+    """Convert a hex color string like '#f38ba8' to (r, g, b) ints."""
+    h = hex_str.lstrip("#")
+    if len(h) == 6:
+        return int(h[0:2], 16), int(h[2:4], 16), int(h[4:6], 16)
+    return (200, 100, 100)  # fallback
+
+
 class TodoDialog(QDialog):
     """Dialog to add/edit a todo item."""
 
@@ -131,11 +139,12 @@ class TodoDialog(QDialog):
 class TodoItemWidget(QFrame):
     """A single todo item rendered as a compact card."""
 
-    def __init__(self, item: TodoItem, parent_panel):
+    def __init__(self, item: TodoItem, parent_panel, palette: dict | None = None):
         super().__init__()
         self.item = item
         self.panel = parent_panel
         self.setCursor(Qt.CursorShape.PointingHandCursor)
+        palette = palette or {}
 
         layout = QHBoxLayout(self)
         layout.setContentsMargins(8, 4, 8, 4)
@@ -171,7 +180,10 @@ class TodoItemWidget(QFrame):
         meta_parts = []
         if item.category:
             meta_parts.append(item.category)
-        if item.due_date:
+        if item.due_date and not item.done:
+            # Don't repeat due date here — we have a dedicated label on the right
+            pass
+        elif item.due_date:
             meta_parts.append(f"Due: {item.due_date}")
         if meta_parts:
             meta = QLabel(" \u00b7 ".join(meta_parts))
@@ -180,6 +192,32 @@ class TodoItemWidget(QFrame):
             info.addWidget(meta)
 
         layout.addLayout(info, 1)
+
+        # Due date label (right-aligned)
+        if item.due_date:
+            today = date.today()
+            try:
+                due = date.fromisoformat(item.due_date)
+                delta = (due - today).days
+                if delta < 0 and not item.done:
+                    due_text = f"Overdue {-delta}d"
+                    due_color = palette.get("red", "#f38ba8")
+                elif delta == 0:
+                    due_text = "Due Today"
+                    due_color = palette.get("yellow", "#f9e2af")
+                else:
+                    due_text = f"Due {due.strftime('%b %d')}"
+                    due_color = palette.get("muted", "#7f849c")
+
+                due_lbl = QLabel(due_text)
+                due_lbl.setStyleSheet(
+                    f"font-size: 10px; font-weight: bold; color: {due_color}; "
+                    f"padding: 1px 4px;"
+                )
+                due_lbl.setAlignment(Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter)
+                layout.addWidget(due_lbl)
+            except ValueError:
+                pass
 
         # Edit button
         edit_btn = QPushButton("Edit")
@@ -191,10 +229,25 @@ class TodoItemWidget(QFrame):
 
         # Priority color stripe on left
         border_color = PRIORITY_COLORS.get(item.priority, "transparent")
+        style_parts = []
         if item.priority > 0:
+            style_parts.append(f"border-left: 3px solid {border_color};")
+            style_parts.append("border-radius: 4px;")
+
+        # Overdue background tint (15% alpha of palette red)
+        if item.due_date and not item.done:
+            try:
+                due = date.fromisoformat(item.due_date)
+                if due < today:
+                    red_hex = palette.get("red", "#f38ba8")
+                    r, g, b = _hex_to_rgb(red_hex)
+                    style_parts.append(f"background-color: rgba({r},{g},{b}, 38);")
+            except ValueError:
+                pass
+
+        if style_parts:
             self.setStyleSheet(
-                f"TodoItemWidget {{ border-left: 3px solid {border_color}; "
-                f"border-radius: 4px; }}"
+                "TodoItemWidget { " + " ".join(style_parts) + " }"
             )
 
     def _on_toggle(self, checked):
@@ -209,15 +262,16 @@ class TodoItemWidget(QFrame):
 
 class TodoPanel(QWidget):
 
-    def __init__(self, parent=None):
+    def __init__(self, todo_store=None, parent=None):
         super().__init__(parent)
-        self.store = TodoStore()
+        self.store = todo_store or TodoStore()
         self._palette: dict = {}
         self._build_ui()
         self._refresh()
 
     def set_palette(self, palette: dict):
         self._palette = palette
+        self._refresh()
 
     def _build_ui(self):
         layout = QVBoxLayout(self)
@@ -295,8 +349,28 @@ class TodoPanel(QWidget):
         if filter_mode == "Completed":
             items = [i for i in items if i.done]
 
+        # Sort: overdue incomplete first, then priority desc, then created_at asc
+        today_iso = date.today().isoformat()
+
+        def _sort_key(item: TodoItem):
+            is_overdue_incomplete = (
+                not item.done
+                and bool(item.due_date)
+                and item.due_date < today_iso
+            )
+            # 0 = overdue incomplete (top), 1 = done, 2 = not done but not overdue
+            if item.done:
+                group = 2
+            elif is_overdue_incomplete:
+                group = 0
+            else:
+                group = 1
+            return (group, -item.priority, item.created_at or "")
+
+        items.sort(key=_sort_key)
+
         for item in items:
-            widget = TodoItemWidget(item, self)
+            widget = TodoItemWidget(item, self, self._palette)
             self._list_layout.addWidget(widget)
 
         self._list_layout.addStretch()

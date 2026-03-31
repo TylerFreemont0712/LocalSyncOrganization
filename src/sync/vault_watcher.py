@@ -6,21 +6,26 @@ so the sync engine can broadcast them to peers.
 
 Sync-safety features:
   • 10-second poll interval — relaxed for a personal two-machine setup.
-  • Deletion debounce — a file must be absent for 2 consecutive polls (≥20 s)
+  • Deletion debounce — a file must be absent for 5 consecutive polls (~50 s)
     before its deletion is recorded.  This prevents Obsidian's atomic-save
     behaviour (delete + recreate within milliseconds) from being misread as a
     real deletion.
+  • Content-hash guard — when a pending-deletion file disappears, its MD5 hash
+    (or size as fallback) is stored.  If a new file appears with the same hash
+    during the debounce window, the deletion is treated as a rename/move and
+    is not recorded in the manifest.
   • Sync-write guard — when the engine writes a vault file it calls
     mark_sync_written(); the watcher skips that path for the next poll cycle
     so it does not re-trigger a sync for data that arrived from a peer.
-  • Quiet-period gate — vault_changed is only emitted after one full poll with
+  • Quiet-period gate — vault_changed is only emitted after two full polls with
     no new activity.  Rapid sequences (move = delete + create) are collapsed
     into a single signal.
-  • Move detection — if a pending-deletion's file size matches a newly
-    appeared file in the same poll cycle the operation is treated as a rename
-    and the deletion manifest entry is suppressed.
+  • Move detection — if a pending-deletion's content hash or file size matches
+    a newly appeared file in the same poll cycle the operation is treated as a
+    rename and the deletion manifest entry is suppressed.
 """
 
+import hashlib
 import logging
 import threading
 import time
@@ -35,8 +40,8 @@ logger = logging.getLogger(__name__)
 
 # ── Tuning constants ────────────────────────────────────────────────────────
 POLL_INTERVAL          = 10  # seconds between each vault scan
-DELETION_CONFIRM_POLLS = 2   # polls a file must be absent before deletion confirmed (~20 s)
-QUIET_POLLS_BEFORE_EMIT = 1  # polls of silence required before emitting vault_changed
+DELETION_CONFIRM_POLLS = 5   # polls a file must be absent before deletion confirmed (~50 s)
+QUIET_POLLS_BEFORE_EMIT = 2  # polls of silence required before emitting vault_changed
 
 
 # ── Sync-write guard (module-level so engine.py can call without a reference) ─
@@ -62,6 +67,18 @@ def _pop_sync_written() -> set[str]:
         return result
 
 
+def _md5_file(path: Path) -> str | None:
+    """Compute MD5 hex digest of a file, or None if unreadable."""
+    try:
+        h = hashlib.md5()
+        with open(path, "rb") as f:
+            for chunk in iter(lambda: f.read(65536), b""):
+                h.update(chunk)
+        return h.hexdigest()
+    except OSError:
+        return None
+
+
 # ── Watcher thread ──────────────────────────────────────────────────────────
 
 class VaultWatcher(QThread):
@@ -81,8 +98,10 @@ class VaultWatcher(QThread):
 
         # Deletion debounce: rel_posix -> number of polls the file has been absent
         self._pending_deletions: dict[str, int] = {}
-        # Size of the file when it was last seen (for move detection)
+        # Size of the file when it was last seen (for move detection fallback)
         self._pending_deletion_sizes: dict[str, int] = {}
+        # MD5 hash of the file when it was last seen (for move detection)
+        self._pending_deletion_hashes: dict[str, str] = {}
 
         # Quiet-period state
         self._changes_pending: bool = False  # we have unsent changes
@@ -106,6 +125,7 @@ class VaultWatcher(QThread):
         self._snapshot.clear()
         self._pending_deletions.clear()
         self._pending_deletion_sizes.clear()
+        self._pending_deletion_hashes.clear()
         self._changes_pending = False
         self._quiet_polls = 0
         if self._vault_path:
@@ -176,8 +196,9 @@ class VaultWatcher(QThread):
         new_activity_this_poll = False   # did we find anything new *this* poll?
 
         # ── 1. New / modified files ─────────────────────────────────────────
-        # Track sizes of genuinely new files for move detection later.
+        # Track sizes and hashes of genuinely new files for move detection later.
         new_file_sizes: set[int] = set()
+        new_file_hashes: set[str] = set()
 
         for path, (mtime, size) in current.items():
             if path in skip_set:
@@ -188,6 +209,12 @@ class VaultWatcher(QThread):
             if prev is None:
                 # File is brand-new (or re-appeared after a move)
                 new_file_sizes.add(size)
+                # Compute hash for move detection
+                if self._vault_path:
+                    full_path = self._vault_path / Path(path)
+                    h = _md5_file(full_path)
+                    if h:
+                        new_file_hashes.add(h)
                 new_activity_this_poll = True
                 logger.debug(f"New file detected: {path}")
             elif mtime > prev[0]:
@@ -207,21 +234,31 @@ class VaultWatcher(QThread):
             )
             self._pending_deletions.pop(path, None)
             self._pending_deletion_sizes.pop(path, None)
+            self._pending_deletion_hashes.pop(path, None)
 
         # Increment absence counter for files still gone
         for path in gone_now:
+            # AIRTIGHT: skip_set check BEFORE incrementing counter
             if path in skip_set:
                 # Engine deleted it as part of a remote deletion — ignore
                 self._pending_deletions.pop(path, None)
                 self._pending_deletion_sizes.pop(path, None)
+                self._pending_deletion_hashes.pop(path, None)
                 continue
 
             count = self._pending_deletions.get(path, 0) + 1
             self._pending_deletions[path] = count
 
-            # Cache the file's last known size so we can detect moves
+            # Cache the file's last known size and content hash for move detection
             if path not in self._pending_deletion_sizes and path in self._snapshot:
                 self._pending_deletion_sizes[path] = self._snapshot[path][1]
+
+            # Compute content hash at disappearance time if possible
+            if path not in self._pending_deletion_hashes and self._vault_path:
+                full_path = self._vault_path / Path(path)
+                h = _md5_file(full_path)
+                if h:
+                    self._pending_deletion_hashes[path] = h
 
             logger.debug(f"'{path}' absent for {count} poll(s) (confirm at {DELETION_CONFIRM_POLLS})")
 
@@ -232,14 +269,20 @@ class VaultWatcher(QThread):
             if self._pending_deletions[path] < DELETION_CONFIRM_POLLS:
                 continue  # not yet confirmed
 
-            # ── Move detection ──────────────────────────────────────────────
+            # ── Move detection (content hash + size fallback) ──────────────
+            del_hash = self._pending_deletion_hashes.get(path)
             del_size = self._pending_deletion_sizes.get(path)
-            is_move  = (del_size is not None) and (del_size in new_file_sizes)
+
+            is_move = False
+            if del_hash and del_hash in new_file_hashes:
+                is_move = True
+            elif del_size is not None and del_size in new_file_sizes:
+                is_move = True
 
             if is_move:
                 logger.info(
-                    f"Move detected: '{path}' disappeared but a new file of the "
-                    f"same size ({del_size} bytes) appeared — skipping deletion record"
+                    f"Move detected: '{path}' disappeared but a new file with "
+                    f"matching content appeared — skipping deletion record"
                 )
             else:
                 # Genuine deletion — record in manifest and flag as changed
@@ -250,8 +293,10 @@ class VaultWatcher(QThread):
                         logger.info(f"Confirmed deletion recorded: {path}")
                 new_activity_this_poll = True
 
+            # Clean up tracking dicts
             self._pending_deletions.pop(path)
             self._pending_deletion_sizes.pop(path, None)
+            self._pending_deletion_hashes.pop(path, None)
 
         # ── 4. Quiet-period gate ────────────────────────────────────────────
         if new_activity_this_poll:
