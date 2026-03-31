@@ -1158,6 +1158,21 @@ class CalendarPanel(QWidget):
             except ValueError: continue
             if ws <= bd <= we: bbd.setdefault(bd, []).append(b)
 
+        # ── Soft event reminders in week grid ──
+        try:
+            for occ_date, tpl in self.soft_events_store.get_upcoming(ws, days_ahead=6):
+                if ws <= occ_date <= we:
+                    ebd.setdefault(occ_date, []).append(Event(
+                        id=tpl.id,
+                        title=f"\U0001f4cc {tpl.title}",
+                        start_time=datetime(occ_date.year, occ_date.month, occ_date.day).isoformat(),
+                        all_day=True,
+                        color=tpl.color,
+                        category="reminder",
+                    ))
+        except Exception:
+            pass
+
         today = date.today()
         for i in range(7):
             d = ws + timedelta(days=i)
@@ -1165,6 +1180,7 @@ class CalendarPanel(QWidget):
                 sep = QFrame(); sep.setFrameShape(QFrame.Shape.VLine)
                 sep.setStyleSheet(f"border:none;border-left:1px solid {_p('border')};")
                 self._week_grid.addWidget(sep)
+
             col = DayColumn(d, ebd.get(d, []), bbd.get(d, []),
                             is_today=(d == today), is_selected=(d == self._selected_date))
             col.request_add.connect(self._add_event_on_date)

@@ -127,7 +127,6 @@ class ObsidianAPI:
         uri = f"obsidian://open?vault={encoded_vault}&file={encoded_file}"
         try:
             if sys.platform == "win32":
-                import os
                 os.startfile(uri)
             elif sys.platform == "darwin":
                 subprocess.Popen(["open", uri])
@@ -343,7 +342,6 @@ class NotesPanel(QWidget):
         # ── Right side: editor ───────────────────────
         editor_widget = QWidget()
         editor_layout = QVBoxLayout(editor_widget)
-#        editor_layout.addWidget(self._preview, 1)  # same stretch as editor
         editor_layout.setContentsMargins(4, 8, 8, 8)
         editor_layout.setSpacing(4)
 
@@ -371,6 +369,12 @@ class NotesPanel(QWidget):
         self.btn_delete.setVisible(False)
         title_row.addWidget(self.btn_delete)
 
+        self._preview_btn = QPushButton("\U0001f441 Preview")
+        self._preview_btn.setObjectName("secondary")
+        self._preview_btn.setFixedHeight(24)
+        self._preview_btn.clicked.connect(self._toggle_preview)
+        title_row.addWidget(self._preview_btn)
+
         editor_layout.addLayout(title_row)
 
         sep = QFrame()
@@ -390,6 +394,7 @@ class NotesPanel(QWidget):
         self.editor.setTabStopDistance(28.0)
         self.editor.textChanged.connect(self._on_text_changed)
         editor_layout.addWidget(self.editor, 1)
+        editor_layout.addWidget(self._preview, 1)
 
         footer = QHBoxLayout()
         self.tag_label = QLabel("")
@@ -634,7 +639,6 @@ class NotesPanel(QWidget):
         uri = f"obsidian://open?vault={encoded_vault}&file={encoded_file}"
         try:
             if sys.platform == "win32":
-                import os
                 os.startfile(uri)
             elif sys.platform == "darwin":
                 subprocess.Popen(["open", uri])
@@ -687,12 +691,12 @@ class NotesPanel(QWidget):
         self.btn_rename.setVisible(False)
         self.btn_delete.setVisible(False)
         self.btn_open_obsidian.setVisible(False)
-        self._preview_btn = QPushButton("\U0001f441 Preview")
-        self._preview_btn.setObjectName("secondary")
-        self._preview_btn.setFixedHeight(24)
-        self._preview_btn.clicked.connect(self._toggle_preview)
-        # Add to the editor header row, e.g.:
-        # editor_header.addWidget(self._preview_btn)
+        # Reset preview mode if active
+        if self._preview_mode:
+            self._preview_mode = False
+            self._preview.setVisible(False)
+            self.editor.setVisible(True)
+            self._preview_btn.setText("\U0001f441 Preview")
 
     # ── Editing ────────────────────────────────────────
 

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""LocalSync — Personal productivity desktop app.
+"""LocalSync â€” Personal productivity desktop app.
 
 Entry point: initializes the database, starts the Qt application,
 launches sync engine and vault watcher, and displays the main window.
@@ -41,7 +41,7 @@ def main():
         window.set_sync_engine(sync_engine)
         sync_engine.start()
 
-        # Start vault watcher — detects Obsidian edits and pushes to peers
+        # Start vault watcher â€” detects Obsidian edits and pushes to peers
         vault_watcher = VaultWatcher()
         vault_watcher.vault_changed.connect(sync_engine.trigger_vault_sync)
         vault_watcher.vault_changed.connect(window._on_sync_completed)
@@ -65,6 +65,7 @@ if __name__ == "__main__":
         sys.exit(main())
     except Exception:
         import traceback
+        # QApplication may or may not exist at this point
         try:
             from PyQt6.QtWidgets import QApplication, QMessageBox
             app = QApplication.instance() or QApplication(sys.argv)

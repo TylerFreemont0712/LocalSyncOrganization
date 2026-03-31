@@ -641,10 +641,13 @@ class SyncEngine(QThread):
             else:
                 should_write = True
             if should_write:
+                try:
+                    _mark_vault_written(rel_posix)   # BEFORE writing
                     local_path.parent.mkdir(parents=True, exist_ok=True)
                     local_path.write_text(rnote["content"], encoding="utf-8")
-                    _mark_vault_written(rel_posix)   # guard: watcher skips this path next poll
                     changes += 1
+                except OSError as e:
+                    logger.warning(f"Failed to write note {rel_posix}: {e}")
 
         # Merge Obsidian vault notes
         vault_path = cfg.get("obsidian_vault_path", "")
@@ -657,15 +660,17 @@ class SyncEngine(QThread):
                 del_time = deletion.get("deleted_at", 0)
                 local_path = vault_dir / Path(del_posix)
                 if local_path.exists():
-                    # Only delete if the local file is older than the deletion
                     try:
                         local_mtime = local_path.stat().st_mtime
-                        if del_time > local_mtime:
-                            local_path.unlink()
-                            changes += 1
-                            self._log(f"Deleted vault file (remote deletion): {del_posix}")
-                            # Also record locally so we don't re-create from other peers
-                            self._record_vault_deletion(vault_path, del_posix)
+                        deletion_ts = deletion.get("deleted_at_ts", deletion.get("deleted_at", 0))
+                        if local_mtime > deletion_ts:
+                            logger.debug(f"LWW: local '{del_posix}' modified after peer deletion, keeping local")
+                            continue
+                        local_path.unlink()
+                        changes += 1
+                        self._log(f"Deleted vault file (remote deletion): {del_posix}")
+                        # Also record locally so we don't re-create from other peers
+                        self._record_vault_deletion(vault_path, del_posix)
                     except OSError as e:
                         logger.warning(f"Failed to delete {del_posix}: {e}")
 
@@ -706,9 +711,13 @@ class SyncEngine(QThread):
                 else:
                     should_write = True
                 if should_write:
-                    local_path.parent.mkdir(parents=True, exist_ok=True)
-                    local_path.write_text(rnote["content"], encoding="utf-8")
-                    changes += 1
+                    try:
+                        _mark_vault_written(rel_posix)   # BEFORE writing
+                        local_path.parent.mkdir(parents=True, exist_ok=True)
+                        local_path.write_text(rnote["content"], encoding="utf-8")
+                        changes += 1
+                    except OSError as e:
+                        logger.warning(f"Failed to write vault file {rel_posix}: {e}")
 
             # Clean up empty directories left after deletions
             if vault_dir.exists():
