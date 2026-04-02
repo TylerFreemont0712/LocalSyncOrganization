@@ -723,6 +723,9 @@ class LogForm(QWidget):
         self._timer_start: datetime | None = None
         self._build_ui()
 
+    def set_palette(self, palette: dict):
+        self._palette = palette
+
     def _build_ui(self):
         root = QVBoxLayout(self)
         root.setContentsMargins(0, 0, 0, 0)
@@ -752,18 +755,19 @@ class LogForm(QWidget):
 
         # ── Start / End times ──
         time_row = QHBoxLayout(); time_row.setSpacing(6)
-        start_lbl = QLabel("Start"); start_lbl.setFixedWidth(30)
-        start_lbl.setStyleSheet("font-size:10px;color:palette(mid);")
-        time_row.addWidget(start_lbl)
+        self._start_lbl = QLabel("Start"); self._start_lbl.setFixedWidth(30)
+        muted = self._palette.get("muted", "#7f849c") if hasattr(self, "_palette") and self._palette else "#7f849c"
+        self._start_lbl.setStyleSheet(f"font-size:10px;color:{muted};")
+        time_row.addWidget(self._start_lbl)
         self.start_edit = QTimeEdit()
         self.start_edit.setDisplayFormat("HH:mm")
         now = datetime.now()
         self.start_edit.setTime(QTime(now.hour, 0))
         time_row.addWidget(self.start_edit, 1)
         time_row.addSpacing(4)
-        end_lbl = QLabel("End"); end_lbl.setFixedWidth(24)
-        end_lbl.setStyleSheet("font-size:10px;color:palette(mid);")
-        time_row.addWidget(end_lbl)
+        self._end_lbl = QLabel("End"); self._end_lbl.setFixedWidth(24)
+        self._end_lbl.setStyleSheet(f"font-size:10px;color:{muted};")
+        time_row.addWidget(self._end_lbl)
         self.end_edit = QTimeEdit()
         self.end_edit.setDisplayFormat("HH:mm")
         self.end_edit.setTime(QTime(min(now.hour + 1, 23), 0))
@@ -781,15 +785,18 @@ class LogForm(QWidget):
         timer_row.addWidget(self._timer_label); timer_row.addStretch()
         self._start_btn = QPushButton("Start")
         self._start_btn.setFixedHeight(26)
+        _green = self._palette.get("green", "#a6e3a1") if hasattr(self, "_palette") and self._palette else "#a6e3a1"
+        _acc_fg = self._palette.get("accent_fg", "#1e1e2e") if hasattr(self, "_palette") and self._palette else "#1e1e2e"
         self._start_btn.setStyleSheet(
-            "background-color:#a6e3a1;color:#1e1e2e;font-weight:bold;"
+            f"background-color:{_green};color:{_acc_fg};font-weight:bold;"
             "border-radius:4px;padding:2px 10px;font-size:11px;")
         self._start_btn.clicked.connect(self._start_timer)
         timer_row.addWidget(self._start_btn)
         self._stop_btn = QPushButton("Stop")
         self._stop_btn.setFixedHeight(26)
+        _red = self._palette.get("red", "#f38ba8") if hasattr(self, "_palette") and self._palette else "#f38ba8"
         self._stop_btn.setStyleSheet(
-            "background-color:#f38ba8;color:#1e1e2e;font-weight:bold;"
+            f"background-color:{_red};color:{_acc_fg};font-weight:bold;"
             "border-radius:4px;padding:2px 10px;font-size:11px;")
         self._stop_btn.setEnabled(False)
         self._stop_btn.clicked.connect(self._stop_timer)
@@ -962,8 +969,8 @@ class ActivityPanel(QWidget):
 
     def __init__(self, parent=None):
         super().__init__(parent)
-        self.store = ActivityStore()
         self._palette: dict = {}
+        self.store = ActivityStore()
         self._week_start = date.today() - timedelta(days=date.today().weekday())
         self._activities_by_date: dict[date, list[Activity]] = {}
 
@@ -989,6 +996,21 @@ class ActivityPanel(QWidget):
         self._palette = palette
         self._grid.set_palette(palette)
         self._today_breakdown.set_palette(palette)
+        muted   = palette.get("muted",     "#7f849c")
+        green   = palette.get("green",     "#a6e3a1")
+        red     = palette.get("red",       "#f38ba8")
+        acc_fg  = palette.get("accent_fg", "#1e1e2e")
+        btn_css = "font-weight:bold;border-radius:4px;padding:2px 10px;font-size:11px;"
+        if hasattr(self, "_log_form"):
+            self._log_form.set_palette(palette)
+            if hasattr(self._log_form, "_start_lbl"):
+                self._log_form._start_lbl.setStyleSheet(f"font-size:10px;color:{muted};")
+                self._log_form._end_lbl.setStyleSheet(f"font-size:10px;color:{muted};")
+            if hasattr(self._log_form, "_start_btn"):
+                self._log_form._start_btn.setStyleSheet(
+                    f"background-color:{green};color:{acc_fg};" + btn_css)
+                self._log_form._stop_btn.setStyleSheet(
+                    f"background-color:{red};color:{acc_fg};" + btn_css)
 
     def _build_ui(self):
         root = QHBoxLayout(self)

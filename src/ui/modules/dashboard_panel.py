@@ -27,7 +27,14 @@ from src.data.finance_store import FinanceStore
 from src.data.soft_events_store import SoftEventStore
 
 
-PRIORITY_COLORS = {0: "#a6adc8", 1: "#a6e3a1", 2: "#f9e2af", 3: "#f38ba8"}
+def _priority_colors(palette: dict) -> dict:
+    """Return priority-level colours drawn from the current theme palette."""
+    return {
+        0: palette.get("muted",  "#a6adc8"),
+        1: palette.get("green",  "#a6e3a1"),
+        2: palette.get("yellow", "#f9e2af"),
+        3: palette.get("red",    "#f38ba8"),
+    }
 
 # Sentinel → palette key map for store-layer color strings
 SENTINEL_COLORS = {"birthday": "red", "holiday": "yellow", "trip": "accent"}
@@ -931,19 +938,20 @@ class DashboardPanel(QWidget):
             priority_counts[task.priority] = priority_counts.get(task.priority, 0) + 1
 
         max_count = max(priority_counts.values()) if any(priority_counts.values()) else 1
+        pcolors = _priority_colors(self._palette)
         for pri in [3, 2, 1, 0]:
             count = priority_counts[pri]
             row = QHBoxLayout()
             label = QLabel(PRIORITY_LABELS[pri])
             label.setFixedWidth(55)
-            label.setStyleSheet(f"font-size: 11px; color: {PRIORITY_COLORS[pri]};")
+            label.setStyleSheet(f"font-size: 11px; color: {pcolors[pri]};")
             row.addWidget(label)
 
             bar = QFrame()
             width = max(int(count / max_count * 120), 2) if max_count > 0 else 2
             bar.setFixedSize(width, 14)
             bar.setStyleSheet(
-                f"background-color: {PRIORITY_COLORS[pri]}; border-radius: 2px;"
+                f"background-color: {pcolors[pri]}; border-radius: 2px;"
             )
             row.addWidget(bar)
 

@@ -23,13 +23,16 @@ from PyQt6.QtWidgets import (
     QLabel, QPushButton, QDialog, QLineEdit, QTextEdit,
     QDateEdit, QTimeEdit, QCheckBox, QFrame, QComboBox,
     QMessageBox, QScrollArea, QSizePolicy, QTabWidget,
-    QButtonGroup, QToolButton, QSpinBox,
+    QButtonGroup, QToolButton, QSpinBox, QListWidget,
+    QListWidgetItem, QColorDialog,
 )
 
 from src.data.calendar_store import (
     CalendarStore, Event, Birthday,
     build_recurrence, expand_recurring_to_range,
 )
+from src.data.soft_events_store import SoftEventStore, SoftEventTemplate
+from src.ui.widgets.nav_button import NavButton
 
 
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -543,7 +546,7 @@ class MiniMonth(QWidget):
         self._view_month  = self._selected.month
         self._events:    dict[date, list[str]] = {}
         self._holidays:  set[date]             = set()
-        self._nav_buttons: list[QPushButton]   = []
+        self._nav_buttons: list[NavButton]     = []
         self._dow_labels:  list[QLabel]        = []
         self._title_btn:   QPushButton         = None  # type: ignore
         self._build()
@@ -563,16 +566,8 @@ class MiniMonth(QWidget):
 
     def refresh_styles(self):
         """Re-apply palette colors to navigation buttons/labels."""
-        nav_style = (
-            f"QPushButton {{ background-color: {_p('surface')}; color: {_p('fg')}; "
-            f"border: 1px solid {_p('border')}; border-radius: 4px; "
-            f"font-weight: bold; font-size: 14px; padding: 0px; }}"
-            f"QPushButton:hover {{ background-color: {_p('hover')}; "
-            f"border-color: {_p('accent')}; color: {_p('accent')}; }}"
-            f"QPushButton:pressed {{ background-color: {_p('border')}; }}"
-        )
         for btn in self._nav_buttons:
-            btn.setStyleSheet(nav_style)
+            btn.refresh(_PALETTE)
         if self._title_btn:
             self._title_btn.setStyleSheet(
                 f"QPushButton {{ background-color: transparent; color: {_p('fg')}; "
@@ -585,28 +580,18 @@ class MiniMonth(QWidget):
 
     # ── Build ────────────────────────────────────────
 
-    def _nav_style(self) -> str:
-        return (
-            f"QPushButton {{ background-color: {_p('surface')}; color: {_p('fg')}; "
-            f"border: 1px solid {_p('border')}; border-radius: 4px; "
-            f"font-weight: bold; font-size: 14px; padding: 0px; }}"
-            f"QPushButton:hover {{ background-color: {_p('hover')}; "
-            f"border-color: {_p('accent')}; color: {_p('accent')}; }}"
-            f"QPushButton:pressed {{ background-color: {_p('border')}; }}"
-        )
-
     def _build(self):
         outer = QVBoxLayout(self)
         outer.setContentsMargins(8, 8, 8, 8); outer.setSpacing(2)
 
         nav = QHBoxLayout(); nav.setSpacing(0)
-        for symbol, tip, handler in [
-            ("«", "Previous year",  self._prev_year),
-            ("‹", "Previous month", self._prev_month),
+        for direction, double, tip, handler in [
+            ("left",  True,  "Previous year",  self._prev_year),
+            ("left",  False, "Previous month", self._prev_month),
         ]:
-            btn = QPushButton(symbol); btn.setFixedSize(26, 26)
-            btn.setToolTip(tip); btn.clicked.connect(handler)
-            btn.setStyleSheet(self._nav_style())
+            btn = NavButton(direction, size=26, double=double, tooltip=tip)
+            btn.refresh(_PALETTE)
+            btn.clicked.connect(handler)
             self._nav_buttons.append(btn); nav.addWidget(btn)
 
         self._title_btn = QPushButton()
@@ -619,13 +604,13 @@ class MiniMonth(QWidget):
         )
         nav.addWidget(self._title_btn, 1)
 
-        for symbol, tip, handler in [
-            ("›", "Next month", self._next_month),
-            ("»", "Next year",  self._next_year),
+        for direction, double, tip, handler in [
+            ("right", False, "Next month", self._next_month),
+            ("right", True,  "Next year",  self._next_year),
         ]:
-            btn = QPushButton(symbol); btn.setFixedSize(26, 26)
-            btn.setToolTip(tip); btn.clicked.connect(handler)
-            btn.setStyleSheet(self._nav_style())
+            btn = NavButton(direction, size=26, double=double, tooltip=tip)
+            btn.refresh(_PALETTE)
+            btn.clicked.connect(handler)
             self._nav_buttons.append(btn); nav.addWidget(btn)
 
         outer.addLayout(nav)
@@ -762,6 +747,7 @@ class EventChip(QWidget):
 class DayColumn(QWidget):
     request_add  = pyqtSignal(object)
     request_edit = pyqtSignal(object)
+    day_clicked  = pyqtSignal(object)   # emitted on single left-click → select day
 
     def __init__(self, d: date, events: list[Event], birthdays: list[Birthday],
                  is_today: bool, is_selected: bool, parent=None):
@@ -807,14 +793,16 @@ class DayColumn(QWidget):
         for ev in sorted(events, key=lambda e: e.start_time):
             if ev.all_day:
                 chip = EventChip(ev)
-                chip.double_clicked.connect(self.request_edit.emit)
+                # Reminder chips (soft events) are read-only in the week grid —
+                # double-clicking them would hit the wrong store. Skip the signal.
+                if ev.category != "reminder":
+                    chip.double_clicked.connect(self.request_edit.emit)
                 layout.addWidget(chip)
 
         for b in birthdays:
             try: age = (self.d.year - b.year) if b.year else None
             except Exception: age = None
             age_str = f" ({age})" if age else ""
-            # Format: "🎂 Name 🎂 (age)" — category emoji auto-prepended by EventChip
             fake = Event(
                 id=b.id,
                 title=f"{b.name} 🎂{age_str}",
@@ -833,6 +821,11 @@ class DayColumn(QWidget):
 
     def enterEvent(self, ev): self._hovered = True;  self.update()
     def leaveEvent(self, ev): self._hovered = False; self.update()
+
+    def mousePressEvent(self, ev):
+        if ev.button() == Qt.MouseButton.LeftButton:
+            self.day_clicked.emit(self.d)
+
     def mouseDoubleClickEvent(self, ev): self.request_add.emit(self.d)
 
     def paintEvent(self, ev):
@@ -962,6 +955,69 @@ class DayEventRow(QFrame):
 
 
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+#  SoftReminderRow — styled row for soft event reminders
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+class SoftReminderRow(QFrame):
+    """Styled day-detail row for a soft event reminder. Signals instead of
+    monkey-patching mousePressEvent so Qt's event system stays intact."""
+
+    open_log = pyqtSignal(object, object)   # (template, log_date)
+
+    def __init__(self, template: SoftEventTemplate, log_date: date, parent=None):
+        super().__init__(parent)
+        self._template = template
+        self._log_date = log_date
+        self.setCursor(Qt.CursorShape.PointingHandCursor)
+
+        layout = QHBoxLayout(self)
+        layout.setContentsMargins(0, 0, 0, 0)
+        layout.setSpacing(0)
+
+        bar = QFrame()
+        bar.setFixedWidth(4)
+        bar.setStyleSheet(
+            f"background-color:{template.color};border-radius:2px 0 0 2px;")
+        layout.addWidget(bar)
+
+        body = QWidget()
+        bl = QHBoxLayout(body)
+        bl.setContentsMargins(8, 6, 8, 6)
+        bl.setSpacing(8)
+
+        pin_lbl = QLabel("📌")
+        pin_lbl.setStyleSheet(
+            "font-size:13px;background:transparent;border:none;padding:0;")
+        pin_lbl.setFixedWidth(20)
+        bl.addWidget(pin_lbl)
+
+        title_lbl = QLabel(template.title)
+        title_lbl.setStyleSheet(f"font-size:13px;color:{_p('fg')};")
+        bl.addWidget(title_lbl, 1)
+
+        hint = QLabel("tap to log")
+        hint.setStyleSheet(
+            f"font-size:10px;color:{_p('muted')};font-style:italic;")
+        bl.addWidget(hint)
+
+        layout.addWidget(body, 1)
+        self.setStyleSheet(
+            f"SoftReminderRow{{border:1px solid {_p('border')};border-radius:4px;"
+            f"background-color:{_p('header_bg')};}}"
+            f"SoftReminderRow:hover{{border-color:{template.color};"
+            f"background-color:{_p('surface')};}}"
+        )
+
+    def mousePressEvent(self, ev):
+        if ev.button() == Qt.MouseButton.LeftButton:
+            self.open_log.emit(self._template, self._log_date)
+
+    def mouseDoubleClickEvent(self, ev):
+        if ev.button() == Qt.MouseButton.LeftButton:
+            self.open_log.emit(self._template, self._log_date)
+
+
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 #  CalendarPanel — main widget
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
@@ -970,7 +1026,6 @@ class CalendarPanel(QWidget):
     def __init__(self, calendar_store=None, soft_events_store=None, parent=None):
         super().__init__(parent)
         self.store = calendar_store or CalendarStore()
-        from src.data.soft_events_store import SoftEventStore
         self.soft_events_store = soft_events_store or SoftEventStore()
         self._selected_date = date.today()
         self._build_ui(); self._refresh()
@@ -996,6 +1051,8 @@ class CalendarPanel(QWidget):
             f"font-size:13px;font-weight:bold;color:{_p('fg')};")
         self._day_title.setStyleSheet(
             f"font-size:14px;font-weight:bold;color:{_p('fg')};")
+        for btn in self._week_nav_btns:
+            btn.refresh(_PALETTE)
         self.mini_month.refresh_styles()
         self._refresh()
 
@@ -1020,15 +1077,19 @@ class CalendarPanel(QWidget):
             f"font-size:13px;font-weight:bold;color:{_p('muted')};")
         top_bar.addWidget(self._week_label); top_bar.addSpacing(8)
 
-        for text, tip, slot in [("‹", "Previous week", self._prev_week),
-                                 ("›", "Next week",     self._next_week)]:
-            if text == "›": top_bar.addWidget(self._today_btn())
-            btn = QPushButton(text); btn.setObjectName("secondary")
-            btn.setFixedSize(28, 28); btn.setToolTip(tip); btn.clicked.connect(slot)
+        self._week_nav_btns: list[NavButton] = []
+        for direction, tip, slot in [("left",  "Previous week", self._prev_week),
+                                      ("right", "Next week",     self._next_week)]:
+            if direction == "right":
+                top_bar.addWidget(self._today_btn())
+            btn = NavButton(direction, size=28, tooltip=tip)
+            btn.refresh(_PALETTE)
+            btn.clicked.connect(slot)
+            self._week_nav_btns.append(btn)
             top_bar.addWidget(btn)
 
         top_bar.addSpacing(8)
-        btn_add = QPushButton("＋ Event"); btn_add.clicked.connect(self._add_event)
+        btn_add = QPushButton("+ Event"); btn_add.clicked.connect(self._add_event)
         top_bar.addWidget(btn_add)
         left_l.addLayout(top_bar); left_l.addSpacing(8)
 
@@ -1051,7 +1112,7 @@ class CalendarPanel(QWidget):
         self._day_title = QLabel("Today")
         self._day_title.setStyleSheet(f"font-size:14px;font-weight:bold;color:{_p('fg')};")
         detail_bar.addWidget(self._day_title); detail_bar.addStretch()
-        btn_add_here = QPushButton("＋"); btn_add_here.setObjectName("secondary")
+        btn_add_here = QPushButton("+"); btn_add_here.setObjectName("secondary")
         btn_add_here.setFixedSize(26, 26); btn_add_here.setToolTip("Add event on this day")
         btn_add_here.clicked.connect(lambda: self._add_event_on_date(self._selected_date))
         detail_bar.addWidget(btn_add_here); left_l.addLayout(detail_bar)
@@ -1081,19 +1142,31 @@ class CalendarPanel(QWidget):
         mf_l.addWidget(self.mini_month); right_l.addWidget(self._mini_frame)
         right_l.addSpacing(8)
 
-        action_row = QHBoxLayout(); action_row.setSpacing(4)
-        btn_bday = QPushButton("🎂 Birthdays"); btn_bday.setObjectName("secondary")
-        btn_bday.clicked.connect(self._manage_birthdays); action_row.addWidget(btn_bday)
-        btn_jump = QPushButton("Go to date…"); btn_jump.setObjectName("secondary")
-        btn_jump.clicked.connect(self._jump_to_date); action_row.addWidget(btn_jump)
-        right_l.addLayout(action_row); right_l.addSpacing(8)
-        
-        soft_btn = QPushButton("Soft Events \u25b8")
-        soft_btn.setObjectName("secondary")
-        soft_btn.setFixedHeight(26)
-        soft_btn.clicked.connect(self._manage_soft_events)
-        # Add to the toolbar layout (next to the Birthdays button)
-        action_row.addWidget(soft_btn)
+        # ── Row 1: Jump to date (full width) ─────────
+        btn_jump = QPushButton("📅  Go to date…")
+        btn_jump.setObjectName("secondary")
+        btn_jump.clicked.connect(self._jump_to_date)
+        right_l.addWidget(btn_jump)
+        right_l.addSpacing(4)
+
+        # ── Row 2: Birthdays | Soft Events (50 / 50) ─
+        tool_row = QHBoxLayout()
+        tool_row.setSpacing(4)
+
+        btn_bday = QPushButton("🎂  Birthdays")
+        btn_bday.setObjectName("secondary")
+        btn_bday.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred)
+        btn_bday.clicked.connect(self._manage_birthdays)
+        tool_row.addWidget(btn_bday)
+
+        btn_soft = QPushButton("📌  Soft Events")
+        btn_soft.setObjectName("secondary")
+        btn_soft.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred)
+        btn_soft.clicked.connect(self._manage_soft_events)
+        tool_row.addWidget(btn_soft)
+
+        right_l.addLayout(tool_row)
+        right_l.addSpacing(8)
 
         rdiv1 = QFrame(); rdiv1.setFrameShape(QFrame.Shape.HLine)
         rdiv1.setStyleSheet(f"border:none;border-top:1px solid {_p('border')};")
@@ -1127,6 +1200,7 @@ class CalendarPanel(QWidget):
         dlg = SoftEventManagerDialog(self.soft_events_store, self)
         dlg.exec()
         self._refresh()
+
     # ── Refresh ─────────────────────────────────────
 
     def _refresh(self):
@@ -1164,7 +1238,7 @@ class CalendarPanel(QWidget):
                 if ws <= occ_date <= we:
                     ebd.setdefault(occ_date, []).append(Event(
                         id=tpl.id,
-                        title=f"\U0001f4cc {tpl.title}",
+                        title=f"📌 {tpl.title}",
                         start_time=datetime(occ_date.year, occ_date.month, occ_date.day).isoformat(),
                         all_day=True,
                         color=tpl.color,
@@ -1185,6 +1259,7 @@ class CalendarPanel(QWidget):
                             is_today=(d == today), is_selected=(d == self._selected_date))
             col.request_add.connect(self._add_event_on_date)
             col.request_edit.connect(self._edit_event)
+            col.day_clicked.connect(self._on_day_column_clicked)
             self._week_grid.addWidget(col, 1)
 
     def _render_day_detail(self):
@@ -1205,7 +1280,6 @@ class CalendarPanel(QWidget):
         for b in self.store.get_birthdays():
             if b.month == d.month and b.day == d.day:
                 age = (d.year - b.year) if b.year else None
-                today = date.today()
                 if d < today:
                     age_str = f" (turned {age})" if age else ""
                 elif d == today:
@@ -1221,7 +1295,14 @@ class CalendarPanel(QWidget):
 
         all_evs = sorted(bday_evs + events,
                          key=lambda e: (0 if e.all_day else 1, e.start_time))
-        if not all_evs:
+
+        # Fetch soft events before deciding whether to show the empty-state label
+        try:
+            soft_occ = self.soft_events_store.get_upcoming(d, days_ahead=0)
+        except Exception:
+            soft_occ = []
+
+        if not all_evs and not soft_occ:
             lbl = QLabel("No events — double-click a day to add one")
             lbl.setStyleSheet(f"color:{_p('muted')};font-size:12px;padding:8px 0;")
             self._day_list_layout.addWidget(lbl)
@@ -1229,42 +1310,24 @@ class CalendarPanel(QWidget):
             for ev in all_evs:
                 row = DayEventRow(ev)
                 if ev.category == "birthday":
-                    # Single-click on a birthday row opens the BirthdayDialog by id
                     row.edit_requested.connect(
                         lambda e: self._open_major_event(e.id, True))
                 else:
                     row.edit_requested.connect(self._edit_event)
                 self._day_list_layout.addWidget(row)
-                
-        # ── Soft event reminders for this day ──
-        try:
-            soft_occ = self.soft_events_store.get_upcoming(d, days_ahead=0)
-        except Exception:
-            soft_occ = []
 
+        # ── Soft event reminders for this day ──
         if soft_occ:
             sep_lbl = QLabel("Reminders")
-            muted = _p("muted")
             sep_lbl.setStyleSheet(
-                f"color:{muted};font-size:11px;font-weight:bold;"
+                f"color:{_p('muted')};font-size:11px;font-weight:bold;"
                 f"border-top:1px solid {_p('border')};padding-top:6px;margin-top:4px;"
             )
             self._day_list_layout.addWidget(sep_lbl)
 
             for occ_date, tpl in soft_occ:
-                row = QWidget()
-                row_l = QHBoxLayout(row)
-                row_l.setContentsMargins(4, 2, 4, 2)
-                row_l.setSpacing(6)
-                dot = QLabel("\u25cf")
-                dot.setStyleSheet(f"color: {tpl.color}; font-size: 12px;")
-                dot.setFixedWidth(14)
-                row_l.addWidget(dot)
-                title = QLabel(tpl.title)
-                title.setStyleSheet("font-size: 12px;")
-                row_l.addWidget(title, 1)
-                row.setCursor(Qt.CursorShape.PointingHandCursor)
-                row.mousePressEvent = lambda ev, t=tpl, od=occ_date: self._open_soft_log(t, od)
+                row = SoftReminderRow(tpl, occ_date)
+                row.open_log.connect(self._open_soft_log)
                 self._day_list_layout.addWidget(row)
 
         self._day_list_layout.addStretch()
@@ -1309,6 +1372,15 @@ class CalendarPanel(QWidget):
                     d = date(vy, b.month, b.day)
                     if first <= d <= last: by_date.setdefault(d, []).append(_p("red"))
                 except ValueError: pass
+        # ── Soft event reminder dots ──
+        try:
+            days_in_month = (last - first).days
+            for occ_date, tpl in self.soft_events_store.get_upcoming(
+                    first, days_ahead=days_in_month):
+                if first <= occ_date <= last:
+                    by_date.setdefault(occ_date, []).append(tpl.color)
+        except Exception:
+            pass
         self.mini_month.set_events(by_date)
         try:
             from src.data.holidays_jp import get_japanese_holidays
@@ -1329,6 +1401,13 @@ class CalendarPanel(QWidget):
     def _go_today(self):
         self._selected_date = date.today()
         self.mini_month.set_selected(self._selected_date); self._refresh()
+
+    def _on_day_column_clicked(self, d: date):
+        """Single-click on a week-grid day column selects that day."""
+        self._selected_date = d
+        self.mini_month.set_selected(d)
+        self._render_week()
+        self._render_day_detail()
 
     def _on_mini_date_selected(self, d: date):
         self._selected_date = d
@@ -1417,13 +1496,12 @@ class BirthdayManagerDialog(QDialog):
         layout = QVBoxLayout(self)
         layout.setContentsMargins(16, 16, 16, 16); layout.setSpacing(10)
 
-
         hdr = QHBoxLayout()
         title = QLabel("🎂  Birthdays")
         title.setStyleSheet("font-size:15px;font-weight:bold;")
         hdr.addWidget(title); hdr.addStretch()
-        add_btn = QPushButton("＋ Add"); add_btn.clicked.connect(self._add_birthday)
-        hdr.addWidget(add_btn); layout.addLayout(hdr)     
+        add_btn = QPushButton("+ Add"); add_btn.clicked.connect(self._add_birthday)
+        hdr.addWidget(add_btn); layout.addLayout(hdr)
         self._search = QLineEdit(); self._search.setPlaceholderText("Search by name…")
         self._search.textChanged.connect(self._filter); layout.addWidget(self._search)
 
@@ -1437,12 +1515,8 @@ class BirthdayManagerDialog(QDialog):
         layout.addWidget(close_btn, 0, Qt.AlignmentFlag.AlignRight)
 
     def _load(self):
-        self._birthdays = self.store.get_birthdays(); self._filter(self._search.text())
-
-#    def _manage_soft_events(self):
-        dlg = SoftEventManagerDialog(self.soft_events_store, self)
-        dlg.exec()
-        self._refresh()
+        self._birthdays = self.store.get_birthdays()
+        self._filter(self._search.text())
 
     def _filter(self, text: str):
         _clear_layout(self._list_layout); q = text.lower(); today = date.today()
@@ -1472,7 +1546,6 @@ class BirthdayManagerDialog(QDialog):
             f"background-color:{_p('surface')};}}")
         rl = QHBoxLayout(row); rl.setContentsMargins(10, 8, 10, 8); rl.setSpacing(10)
 
-        # Cake badge — fixed-size pill, no more font-size overflow
         cake_badge = QLabel("🎂")
         cake_badge.setAlignment(Qt.AlignmentFlag.AlignCenter)
         cake_badge.setFixedSize(32, 32)
@@ -1483,7 +1556,6 @@ class BirthdayManagerDialog(QDialog):
 
         info = QVBoxLayout(); info.setSpacing(2)
 
-        # Name row: "🎂 Name 🎂" style label
         name_lbl = QLabel(f"🎂  {b.name}  🎂")
         name_lbl.setStyleSheet(f"font-size:13px;font-weight:bold;color:{_p('fg')};")
         info.addWidget(name_lbl)
@@ -1540,35 +1612,18 @@ class BirthdayManagerDialog(QDialog):
             birthday.note  = data["note"]
             self.store.update_birthday(birthday); self._load()
 
-"""Task 9 Fix C — SoftEventManagerDialog and RecurrenceWidget.
-
-Paste these classes into calendar_panel.py after BirthdayManagerDialog.
-Also add the required imports at the top of calendar_panel.py:
-  from src.data.soft_events_store import SoftEventStore, SoftEventTemplate
-  from src.data.calendar_store import build_recurrence, parse_recurrence
-  (build_recurrence and parse_recurrence should already be imported)
-"""
 
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 #  RecurrenceWidget — reusable recurrence picker
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-from PyQt6.QtWidgets import (
-    QWidget, QVBoxLayout, QHBoxLayout, QLabel, QComboBox,
-    QFrame, QToolButton, QDialog, QListWidget, QListWidgetItem,
-    QPushButton, QLineEdit, QTextEdit, QColorDialog, QMessageBox,
-)
-from PyQt6.QtCore import Qt
-
-RECURRENCE_OPTIONS = [
-    ("", "No repeat"),
-    ("daily", "Daily"),
-    ("weekly", "Weekly"),
+_SOFT_RECURRENCE_OPTIONS = [
+    ("",        "No repeat"),
+    ("daily",   "Daily"),
+    ("weekly",  "Weekly"),
     ("monthly", "Monthly"),
-    ("yearly", "Yearly"),
+    ("yearly",  "Yearly"),
 ]
-
-WEEKDAY_LABELS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
 
 
 class RecurrenceWidget(QWidget):
@@ -1582,7 +1637,7 @@ class RecurrenceWidget(QWidget):
 
         layout.addWidget(QLabel("Repeat pattern"))
         self.rec_combo = QComboBox()
-        for val, label in RECURRENCE_OPTIONS:
+        for val, label in _SOFT_RECURRENCE_OPTIONS:
             self.rec_combo.addItem(label, val)
         layout.addWidget(self.rec_combo)
 
@@ -1614,9 +1669,7 @@ class RecurrenceWidget(QWidget):
             if not days:
                 return ""
             return "weekly:" + ",".join(str(d) for d in sorted(days))
-        if val:
-            return val
-        return ""
+        return val if val else ""
 
     def set_recurrence(self, rec_str: str):
         """Pre-fill from a recurrence string."""
@@ -1643,7 +1696,7 @@ class RecurrenceWidget(QWidget):
 class TemplateEditDialog(QDialog):
     """Edit fields for a soft event template."""
 
-    def __init__(self, parent=None, template=None):
+    def __init__(self, parent=None, template: SoftEventTemplate | None = None):
         super().__init__(parent)
         self._template = template
         self.setWindowTitle("Edit Template" if template else "New Template")
@@ -1654,7 +1707,6 @@ class TemplateEditDialog(QDialog):
         layout.setSpacing(10)
         layout.setContentsMargins(14, 12, 14, 12)
 
-        # Title
         layout.addWidget(QLabel("Title"))
         self._title_edit = QLineEdit()
         self._title_edit.setPlaceholderText("e.g. Weekly Review")
@@ -1662,16 +1714,14 @@ class TemplateEditDialog(QDialog):
             self._title_edit.setText(template.title)
         layout.addWidget(self._title_edit)
 
-        # Universal note
         layout.addWidget(QLabel("Note (shown on every occurrence)"))
         self._note_edit = QTextEdit()
         self._note_edit.setMaximumHeight(80)
-        self._note_edit.setPlaceholderText("Optional universal note...")
+        self._note_edit.setPlaceholderText("Optional universal note…")
         if template:
             self._note_edit.setPlainText(template.note)
         layout.addWidget(self._note_edit)
 
-        # Color
         color_row = QHBoxLayout()
         color_row.addWidget(QLabel("Color"))
         self._color = template.color if template else "#a6e3a1"
@@ -1683,13 +1733,11 @@ class TemplateEditDialog(QDialog):
         color_row.addStretch()
         layout.addLayout(color_row)
 
-        # Recurrence
         self._rec_widget = RecurrenceWidget()
         if template:
             self._rec_widget.set_recurrence(template.recurrence)
         layout.addWidget(self._rec_widget)
 
-        # Buttons
         sep = QFrame()
         sep.setObjectName("separator")
         sep.setFrameShape(QFrame.Shape.HLine)
@@ -1702,6 +1750,7 @@ class TemplateEditDialog(QDialog):
         cancel.clicked.connect(self.reject)
         btn_row.addWidget(cancel)
         save = QPushButton("Save")
+        save.setDefault(True)
         save.clicked.connect(self._on_save)
         btn_row.addWidget(save)
         layout.addLayout(btn_row)
@@ -1728,9 +1777,9 @@ class TemplateEditDialog(QDialog):
 
     def get_data(self) -> dict:
         return {
-            "title": self._title_edit.text().strip(),
-            "note": self._note_edit.toPlainText(),
-            "color": self._color,
+            "title":      self._title_edit.text().strip(),
+            "note":       self._note_edit.toPlainText(),
+            "color":      self._color,
             "recurrence": self._rec_widget.get_recurrence(),
         }
 
@@ -1742,9 +1791,9 @@ class TemplateEditDialog(QDialog):
 class ViewLogDialog(QDialog):
     """Read-only view of all log entries for a soft event template."""
 
-    def __init__(self, store, template, parent=None):
+    def __init__(self, store: SoftEventStore, template: SoftEventTemplate, parent=None):
         super().__init__(parent)
-        self.setWindowTitle(f"Log \u2014 {template.title}")
+        self.setWindowTitle(f"Log — {template.title}")
         self.setMinimumSize(440, 400)
         self.setModal(True)
 
@@ -1760,7 +1809,8 @@ class ViewLogDialog(QDialog):
 
         viewer = QTextEdit()
         viewer.setReadOnly(True)
-        viewer.setPlainText("\n".join(text_parts) if text_parts else "No log entries yet.")
+        viewer.setPlainText(
+            "\n".join(text_parts) if text_parts else "No log entries yet.")
         layout.addWidget(viewer, 1)
 
         close_btn = QPushButton("Close")
@@ -1779,7 +1829,7 @@ class ViewLogDialog(QDialog):
 class SoftEventManagerDialog(QDialog):
     """Manage soft event templates — list, add, edit, delete, view log."""
 
-    def __init__(self, soft_events_store, parent=None):
+    def __init__(self, soft_events_store: SoftEventStore, parent=None):
         super().__init__(parent)
         self.store = soft_events_store
         self.setWindowTitle("Soft Events — Template Manager")
@@ -1827,13 +1877,14 @@ class SoftEventManagerDialog(QDialog):
         self._list.clear()
         self._templates = self.store.get_templates()
         for tpl in self._templates:
-            item = QListWidgetItem(f"\u25cf {tpl.title}")
-            item.setForeground(self._list.palette().text())
-            # Store template id for retrieval
+            item = QListWidgetItem(f"● {tpl.title}")
+            # Tint the bullet with the template's own color
+            from PyQt6.QtGui import QColor, QBrush
+            item.setForeground(QBrush(QColor(tpl.color)))
             item.setData(Qt.ItemDataRole.UserRole, tpl.id)
             self._list.addItem(item)
 
-    def _selected_template(self):
+    def _selected_template(self) -> SoftEventTemplate | None:
         row = self._list.currentRow()
         if 0 <= row < len(self._templates):
             return self._templates[row]
@@ -1842,8 +1893,7 @@ class SoftEventManagerDialog(QDialog):
     def _add(self):
         dlg = TemplateEditDialog(self)
         if dlg.exec() == QDialog.DialogCode.Accepted:
-            data = dlg.get_data()
-            self.store.add_template(**data)
+            self.store.add_template(**dlg.get_data())
             self._load()
 
     def _edit(self):
@@ -1853,9 +1903,9 @@ class SoftEventManagerDialog(QDialog):
         dlg = TemplateEditDialog(self, tpl)
         if dlg.exec() == QDialog.DialogCode.Accepted:
             data = dlg.get_data()
-            tpl.title = data["title"]
-            tpl.note = data["note"]
-            tpl.color = data["color"]
+            tpl.title      = data["title"]
+            tpl.note       = data["note"]
+            tpl.color      = data["color"]
             tpl.recurrence = data["recurrence"]
             self.store.update_template(tpl)
             self._load()

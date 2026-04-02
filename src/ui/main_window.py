@@ -32,6 +32,7 @@ from src.data.calendar_store import CalendarStore
 from src.data.finance_store import FinanceStore
 from src.data.activity_store import ActivityStore
 from src.data.soft_events_store import SoftEventStore
+from src.ui.widgets.matrix_rain import MatrixRainWidget
 
 
 class SidebarButton(QPushButton):
@@ -90,6 +91,12 @@ class MainWindow(QMainWindow):
         self._build_central()
         self._build_status_bar()
 
+        # ── Matrix rain overlay (hidden until Matrix theme is active) ──
+        # Child of the central widget so it fills the content area only.
+        # lower() keeps it behind the sidebar and stacked panels.
+        self._matrix_rain = MatrixRainWidget(self._central)
+        self._matrix_rain.hide()
+
         # Apply theme and default to Dashboard
         current_theme = self.cfg.get("theme", "Catppuccin Dark")
         if current_theme in ("dark", "light"):
@@ -99,6 +106,13 @@ class MainWindow(QMainWindow):
 
         # ── System tray ──
         self._setup_tray()
+
+    # ── Resize — keep rain synced to central widget ────
+
+    def resizeEvent(self, event) -> None:
+        super().resizeEvent(event)
+        if hasattr(self, "_matrix_rain") and self._matrix_rain.is_running():
+            self._matrix_rain.sync_size()
 
     # ── Menu bar ───────────────────────────────────────
 
@@ -146,6 +160,8 @@ class MainWindow(QMainWindow):
 
     def _build_central(self):
         central = QWidget()
+        self._central = central          # kept for rain sizing
+        central.setAutoFillBackground(False)   # let rain show through gaps
         self.setCentralWidget(central)
         main_layout = QHBoxLayout(central)
         main_layout.setContentsMargins(0, 0, 0, 0)
@@ -405,6 +421,14 @@ class MainWindow(QMainWindow):
 
         # Update tray icon with new theme colors
         self._update_tray_icon()
+
+        # Start or stop the Matrix rain background
+        if hasattr(self, "_matrix_rain"):
+            if name == "Matrix":
+                self._matrix_rain.sync_size()
+                self._matrix_rain.start()   # start() calls lower() internally
+            else:
+                self._matrix_rain.stop()
 
     # ── Sync integration ───────────────────────────────
 

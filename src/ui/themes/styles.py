@@ -5,25 +5,81 @@ Themes included:
   Medium — Nord, Gruvbox Dark
   Light  — Catppuccin Latte, Solarized Light
 
-Fixes over previous version:
-  - Full QTabBar / QTabWidget styling (dialogs now have proper tabs)
-  - QMenuBar / QMenu styling (menu bar no longer inherits OS chrome)
-  - QToolButton styling (color swatches, weekday pickers, etc.)
-  - QComboBox, QDateEdit, QTimeEdit, QSpinBox arrow-button subcontrols
-    styled with visible backgrounds so arrows are legible on all themes
-  - Secondary button contrast improved (explicit text color + stronger border)
-  - QProgressBar added (used in dashboard)
-  - QScrollArea viewport now transparent (no mismatched bg panels)
-  - Solarized Light replaces Solarized Dark (fg was too muted for readability)
+Arrow rendering:
+  All dropdown / spinner arrows use inline SVG data-URIs so they render
+  correctly in Qt6. The CSS border-trick (width:0; height:0; border-left…)
+  creates triangles in web browsers but has no effect in Qt's QSS engine —
+  the borders appear on a zero-size box and produce nothing visible.
 """
 
 
+# ─────────────────────────────────────────────────────────
+#  SVG arrow helper
+# ─────────────────────────────────────────────────────────
+
+def _svg_arrow(direction: str, color: str) -> str:
+    """Return a QSS url() value for an inline SVG triangle arrow.
+
+    direction: 'down' | 'up'
+    color    : hex string e.g. '#cdd6f4'
+    """
+    col = color.replace("#", "%23")
+    # 10×6 triangle
+    if direction == "down":
+        pts = "0,0 10,0 5,6"    # ▼
+    else:                        # "up"
+        pts = "0,6 10,6 5,0"    # ▲
+    svg = (
+        "%3Csvg xmlns='http://www.w3.org/2000/svg' "
+        "width='10' height='6'%3E"
+        f"%3Cpolygon points='{pts}' fill='{col}'/%3E"
+        "%3C/svg%3E"
+    )
+    return f'url("data:image/svg+xml,{svg}")'
+
+
+# ─────────────────────────────────────────────────────────
+#  Theme builder
+# ─────────────────────────────────────────────────────────
+
+def _rgba(hex_color: str, alpha: int) -> str:
+    """Convert a hex color string to a QSS rgba() value.
+
+    Qt's QSS uses 0-255 for the alpha channel (not 0.0-1.0 like web CSS).
+    """
+    h = hex_color.lstrip("#")
+    r, g, b = int(h[0:2], 16), int(h[2:4], 16), int(h[4:6], 16)
+    return f"rgba({r}, {g}, {b}, {alpha})"
+
+
 def _build_theme(c: dict) -> str:
-    """Generate a full QSS stylesheet from a color palette dict."""
+    """Generate a full QSS stylesheet from a color palette dict.
+
+    If the palette contains a ``panel_alpha`` key (int, 0-255), all panel
+    background surfaces are rendered with that opacity level so an animated
+    background (e.g. Matrix rain) bleeds through.
+    """
+    # Pre-compute SVG arrow URLs for each needed state
+    _adn    = _svg_arrow("down", c["fg"])           # dropdown arrow, normal
+    _adn_h  = _svg_arrow("down", c["accent_fg"])    # dropdown arrow, on hover
+    _adn_on = _svg_arrow("up",   c["fg"])           # dropdown arrow, open (flip)
+    _aup    = _svg_arrow("up",   c["fg"])           # spinbox up arrow
+    _aup_h  = _svg_arrow("up",   c["accent_fg"])
+    _adn2   = _svg_arrow("down", c["fg"])           # spinbox down arrow (alias)
+    _adn2_h = _svg_arrow("down", c["accent_fg"])
+
+    # Semi-transparent surface colours for themes with panel_alpha
+    pa = c.get("panel_alpha", 255)
+    _bg      = _rgba(c["bg"],         pa)       if pa < 255 else c["bg"]
+    _surf    = _rgba(c["surface"],    pa)       if pa < 255 else c["surface"]
+    _hdr     = _rgba(c["header_bg"],  min(pa + 25, 255)) if pa < 255 else c["header_bg"]
+    _alt     = _rgba(c["alt_row"],    pa)       if pa < 255 else c["alt_row"]
+    _hover   = _rgba(c["hover"],      min(pa + 30, 255)) if pa < 255 else c["hover"]
+
     return f"""
 /* ━━━━ Base ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
 QMainWindow, QWidget {{
-    background-color: {c['bg']};
+    background-color: {_bg};
     color: {c['fg']};
     font-family: "Segoe UI", "Meiryo UI", "Ubuntu", "Noto Sans", sans-serif;
     font-size: 12px;
@@ -36,7 +92,7 @@ QScrollArea > QWidget > QWidget {{
 
 /* ━━━━ Menu bar ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
 QMenuBar {{
-    background-color: {c['header_bg']};
+    background-color: {_hdr};
     color: {c['fg']};
     border-bottom: 1px solid {c['border']};
     padding: 2px 4px;
@@ -57,7 +113,7 @@ QMenuBar::item:pressed {{
 }}
 
 QMenu {{
-    background-color: {c['surface']};
+    background-color: {_surf};
     color: {c['fg']};
     border: 1px solid {c['border']};
     border-radius: 6px;
@@ -118,7 +174,7 @@ QTabBar::tab:disabled {{
 
 /* ━━━━ Text inputs ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
 QLineEdit, QTextEdit, QPlainTextEdit {{
-    background-color: {c['surface']};
+    background-color: {_surf};
     color: {c['fg']};
     border: 1px solid {c['border']};
     border-radius: 4px;
@@ -131,7 +187,7 @@ QLineEdit:focus, QTextEdit:focus, QPlainTextEdit:focus {{
     outline: none;
 }}
 QLineEdit[readOnly="true"] {{
-    background-color: {c['bg']};
+    background-color: {_bg};
     color: {c['muted']};
 }}
 
@@ -199,7 +255,7 @@ QPushButton#secondary:disabled {{
 
 /* ━━━━ Tool buttons (color swatches, weekday pickers) ━━━━ */
 QToolButton {{
-    background-color: {c['surface']};
+    background-color: {_surf};
     color: {c['fg']};
     border: 1px solid {c['border']};
     border-radius: 4px;
@@ -207,7 +263,7 @@ QToolButton {{
     font-size: 11px;
 }}
 QToolButton:hover {{
-    background-color: {c['hover']};
+    background-color: {_hover};
     border-color: {c['accent']};
 }}
 QToolButton:checked {{
@@ -226,7 +282,7 @@ QToolButton::menu-indicator {{
 
 /* ━━━━ Lists ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
 QListWidget {{
-    background-color: {c['surface']};
+    background-color: {_surf};
     border: 1px solid {c['border']};
     border-radius: 6px;
     padding: 4px;
@@ -241,17 +297,17 @@ QListWidget::item:selected {{
     color: {c['accent_fg']};
 }}
 QListWidget::item:hover:!selected {{
-    background-color: {c['hover']};
+    background-color: {_hover};
 }}
 
 /* ━━━━ Tables ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
 QTableWidget {{
-    background-color: {c['surface']};
+    background-color: {_surf};
     border: 1px solid {c['border']};
     border-radius: 6px;
     gridline-color: {c['border']};
     outline: none;
-    alternate-background-color: {c['alt_row']};
+    alternate-background-color: {_alt};
 }}
 QTableWidget::item {{
     padding: 4px;
@@ -261,7 +317,7 @@ QTableWidget::item:selected {{
     color: {c['accent_fg']};
 }}
 QHeaderView::section {{
-    background-color: {c['header_bg']};
+    background-color: {_hdr};
     color: {c['fg']};
     padding: 5px 6px;
     border: none;
@@ -276,11 +332,12 @@ QHeaderView::section:last {{
 
 /* ━━━━ Combo boxes ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
 QComboBox {{
-    background-color: {c['surface']};
+    background-color: {_surf};
     color: {c['fg']};
     border: 1px solid {c['border']};
     border-radius: 4px;
     padding: 4px 6px;
+    padding-right: 28px;
     min-width: 70px;
     font-size: 12px;
 }}
@@ -291,25 +348,28 @@ QComboBox:focus {{
     border-color: {c['accent']};
 }}
 QComboBox::drop-down {{
-    subcontrol-origin: padding;
+    subcontrol-origin: border;
     subcontrol-position: top right;
-    width: 22px;
+    width: 26px;
     background-color: {c['border']};
     border-left: 1px solid {c['border']};
-    border-radius: 0 4px 4px 0;
+    border-top-right-radius: 4px;
+    border-bottom-right-radius: 4px;
 }}
 QComboBox::drop-down:hover {{
     background-color: {c['accent']};
 }}
 QComboBox::down-arrow {{
-    width: 0;
-    height: 0;
-    border-left: 4px solid transparent;
-    border-right: 4px solid transparent;
-    border-top: 5px solid {c['fg']};
+    image: {_adn};
+    width: 10px;
+    height: 6px;
 }}
+QComboBox::down-arrow:on {{
+    image: {_adn_on};
+}}
+QComboBox::drop-down:hover + QComboBox::down-arrow,
 QComboBox::down-arrow:hover {{
-    border-top-color: {c['accent_fg']};
+    image: {_adn_h};
 }}
 QComboBox QAbstractItemView {{
     background-color: {c['surface']};
@@ -324,7 +384,7 @@ QComboBox QAbstractItemView {{
 
 /* ━━━━ Spin boxes, Date/Time edits ━━━━━━━━━━━━━━━ */
 QDateEdit, QTimeEdit, QSpinBox, QDoubleSpinBox {{
-    background-color: {c['surface']};
+    background-color: {_surf};
     color: {c['fg']};
     border: 1px solid {c['border']};
     border-radius: 4px;
@@ -338,69 +398,76 @@ QDateEdit:focus, QTimeEdit:focus, QSpinBox:focus, QDoubleSpinBox:focus {{
     border-color: {c['accent']};
 }}
 
-/* Calendar popup button */
+/* Calendar / time popup drop-down button */
 QDateEdit::drop-down, QTimeEdit::drop-down {{
-    subcontrol-origin: padding;
+    subcontrol-origin: border;
     subcontrol-position: top right;
-    width: 22px;
+    width: 26px;
     background-color: {c['border']};
     border-left: 1px solid {c['border']};
-    border-radius: 0 4px 4px 0;
+    border-top-right-radius: 4px;
+    border-bottom-right-radius: 4px;
 }}
 QDateEdit::drop-down:hover, QTimeEdit::drop-down:hover {{
     background-color: {c['accent']};
 }}
 QDateEdit::down-arrow, QTimeEdit::down-arrow {{
-    width: 0;
-    height: 0;
-    border-left: 4px solid transparent;
-    border-right: 4px solid transparent;
-    border-top: 5px solid {c['fg']};
+    image: {_adn};
+    width: 10px;
+    height: 6px;
 }}
 QDateEdit::down-arrow:hover, QTimeEdit::down-arrow:hover {{
-    border-top-color: {c['accent_fg']};
+    image: {_adn_h};
 }}
 
 /* Spinbox increment buttons */
 QSpinBox::up-button, QDoubleSpinBox::up-button {{
     subcontrol-origin: border;
     subcontrol-position: top right;
-    width: 18px;
+    width: 20px;
     background-color: {c['border']};
     border-left: 1px solid {c['border']};
     border-bottom: 1px solid {c['border']};
-    border-radius: 0 4px 0 0;
+    border-top-right-radius: 4px;
 }}
 QSpinBox::up-button:hover, QDoubleSpinBox::up-button:hover {{
     background-color: {c['accent']};
 }}
+QSpinBox::up-button:pressed, QDoubleSpinBox::up-button:pressed {{
+    background-color: {c['accent_pressed']};
+}}
 QSpinBox::up-arrow, QDoubleSpinBox::up-arrow {{
-    width: 0;
-    height: 0;
-    border-left: 3px solid transparent;
-    border-right: 3px solid transparent;
-    border-bottom: 4px solid {c['fg']};
+    image: {_aup};
+    width: 8px;
+    height: 5px;
+}}
+QSpinBox::up-arrow:hover, QDoubleSpinBox::up-arrow:hover {{
+    image: {_aup_h};
 }}
 QSpinBox::down-button, QDoubleSpinBox::down-button {{
     subcontrol-origin: border;
     subcontrol-position: bottom right;
-    width: 18px;
+    width: 20px;
     background-color: {c['border']};
     border-left: 1px solid {c['border']};
-    border-radius: 0 0 4px 0;
+    border-bottom-right-radius: 4px;
 }}
 QSpinBox::down-button:hover, QDoubleSpinBox::down-button:hover {{
     background-color: {c['accent']};
 }}
+QSpinBox::down-button:pressed, QDoubleSpinBox::down-button:pressed {{
+    background-color: {c['accent_pressed']};
+}}
 QSpinBox::down-arrow, QDoubleSpinBox::down-arrow {{
-    width: 0;
-    height: 0;
-    border-left: 3px solid transparent;
-    border-right: 3px solid transparent;
-    border-top: 4px solid {c['fg']};
+    image: {_adn2};
+    width: 8px;
+    height: 5px;
+}}
+QSpinBox::down-arrow:hover, QDoubleSpinBox::down-arrow:hover {{
+    image: {_adn2_h};
 }}
 
-/* Calendar popup widget (the calendar picker) */
+/* Calendar popup widget (the QCalendarWidget) */
 QCalendarWidget QWidget {{
     background-color: {c['surface']};
     color: {c['fg']};
@@ -559,10 +626,10 @@ QToolTip {{
 
 /* ━━━━ Dialogs ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
 QDialog {{
-    background-color: {c['bg']};
+    background-color: {_bg};
 }}
 QMessageBox {{
-    background-color: {c['bg']};
+    background-color: {_bg};
 }}
 QMessageBox QLabel {{
     color: {c['fg']};
@@ -600,9 +667,9 @@ QGroupBox::title {{
 """
 
 
-# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+# ─────────────────────────────────────────────────────────
 #  Dark themes
-# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+# ─────────────────────────────────────────────────────────
 
 # Catppuccin Mocha — deep purple-dark, blue accent
 _CATPPUCCIN_DARK = {
@@ -670,9 +737,9 @@ _ROSE_PINE = {
     "header_bg": "#12111f", "alt_row": "#201e2e",
 }
 
-# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+# ─────────────────────────────────────────────────────────
 #  Medium themes
-# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+# ─────────────────────────────────────────────────────────
 
 # Nord — arctic teal palette
 _NORD = {
@@ -696,9 +763,9 @@ _GRUVBOX = {
     "header_bg": "#1d2021", "alt_row": "#32302f",
 }
 
-# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+# ─────────────────────────────────────────────────────────
 #  Light themes
-# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+# ─────────────────────────────────────────────────────────
 
 # Catppuccin Latte — soft warm light
 _CATPPUCCIN_LIGHT = {
@@ -723,9 +790,42 @@ _SOLARIZED_LIGHT = {
 }
 
 
-# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+# ─────────────────────────────────────────────────────────
+#  Hacker / Terminal themes
+# ─────────────────────────────────────────────────────────
+
+# Hacker — neon green on near-black; inspired by classic terminal aesthetics
+_HACKER = {
+    "bg": "#0d0d0d",        "surface": "#1a1a1a",   "border": "#2d2d2d",
+    "fg": "#e0e0e0",        "muted": "#606060",      "hover": "#222222",
+    "accent": "#39ff14",    "accent_fg": "#000000",
+    "accent_hover": "#55ff30", "accent_pressed": "#2acc0a",
+    "red": "#ff3355",       "red_hover": "#ff5577",
+    "green": "#39ff14",     "yellow": "#ffdd00",
+    "header_bg": "#080808", "alt_row": "#141414",
+}
+
+# Matrix — phosphor green on pure black; iconic digital-rain palette.
+# Colours are tuned to match the film's organic phosphor-screen aesthetic —
+# muted sage green for UI text rather than blinding neon, with just enough
+# glow to feel authentically "in the Matrix."
+# panel_alpha < 255 activates rgba() semi-transparent surfaces so the
+# animated rain background glows through every panel and widget.
+_MATRIX = {
+    "bg": "#000000",        "surface": "#001500",   "border": "#003800",
+    "fg": "#9fd896",        "muted": "#3e6e3a",      "hover": "#002100",
+    "accent": "#35b055",    "accent_fg": "#000000",
+    "accent_hover": "#45c865", "accent_pressed": "#268040",
+    "red": "#cc2233",       "red_hover": "#e03344",
+    "green": "#35b055",     "yellow": "#88dd00",
+    "header_bg": "#000a00", "alt_row": "#000d00",
+    "panel_alpha": 190,     # panels ~75% opaque — rain glows through
+}
+
+
+# ─────────────────────────────────────────────────────────
 #  Build registry
-# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+# ─────────────────────────────────────────────────────────
 
 _ALL_PALETTES = {
     # Dark
@@ -734,16 +834,19 @@ _ALL_PALETTES = {
     "Dracula":          _DRACULA,
     "Monokai Pro":      _MONOKAI,
     "One Dark Pro":     _ONE_DARK,
-    "Rosé Pine":        _ROSE_PINE,
+    "Rose Pine":        _ROSE_PINE,
     # Medium
     "Nord":             _NORD,
     "Gruvbox Dark":     _GRUVBOX,
+    # Terminal
+    "Hacker":           _HACKER,
+    "Matrix":           _MATRIX,
     # Light
     "Catppuccin Light": _CATPPUCCIN_LIGHT,
     "Solarized Light":  _SOLARIZED_LIGHT,
 }
 
-THEMES  = {name: _build_theme(pal) for name, pal in _ALL_PALETTES.items()}
+THEMES   = {name: _build_theme(pal) for name, pal in _ALL_PALETTES.items()}
 PALETTES = dict(_ALL_PALETTES)
 
 

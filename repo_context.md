@@ -51,7 +51,7 @@ This document contains the full context of the repository, formatted for optimal
 
 ## 📊 Project Summary
 - Total Python files: **34**
-- Total lines of code: **12197**
+- Total lines of code: **12390**
 
 ## 🔗 Dependency Graph
 ### main.pyw
@@ -158,6 +158,7 @@ This document contains the full context of the repository, formatted for optimal
 - src.sync.vault_watcher
 
 ### src\sync\vault_watcher.py
+- hashlib
 - logging
 - threading
 - time
@@ -183,6 +184,12 @@ This document contains the full context of the repository, formatted for optimal
 - src.ui.modules.dashboard_panel
 - src.ui.modules.finance_charts
 - src.ui.modules.activity_panel
+- src.data.todo_store
+- src.data.calendar_store
+- src.data.finance_store
+- src.data.activity_store
+- src.data.soft_events_store
+- PyQt6.QtGui
 - src.ui.widgets.network_dialog
 - PyQt6.QtWidgets
 
@@ -273,8 +280,6 @@ This document contains the full context of the repository, formatted for optimal
 - src.data.notes_store
 - src.sync.deletion_manifest
 - mistune
-- os
-- os
 
 ### src\ui\modules\todo_panel.py
 - datetime
@@ -310,7 +315,7 @@ This document contains the full context of the repository, formatted for optimal
 ## 📝 Docstring Summary
 ### main.pyw
 **Module docstring:**
-LocalSync — Personal productivity desktop app.
+LocalSync â€” Personal productivity desktop app.
 
 Entry point: initializes the database, starts the Qt application,
 launches sync engine and vault watcher, and displays the main window.
@@ -568,6 +573,8 @@ logic so there's one source of truth.
 - `record_deletion`: Immediately record a file deletion in the vault manifest.
 
 Safe to call from any thread. If vault is None, reads from config.
+Includes both deleted_at (legacy) and deleted_at_ts (float unix timestamp)
+so engine.py LWW comparisons work.
 - `is_deleted`: Check if a path is in the deletion manifest.
 - `remove_deletion`: Remove a path from the deletion manifest (file re-created).
 
@@ -645,19 +652,23 @@ so the sync engine can broadcast them to peers.
 
 Sync-safety features:
   • 10-second poll interval — relaxed for a personal two-machine setup.
-  • Deletion debounce — a file must be absent for 2 consecutive polls (≥20 s)
+  • Deletion debounce — a file must be absent for 5 consecutive polls (~50 s)
     before its deletion is recorded.  This prevents Obsidian's atomic-save
     behaviour (delete + recreate within milliseconds) from being misread as a
     real deletion.
+  • Content-hash guard — when a pending-deletion file disappears, its MD5 hash
+    (or size as fallback) is stored.  If a new file appears with the same hash
+    during the debounce window, the deletion is treated as a rename/move and
+    is not recorded in the manifest.
   • Sync-write guard — when the engine writes a vault file it calls
     mark_sync_written(); the watcher skips that path for the next poll cycle
     so it does not re-trigger a sync for data that arrived from a peer.
-  • Quiet-period gate — vault_changed is only emitted after one full poll with
+  • Quiet-period gate — vault_changed is only emitted after two full polls with
     no new activity.  Rapid sequences (move = delete + create) are collapsed
     into a single signal.
-  • Move detection — if a pending-deletion's file size matches a newly
-    appeared file in the same poll cycle the operation is treated as a rename
-    and the deletion manifest entry is suppressed.
+  • Move detection — if a pending-deletion's content hash or file size matches
+    a newly appeared file in the same poll cycle the operation is treated as a
+    rename and the deletion manifest entry is suppressed.
 
 **Classes:**
 - `VaultWatcher`: Polls the Obsidian vault for file changes and signals when detected.
@@ -668,6 +679,7 @@ Sync-safety features:
 The watcher will ignore this path for the next poll cycle so that incoming
 peer data does not immediately re-trigger a sync.  Call from any thread.
 - `_pop_sync_written`: Drain and return the current sync-written set (called once per poll).
+- `_md5_file`: Compute MD5 hex digest of a file, or None if unreadable.
 - `__init__`: (No docstring)
 - `_load_vault_path`: (No docstring)
 - `reload_config`: Reload vault path from config (called after settings change).
@@ -690,6 +702,11 @@ UI layer — PyQt6 main window and module panels.
 **Module docstring:**
 Main application window with menu bar, sidebar, theme selector, and sync integration.
 
+Changes in this version:
+  • Store injection — all stores instantiated once and passed to panels
+  • System tray icon — programmatic theme-aware icon, minimize to tray
+  • Close-to-tray behaviour controlled by config key 'minimize_to_tray'
+
 **Classes:**
 - `SidebarButton`: (No docstring)
 - `MainWindow`: (No docstring)
@@ -703,6 +720,12 @@ Main application window with menu bar, sidebar, theme selector, and sync integra
 - `_build_central`: (No docstring)
 - `_build_status_bar`: (No docstring)
 - `_update_clock`: (No docstring)
+- `_setup_tray`: (No docstring)
+- `_update_tray_icon`: Generate a 32x32 theme-aware tray icon (solid circle).
+- `_tray_show`: (No docstring)
+- `_on_tray_activated`: (No docstring)
+- `closeEvent`: (No docstring)
+- `changeEvent`: (No docstring)
 - `_navigate`: (No docstring)
 - `_on_theme_changed`: (No docstring)
 - `_apply_theme`: (No docstring)
@@ -1406,7 +1429,7 @@ Tests for LocalSync.
 
 ```python
 #!/usr/bin/env python3
-"""LocalSync — Personal productivity desktop app.
+"""LocalSync â€” Personal productivity desktop app.
 
 Entry point: initializes the database, starts the Qt application,
 launches sync engine and vault watcher, and displays the main window.
@@ -1448,7 +1471,7 @@ def main():
         window.set_sync_engine(sync_engine)
         sync_engine.start()
 
-        # Start vault watcher — detects Obsidian edits and pushes to peers
+        # Start vault watcher â€” detects Obsidian edits and pushes to peers
         vault_watcher = VaultWatcher()
         vault_watcher.vault_changed.connect(sync_engine.trigger_vault_sync)
         vault_watcher.vault_changed.connect(window._on_sync_completed)
@@ -1472,6 +1495,7 @@ if __name__ == "__main__":
         sys.exit(main())
     except Exception:
         import traceback
+        # QApplication may or may not exist at this point
         try:
             from PyQt6.QtWidgets import QApplication, QMessageBox
             app = QApplication.instance() or QApplication(sys.argv)
@@ -1479,6 +1503,7 @@ if __name__ == "__main__":
         except Exception:
             print(traceback.format_exc())
         sys.exit(1)
+
 ```
 
 ### `src\__init__.py`
@@ -3273,6 +3298,8 @@ def record_deletion(rel_posix: str, vault: Path | None = None):
     """Immediately record a file deletion in the vault manifest.
 
     Safe to call from any thread. If vault is None, reads from config.
+    Includes both deleted_at (legacy) and deleted_at_ts (float unix timestamp)
+    so engine.py LWW comparisons work.
     """
     if vault is None:
         vault = get_vault_path()
@@ -3284,7 +3311,11 @@ def record_deletion(rel_posix: str, vault: Path | None = None):
     now = time.time()
 
     if rel_posix not in existing_paths:
-        entries.append({"path": rel_posix, "deleted_at": now, "deleted_at_ts": now})
+        entries.append({
+            "path": rel_posix,
+            "deleted_at": now,
+            "deleted_at_ts": now,
+        })
         logger.info(f"Recorded vault deletion: {rel_posix}")
 
     # Prune old entries
@@ -3313,7 +3344,6 @@ def remove_deletion(rel_posix: str, vault: Path | None = None):
     entries = read_manifest(vault)
     entries = [d for d in entries if d["path"] != rel_posix]
     write_manifest(vault, entries)
-
 ```
 
 ### `src\sync\engine.py`
@@ -3962,10 +3992,13 @@ class SyncEngine(QThread):
             else:
                 should_write = True
             if should_write:
+                try:
+                    _mark_vault_written(rel_posix)   # BEFORE writing
                     local_path.parent.mkdir(parents=True, exist_ok=True)
                     local_path.write_text(rnote["content"], encoding="utf-8")
-                    _mark_vault_written(rel_posix)   # guard: watcher skips this path next poll
                     changes += 1
+                except OSError as e:
+                    logger.warning(f"Failed to write note {rel_posix}: {e}")
 
         # Merge Obsidian vault notes
         vault_path = cfg.get("obsidian_vault_path", "")
@@ -3978,15 +4011,17 @@ class SyncEngine(QThread):
                 del_time = deletion.get("deleted_at", 0)
                 local_path = vault_dir / Path(del_posix)
                 if local_path.exists():
-                    # Only delete if the local file is older than the deletion
                     try:
                         local_mtime = local_path.stat().st_mtime
-                        if del_time > local_mtime:
-                            local_path.unlink()
-                            changes += 1
-                            self._log(f"Deleted vault file (remote deletion): {del_posix}")
-                            # Also record locally so we don't re-create from other peers
-                            self._record_vault_deletion(vault_path, del_posix)
+                        deletion_ts = deletion.get("deleted_at_ts", deletion.get("deleted_at", 0))
+                        if local_mtime > deletion_ts:
+                            logger.debug(f"LWW: local '{del_posix}' modified after peer deletion, keeping local")
+                            continue
+                        local_path.unlink()
+                        changes += 1
+                        self._log(f"Deleted vault file (remote deletion): {del_posix}")
+                        # Also record locally so we don't re-create from other peers
+                        self._record_vault_deletion(vault_path, del_posix)
                     except OSError as e:
                         logger.warning(f"Failed to delete {del_posix}: {e}")
 
@@ -4027,9 +4062,13 @@ class SyncEngine(QThread):
                 else:
                     should_write = True
                 if should_write:
-                    local_path.parent.mkdir(parents=True, exist_ok=True)
-                    local_path.write_text(rnote["content"], encoding="utf-8")
-                    changes += 1
+                    try:
+                        _mark_vault_written(rel_posix)   # BEFORE writing
+                        local_path.parent.mkdir(parents=True, exist_ok=True)
+                        local_path.write_text(rnote["content"], encoding="utf-8")
+                        changes += 1
+                    except OSError as e:
+                        logger.warning(f"Failed to write vault file {rel_posix}: {e}")
 
             # Clean up empty directories left after deletions
             if vault_dir.exists():
@@ -4164,21 +4203,26 @@ so the sync engine can broadcast them to peers.
 
 Sync-safety features:
   • 10-second poll interval — relaxed for a personal two-machine setup.
-  • Deletion debounce — a file must be absent for 2 consecutive polls (≥20 s)
+  • Deletion debounce — a file must be absent for 5 consecutive polls (~50 s)
     before its deletion is recorded.  This prevents Obsidian's atomic-save
     behaviour (delete + recreate within milliseconds) from being misread as a
     real deletion.
+  • Content-hash guard — when a pending-deletion file disappears, its MD5 hash
+    (or size as fallback) is stored.  If a new file appears with the same hash
+    during the debounce window, the deletion is treated as a rename/move and
+    is not recorded in the manifest.
   • Sync-write guard — when the engine writes a vault file it calls
     mark_sync_written(); the watcher skips that path for the next poll cycle
     so it does not re-trigger a sync for data that arrived from a peer.
-  • Quiet-period gate — vault_changed is only emitted after one full poll with
+  • Quiet-period gate — vault_changed is only emitted after two full polls with
     no new activity.  Rapid sequences (move = delete + create) are collapsed
     into a single signal.
-  • Move detection — if a pending-deletion's file size matches a newly
-    appeared file in the same poll cycle the operation is treated as a rename
-    and the deletion manifest entry is suppressed.
+  • Move detection — if a pending-deletion's content hash or file size matches
+    a newly appeared file in the same poll cycle the operation is treated as a
+    rename and the deletion manifest entry is suppressed.
 """
 
+import hashlib
 import logging
 import threading
 import time
@@ -4193,8 +4237,8 @@ logger = logging.getLogger(__name__)
 
 # ── Tuning constants ────────────────────────────────────────────────────────
 POLL_INTERVAL          = 10  # seconds between each vault scan
-DELETION_CONFIRM_POLLS = 2   # polls a file must be absent before deletion confirmed (~20 s)
-QUIET_POLLS_BEFORE_EMIT = 1  # polls of silence required before emitting vault_changed
+DELETION_CONFIRM_POLLS = 5   # polls a file must be absent before deletion confirmed (~50 s)
+QUIET_POLLS_BEFORE_EMIT = 2  # polls of silence required before emitting vault_changed
 
 
 # ── Sync-write guard (module-level so engine.py can call without a reference) ─
@@ -4220,6 +4264,18 @@ def _pop_sync_written() -> set[str]:
         return result
 
 
+def _md5_file(path: Path) -> str | None:
+    """Compute MD5 hex digest of a file, or None if unreadable."""
+    try:
+        h = hashlib.md5()
+        with open(path, "rb") as f:
+            for chunk in iter(lambda: f.read(65536), b""):
+                h.update(chunk)
+        return h.hexdigest()
+    except OSError:
+        return None
+
+
 # ── Watcher thread ──────────────────────────────────────────────────────────
 
 class VaultWatcher(QThread):
@@ -4239,8 +4295,10 @@ class VaultWatcher(QThread):
 
         # Deletion debounce: rel_posix -> number of polls the file has been absent
         self._pending_deletions: dict[str, int] = {}
-        # Size of the file when it was last seen (for move detection)
+        # Size of the file when it was last seen (for move detection fallback)
         self._pending_deletion_sizes: dict[str, int] = {}
+        # MD5 hash of the file when it was last seen (for move detection)
+        self._pending_deletion_hashes: dict[str, str] = {}
 
         # Quiet-period state
         self._changes_pending: bool = False  # we have unsent changes
@@ -4264,6 +4322,7 @@ class VaultWatcher(QThread):
         self._snapshot.clear()
         self._pending_deletions.clear()
         self._pending_deletion_sizes.clear()
+        self._pending_deletion_hashes.clear()
         self._changes_pending = False
         self._quiet_polls = 0
         if self._vault_path:
@@ -4334,8 +4393,9 @@ class VaultWatcher(QThread):
         new_activity_this_poll = False   # did we find anything new *this* poll?
 
         # ── 1. New / modified files ─────────────────────────────────────────
-        # Track sizes of genuinely new files for move detection later.
+        # Track sizes and hashes of genuinely new files for move detection later.
         new_file_sizes: set[int] = set()
+        new_file_hashes: set[str] = set()
 
         for path, (mtime, size) in current.items():
             if path in skip_set:
@@ -4346,6 +4406,12 @@ class VaultWatcher(QThread):
             if prev is None:
                 # File is brand-new (or re-appeared after a move)
                 new_file_sizes.add(size)
+                # Compute hash for move detection
+                if self._vault_path:
+                    full_path = self._vault_path / Path(path)
+                    h = _md5_file(full_path)
+                    if h:
+                        new_file_hashes.add(h)
                 new_activity_this_poll = True
                 logger.debug(f"New file detected: {path}")
             elif mtime > prev[0]:
@@ -4365,21 +4431,31 @@ class VaultWatcher(QThread):
             )
             self._pending_deletions.pop(path, None)
             self._pending_deletion_sizes.pop(path, None)
+            self._pending_deletion_hashes.pop(path, None)
 
         # Increment absence counter for files still gone
         for path in gone_now:
+            # AIRTIGHT: skip_set check BEFORE incrementing counter
             if path in skip_set:
                 # Engine deleted it as part of a remote deletion — ignore
                 self._pending_deletions.pop(path, None)
                 self._pending_deletion_sizes.pop(path, None)
+                self._pending_deletion_hashes.pop(path, None)
                 continue
 
             count = self._pending_deletions.get(path, 0) + 1
             self._pending_deletions[path] = count
 
-            # Cache the file's last known size so we can detect moves
+            # Cache the file's last known size and content hash for move detection
             if path not in self._pending_deletion_sizes and path in self._snapshot:
                 self._pending_deletion_sizes[path] = self._snapshot[path][1]
+
+            # Compute content hash at disappearance time if possible
+            if path not in self._pending_deletion_hashes and self._vault_path:
+                full_path = self._vault_path / Path(path)
+                h = _md5_file(full_path)
+                if h:
+                    self._pending_deletion_hashes[path] = h
 
             logger.debug(f"'{path}' absent for {count} poll(s) (confirm at {DELETION_CONFIRM_POLLS})")
 
@@ -4390,14 +4466,20 @@ class VaultWatcher(QThread):
             if self._pending_deletions[path] < DELETION_CONFIRM_POLLS:
                 continue  # not yet confirmed
 
-            # ── Move detection ──────────────────────────────────────────────
+            # ── Move detection (content hash + size fallback) ──────────────
+            del_hash = self._pending_deletion_hashes.get(path)
             del_size = self._pending_deletion_sizes.get(path)
-            is_move  = (del_size is not None) and (del_size in new_file_sizes)
+
+            is_move = False
+            if del_hash and del_hash in new_file_hashes:
+                is_move = True
+            elif del_size is not None and del_size in new_file_sizes:
+                is_move = True
 
             if is_move:
                 logger.info(
-                    f"Move detected: '{path}' disappeared but a new file of the "
-                    f"same size ({del_size} bytes) appeared — skipping deletion record"
+                    f"Move detected: '{path}' disappeared but a new file with "
+                    f"matching content appeared — skipping deletion record"
                 )
             else:
                 # Genuine deletion — record in manifest and flag as changed
@@ -4408,8 +4490,10 @@ class VaultWatcher(QThread):
                         logger.info(f"Confirmed deletion recorded: {path}")
                 new_activity_this_poll = True
 
+            # Clean up tracking dicts
             self._pending_deletions.pop(path)
             self._pending_deletion_sizes.pop(path, None)
+            self._pending_deletion_hashes.pop(path, None)
 
         # ── 4. Quiet-period gate ────────────────────────────────────────────
         if new_activity_this_poll:
@@ -4449,16 +4533,23 @@ __all__ = ["MainWindow"]
 ### `src\ui\main_window.py`
 
 ```python
-"""Main application window with menu bar, sidebar, theme selector, and sync integration."""
+"""Main application window with menu bar, sidebar, theme selector, and sync integration.
+
+Changes in this version:
+  • Store injection — all stores instantiated once and passed to panels
+  • System tray icon — programmatic theme-aware icon, minimize to tray
+  • Close-to-tray behaviour controlled by config key 'minimize_to_tray'
+"""
 
 from datetime import datetime
 
-from PyQt6.QtCore import Qt, QTimer
-from PyQt6.QtGui import QKeySequence, QShortcut, QAction
+from PyQt6.QtCore import Qt, QTimer, QEvent
+from PyQt6.QtGui import QKeySequence, QShortcut, QAction, QPainter, QColor, QPixmap
 from PyQt6.QtWidgets import (
     QMainWindow, QWidget, QHBoxLayout, QVBoxLayout,
     QStackedWidget, QPushButton, QLabel, QFrame,
-    QComboBox, QStatusBar, QMenuBar,
+    QComboBox, QStatusBar, QMenuBar, QSystemTrayIcon,
+    QMenu, QApplication,
 )
 
 from src.config import APP_NAME, APP_VERSION, load_config, save_config
@@ -4470,6 +4561,12 @@ from src.ui.modules.todo_panel import TodoPanel
 from src.ui.modules.dashboard_panel import DashboardPanel
 from src.ui.modules.finance_charts import FinanceChartsPanel
 from src.ui.modules.activity_panel import ActivityPanel
+
+from src.data.todo_store import TodoStore
+from src.data.calendar_store import CalendarStore
+from src.data.finance_store import FinanceStore
+from src.data.activity_store import ActivityStore
+from src.data.soft_events_store import SoftEventStore
 
 
 class SidebarButton(QPushButton):
@@ -4509,20 +4606,34 @@ class MainWindow(QMainWindow):
         super().__init__()
         self.cfg = load_config()
         self.sync_engine = None  # Set by main.py after construction
+
+        # ── Instantiate all stores once ──
+        self.todo_store = TodoStore()
+        self.calendar_store = CalendarStore()
+        self.finance_store = FinanceStore()
+        self.activity_store = ActivityStore()
+        self.soft_events_store = SoftEventStore()
+
         self.setWindowTitle(f"{APP_NAME} v{APP_VERSION}")
         self.setMinimumSize(1000, 650)
         self.resize(1200, 750)
+
+        self._palette: dict = {}
+        self._tray = None  # initialized properly in _setup_tray()
 
         self._build_menu_bar()
         self._build_central()
         self._build_status_bar()
 
-        # Apply theme and default to Notes
+        # Apply theme and default to Dashboard
         current_theme = self.cfg.get("theme", "Catppuccin Dark")
         if current_theme in ("dark", "light"):
             current_theme = "Catppuccin Dark" if current_theme == "dark" else "Catppuccin Light"
         self._apply_theme(current_theme)
         self._navigate("Dashboard")
+
+        # ── System tray ──
+        self._setup_tray()
 
     # ── Menu bar ───────────────────────────────────────
 
@@ -4659,14 +4770,22 @@ class MainWindow(QMainWindow):
 
         main_layout.addWidget(self.sidebar)
 
-        # ── Content stack ────────────────────────────
+        # ── Content stack (panels receive injected stores) ──
         self.stack = QStackedWidget()
-        self.dashboard_panel = DashboardPanel()
+        self.dashboard_panel = DashboardPanel(
+            todo_store=self.todo_store,
+            calendar_store=self.calendar_store,
+            finance_store=self.finance_store,
+            soft_events_store=self.soft_events_store,
+        )
         self.notes_panel = NotesPanel()
-        self.calendar_panel = CalendarPanel()
+        self.calendar_panel = CalendarPanel(
+            calendar_store=self.calendar_store,
+            soft_events_store=self.soft_events_store,
+        )
         self.finance_panel = FinancePanel()
         self.charts_panel = FinanceChartsPanel()
-        self.todo_panel = TodoPanel()
+        self.todo_panel = TodoPanel(todo_store=self.todo_store)
         self.activity_panel = ActivityPanel()
 
         self.stack.addWidget(self.dashboard_panel)   # 0
@@ -4697,6 +4816,77 @@ class MainWindow(QMainWindow):
         now = datetime.now()
         self.clock_label.setText(now.strftime("%A, %b %d  %H:%M"))
 
+    # ── System tray ────────────────────────────────────
+
+    def _setup_tray(self):
+        if not QSystemTrayIcon.isSystemTrayAvailable():
+            self._tray = None
+            return
+
+        self._tray = QSystemTrayIcon(self)
+        self._tray.setToolTip("LocalSync")
+        self._update_tray_icon()
+
+        # Context menu
+        tray_menu = QMenu()
+        show_action = tray_menu.addAction("Show")
+        show_action.triggered.connect(self._tray_show)
+        tray_menu.addSeparator()
+        quit_action = tray_menu.addAction("Quit")
+        quit_action.triggered.connect(QApplication.quit)
+        self._tray.setContextMenu(tray_menu)
+
+        # Double-click to show
+        self._tray.activated.connect(self._on_tray_activated)
+
+    def _update_tray_icon(self):
+        """Generate a 32x32 theme-aware tray icon (solid circle)."""
+        if not self._tray:
+            return
+        accent = self._palette.get("accent", "#89b4fa")
+        bg = self._palette.get("bg", "#1e1e2e")
+
+        pixmap = QPixmap(32, 32)
+        pixmap.fill(QColor(bg))
+        painter = QPainter(pixmap)
+        painter.setRenderHint(QPainter.RenderHint.Antialiasing)
+        painter.setBrush(QColor(accent))
+        painter.setPen(Qt.PenStyle.NoPen)
+        painter.drawEllipse(4, 4, 24, 24)
+        painter.end()
+
+        from PyQt6.QtGui import QIcon
+        self._tray.setIcon(QIcon(pixmap))
+
+    def _tray_show(self):
+        self.show()
+        self.raise_()
+        self.activateWindow()
+
+    def _on_tray_activated(self, reason):
+        if reason == QSystemTrayIcon.ActivationReason.DoubleClick:
+            self._tray_show()
+
+    # ── Close / minimize to tray ───────────────────────
+
+    def closeEvent(self, event):
+        minimize_to_tray = self.cfg.get("minimize_to_tray", True)
+        if minimize_to_tray and self._tray:
+            event.ignore()
+            self.hide()
+            self._tray.show()
+        else:
+            super().closeEvent(event)
+
+    def changeEvent(self, event):
+        if (event.type() == QEvent.Type.WindowStateChange
+                and self.isMinimized()
+                and self.cfg.get("minimize_to_tray", True)
+                and self._tray):
+            self.hide()
+            self._tray.show()
+        super().changeEvent(event)
+
     # ── Navigation ─────────────────────────────────────
 
     def _navigate(self, name: str):
@@ -4726,6 +4916,7 @@ class MainWindow(QMainWindow):
     def _apply_theme(self, name: str):
         sheet = THEMES.get(name, THEMES["Catppuccin Dark"])
         palette = PALETTES.get(name, PALETTES["Catppuccin Dark"])
+        self._palette = palette
         self.setStyleSheet(sheet)
         self.sidebar.setStyleSheet(
             f"QWidget#sidebar {{ background-color: {palette['header_bg']}; }}"
@@ -4744,6 +4935,11 @@ class MainWindow(QMainWindow):
             self.charts_panel.set_palette(palette)
         if hasattr(self.activity_panel, 'set_palette'):
             self.activity_panel.set_palette(palette)
+        if hasattr(self.notes_panel, 'set_palette'):
+            self.notes_panel.set_palette(palette)
+
+        # Update tray icon with new theme colors
+        self._update_tray_icon()
 
     # ── Sync integration ───────────────────────────────
 
@@ -4804,7 +5000,6 @@ class MainWindow(QMainWindow):
             f"Notes \u2022 Calendar \u2022 Earnings \u2022 Tasks<br><br>"
             f"Syncs automatically over your home network.",
         )
-
 ```
 
 ### `src\ui\modules\__init__.py`
@@ -7238,6 +7433,21 @@ class CalendarPanel(QWidget):
             except ValueError: continue
             if ws <= bd <= we: bbd.setdefault(bd, []).append(b)
 
+        # ── Soft event reminders in week grid ──
+        try:
+            for occ_date, tpl in self.soft_events_store.get_upcoming(ws, days_ahead=6):
+                if ws <= occ_date <= we:
+                    ebd.setdefault(occ_date, []).append(Event(
+                        id=tpl.id,
+                        title=f"\U0001f4cc {tpl.title}",
+                        start_time=datetime(occ_date.year, occ_date.month, occ_date.day).isoformat(),
+                        all_day=True,
+                        color=tpl.color,
+                        category="reminder",
+                    ))
+        except Exception:
+            pass
+
         today = date.today()
         for i in range(7):
             d = ws + timedelta(days=i)
@@ -7245,6 +7455,7 @@ class CalendarPanel(QWidget):
                 sep = QFrame(); sep.setFrameShape(QFrame.Shape.VLine)
                 sep.setStyleSheet(f"border:none;border-left:1px solid {_p('border')};")
                 self._week_grid.addWidget(sep)
+
             col = DayColumn(d, ebd.get(d, []), bbd.get(d, []),
                             is_today=(d == today), is_selected=(d == self._selected_date))
             col.request_add.connect(self._add_event_on_date)
@@ -11459,7 +11670,6 @@ class ObsidianAPI:
         uri = f"obsidian://open?vault={encoded_vault}&file={encoded_file}"
         try:
             if sys.platform == "win32":
-                import os
                 os.startfile(uri)
             elif sys.platform == "darwin":
                 subprocess.Popen(["open", uri])
@@ -11675,7 +11885,6 @@ class NotesPanel(QWidget):
         # ── Right side: editor ───────────────────────
         editor_widget = QWidget()
         editor_layout = QVBoxLayout(editor_widget)
-#        editor_layout.addWidget(self._preview, 1)  # same stretch as editor
         editor_layout.setContentsMargins(4, 8, 8, 8)
         editor_layout.setSpacing(4)
 
@@ -11703,6 +11912,12 @@ class NotesPanel(QWidget):
         self.btn_delete.setVisible(False)
         title_row.addWidget(self.btn_delete)
 
+        self._preview_btn = QPushButton("\U0001f441 Preview")
+        self._preview_btn.setObjectName("secondary")
+        self._preview_btn.setFixedHeight(24)
+        self._preview_btn.clicked.connect(self._toggle_preview)
+        title_row.addWidget(self._preview_btn)
+
         editor_layout.addLayout(title_row)
 
         sep = QFrame()
@@ -11722,6 +11937,7 @@ class NotesPanel(QWidget):
         self.editor.setTabStopDistance(28.0)
         self.editor.textChanged.connect(self._on_text_changed)
         editor_layout.addWidget(self.editor, 1)
+        editor_layout.addWidget(self._preview, 1)
 
         footer = QHBoxLayout()
         self.tag_label = QLabel("")
@@ -11966,7 +12182,6 @@ class NotesPanel(QWidget):
         uri = f"obsidian://open?vault={encoded_vault}&file={encoded_file}"
         try:
             if sys.platform == "win32":
-                import os
                 os.startfile(uri)
             elif sys.platform == "darwin":
                 subprocess.Popen(["open", uri])
@@ -12019,12 +12234,12 @@ class NotesPanel(QWidget):
         self.btn_rename.setVisible(False)
         self.btn_delete.setVisible(False)
         self.btn_open_obsidian.setVisible(False)
-        self._preview_btn = QPushButton("\U0001f441 Preview")
-        self._preview_btn.setObjectName("secondary")
-        self._preview_btn.setFixedHeight(24)
-        self._preview_btn.clicked.connect(self._toggle_preview)
-        # Add to the editor header row, e.g.:
-        # editor_header.addWidget(self._preview_btn)
+        # Reset preview mode if active
+        if self._preview_mode:
+            self._preview_mode = False
+            self._preview.setVisible(False)
+            self.editor.setVisible(True)
+            self._preview_btn.setText("\U0001f441 Preview")
 
     # ── Editing ────────────────────────────────────────
 
@@ -12127,7 +12342,6 @@ class NotesPanel(QWidget):
             self.store.delete_note(self.current_note_path)
             self._clear_editor()
             self._refresh_list()
-
 ```
 
 ### `src\ui\modules\todo_panel.py`
@@ -12603,7 +12817,7 @@ def _build_theme(c: dict) -> str:
 QMainWindow, QWidget {{
     background-color: {c['bg']};
     color: {c['fg']};
-    font-family: "Segoe UI", "Ubuntu", "Noto Sans", sans-serif;
+    font-family: "Segoe UI", "Meiryo UI", "Ubuntu", "Noto Sans", sans-serif;
     font-size: 12px;
 }}
 

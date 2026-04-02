@@ -6,7 +6,7 @@ from pathlib import Path
 
 
 APP_NAME = "LocalSync"
-APP_VERSION = "0.2.0"
+APP_VERSION = "0.3.0"
 
 # Cross-platform data directory
 if platform.system() == "Windows":
@@ -26,6 +26,7 @@ for d in [DATA_DIR, NOTES_DIR]:
 
 # Default settings
 DEFAULTS = {
+    "config_version": 1,
     "theme": "Catppuccin Dark",
     # Sync
     "sync_enabled": True,

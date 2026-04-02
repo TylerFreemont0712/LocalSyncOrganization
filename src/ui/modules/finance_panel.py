@@ -486,9 +486,10 @@ class MonthlyExpensesDialog(QDialog):
     making them easy to filter for 確定申告 year-end reporting.
     """
 
-    def __init__(self, store: FinanceStore, parent=None):
+    def __init__(self, store: FinanceStore, palette: dict = None, parent=None):
         super().__init__(parent)
         self.store = store
+        self._palette = palette or {}
         self.setWindowTitle("Monthly Expenses")
         self.setMinimumSize(600, 500)
         self.setStyleSheet(_COMBO_QSS)
@@ -526,7 +527,8 @@ class MonthlyExpensesDialog(QDialog):
 
         # ── Duplicate warning ──
         self._warn_lbl = QLabel("")
-        self._warn_lbl.setStyleSheet("color:#f9e2af;font-size:11px;")
+        _warn_color = self._palette.get("yellow", "#f9e2af")
+        self._warn_lbl.setStyleSheet(f"color:{_warn_color};font-size:11px;")
         self._warn_lbl.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self._warn_lbl.setWordWrap(True)
         layout.addWidget(self._warn_lbl)
@@ -1444,7 +1446,7 @@ class FinancePanel(QWidget):
         self._rebuild_preset_buttons(); self._refresh()
 
     def _open_monthly_expenses(self):
-        dlg = MonthlyExpensesDialog(self.store, self)
+        dlg = MonthlyExpensesDialog(self.store, self._palette, self)
         if dlg.exec() == QDialog.DialogCode.Accepted:
             self._refresh()
 

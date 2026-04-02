@@ -442,6 +442,27 @@ class SyncEngine(QThread):
                 birthdays = [dict(r) for r in conn.execute("SELECT * FROM birthdays").fetchall()]
             except Exception:
                 birthdays = []
+            # Soft event templates + logs — may not exist in older DBs
+            try:
+                soft_templates = [dict(r) for r in conn.execute(
+                    "SELECT * FROM soft_event_templates").fetchall()]
+                soft_logs = [dict(r) for r in conn.execute(
+                    "SELECT * FROM soft_event_logs").fetchall()]
+            except Exception:
+                soft_templates = []
+                soft_logs = []
+            # Job presets — may not exist in older DBs
+            try:
+                job_presets = [dict(r) for r in conn.execute(
+                    "SELECT * FROM job_presets").fetchall()]
+            except Exception:
+                job_presets = []
+            # Side income goals — may not exist in older DBs
+            try:
+                side_income_goals = [dict(r) for r in conn.execute(
+                    "SELECT * FROM side_income_goals").fetchall()]
+            except Exception:
+                side_income_goals = []
         finally:
             conn.close()
 
@@ -493,6 +514,8 @@ class SyncEngine(QThread):
             "events": events, "transactions": transactions,
             "todos": todos, "activities": activities,
             "birthdays": birthdays,
+            "soft_templates": soft_templates, "soft_logs": soft_logs,
+            "job_presets": job_presets, "side_income_goals": side_income_goals,
             "notes": notes, "vault_notes": vault_notes,
             "vault_deletions": vault_deletions,
         }
@@ -601,6 +624,96 @@ class SyncEngine(QThread):
                         changes += 1
                 except Exception:
                     pass  # Gracefully handle if birthdays table doesn't exist on peer
+
+            # Merge soft event templates
+            for rs in remote.get("soft_templates", []):
+                try:
+                    local = conn.execute(
+                        "SELECT updated_at FROM soft_event_templates WHERE id=?", (rs["id"],)
+                    ).fetchone()
+                    if local is None or rs["updated_at"] > local["updated_at"]:
+                        conn.execute(
+                            """INSERT INTO soft_event_templates
+                               (id, title, note, color, recurrence, updated_at, deleted)
+                               VALUES (?, ?, ?, ?, ?, ?, ?)
+                               ON CONFLICT(id) DO UPDATE SET
+                               title=excluded.title, note=excluded.note,
+                               color=excluded.color, recurrence=excluded.recurrence,
+                               updated_at=excluded.updated_at, deleted=excluded.deleted""",
+                            (rs["id"], rs["title"], rs.get("note", ""),
+                             rs.get("color", "#a6e3a1"), rs.get("recurrence", ""),
+                             rs["updated_at"], rs["deleted"]),
+                        )
+                        changes += 1
+                except Exception:
+                    pass  # Gracefully handle if table doesn't exist on peer
+
+            # Merge soft event logs
+            for rl in remote.get("soft_logs", []):
+                try:
+                    local = conn.execute(
+                        "SELECT updated_at FROM soft_event_logs WHERE id=?", (rl["id"],)
+                    ).fetchone()
+                    if local is None or rl["updated_at"] > local["updated_at"]:
+                        conn.execute(
+                            """INSERT INTO soft_event_logs
+                               (id, template_id, log_date, log_text, updated_at, deleted)
+                               VALUES (?, ?, ?, ?, ?, ?)
+                               ON CONFLICT(id) DO UPDATE SET
+                               template_id=excluded.template_id,
+                               log_date=excluded.log_date, log_text=excluded.log_text,
+                               updated_at=excluded.updated_at, deleted=excluded.deleted""",
+                            (rl["id"], rl["template_id"], rl["log_date"],
+                             rl.get("log_text", ""), rl["updated_at"], rl["deleted"]),
+                        )
+                        changes += 1
+                except Exception:
+                    pass  # Gracefully handle if table doesn't exist on peer
+
+            # Merge job presets
+            for rp in remote.get("job_presets", []):
+                try:
+                    local = conn.execute(
+                        "SELECT updated_at FROM job_presets WHERE id=?", (rp["id"],)
+                    ).fetchone()
+                    if local is None or rp["updated_at"] > local["updated_at"]:
+                        conn.execute(
+                            """INSERT INTO job_presets
+                               (id, name, amount_usd, category, updated_at, deleted)
+                               VALUES (?, ?, ?, ?, ?, ?)
+                               ON CONFLICT(id) DO UPDATE SET
+                               name=excluded.name, amount_usd=excluded.amount_usd,
+                               category=excluded.category, updated_at=excluded.updated_at,
+                               deleted=excluded.deleted""",
+                            (rp["id"], rp["name"], rp["amount_usd"],
+                             rp.get("category", "Contract"),
+                             rp["updated_at"], rp["deleted"]),
+                        )
+                        changes += 1
+                except Exception:
+                    pass  # Gracefully handle if table doesn't exist on peer
+
+            # Merge side income goals
+            for rg in remote.get("side_income_goals", []):
+                try:
+                    local = conn.execute(
+                        "SELECT updated_at FROM side_income_goals WHERE year=? AND month=?",
+                        (rg["year"], rg["month"])
+                    ).fetchone()
+                    if local is None or rg["updated_at"] > local["updated_at"]:
+                        conn.execute(
+                            """INSERT INTO side_income_goals
+                               (id, year, month, min_goal, major_goal, updated_at)
+                               VALUES (?, ?, ?, ?, ?, ?)
+                               ON CONFLICT(year, month) DO UPDATE SET
+                               min_goal=excluded.min_goal, major_goal=excluded.major_goal,
+                               updated_at=excluded.updated_at""",
+                            (rg["id"], rg["year"], rg["month"],
+                             rg["min_goal"], rg["major_goal"], rg["updated_at"]),
+                        )
+                        changes += 1
+                except Exception:
+                    pass  # Gracefully handle if table doesn't exist on peer
 
             # Merge todos
             for rt in remote.get("todos", []):

@@ -1,6 +1,6 @@
 """Todo list module UI — modern task manager with priorities, categories, and due dates."""
 
-from datetime import date
+from datetime import date, datetime, timedelta
 
 from PyQt6.QtCore import Qt, QDate
 from PyQt6.QtGui import QColor, QBrush, QFont
@@ -16,7 +16,18 @@ from src.data.todo_store import (
 )
 
 
-PRIORITY_COLORS = {0: "#a6adc8", 1: "#a6e3a1", 2: "#f9e2af", 3: "#f38ba8"}
+def _priority_colors(palette: dict) -> dict:
+    """Return priority-level colours drawn from the current theme palette.
+
+    Fallbacks match Catppuccin Dark so the panel looks correct before the
+    first set_palette() call.
+    """
+    return {
+        0: palette.get("muted",  "#a6adc8"),
+        1: palette.get("green",  "#a6e3a1"),
+        2: palette.get("yellow", "#f9e2af"),
+        3: palette.get("red",    "#f38ba8"),
+    }
 PRIORITY_ICONS = {0: "", 1: "!", 2: "!!", 3: "!!!"}
 
 
@@ -139,12 +150,13 @@ class TodoDialog(QDialog):
 class TodoItemWidget(QFrame):
     """A single todo item rendered as a compact card."""
 
-    def __init__(self, item: TodoItem, parent_panel, palette: dict | None = None):
+    def __init__(self, item: TodoItem, parent_panel, palette: dict | None = None, priority_colors: dict | None = None):
         super().__init__()
         self.item = item
         self.panel = parent_panel
         self.setCursor(Qt.CursorShape.PointingHandCursor)
         palette = palette or {}
+        priority_colors = priority_colors or _priority_colors(palette)
 
         layout = QHBoxLayout(self)
         layout.setContentsMargins(8, 4, 8, 4)
@@ -159,7 +171,7 @@ class TodoItemWidget(QFrame):
         # Priority dot
         if item.priority > 0:
             dot = QLabel(PRIORITY_ICONS[item.priority])
-            color = PRIORITY_COLORS[item.priority]
+            color = priority_colors[item.priority]
             dot.setStyleSheet(f"color: {color}; font-weight: bold; font-size: 11px;")
             dot.setFixedWidth(20)
             layout.addWidget(dot)
@@ -228,7 +240,7 @@ class TodoItemWidget(QFrame):
         layout.addWidget(edit_btn)
 
         # Priority color stripe on left
-        border_color = PRIORITY_COLORS.get(item.priority, "transparent")
+        border_color = priority_colors.get(item.priority, "transparent")
         style_parts = []
         if item.priority > 0:
             style_parts.append(f"border-left: 3px solid {border_color};")
@@ -307,11 +319,28 @@ class TodoPanel(QWidget):
 
         layout.addLayout(header)
 
-        # Quick add
+        # Search + category filter row
+        search_row = QHBoxLayout()
+        search_row.setSpacing(4)
+        self.search_input = QLineEdit()
+        self.search_input.setPlaceholderText("Search tasks...")
+        self.search_input.setClearButtonEnabled(True)
+        self.search_input.textChanged.connect(self._refresh)
+        search_row.addWidget(self.search_input, 1)
+
+        self.cat_filter_combo = QComboBox()
+        self.cat_filter_combo.addItem("All Categories")
+        self.cat_filter_combo.setFixedWidth(130)
+        self.cat_filter_combo.currentTextChanged.connect(self._refresh)
+        search_row.addWidget(self.cat_filter_combo)
+        layout.addLayout(search_row)
+
+        # Quick add — supports !high/!med/!low and due:YYYY-MM-DD/today/tomorrow
         quick_row = QHBoxLayout()
         quick_row.setSpacing(4)
         self.quick_input = QLineEdit()
-        self.quick_input.setPlaceholderText("Quick add task... (Enter to add)")
+        self.quick_input.setPlaceholderText(
+            "Quick add: Buy milk !high due:tomorrow  (Enter to add)")
         self.quick_input.returnPressed.connect(self._quick_add)
         quick_row.addWidget(self.quick_input, 1)
         layout.addLayout(quick_row)
@@ -349,6 +378,33 @@ class TodoPanel(QWidget):
         if filter_mode == "Completed":
             items = [i for i in items if i.done]
 
+        # Rebuild category filter combo while preserving selection
+        selected_cat = self.cat_filter_combo.currentText()
+        self.cat_filter_combo.blockSignals(True)
+        self.cat_filter_combo.clear()
+        self.cat_filter_combo.addItem("All Categories")
+        all_cats = sorted({i.category for i in self.store.get_all() if i.category})
+        for cat in all_cats:
+            self.cat_filter_combo.addItem(cat)
+        idx = self.cat_filter_combo.findText(selected_cat)
+        self.cat_filter_combo.setCurrentIndex(idx if idx >= 0 else 0)
+        self.cat_filter_combo.blockSignals(False)
+
+        # Apply category filter
+        cat_filter = self.cat_filter_combo.currentText()
+        if cat_filter and cat_filter != "All Categories":
+            items = [i for i in items if i.category == cat_filter]
+
+        # Apply search filter (case-insensitive, searches title + notes + category)
+        query = self.search_input.text().strip().lower()
+        if query:
+            items = [
+                i for i in items
+                if query in i.title.lower()
+                or query in (i.notes or "").lower()
+                or query in (i.category or "").lower()
+            ]
+
         # Sort: overdue incomplete first, then priority desc, then created_at asc
         today_iso = date.today().isoformat()
 
@@ -358,7 +414,6 @@ class TodoPanel(QWidget):
                 and bool(item.due_date)
                 and item.due_date < today_iso
             )
-            # 0 = overdue incomplete (top), 1 = done, 2 = not done but not overdue
             if item.done:
                 group = 2
             elif is_overdue_incomplete:
@@ -369,22 +424,56 @@ class TodoPanel(QWidget):
 
         items.sort(key=_sort_key)
 
+        pcolors = _priority_colors(self._palette)
         for item in items:
-            widget = TodoItemWidget(item, self, self._palette)
+            widget = TodoItemWidget(item, self, self._palette, pcolors)
             self._list_layout.addWidget(widget)
 
         self._list_layout.addStretch()
 
         counts = self.store.get_counts()
-        self.count_label.setText(f"{counts['total']} tasks")
+        shown = len(items)
+        total  = counts["total"]
+        self.count_label.setText(
+            f"{shown} of {total} tasks" if shown != total else f"{total} tasks")
         self.stats_label.setText(
             f"{counts['pending']} pending \u00b7 {counts['done']} completed"
         )
 
     def _quick_add(self):
+        import re as _re
         text = self.quick_input.text().strip()
+        if not text:
+            return
+
+        # Parse priority tags: !high (3), !med (2), !low (1)
+        priority = 0
+        for tag, val in [("!high", 3), ("!med", 2), ("!low", 1)]:
+            if tag in text.lower():
+                text = _re.sub(_re.escape(tag), "", text, flags=_re.IGNORECASE).strip()
+                priority = val
+                break  # only first tag counts
+
+        # Parse due date: due:today / due:tomorrow / due:YYYY-MM-DD
+        due_date = ""
+        m = _re.search(r'due:(\S+)', text, _re.IGNORECASE)
+        if m:
+            raw = m.group(1).lower()
+            today = date.today()
+            if raw == "today":
+                due_date = today.isoformat()
+            elif raw in ("tomorrow", "tmr", "tmrw"):
+                due_date = (today + timedelta(days=1)).isoformat()
+            else:
+                try:
+                    datetime.strptime(raw, "%Y-%m-%d")
+                    due_date = raw
+                except ValueError:
+                    pass  # unrecognised format — ignore silently
+            text = (text[:m.start()] + " " + text[m.end():]).strip()
+
         if text:
-            self.store.add(title=text)
+            self.store.add(title=text, priority=priority, due_date=due_date)
             self.quick_input.clear()
             self._refresh()
 
