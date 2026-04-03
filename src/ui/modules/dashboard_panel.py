@@ -25,6 +25,7 @@ from src.data.todo_store import TodoStore, PRIORITY_LABELS
 from src.data.calendar_store import CalendarStore
 from src.data.finance_store import FinanceStore
 from src.data.soft_events_store import SoftEventStore
+from src.ui.widgets.nav_button import NavButton
 
 
 def _priority_colors(palette: dict) -> dict:
@@ -353,6 +354,9 @@ class SideIncomeGoalSection(QFrame):
     def set_palette(self, palette: dict):
         self._palette = palette
         self._bar.set_palette(palette)
+        # Refresh painter-based nav buttons with new palette colors
+        self._prev_btn.refresh(palette)
+        self._next_btn.refresh(palette)
         self._refresh()
 
     def _load_rate(self):
@@ -366,10 +370,8 @@ class SideIncomeGoalSection(QFrame):
 
         hdr = QHBoxLayout()
 
-        self._prev_btn = QPushButton("\u2190")
-        self._prev_btn.setObjectName("secondary")
-        self._prev_btn.setFixedSize(26, 26)
-        self._prev_btn.setStyleSheet("QPushButton{font-size:14px;font-weight:bold;}")
+        # ── Use NavButton for painter-drawn arrows (no font/padding issues) ──
+        self._prev_btn = NavButton("left", size=26, tooltip="Previous month")
         self._prev_btn.clicked.connect(self._prev_month)
         hdr.addWidget(self._prev_btn)
 
@@ -378,10 +380,7 @@ class SideIncomeGoalSection(QFrame):
         self._month_lbl.setAlignment(Qt.AlignmentFlag.AlignCenter)
         hdr.addWidget(self._month_lbl, 1)
 
-        self._next_btn = QPushButton("\u2192")
-        self._next_btn.setObjectName("secondary")
-        self._next_btn.setFixedSize(26, 26)
-        self._next_btn.setStyleSheet("QPushButton{font-size:14px;font-weight:bold;}")
+        self._next_btn = NavButton("right", size=26, tooltip="Next month")
         self._next_btn.clicked.connect(self._next_month)
         hdr.addWidget(self._next_btn)
 
@@ -857,8 +856,11 @@ class DashboardPanel(QWidget):
                     pass
 
         # Major events — 30-day lookahead, 12 items
+        # Collect IDs so regular get_events() below doesn't duplicate them.
         majors = self.calendar_store.get_next_major_events(today, limit=12)
         thirty_days = today + timedelta(days=30)
+        major_event_ids: set[str] = set()
+
         for ev_date, ev_title, category, color, item_id, is_birthday in majors:
             if ev_date > thirty_days:
                 continue
@@ -871,12 +873,19 @@ class DashboardPanel(QWidget):
             upcoming_items.append((delta, UpcomingItem(
                 ev_title, category.title(), resolved, days_text
             )))
+            # Track real event IDs (birthdays have no calendar_events row to skip)
+            if not is_birthday:
+                major_event_ids.add(item_id)
 
+        # Regular events for the next 7 days — skip any already shown via majors
         next_week = today + timedelta(days=7)
         upcoming_events = self.calendar_store.get_events(
             today.isoformat(), next_week.isoformat() + "T23:59:59"
         )
         for ev in upcoming_events:
+            # Skip events that were already added from get_next_major_events()
+            if ev.id in major_event_ids:
+                continue
             try:
                 ev_date = datetime.fromisoformat(ev.start_time).date()
                 delta = (ev_date - today).days

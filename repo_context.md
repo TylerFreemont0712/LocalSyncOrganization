@@ -42,6 +42,8 @@ This document contains the full context of the repository, formatted for optimal
       - __init__.py
       - styles.py
       - __init__.py
+      - matrix_rain.py
+      - nav_button.py
       - network_dialog.py
     - __init__.py
     - paths.py
@@ -50,8 +52,8 @@ This document contains the full context of the repository, formatted for optimal
 ```
 
 ## 📊 Project Summary
-- Total Python files: **34**
-- Total lines of code: **12390**
+- Total Python files: **36**
+- Total lines of code: **13189**
 
 ## 🔗 Dependency Graph
 ### main.pyw
@@ -189,6 +191,7 @@ This document contains the full context of the repository, formatted for optimal
 - src.data.finance_store
 - src.data.activity_store
 - src.data.soft_events_store
+- src.ui.widgets.matrix_rain
 - PyQt6.QtGui
 - src.ui.widgets.network_dialog
 - PyQt6.QtWidgets
@@ -207,6 +210,7 @@ This document contains the full context of the repository, formatted for optimal
 - PyQt6.QtWidgets
 - src.config
 - src.data.activity_store
+- src.ui.widgets.nav_button
 
 ### src\ui\modules\calendar_panel.py
 - __future__
@@ -216,12 +220,12 @@ This document contains the full context of the repository, formatted for optimal
 - PyQt6.QtGui
 - PyQt6.QtWidgets
 - src.data.calendar_store
-- PyQt6.QtWidgets
-- PyQt6.QtCore
 - src.data.soft_events_store
+- src.ui.widgets.nav_button
 - src.ui.modules.dashboard_panel
 - PyQt6.QtGui
 - src.data.holidays_jp
+- PyQt6.QtGui
 
 ### src\ui\modules\dashboard_panel.py
 - calendar
@@ -234,6 +238,7 @@ This document contains the full context of the repository, formatted for optimal
 - src.data.calendar_store
 - src.data.finance_store
 - src.data.soft_events_store
+- src.ui.widgets.nav_button
 - PyQt6.QtWidgets
 
 ### src\ui\modules\finance_charts.py
@@ -287,12 +292,27 @@ This document contains the full context of the repository, formatted for optimal
 - PyQt6.QtGui
 - PyQt6.QtWidgets
 - src.data.todo_store
+- re
 
 ### src\ui\themes\__init__.py
 - src.ui.themes.styles
 
 ### src\ui\widgets\__init__.py
 - src.ui.widgets.network_dialog
+
+### src\ui\widgets\matrix_rain.py
+- __future__
+- random
+- dataclasses
+- typing
+- PyQt6.QtCore
+- PyQt6.QtGui
+- PyQt6.QtWidgets
+
+### src\ui\widgets\nav_button.py
+- PyQt6.QtCore
+- PyQt6.QtGui
+- PyQt6.QtWidgets
 
 ### src\ui\widgets\network_dialog.py
 - socket
@@ -715,6 +735,7 @@ Changes in this version:
 - `__init__`: (No docstring)
 - `apply_colors`: (No docstring)
 - `__init__`: (No docstring)
+- `resizeEvent`: (No docstring)
 - `_build_menu_bar`: (No docstring)
 - `_action`: (No docstring)
 - `_build_central`: (No docstring)
@@ -781,13 +802,7 @@ Layout:
 - `__init__`: (No docstring)
 - `set_palette`: (No docstring)
 - `load_week`: (No docstring)
-- `select_activity`: (No docstring)
-- `_col_width`: (No docstring)
-- `_block_at`: (No docstring)
-- `_pos_to_col_hour`: (No docstring)
 - `mousePressEvent`: (No docstring)
-- `mouseDoubleClickEvent`: (No docstring)
-- `mouseMoveEvent`: (No docstring)
 - `paintEvent`: (No docstring)
 - `__init__`: (No docstring)
 - `get_notes`: (No docstring)
@@ -815,14 +830,15 @@ Layout:
 - `_on_pill_tapped`: (No docstring)
 - `_on_custom_changed`: (No docstring)
 - `_sync_pill_styles`: (No docstring)
-- `get_activity`: Returns the custom text if filled, otherwise the selected pill name.
-- `set_activity`: Pre-select a pill matching `name`, or fill custom field if no match.
-- `clear`: Deselect everything and clear custom text.
-- `update_categories`: Called when the user renames the quick cats.
+- `get_activity`: (No docstring)
+- `set_activity`: (No docstring)
+- `clear`: (No docstring)
+- `update_categories`: (No docstring)
 - `__init__`: (No docstring)
+- `set_palette`: (No docstring)
 - `_build_ui`: (No docstring)
 - `set_week_start`: (No docstring)
-- `update_categories`: Sync pill labels when categories are renamed.
+- `update_categories`: (No docstring)
 - `prefill`: (No docstring)
 - `load_for_edit`: (No docstring)
 - `_rebuild_day_combo`: (No docstring)
@@ -880,6 +896,8 @@ Layout (positions unchanged):
 - `DayColumn`: (No docstring)
 - `MajorEventCard`: (No docstring)
 - `DayEventRow`: (No docstring)
+- `SoftReminderRow`: Styled day-detail row for a soft event reminder. Signals instead of
+monkey-patching mousePressEvent so Qt's event system stays intact.
 - `CalendarPanel`: (No docstring)
 - `BirthdayManagerDialog`: (No docstring)
 - `RecurrenceWidget`: Reusable recurrence picker: combo + weekday buttons.
@@ -920,7 +938,6 @@ Layout (positions unchanged):
 - `set_holidays`: (No docstring)
 - `set_selected`: (No docstring)
 - `refresh_styles`: Re-apply palette colors to navigation buttons/labels.
-- `_nav_style`: (No docstring)
 - `_build`: (No docstring)
 - `_render`: (No docstring)
 - `_on_cell_click`: (No docstring)
@@ -938,10 +955,14 @@ Layout (positions unchanged):
 - `_build`: (No docstring)
 - `enterEvent`: (No docstring)
 - `leaveEvent`: (No docstring)
+- `mousePressEvent`: (No docstring)
 - `mouseDoubleClickEvent`: (No docstring)
 - `paintEvent`: (No docstring)
 - `__init__`: (No docstring)
 - `mousePressEvent`: (No docstring)
+- `__init__`: (No docstring)
+- `mousePressEvent`: (No docstring)
+- `mouseDoubleClickEvent`: (No docstring)
 - `__init__`: (No docstring)
 - `mousePressEvent`: (No docstring)
 - `mouseDoubleClickEvent`: (No docstring)
@@ -960,6 +981,7 @@ Layout (positions unchanged):
 - `_prev_week`: (No docstring)
 - `_next_week`: (No docstring)
 - `_go_today`: (No docstring)
+- `_on_day_column_clicked`: Single-click on a week-grid day column selects that day.
 - `_on_mini_date_selected`: (No docstring)
 - `_jump_to_date`: (No docstring)
 - `_add_event`: (No docstring)
@@ -1022,6 +1044,7 @@ Input can be entered in USD or JPY — get_goals() always returns USD.
 - `DashboardPanel`: (No docstring)
 
 **Functions:**
+- `_priority_colors`: Return priority-level colours drawn from the current theme palette.
 - `__init__`: (No docstring)
 - `update_value`: (No docstring)
 - `__init__`: (No docstring)
@@ -1290,6 +1313,10 @@ Todo list module UI — modern task manager with priorities, categories, and due
 - `TodoPanel`: (No docstring)
 
 **Functions:**
+- `_priority_colors`: Return priority-level colours drawn from the current theme palette.
+
+Fallbacks match Catppuccin Dark so the panel looks correct before the
+first set_palette() call.
 - `_hex_to_rgb`: Convert a hex color string like '#f38ba8' to (r, g, b) ints.
 - `__init__`: (No docstring)
 - `_build_ui`: (No docstring)
@@ -1328,22 +1355,28 @@ Themes included:
   Medium — Nord, Gruvbox Dark
   Light  — Catppuccin Latte, Solarized Light
 
-Fixes over previous version:
-  - Full QTabBar / QTabWidget styling (dialogs now have proper tabs)
-  - QMenuBar / QMenu styling (menu bar no longer inherits OS chrome)
-  - QToolButton styling (color swatches, weekday pickers, etc.)
-  - QComboBox, QDateEdit, QTimeEdit, QSpinBox arrow-button subcontrols
-    styled with visible backgrounds so arrows are legible on all themes
-  - Secondary button contrast improved (explicit text color + stronger border)
-  - QProgressBar added (used in dashboard)
-  - QScrollArea viewport now transparent (no mismatched bg panels)
-  - Solarized Light replaces Solarized Dark (fg was too muted for readability)
+Arrow rendering:
+  All dropdown / spinner arrows use inline SVG data-URIs so they render
+  correctly in Qt6. The CSS border-trick (width:0; height:0; border-left…)
+  creates triangles in web browsers but has no effect in Qt's QSS engine —
+  the borders appear on a zero-size box and produce nothing visible.
 
 **Classes:**
 - (None)
 
 **Functions:**
+- `_svg_arrow`: Return a QSS url() value for an inline SVG triangle arrow.
+
+direction: 'down' | 'up'
+color    : hex string e.g. '#cdd6f4'
+- `_rgba`: Convert a hex color string to a QSS rgba() value.
+
+Qt's QSS uses 0-255 for the alpha channel (not 0.0-1.0 like web CSS).
 - `_build_theme`: Generate a full QSS stylesheet from a color palette dict.
+
+If the palette contains a ``panel_alpha`` key (int, 0-255), all panel
+background surfaces are rendered with that opacity level so an animated
+background (e.g. Matrix rain) bleeds through.
 - `get_theme_names`: (No docstring)
 
 ### src\ui\widgets\__init__.py
@@ -1355,6 +1388,112 @@ Reusable UI widgets.
 
 **Functions:**
 - (None)
+
+### src\ui\widgets\matrix_rain.py
+**Module docstring:**
+Matrix digital-rain background widget.
+
+Renders the classic phosphor-green digital rain as the *background* of the
+application's central widget area.  The panels (sidebar, stack) sit on top;
+they use semi-transparent ``rgba()`` backgrounds in the Matrix stylesheet so
+the rain glows through every surface.
+
+Architecture
+------------
+``MatrixRainWidget`` is a plain ``QWidget`` child of the central widget.  It is
+always positioned to fill its parent exactly, and ``lower()`` places it at the
+very bottom of the z-order so every other panel sits in front of it.
+
+``WA_TransparentForMouseEvents`` is set so no click, scroll, or key press is
+intercepted — they all reach the panels in front.
+
+``setAutoFillBackground(False)`` prevents Qt from painting a solid colour over
+the rain surface before our own ``paintEvent`` runs.
+
+Rendering
+---------
+A ``QPixmap`` is used as a phosphor screen.  Each 40 ms tick:
+
+1. A semi-transparent black rectangle fades all existing glyphs toward black
+   (phosphor decay / trailing glow effect).
+2. Each active stream is advanced and its head + trail characters are drawn
+   in successively dimmer greens.
+3. New streams are randomly spawned in idle columns.
+
+Font
+----
+Tries "Matrix Code NFI" first (download free — search that exact name for the
+most authentic look), then falls back through MS Gothic -> Meiryo UI ->
+Noto Sans JP -> Courier New.  Half-width katakana (U+FF66-U+FF9D) renders
+correctly in all of those families.
+
+**Classes:**
+- `_Stream`: (No docstring)
+- `MatrixRainWidget`: Full-parent-fill background widget that paints Matrix digital rain.
+
+Drop this widget as a child of your central widget and call lower()
+after all other children are added.
+
+**Functions:**
+- `_rand_char`: (No docstring)
+- `__init__`: (No docstring)
+- `start`: Fill parent, push to back of z-order, begin animating.
+- `stop`: (No docstring)
+- `is_running`: (No docstring)
+- `sync_size`: Call from the parent widget's resizeEvent.
+- `_fit_to_parent`: (No docstring)
+- `_make_font`: (No docstring)
+- `_reset_pixmap`: (No docstring)
+- `_col_xs`: (No docstring)
+- `_n_rows`: (No docstring)
+- `_spawn`: (No docstring)
+- `_maybe_spawn`: (No docstring)
+- `_draw_stream`: (No docstring)
+- `resizeEvent`: (No docstring)
+- `paintEvent`: (No docstring)
+- `_tick`: (No docstring)
+
+### src\ui\widgets\nav_button.py
+**Module docstring:**
+Reusable theme-aware navigation arrow button.
+
+Draws its arrow via QPainter — no glyph/font lookup whatsoever.
+Works identically on every OS, every font configuration, every theme.
+
+Usage:
+    btn = NavButton("left")               # 28×28 single arrow
+    btn = NavButton("right", size=24)     # custom size
+    btn = NavButton("left", double=True)  # double arrow  «  style
+    btn.clicked.connect(my_slot)
+
+    # When theme changes:
+    btn.refresh(palette_dict)
+
+**Classes:**
+- `NavButton`: Theme-aware navigation arrow button rendered with QPainter.
+
+Parameters
+----------
+direction : str
+    One of ``'left'``, ``'right'``, ``'up'``, ``'down'``.
+size : int
+    Width and height in pixels (the button is always square).
+double : bool
+    When True, draws two chevrons (‹‹ / ›› style) for year-jump buttons.
+tooltip : str
+    Optional tooltip text.
+
+**Functions:**
+- `__init__`: (No docstring)
+- `refresh`: Apply new palette colors and schedule a repaint.
+- `enterEvent`: (No docstring)
+- `leaveEvent`: (No docstring)
+- `mousePressEvent`: (No docstring)
+- `mouseReleaseEvent`: (No docstring)
+- `paintEvent`: (No docstring)
+- `_arrow_pts`: Return triangle vertices for a single chevron centred at (cx, cy).
+- `_draw_single`: (No docstring)
+- `_draw_double`: Draw two small chevrons offset along the pointing axis.
 
 ### src\ui\widgets\network_dialog.py
 **Module docstring:**
@@ -1528,7 +1667,7 @@ from pathlib import Path
 
 
 APP_NAME = "LocalSync"
-APP_VERSION = "0.2.0"
+APP_VERSION = "0.3.0"
 
 # Cross-platform data directory
 if platform.system() == "Windows":
@@ -1548,6 +1687,7 @@ for d in [DATA_DIR, NOTES_DIR]:
 
 # Default settings
 DEFAULTS = {
+    "config_version": 1,
     "theme": "Catppuccin Dark",
     # Sync
     "sync_enabled": True,
@@ -1582,7 +1722,6 @@ def save_config(cfg: dict):
     CONFIG_PATH.parent.mkdir(parents=True, exist_ok=True)
     with open(CONFIG_PATH, "w", encoding="utf-8") as f:
         json.dump(cfg, f, indent=2)
-
 ```
 
 ### `src\data\__init__.py`
@@ -3793,6 +3932,27 @@ class SyncEngine(QThread):
                 birthdays = [dict(r) for r in conn.execute("SELECT * FROM birthdays").fetchall()]
             except Exception:
                 birthdays = []
+            # Soft event templates + logs — may not exist in older DBs
+            try:
+                soft_templates = [dict(r) for r in conn.execute(
+                    "SELECT * FROM soft_event_templates").fetchall()]
+                soft_logs = [dict(r) for r in conn.execute(
+                    "SELECT * FROM soft_event_logs").fetchall()]
+            except Exception:
+                soft_templates = []
+                soft_logs = []
+            # Job presets — may not exist in older DBs
+            try:
+                job_presets = [dict(r) for r in conn.execute(
+                    "SELECT * FROM job_presets").fetchall()]
+            except Exception:
+                job_presets = []
+            # Side income goals — may not exist in older DBs
+            try:
+                side_income_goals = [dict(r) for r in conn.execute(
+                    "SELECT * FROM side_income_goals").fetchall()]
+            except Exception:
+                side_income_goals = []
         finally:
             conn.close()
 
@@ -3844,6 +4004,8 @@ class SyncEngine(QThread):
             "events": events, "transactions": transactions,
             "todos": todos, "activities": activities,
             "birthdays": birthdays,
+            "soft_templates": soft_templates, "soft_logs": soft_logs,
+            "job_presets": job_presets, "side_income_goals": side_income_goals,
             "notes": notes, "vault_notes": vault_notes,
             "vault_deletions": vault_deletions,
         }
@@ -3952,6 +4114,96 @@ class SyncEngine(QThread):
                         changes += 1
                 except Exception:
                     pass  # Gracefully handle if birthdays table doesn't exist on peer
+
+            # Merge soft event templates
+            for rs in remote.get("soft_templates", []):
+                try:
+                    local = conn.execute(
+                        "SELECT updated_at FROM soft_event_templates WHERE id=?", (rs["id"],)
+                    ).fetchone()
+                    if local is None or rs["updated_at"] > local["updated_at"]:
+                        conn.execute(
+                            """INSERT INTO soft_event_templates
+                               (id, title, note, color, recurrence, updated_at, deleted)
+                               VALUES (?, ?, ?, ?, ?, ?, ?)
+                               ON CONFLICT(id) DO UPDATE SET
+                               title=excluded.title, note=excluded.note,
+                               color=excluded.color, recurrence=excluded.recurrence,
+                               updated_at=excluded.updated_at, deleted=excluded.deleted""",
+                            (rs["id"], rs["title"], rs.get("note", ""),
+                             rs.get("color", "#a6e3a1"), rs.get("recurrence", ""),
+                             rs["updated_at"], rs["deleted"]),
+                        )
+                        changes += 1
+                except Exception:
+                    pass  # Gracefully handle if table doesn't exist on peer
+
+            # Merge soft event logs
+            for rl in remote.get("soft_logs", []):
+                try:
+                    local = conn.execute(
+                        "SELECT updated_at FROM soft_event_logs WHERE id=?", (rl["id"],)
+                    ).fetchone()
+                    if local is None or rl["updated_at"] > local["updated_at"]:
+                        conn.execute(
+                            """INSERT INTO soft_event_logs
+                               (id, template_id, log_date, log_text, updated_at, deleted)
+                               VALUES (?, ?, ?, ?, ?, ?)
+                               ON CONFLICT(id) DO UPDATE SET
+                               template_id=excluded.template_id,
+                               log_date=excluded.log_date, log_text=excluded.log_text,
+                               updated_at=excluded.updated_at, deleted=excluded.deleted""",
+                            (rl["id"], rl["template_id"], rl["log_date"],
+                             rl.get("log_text", ""), rl["updated_at"], rl["deleted"]),
+                        )
+                        changes += 1
+                except Exception:
+                    pass  # Gracefully handle if table doesn't exist on peer
+
+            # Merge job presets
+            for rp in remote.get("job_presets", []):
+                try:
+                    local = conn.execute(
+                        "SELECT updated_at FROM job_presets WHERE id=?", (rp["id"],)
+                    ).fetchone()
+                    if local is None or rp["updated_at"] > local["updated_at"]:
+                        conn.execute(
+                            """INSERT INTO job_presets
+                               (id, name, amount_usd, category, updated_at, deleted)
+                               VALUES (?, ?, ?, ?, ?, ?)
+                               ON CONFLICT(id) DO UPDATE SET
+                               name=excluded.name, amount_usd=excluded.amount_usd,
+                               category=excluded.category, updated_at=excluded.updated_at,
+                               deleted=excluded.deleted""",
+                            (rp["id"], rp["name"], rp["amount_usd"],
+                             rp.get("category", "Contract"),
+                             rp["updated_at"], rp["deleted"]),
+                        )
+                        changes += 1
+                except Exception:
+                    pass  # Gracefully handle if table doesn't exist on peer
+
+            # Merge side income goals
+            for rg in remote.get("side_income_goals", []):
+                try:
+                    local = conn.execute(
+                        "SELECT updated_at FROM side_income_goals WHERE year=? AND month=?",
+                        (rg["year"], rg["month"])
+                    ).fetchone()
+                    if local is None or rg["updated_at"] > local["updated_at"]:
+                        conn.execute(
+                            """INSERT INTO side_income_goals
+                               (id, year, month, min_goal, major_goal, updated_at)
+                               VALUES (?, ?, ?, ?, ?, ?)
+                               ON CONFLICT(year, month) DO UPDATE SET
+                               min_goal=excluded.min_goal, major_goal=excluded.major_goal,
+                               updated_at=excluded.updated_at""",
+                            (rg["id"], rg["year"], rg["month"],
+                             rg["min_goal"], rg["major_goal"], rg["updated_at"]),
+                        )
+                        changes += 1
+                except Exception:
+                    pass  # Gracefully handle if table doesn't exist on peer
 
             # Merge todos
             for rt in remote.get("todos", []):
@@ -4189,7 +4441,6 @@ class SyncEngine(QThread):
         ts = time.strftime("%H:%M:%S")
         self.sync_log.emit(f"[{ts}] {msg}")
         logger.info(msg)
-
 ```
 
 ### `src\sync\vault_watcher.py`
@@ -4567,6 +4818,7 @@ from src.data.calendar_store import CalendarStore
 from src.data.finance_store import FinanceStore
 from src.data.activity_store import ActivityStore
 from src.data.soft_events_store import SoftEventStore
+from src.ui.widgets.matrix_rain import MatrixRainWidget
 
 
 class SidebarButton(QPushButton):
@@ -4625,6 +4877,12 @@ class MainWindow(QMainWindow):
         self._build_central()
         self._build_status_bar()
 
+        # ── Matrix rain overlay (hidden until Matrix theme is active) ──
+        # Child of the central widget so it fills the content area only.
+        # lower() keeps it behind the sidebar and stacked panels.
+        self._matrix_rain = MatrixRainWidget(self._central)
+        self._matrix_rain.hide()
+
         # Apply theme and default to Dashboard
         current_theme = self.cfg.get("theme", "Catppuccin Dark")
         if current_theme in ("dark", "light"):
@@ -4634,6 +4892,13 @@ class MainWindow(QMainWindow):
 
         # ── System tray ──
         self._setup_tray()
+
+    # ── Resize — keep rain synced to central widget ────
+
+    def resizeEvent(self, event) -> None:
+        super().resizeEvent(event)
+        if hasattr(self, "_matrix_rain") and self._matrix_rain.is_running():
+            self._matrix_rain.sync_size()
 
     # ── Menu bar ───────────────────────────────────────
 
@@ -4681,6 +4946,8 @@ class MainWindow(QMainWindow):
 
     def _build_central(self):
         central = QWidget()
+        self._central = central          # kept for rain sizing
+        central.setAutoFillBackground(False)   # let rain show through gaps
         self.setCentralWidget(central)
         main_layout = QHBoxLayout(central)
         main_layout.setContentsMargins(0, 0, 0, 0)
@@ -4941,6 +5208,14 @@ class MainWindow(QMainWindow):
         # Update tray icon with new theme colors
         self._update_tray_icon()
 
+        # Start or stop the Matrix rain background
+        if hasattr(self, "_matrix_rain"):
+            if name == "Matrix":
+                self._matrix_rain.sync_size()
+                self._matrix_rain.start()   # start() calls lower() internally
+            else:
+                self._matrix_rain.stop()
+
     # ── Sync integration ───────────────────────────────
 
     def set_sync_engine(self, engine):
@@ -5049,6 +5324,7 @@ from src.data.activity_store import (
     ActivityStore, Activity,
     DEFAULT_ACTIVITIES, ACTIVITY_COLORS, DEFAULT_COLOR, QUICK_CATEGORIES,
 )
+from src.ui.widgets.nav_button import NavButton
 
 
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -5118,165 +5394,133 @@ class WeekBlockWidget(QWidget):
         self._blocks:  list[ActivityBlock] = []
         self._week_start = date.today() - timedelta(days=date.today().weekday())
         self._selected: ActivityBlock | None = None
-        self._hovered:  ActivityBlock | None = None
-        self.setFixedHeight(TOTAL_H)
-        self.setMinimumWidth(400)
+        self._drag_start: QPointF | None = None
+        self.setMinimumHeight(TOTAL_H)
         self.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
-        self.setMouseTracking(True)
+        self.setCursor(Qt.CursorShape.CrossCursor)
 
     def set_palette(self, palette: dict):
-        self._palette = palette; self.update()
+        self._palette = palette
+        self.update()
 
-    def load_week(self, week_start: date, activities_by_date: dict[date, list[Activity]]):
+    def load_week(self, week_start: date, activities_by_date: dict):
         self._week_start = week_start
         self._blocks = []
+        for col, (d, acts) in enumerate(activities_by_date.items()):
+            for act in acts:
+                y0 = _hours_to_px(_parse_hhmm(act.start_time))
+                y1 = _hours_to_px(_parse_hhmm(act.end_time))
+                overflow = y1 <= y0
+                if overflow:
+                    y1 = _hours_to_px(24.0)
+                self._blocks.append(ActivityBlock(act, col, y0, y1, overflow))
         self._selected = None
-        for col in range(DAY_COUNT):
-            day = week_start + timedelta(days=col)
-            prev_day = day - timedelta(days=1)
-            for prev_act in activities_by_date.get(prev_day, []):
-                sh = _parse_hhmm(prev_act.start_time)
-                eh = _parse_hhmm(prev_act.end_time)
-                if eh < sh:
-                    y0, y1 = _hours_to_px(0.0), _hours_to_px(eh)
-                    if y1 > y0:
-                        self._blocks.append(ActivityBlock(prev_act, col, y0, y1, overflow=True))
-            for act in activities_by_date.get(day, []):
-                sh = _parse_hhmm(act.start_time)
-                eh = _parse_hhmm(act.end_time)
-                if eh < sh:
-                    self._blocks.append(ActivityBlock(act, col, _hours_to_px(sh), _hours_to_px(24.0)))
-                else:
-                    self._blocks.append(ActivityBlock(act, col, _hours_to_px(sh), _hours_to_px(eh)))
         self.update()
-
-    def select_activity(self, activity: Activity | None):
-        self._selected = None
-        if activity:
-            for b in self._blocks:
-                if b.activity.id == activity.id:
-                    self._selected = b; break
-        self.update()
-
-    def _col_width(self) -> float:
-        return (self.width() - TIME_W) / DAY_COUNT
-
-    def _block_at(self, pos: QPointF) -> ActivityBlock | None:
-        for b in reversed(self._blocks):
-            if b.rect.contains(pos): return b
-        return None
-
-    def _pos_to_col_hour(self, pos: QPointF):
-        cw  = self._col_width()
-        col = max(0, min(DAY_COUNT - 1, int((pos.x() - TIME_W) / cw)))
-        return col, _px_to_hours(pos.y())
 
     def mousePressEvent(self, ev: QMouseEvent):
-        b = self._block_at(ev.position())
-        if b:
-            self._selected = b; self.update(); self.block_clicked.emit(b.activity)
-        else:
-            self._selected = None; self.update()
+        if ev.button() != Qt.MouseButton.LeftButton:
+            return
+        pos = ev.position()
+        for b in self._blocks:
+            if b.rect.contains(pos):
+                self._selected = b
+                self.update()
+                self.block_clicked.emit(b.activity)
+                return
+        # Empty click — work out which day/hour
+        total_w = self.width() - TIME_W
+        col_w   = total_w / DAY_COUNT
+        col     = int((pos.x() - TIME_W) / col_w)
+        col     = max(0, min(DAY_COUNT - 1, col))
+        d       = self._week_start + timedelta(days=col)
+        hour    = _px_to_hours(pos.y())
+        self.empty_clicked.emit(d, hour)
 
-    def mouseDoubleClickEvent(self, ev: QMouseEvent):
-        b = self._block_at(ev.position())
-        if not b:
-            col, hour = self._pos_to_col_hour(ev.position())
-            self.empty_clicked.emit(self._week_start + timedelta(days=col), hour)
-
-    def mouseMoveEvent(self, ev: QMouseEvent):
-        b = self._block_at(ev.position())
-        if b != self._hovered:
-            self._hovered = b
-            if b:
-                a = b.activity
-                tip = f"{a.activity}\n{a.start_time} – {a.end_time}  ({a.duration_minutes}m)"
-                if a.notes: tip += f"\n{a.notes}"
-                self.setToolTip(tip)
-            else:
-                self.setToolTip("")
-            self.update()
-
-    def paintEvent(self, event):
+    def paintEvent(self, _):
         p = QPainter(self)
         p.setRenderHint(QPainter.RenderHint.Antialiasing)
-        w = self.width()
 
-        bg     = QColor(self._palette.get("bg",        "#1e1e2e"))
-        surf   = QColor(self._palette.get("surface",   "#313244"))
-        border = QColor(self._palette.get("border",    "#45475a"))
-        fg     = QColor(self._palette.get("fg",        "#cdd6f4"))
-        muted  = QColor(self._palette.get("muted",     "#7f849c"))
-        accent = QColor(self._palette.get("accent",    "#89b4fa"))
-        hdr_bg = QColor(self._palette.get("header_bg", "#181825"))
-        col_w  = self._col_width()
+        w    = self.width()
+        bg   = QColor(self._palette.get("bg",      "#1e1e2e"))
+        surf = QColor(self._palette.get("surface", "#313244"))
+        bord = QColor(self._palette.get("border",  "#45475a"))
+        fg   = QColor(self._palette.get("fg",      "#cdd6f4"))
+        mut  = QColor(self._palette.get("muted",   "#7f849c"))
+        acc  = QColor(self._palette.get("accent",  "#89b4fa"))
+        today = date.today()
 
+        total_w = w - TIME_W
+        col_w   = total_w / DAY_COUNT
+
+        # Background
         p.fillRect(0, 0, w, TOTAL_H, bg)
-        p.fillRect(0, 0, w, HEADER_H, hdr_bg)
 
-        hour_font = QFont(); hour_font.setPixelSize(9)
-        p.setFont(hour_font)
-        for h in range(25):
-            y = _hours_to_px(h)
-            c = QColor(border); c.setAlpha(200 if h % 6 == 0 else 80)
-            p.setPen(QPen(c, 1 if h % 6 == 0 else 0.5))
-            p.drawLine(QPointF(TIME_W, y), QPointF(w, y))
-            if h < 24:
-                p.setPen(muted if h % 6 else fg)
-                p.drawText(QRectF(0, y+1, TIME_W-4, HOUR_H-2),
+        # Hour grid lines + time labels
+        time_font = QFont(); time_font.setPixelSize(10)
+        p.setFont(time_font)
+        for hour in range(25):
+            y = int(_hours_to_px(hour))
+            p.setPen(QPen(bord, 1))
+            p.drawLine(TIME_W, y, w, y)
+            if hour < 24:
+                p.setPen(mut)
+                p.drawText(0, y, TIME_W - 4, HOUR_H,
                            Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignTop,
-                           f"{h:02d}:00")
+                           f"{hour:02d}:00")
 
-        today    = date.today()
-        day_font = QFont(); day_font.setPixelSize(11); day_font.setBold(True)
-        num_font = QFont(); num_font.setPixelSize(15); num_font.setBold(True)
-
+        # Column separators + day headers
+        day_names  = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
+        hdr_font   = QFont(); hdr_font.setPixelSize(11); hdr_font.setBold(True)
+        p.setFont(hdr_font)
         for col in range(DAY_COUNT):
-            x = TIME_W + col * col_w
-            d = self._week_start + timedelta(days=col)
-            is_today   = (d == today)
-            is_weekend = (col >= 5)
-            if is_weekend:
-                tint = QColor(surf); tint.setAlpha(30)
-                p.fillRect(QRectF(x, HEADER_H, col_w, TOTAL_H - HEADER_H), QBrush(tint))
-            if col > 0:
-                p.setPen(QPen(border, 1))
-                p.drawLine(QPointF(x, 0), QPointF(x, TOTAL_H))
+            x  = TIME_W + col * col_w
+            d  = self._week_start + timedelta(days=col)
+            is_today = (d == today)
+
+            # Column background
             if is_today:
-                p.fillRect(QRectF(x, 0, col_w, HEADER_H), QBrush(accent))
-                text_c = QColor(self._palette.get("accent_fg", "#1e1e2e"))
-            else:
-                text_c = fg
-            p.setPen(text_c)
-            p.setFont(day_font)
-            p.drawText(QRectF(x, 4, col_w, 18), Qt.AlignmentFlag.AlignCenter,
-                       d.strftime("%a").upper())
-            p.setFont(num_font)
-            p.drawText(QRectF(x, 20, col_w, 22), Qt.AlignmentFlag.AlignCenter,
-                       str(d.day))
+                today_bg = QColor(acc); today_bg.setAlpha(15)
+                p.fillRect(int(x), HEADER_H, int(col_w), TOTAL_H - HEADER_H, today_bg)
 
-        p.setPen(QPen(border, 1))
-        p.drawLine(QPointF(TIME_W, 0), QPointF(TIME_W, TOTAL_H))
+            # Vertical separator
+            p.setPen(QPen(bord, 1))
+            p.drawLine(int(x), 0, int(x), TOTAL_H)
 
+            # Header cell
+            hdr_bg = QColor(acc) if is_today else surf
+            p.fillRect(int(x) + 1, 0, int(col_w) - 1, HEADER_H, hdr_bg)
+
+            p.setPen(QColor(self._palette.get("accent_fg", "#1e1e2e")) if is_today else fg)
+            label = f"{day_names[col]}\n{d.day}"
+            p.drawText(int(x), 0, int(col_w), HEADER_H,
+                       Qt.AlignmentFlag.AlignCenter, label)
+
+        # Right border
+        p.setPen(QPen(bord, 1))
+        p.drawLine(w - 1, 0, w - 1, TOTAL_H)
+
+        # Activity blocks
         for b in self._blocks:
-            x  = TIME_W + b.col * col_w
-            bx, bw = x + 2, col_w - 4
-            by, bh = b.y_start, b.y_end - b.y_start
-            if bh < 1: continue
-            b.rect = QRectF(bx, by, bw, bh)
+            x  = TIME_W + b.col * col_w + 2
+            bw = col_w - 4
+            by = b.y_start + 1
+            bh = max(b.y_end - b.y_start - 2, 4)
+            b.rect = QRectF(x, by, bw, bh)
 
-            color = QColor(b.activity.color)
+            color = QColor(ACTIVITY_COLORS.get(b.activity.activity, DEFAULT_COLOR))
+            fill  = QColor(color); fill.setAlpha(55)
+
             is_sel = (b is self._selected)
-            is_hov = (b is self._hovered)
-            if b.overflow:   color.setAlpha(160)
-            if is_sel:       color = color.lighter(135)
-            elif is_hov:     color = color.lighter(115)
+            if is_sel:
+                fill.setAlpha(90)
+                p.setPen(QPen(color, 2))
+            else:
+                p.setPen(QPen(color, 1))
 
-            p.setBrush(QBrush(color))
-            p.setPen(QPen(color.lighter(160), 1) if is_sel else Qt.PenStyle.NoPen)
-            p.drawRoundedRect(b.rect, 3, 3)
+            p.setBrush(QBrush(fill))
+            p.drawRoundedRect(b.rect, 4, 4)
 
-            if bh >= 18:
+            if bh >= 14:
                 lf = QFont(); lf.setPixelSize(10 if bh < 32 else 11); lf.setBold(True)
                 p.setFont(lf)
                 p.setPen(QColor("#11111b") if color.lightness() > 128 else QColor("#cdd6f4"))
@@ -5287,7 +5531,7 @@ class WeekBlockWidget(QWidget):
                 if bh >= 32:
                     p.drawText(tr, Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop, etext)
                     lf.setPixelSize(9); lf.setBold(False); p.setFont(lf)
-                    p.drawText(QRectF(bx+4, by+13, bw-8, 12),
+                    p.drawText(QRectF(x+4, by+13, bw-8, 12),
                                Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop,
                                f"{b.activity.start_time}\u2013{b.activity.end_time}")
                 else:
@@ -5483,44 +5727,34 @@ class QuickCard(QFrame):
 #  TodayBreakdown
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
+def _make_lbl(text: str, style: str) -> QLabel:
+    l = QLabel(text); l.setStyleSheet(style); return l
+
+
 class TodayBreakdown(QWidget):
     def __init__(self, parent=None):
         super().__init__(parent)
         self._palette: dict = {}
-        outer = QVBoxLayout(self)
-        outer.setContentsMargins(0, 0, 0, 0); outer.setSpacing(4)
-        hdr = QLabel("Today's Log")
-        hdr.setStyleSheet("font-size:11px;font-weight:bold;")
-        outer.addWidget(hdr)
-        self._scroll = QScrollArea()
-        self._scroll.setWidgetResizable(True)
-        self._scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
-        self._scroll.setFrameShape(QFrame.Shape.NoFrame)
-        self._scroll.setMaximumHeight(150)
-        self._container = QWidget()
-        self._layout = QVBoxLayout(self._container)
-        self._layout.setContentsMargins(0, 0, 0, 0); self._layout.setSpacing(2)
-        self._scroll.setWidget(self._container)
-        outer.addWidget(self._scroll)
+        self._layout = QVBoxLayout(self)
+        self._layout.setContentsMargins(0, 0, 0, 0)
+        self._layout.setSpacing(2)
 
     def set_palette(self, palette: dict):
         self._palette = palette
 
-    def refresh(self, activities: list[Activity], active_category: str | None,
-                session_start: datetime | None):
+    def refresh(self, activities: list, active_category=None, session_start=None):
         while self._layout.count():
             child = self._layout.takeAt(0)
-            if child.widget(): child.widget().deleteLater()
+            if child.widget():
+                child.widget().deleteLater()
 
         muted = self._palette.get("muted", "#7f849c")
 
         if not activities and not active_category:
-            lbl = QLabel("Nothing logged yet")
-            lbl.setStyleSheet(f"font-size:10px;color:{muted};")
-            self._layout.addWidget(lbl)
+            self._layout.addWidget(_make_lbl(
+                "No activity logged today.", f"font-size:10px;color:{muted};"))
             return
 
-        # Active session row (top)
         if active_category and session_start:
             color = ACTIVITY_COLORS.get(active_category, DEFAULT_COLOR)
             elapsed_mins = int((datetime.now() - session_start).total_seconds() // 60)
@@ -5553,17 +5787,8 @@ class TodayBreakdown(QWidget):
         self._layout.addStretch()
 
 
-def _make_lbl(text: str, style: str) -> QLabel:
-    l = QLabel(text); l.setStyleSheet(style); return l
-
-
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 #  CategoryPillPicker — compact pill grid for LogForm
-#
-#  Same pill style as QuickCard but smaller (height ~40px).
-#  Clicking a pill selects it; a custom text field below
-#  lets the user type a one-off activity name instead.
-#  Priority: custom text (if non-empty) > selected pill.
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 class _SmallPill(QFrame):
@@ -5651,7 +5876,6 @@ class CategoryPillPicker(QWidget):
             grid.addWidget(pill, i // 3, i % 3)
         root.addLayout(grid)
 
-        # Custom / other text field
         self._custom = QLineEdit()
         self._custom.setPlaceholderText("Other activity\u2026")
         self._custom.setFixedHeight(26)
@@ -5660,11 +5884,9 @@ class CategoryPillPicker(QWidget):
         root.addWidget(self._custom)
 
     def _on_pill_tapped(self, category: str):
-        # Clear custom text when a pill is chosen
         self._custom.blockSignals(True)
         self._custom.clear()
         self._custom.blockSignals(False)
-        # Toggle: tap again to deselect
         if self._selected_cat == category:
             self._selected_cat = None
         else:
@@ -5672,7 +5894,6 @@ class CategoryPillPicker(QWidget):
         self._sync_pill_styles()
 
     def _on_custom_changed(self, text: str):
-        # If the user is typing a custom name, deselect all pills
         if text.strip():
             self._selected_cat = None
             self._sync_pill_styles()
@@ -5681,33 +5902,26 @@ class CategoryPillPicker(QWidget):
         for pill in self._pills:
             pill.set_selected(pill._category == self._selected_cat)
 
-    # ── Public API ──────────────────────────────────
-
     def get_activity(self) -> str:
-        """Returns the custom text if filled, otherwise the selected pill name."""
         custom = self._custom.text().strip()
         if custom:
             return custom
         return self._selected_cat or ""
 
     def set_activity(self, name: str):
-        """Pre-select a pill matching `name`, or fill custom field if no match."""
         self._custom.blockSignals(True)
         self._custom.clear()
         self._custom.blockSignals(False)
-        # Check if name matches one of the pills
         self._selected_cat = None
         for pill in self._pills:
             if pill._category == name:
                 self._selected_cat = name
                 break
         if self._selected_cat is None and name:
-            # No matching pill — put it in the custom field
             self._custom.setText(name)
         self._sync_pill_styles()
 
     def clear(self):
-        """Deselect everything and clear custom text."""
         self._selected_cat = None
         self._custom.blockSignals(True)
         self._custom.clear()
@@ -5715,10 +5929,8 @@ class CategoryPillPicker(QWidget):
         self._sync_pill_styles()
 
     def update_categories(self, categories: list[str]):
-        """Called when the user renames the quick cats."""
         for pill, cat in zip(self._pills, categories):
             pill.update_category(cat)
-        # If current selection no longer exists, clear it
         if self._selected_cat not in categories:
             self._selected_cat = None
             self._sync_pill_styles()
@@ -5741,14 +5953,17 @@ class LogForm(QWidget):
         self._pending_notes = ""
         self._timer: QTimer | None = None
         self._timer_start: datetime | None = None
+        self._palette: dict = {}
         self._build_ui()
+
+    def set_palette(self, palette: dict):
+        self._palette = palette
 
     def _build_ui(self):
         root = QVBoxLayout(self)
         root.setContentsMargins(0, 0, 0, 0)
         root.setSpacing(5)
 
-        # ── Header ──
         hdr = QHBoxLayout()
         self._form_title = QLabel("Log Activity")
         self._form_title.setStyleSheet("font-size:12px;font-weight:bold;")
@@ -5761,36 +5976,33 @@ class LogForm(QWidget):
         hdr.addWidget(self._cancel_btn)
         root.addLayout(hdr)
 
-        # ── Pill picker (same categories as QuickCards) ──
         self._pill_picker = CategoryPillPicker(self._quick_cats)
         root.addWidget(self._pill_picker)
 
-        # ── Day selector ──
         self.day_combo = QComboBox()
         self._rebuild_day_combo()
         root.addWidget(self.day_combo)
 
-        # ── Start / End times ──
         time_row = QHBoxLayout(); time_row.setSpacing(6)
-        start_lbl = QLabel("Start"); start_lbl.setFixedWidth(30)
-        start_lbl.setStyleSheet("font-size:10px;color:palette(mid);")
-        time_row.addWidget(start_lbl)
+        self._start_lbl = QLabel("Start"); self._start_lbl.setFixedWidth(30)
+        muted = "#7f849c"
+        self._start_lbl.setStyleSheet(f"font-size:10px;color:{muted};")
+        time_row.addWidget(self._start_lbl)
         self.start_edit = QTimeEdit()
         self.start_edit.setDisplayFormat("HH:mm")
         now = datetime.now()
         self.start_edit.setTime(QTime(now.hour, 0))
         time_row.addWidget(self.start_edit, 1)
         time_row.addSpacing(4)
-        end_lbl = QLabel("End"); end_lbl.setFixedWidth(24)
-        end_lbl.setStyleSheet("font-size:10px;color:palette(mid);")
-        time_row.addWidget(end_lbl)
+        self._end_lbl = QLabel("End"); self._end_lbl.setFixedWidth(24)
+        self._end_lbl.setStyleSheet(f"font-size:10px;color:{muted};")
+        time_row.addWidget(self._end_lbl)
         self.end_edit = QTimeEdit()
         self.end_edit.setDisplayFormat("HH:mm")
         self.end_edit.setTime(QTime(min(now.hour + 1, 23), 0))
         time_row.addWidget(self.end_edit, 1)
         root.addLayout(time_row)
 
-        # ── Timer ──
         timer_row = QHBoxLayout(); timer_row.setSpacing(6)
         timer_icon = QLabel("\u23f1"); timer_icon.setStyleSheet("font-size:13px;")
         timer_icon.setFixedWidth(18); timer_row.addWidget(timer_icon)
@@ -5816,7 +6028,6 @@ class LogForm(QWidget):
         timer_row.addWidget(self._stop_btn)
         root.addLayout(timer_row)
 
-        # ── Notes + action buttons ──
         action_row = QHBoxLayout(); action_row.setSpacing(5)
         self._notes_btn = QPushButton("Notes\u2026")
         self._notes_btn.setObjectName("secondary")
@@ -5835,14 +6046,11 @@ class LogForm(QWidget):
         action_row.addWidget(self._action_btn)
         root.addLayout(action_row)
 
-    # ── Public ─────────────────────────────────────
-
     def set_week_start(self, week_start: date):
         self._week_start = week_start
         self._rebuild_day_combo()
 
     def update_categories(self, categories: list[str]):
-        """Sync pill labels when categories are renamed."""
         self._quick_cats = categories
         self._pill_picker.update_categories(categories)
 
@@ -5873,8 +6081,6 @@ class LogForm(QWidget):
         self._cancel_btn.setVisible(True)
         self._delete_btn.setVisible(True)
         self._notes_btn.setText("Notes \u2713" if self._pending_notes else "Notes\u2026")
-
-    # ── Private ────────────────────────────────────
 
     def _rebuild_day_combo(self):
         self.day_combo.clear()
@@ -5982,14 +6188,18 @@ class ActivityPanel(QWidget):
 
     def __init__(self, parent=None):
         super().__init__(parent)
-        self.store = ActivityStore()
         self._palette: dict = {}
+        self.store = ActivityStore()
         self._week_start = date.today() - timedelta(days=date.today().weekday())
         self._activities_by_date: dict[date, list[Activity]] = {}
 
         self._active_category: str | None = None
         self._session_start: datetime | None = None
         self._card_timer: QTimer | None = None
+
+        # NavButton references stored for palette refresh
+        self._prev_week_btn: NavButton | None = None
+        self._next_week_btn: NavButton | None = None
 
         self._quick_cats = self._load_quick_cats()
         self._build_ui()
@@ -6009,6 +6219,26 @@ class ActivityPanel(QWidget):
         self._palette = palette
         self._grid.set_palette(palette)
         self._today_breakdown.set_palette(palette)
+        muted   = palette.get("muted",     "#7f849c")
+        green   = palette.get("green",     "#a6e3a1")
+        red     = palette.get("red",       "#f38ba8")
+        acc_fg  = palette.get("accent_fg", "#1e1e2e")
+        btn_css = "font-weight:bold;border-radius:4px;padding:2px 10px;font-size:11px;"
+        # Refresh painter-based nav buttons with new theme colors
+        if self._prev_week_btn:
+            self._prev_week_btn.refresh(palette)
+        if self._next_week_btn:
+            self._next_week_btn.refresh(palette)
+        if hasattr(self, "_log_form"):
+            self._log_form.set_palette(palette)
+            if hasattr(self._log_form, "_start_lbl"):
+                self._log_form._start_lbl.setStyleSheet(f"font-size:10px;color:{muted};")
+                self._log_form._end_lbl.setStyleSheet(f"font-size:10px;color:{muted};")
+            if hasattr(self._log_form, "_start_btn"):
+                self._log_form._start_btn.setStyleSheet(
+                    f"background-color:{green};color:{acc_fg};" + btn_css)
+                self._log_form._stop_btn.setStyleSheet(
+                    f"background-color:{red};color:{acc_fg};" + btn_css)
 
     def _build_ui(self):
         root = QHBoxLayout(self)
@@ -6026,17 +6256,20 @@ class ActivityPanel(QWidget):
         self._week_label.setStyleSheet("font-size:12px;font-weight:bold;")
         top_bar.addWidget(self._week_label); top_bar.addSpacing(8)
 
-        for sym, slot, tip in [("\u2190", self._prev_week, "Previous week"),
-                                ("Today", self._go_today,  ""),
-                                ("\u2192", self._next_week, "Next week")]:
-            btn = QPushButton(sym); btn.setObjectName("secondary")
-            btn.setToolTip(tip)
-            if sym in ("\u2190", "\u2192"):
-                btn.setFixedSize(28, 28)
-                btn.setStyleSheet("QPushButton{font-size:14px;font-weight:bold;}")
-            else:
-                btn.setFixedHeight(28)
-            btn.clicked.connect(slot); top_bar.addWidget(btn)
+        # ── NavButton for week navigation (painter-drawn — no font/padding issues) ──
+        self._prev_week_btn = NavButton("left", size=28, tooltip="Previous week")
+        self._prev_week_btn.clicked.connect(self._prev_week)
+        top_bar.addWidget(self._prev_week_btn)
+
+        today_btn = QPushButton("Today")
+        today_btn.setObjectName("secondary")
+        today_btn.setFixedHeight(28)
+        today_btn.clicked.connect(self._go_today)
+        top_bar.addWidget(today_btn)
+
+        self._next_week_btn = NavButton("right", size=28, tooltip="Next week")
+        self._next_week_btn.clicked.connect(self._next_week)
+        top_bar.addWidget(self._next_week_btn)
 
         top_bar.addSpacing(8)
         btn_exp = QPushButton("Export\u2026"); btn_exp.setObjectName("secondary")
@@ -6298,13 +6531,16 @@ from PyQt6.QtWidgets import (
     QLabel, QPushButton, QDialog, QLineEdit, QTextEdit,
     QDateEdit, QTimeEdit, QCheckBox, QFrame, QComboBox,
     QMessageBox, QScrollArea, QSizePolicy, QTabWidget,
-    QButtonGroup, QToolButton, QSpinBox,
+    QButtonGroup, QToolButton, QSpinBox, QListWidget,
+    QListWidgetItem, QColorDialog,
 )
 
 from src.data.calendar_store import (
     CalendarStore, Event, Birthday,
     build_recurrence, expand_recurring_to_range,
 )
+from src.data.soft_events_store import SoftEventStore, SoftEventTemplate
+from src.ui.widgets.nav_button import NavButton
 
 
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -6818,7 +7054,7 @@ class MiniMonth(QWidget):
         self._view_month  = self._selected.month
         self._events:    dict[date, list[str]] = {}
         self._holidays:  set[date]             = set()
-        self._nav_buttons: list[QPushButton]   = []
+        self._nav_buttons: list[NavButton]     = []
         self._dow_labels:  list[QLabel]        = []
         self._title_btn:   QPushButton         = None  # type: ignore
         self._build()
@@ -6838,16 +7074,8 @@ class MiniMonth(QWidget):
 
     def refresh_styles(self):
         """Re-apply palette colors to navigation buttons/labels."""
-        nav_style = (
-            f"QPushButton {{ background-color: {_p('surface')}; color: {_p('fg')}; "
-            f"border: 1px solid {_p('border')}; border-radius: 4px; "
-            f"font-weight: bold; font-size: 14px; padding: 0px; }}"
-            f"QPushButton:hover {{ background-color: {_p('hover')}; "
-            f"border-color: {_p('accent')}; color: {_p('accent')}; }}"
-            f"QPushButton:pressed {{ background-color: {_p('border')}; }}"
-        )
         for btn in self._nav_buttons:
-            btn.setStyleSheet(nav_style)
+            btn.refresh(_PALETTE)
         if self._title_btn:
             self._title_btn.setStyleSheet(
                 f"QPushButton {{ background-color: transparent; color: {_p('fg')}; "
@@ -6860,28 +7088,18 @@ class MiniMonth(QWidget):
 
     # ── Build ────────────────────────────────────────
 
-    def _nav_style(self) -> str:
-        return (
-            f"QPushButton {{ background-color: {_p('surface')}; color: {_p('fg')}; "
-            f"border: 1px solid {_p('border')}; border-radius: 4px; "
-            f"font-weight: bold; font-size: 14px; padding: 0px; }}"
-            f"QPushButton:hover {{ background-color: {_p('hover')}; "
-            f"border-color: {_p('accent')}; color: {_p('accent')}; }}"
-            f"QPushButton:pressed {{ background-color: {_p('border')}; }}"
-        )
-
     def _build(self):
         outer = QVBoxLayout(self)
         outer.setContentsMargins(8, 8, 8, 8); outer.setSpacing(2)
 
         nav = QHBoxLayout(); nav.setSpacing(0)
-        for symbol, tip, handler in [
-            ("«", "Previous year",  self._prev_year),
-            ("‹", "Previous month", self._prev_month),
+        for direction, double, tip, handler in [
+            ("left",  True,  "Previous year",  self._prev_year),
+            ("left",  False, "Previous month", self._prev_month),
         ]:
-            btn = QPushButton(symbol); btn.setFixedSize(26, 26)
-            btn.setToolTip(tip); btn.clicked.connect(handler)
-            btn.setStyleSheet(self._nav_style())
+            btn = NavButton(direction, size=26, double=double, tooltip=tip)
+            btn.refresh(_PALETTE)
+            btn.clicked.connect(handler)
             self._nav_buttons.append(btn); nav.addWidget(btn)
 
         self._title_btn = QPushButton()
@@ -6894,13 +7112,13 @@ class MiniMonth(QWidget):
         )
         nav.addWidget(self._title_btn, 1)
 
-        for symbol, tip, handler in [
-            ("›", "Next month", self._next_month),
-            ("»", "Next year",  self._next_year),
+        for direction, double, tip, handler in [
+            ("right", False, "Next month", self._next_month),
+            ("right", True,  "Next year",  self._next_year),
         ]:
-            btn = QPushButton(symbol); btn.setFixedSize(26, 26)
-            btn.setToolTip(tip); btn.clicked.connect(handler)
-            btn.setStyleSheet(self._nav_style())
+            btn = NavButton(direction, size=26, double=double, tooltip=tip)
+            btn.refresh(_PALETTE)
+            btn.clicked.connect(handler)
             self._nav_buttons.append(btn); nav.addWidget(btn)
 
         outer.addLayout(nav)
@@ -7037,6 +7255,7 @@ class EventChip(QWidget):
 class DayColumn(QWidget):
     request_add  = pyqtSignal(object)
     request_edit = pyqtSignal(object)
+    day_clicked  = pyqtSignal(object)   # emitted on single left-click → select day
 
     def __init__(self, d: date, events: list[Event], birthdays: list[Birthday],
                  is_today: bool, is_selected: bool, parent=None):
@@ -7082,14 +7301,16 @@ class DayColumn(QWidget):
         for ev in sorted(events, key=lambda e: e.start_time):
             if ev.all_day:
                 chip = EventChip(ev)
-                chip.double_clicked.connect(self.request_edit.emit)
+                # Reminder chips (soft events) are read-only in the week grid —
+                # double-clicking them would hit the wrong store. Skip the signal.
+                if ev.category != "reminder":
+                    chip.double_clicked.connect(self.request_edit.emit)
                 layout.addWidget(chip)
 
         for b in birthdays:
             try: age = (self.d.year - b.year) if b.year else None
             except Exception: age = None
             age_str = f" ({age})" if age else ""
-            # Format: "🎂 Name 🎂 (age)" — category emoji auto-prepended by EventChip
             fake = Event(
                 id=b.id,
                 title=f"{b.name} 🎂{age_str}",
@@ -7108,6 +7329,11 @@ class DayColumn(QWidget):
 
     def enterEvent(self, ev): self._hovered = True;  self.update()
     def leaveEvent(self, ev): self._hovered = False; self.update()
+
+    def mousePressEvent(self, ev):
+        if ev.button() == Qt.MouseButton.LeftButton:
+            self.day_clicked.emit(self.d)
+
     def mouseDoubleClickEvent(self, ev): self.request_add.emit(self.d)
 
     def paintEvent(self, ev):
@@ -7237,6 +7463,69 @@ class DayEventRow(QFrame):
 
 
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+#  SoftReminderRow — styled row for soft event reminders
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+class SoftReminderRow(QFrame):
+    """Styled day-detail row for a soft event reminder. Signals instead of
+    monkey-patching mousePressEvent so Qt's event system stays intact."""
+
+    open_log = pyqtSignal(object, object)   # (template, log_date)
+
+    def __init__(self, template: SoftEventTemplate, log_date: date, parent=None):
+        super().__init__(parent)
+        self._template = template
+        self._log_date = log_date
+        self.setCursor(Qt.CursorShape.PointingHandCursor)
+
+        layout = QHBoxLayout(self)
+        layout.setContentsMargins(0, 0, 0, 0)
+        layout.setSpacing(0)
+
+        bar = QFrame()
+        bar.setFixedWidth(4)
+        bar.setStyleSheet(
+            f"background-color:{template.color};border-radius:2px 0 0 2px;")
+        layout.addWidget(bar)
+
+        body = QWidget()
+        bl = QHBoxLayout(body)
+        bl.setContentsMargins(8, 6, 8, 6)
+        bl.setSpacing(8)
+
+        pin_lbl = QLabel("📌")
+        pin_lbl.setStyleSheet(
+            "font-size:13px;background:transparent;border:none;padding:0;")
+        pin_lbl.setFixedWidth(20)
+        bl.addWidget(pin_lbl)
+
+        title_lbl = QLabel(template.title)
+        title_lbl.setStyleSheet(f"font-size:13px;color:{_p('fg')};")
+        bl.addWidget(title_lbl, 1)
+
+        hint = QLabel("tap to log")
+        hint.setStyleSheet(
+            f"font-size:10px;color:{_p('muted')};font-style:italic;")
+        bl.addWidget(hint)
+
+        layout.addWidget(body, 1)
+        self.setStyleSheet(
+            f"SoftReminderRow{{border:1px solid {_p('border')};border-radius:4px;"
+            f"background-color:{_p('header_bg')};}}"
+            f"SoftReminderRow:hover{{border-color:{template.color};"
+            f"background-color:{_p('surface')};}}"
+        )
+
+    def mousePressEvent(self, ev):
+        if ev.button() == Qt.MouseButton.LeftButton:
+            self.open_log.emit(self._template, self._log_date)
+
+    def mouseDoubleClickEvent(self, ev):
+        if ev.button() == Qt.MouseButton.LeftButton:
+            self.open_log.emit(self._template, self._log_date)
+
+
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 #  CalendarPanel — main widget
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
@@ -7245,7 +7534,6 @@ class CalendarPanel(QWidget):
     def __init__(self, calendar_store=None, soft_events_store=None, parent=None):
         super().__init__(parent)
         self.store = calendar_store or CalendarStore()
-        from src.data.soft_events_store import SoftEventStore
         self.soft_events_store = soft_events_store or SoftEventStore()
         self._selected_date = date.today()
         self._build_ui(); self._refresh()
@@ -7271,6 +7559,8 @@ class CalendarPanel(QWidget):
             f"font-size:13px;font-weight:bold;color:{_p('fg')};")
         self._day_title.setStyleSheet(
             f"font-size:14px;font-weight:bold;color:{_p('fg')};")
+        for btn in self._week_nav_btns:
+            btn.refresh(_PALETTE)
         self.mini_month.refresh_styles()
         self._refresh()
 
@@ -7295,15 +7585,19 @@ class CalendarPanel(QWidget):
             f"font-size:13px;font-weight:bold;color:{_p('muted')};")
         top_bar.addWidget(self._week_label); top_bar.addSpacing(8)
 
-        for text, tip, slot in [("‹", "Previous week", self._prev_week),
-                                 ("›", "Next week",     self._next_week)]:
-            if text == "›": top_bar.addWidget(self._today_btn())
-            btn = QPushButton(text); btn.setObjectName("secondary")
-            btn.setFixedSize(28, 28); btn.setToolTip(tip); btn.clicked.connect(slot)
+        self._week_nav_btns: list[NavButton] = []
+        for direction, tip, slot in [("left",  "Previous week", self._prev_week),
+                                      ("right", "Next week",     self._next_week)]:
+            if direction == "right":
+                top_bar.addWidget(self._today_btn())
+            btn = NavButton(direction, size=28, tooltip=tip)
+            btn.refresh(_PALETTE)
+            btn.clicked.connect(slot)
+            self._week_nav_btns.append(btn)
             top_bar.addWidget(btn)
 
         top_bar.addSpacing(8)
-        btn_add = QPushButton("＋ Event"); btn_add.clicked.connect(self._add_event)
+        btn_add = QPushButton("+ Event"); btn_add.clicked.connect(self._add_event)
         top_bar.addWidget(btn_add)
         left_l.addLayout(top_bar); left_l.addSpacing(8)
 
@@ -7326,7 +7620,7 @@ class CalendarPanel(QWidget):
         self._day_title = QLabel("Today")
         self._day_title.setStyleSheet(f"font-size:14px;font-weight:bold;color:{_p('fg')};")
         detail_bar.addWidget(self._day_title); detail_bar.addStretch()
-        btn_add_here = QPushButton("＋"); btn_add_here.setObjectName("secondary")
+        btn_add_here = QPushButton("+"); btn_add_here.setObjectName("secondary")
         btn_add_here.setFixedSize(26, 26); btn_add_here.setToolTip("Add event on this day")
         btn_add_here.clicked.connect(lambda: self._add_event_on_date(self._selected_date))
         detail_bar.addWidget(btn_add_here); left_l.addLayout(detail_bar)
@@ -7356,19 +7650,31 @@ class CalendarPanel(QWidget):
         mf_l.addWidget(self.mini_month); right_l.addWidget(self._mini_frame)
         right_l.addSpacing(8)
 
-        action_row = QHBoxLayout(); action_row.setSpacing(4)
-        btn_bday = QPushButton("🎂 Birthdays"); btn_bday.setObjectName("secondary")
-        btn_bday.clicked.connect(self._manage_birthdays); action_row.addWidget(btn_bday)
-        btn_jump = QPushButton("Go to date…"); btn_jump.setObjectName("secondary")
-        btn_jump.clicked.connect(self._jump_to_date); action_row.addWidget(btn_jump)
-        right_l.addLayout(action_row); right_l.addSpacing(8)
-        
-        soft_btn = QPushButton("Soft Events \u25b8")
-        soft_btn.setObjectName("secondary")
-        soft_btn.setFixedHeight(26)
-        soft_btn.clicked.connect(self._manage_soft_events)
-        # Add to the toolbar layout (next to the Birthdays button)
-        action_row.addWidget(soft_btn)
+        # ── Row 1: Jump to date (full width) ─────────
+        btn_jump = QPushButton("📅  Go to date…")
+        btn_jump.setObjectName("secondary")
+        btn_jump.clicked.connect(self._jump_to_date)
+        right_l.addWidget(btn_jump)
+        right_l.addSpacing(4)
+
+        # ── Row 2: Birthdays | Soft Events (50 / 50) ─
+        tool_row = QHBoxLayout()
+        tool_row.setSpacing(4)
+
+        btn_bday = QPushButton("🎂  Birthdays")
+        btn_bday.setObjectName("secondary")
+        btn_bday.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred)
+        btn_bday.clicked.connect(self._manage_birthdays)
+        tool_row.addWidget(btn_bday)
+
+        btn_soft = QPushButton("📌  Soft Events")
+        btn_soft.setObjectName("secondary")
+        btn_soft.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred)
+        btn_soft.clicked.connect(self._manage_soft_events)
+        tool_row.addWidget(btn_soft)
+
+        right_l.addLayout(tool_row)
+        right_l.addSpacing(8)
 
         rdiv1 = QFrame(); rdiv1.setFrameShape(QFrame.Shape.HLine)
         rdiv1.setStyleSheet(f"border:none;border-top:1px solid {_p('border')};")
@@ -7402,6 +7708,7 @@ class CalendarPanel(QWidget):
         dlg = SoftEventManagerDialog(self.soft_events_store, self)
         dlg.exec()
         self._refresh()
+
     # ── Refresh ─────────────────────────────────────
 
     def _refresh(self):
@@ -7439,7 +7746,7 @@ class CalendarPanel(QWidget):
                 if ws <= occ_date <= we:
                     ebd.setdefault(occ_date, []).append(Event(
                         id=tpl.id,
-                        title=f"\U0001f4cc {tpl.title}",
+                        title=f"📌 {tpl.title}",
                         start_time=datetime(occ_date.year, occ_date.month, occ_date.day).isoformat(),
                         all_day=True,
                         color=tpl.color,
@@ -7460,6 +7767,7 @@ class CalendarPanel(QWidget):
                             is_today=(d == today), is_selected=(d == self._selected_date))
             col.request_add.connect(self._add_event_on_date)
             col.request_edit.connect(self._edit_event)
+            col.day_clicked.connect(self._on_day_column_clicked)
             self._week_grid.addWidget(col, 1)
 
     def _render_day_detail(self):
@@ -7480,7 +7788,6 @@ class CalendarPanel(QWidget):
         for b in self.store.get_birthdays():
             if b.month == d.month and b.day == d.day:
                 age = (d.year - b.year) if b.year else None
-                today = date.today()
                 if d < today:
                     age_str = f" (turned {age})" if age else ""
                 elif d == today:
@@ -7496,7 +7803,14 @@ class CalendarPanel(QWidget):
 
         all_evs = sorted(bday_evs + events,
                          key=lambda e: (0 if e.all_day else 1, e.start_time))
-        if not all_evs:
+
+        # Fetch soft events before deciding whether to show the empty-state label
+        try:
+            soft_occ = self.soft_events_store.get_upcoming(d, days_ahead=0)
+        except Exception:
+            soft_occ = []
+
+        if not all_evs and not soft_occ:
             lbl = QLabel("No events — double-click a day to add one")
             lbl.setStyleSheet(f"color:{_p('muted')};font-size:12px;padding:8px 0;")
             self._day_list_layout.addWidget(lbl)
@@ -7504,42 +7818,24 @@ class CalendarPanel(QWidget):
             for ev in all_evs:
                 row = DayEventRow(ev)
                 if ev.category == "birthday":
-                    # Single-click on a birthday row opens the BirthdayDialog by id
                     row.edit_requested.connect(
                         lambda e: self._open_major_event(e.id, True))
                 else:
                     row.edit_requested.connect(self._edit_event)
                 self._day_list_layout.addWidget(row)
-                
-        # ── Soft event reminders for this day ──
-        try:
-            soft_occ = self.soft_events_store.get_upcoming(d, days_ahead=0)
-        except Exception:
-            soft_occ = []
 
+        # ── Soft event reminders for this day ──
         if soft_occ:
             sep_lbl = QLabel("Reminders")
-            muted = _p("muted")
             sep_lbl.setStyleSheet(
-                f"color:{muted};font-size:11px;font-weight:bold;"
+                f"color:{_p('muted')};font-size:11px;font-weight:bold;"
                 f"border-top:1px solid {_p('border')};padding-top:6px;margin-top:4px;"
             )
             self._day_list_layout.addWidget(sep_lbl)
 
             for occ_date, tpl in soft_occ:
-                row = QWidget()
-                row_l = QHBoxLayout(row)
-                row_l.setContentsMargins(4, 2, 4, 2)
-                row_l.setSpacing(6)
-                dot = QLabel("\u25cf")
-                dot.setStyleSheet(f"color: {tpl.color}; font-size: 12px;")
-                dot.setFixedWidth(14)
-                row_l.addWidget(dot)
-                title = QLabel(tpl.title)
-                title.setStyleSheet("font-size: 12px;")
-                row_l.addWidget(title, 1)
-                row.setCursor(Qt.CursorShape.PointingHandCursor)
-                row.mousePressEvent = lambda ev, t=tpl, od=occ_date: self._open_soft_log(t, od)
+                row = SoftReminderRow(tpl, occ_date)
+                row.open_log.connect(self._open_soft_log)
                 self._day_list_layout.addWidget(row)
 
         self._day_list_layout.addStretch()
@@ -7584,6 +7880,15 @@ class CalendarPanel(QWidget):
                     d = date(vy, b.month, b.day)
                     if first <= d <= last: by_date.setdefault(d, []).append(_p("red"))
                 except ValueError: pass
+        # ── Soft event reminder dots ──
+        try:
+            days_in_month = (last - first).days
+            for occ_date, tpl in self.soft_events_store.get_upcoming(
+                    first, days_ahead=days_in_month):
+                if first <= occ_date <= last:
+                    by_date.setdefault(occ_date, []).append(tpl.color)
+        except Exception:
+            pass
         self.mini_month.set_events(by_date)
         try:
             from src.data.holidays_jp import get_japanese_holidays
@@ -7604,6 +7909,13 @@ class CalendarPanel(QWidget):
     def _go_today(self):
         self._selected_date = date.today()
         self.mini_month.set_selected(self._selected_date); self._refresh()
+
+    def _on_day_column_clicked(self, d: date):
+        """Single-click on a week-grid day column selects that day."""
+        self._selected_date = d
+        self.mini_month.set_selected(d)
+        self._render_week()
+        self._render_day_detail()
 
     def _on_mini_date_selected(self, d: date):
         self._selected_date = d
@@ -7692,13 +8004,12 @@ class BirthdayManagerDialog(QDialog):
         layout = QVBoxLayout(self)
         layout.setContentsMargins(16, 16, 16, 16); layout.setSpacing(10)
 
-
         hdr = QHBoxLayout()
         title = QLabel("🎂  Birthdays")
         title.setStyleSheet("font-size:15px;font-weight:bold;")
         hdr.addWidget(title); hdr.addStretch()
-        add_btn = QPushButton("＋ Add"); add_btn.clicked.connect(self._add_birthday)
-        hdr.addWidget(add_btn); layout.addLayout(hdr)     
+        add_btn = QPushButton("+ Add"); add_btn.clicked.connect(self._add_birthday)
+        hdr.addWidget(add_btn); layout.addLayout(hdr)
         self._search = QLineEdit(); self._search.setPlaceholderText("Search by name…")
         self._search.textChanged.connect(self._filter); layout.addWidget(self._search)
 
@@ -7712,12 +8023,8 @@ class BirthdayManagerDialog(QDialog):
         layout.addWidget(close_btn, 0, Qt.AlignmentFlag.AlignRight)
 
     def _load(self):
-        self._birthdays = self.store.get_birthdays(); self._filter(self._search.text())
-
-#    def _manage_soft_events(self):
-        dlg = SoftEventManagerDialog(self.soft_events_store, self)
-        dlg.exec()
-        self._refresh()
+        self._birthdays = self.store.get_birthdays()
+        self._filter(self._search.text())
 
     def _filter(self, text: str):
         _clear_layout(self._list_layout); q = text.lower(); today = date.today()
@@ -7747,7 +8054,6 @@ class BirthdayManagerDialog(QDialog):
             f"background-color:{_p('surface')};}}")
         rl = QHBoxLayout(row); rl.setContentsMargins(10, 8, 10, 8); rl.setSpacing(10)
 
-        # Cake badge — fixed-size pill, no more font-size overflow
         cake_badge = QLabel("🎂")
         cake_badge.setAlignment(Qt.AlignmentFlag.AlignCenter)
         cake_badge.setFixedSize(32, 32)
@@ -7758,7 +8064,6 @@ class BirthdayManagerDialog(QDialog):
 
         info = QVBoxLayout(); info.setSpacing(2)
 
-        # Name row: "🎂 Name 🎂" style label
         name_lbl = QLabel(f"🎂  {b.name}  🎂")
         name_lbl.setStyleSheet(f"font-size:13px;font-weight:bold;color:{_p('fg')};")
         info.addWidget(name_lbl)
@@ -7815,35 +8120,18 @@ class BirthdayManagerDialog(QDialog):
             birthday.note  = data["note"]
             self.store.update_birthday(birthday); self._load()
 
-"""Task 9 Fix C — SoftEventManagerDialog and RecurrenceWidget.
-
-Paste these classes into calendar_panel.py after BirthdayManagerDialog.
-Also add the required imports at the top of calendar_panel.py:
-  from src.data.soft_events_store import SoftEventStore, SoftEventTemplate
-  from src.data.calendar_store import build_recurrence, parse_recurrence
-  (build_recurrence and parse_recurrence should already be imported)
-"""
 
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 #  RecurrenceWidget — reusable recurrence picker
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-from PyQt6.QtWidgets import (
-    QWidget, QVBoxLayout, QHBoxLayout, QLabel, QComboBox,
-    QFrame, QToolButton, QDialog, QListWidget, QListWidgetItem,
-    QPushButton, QLineEdit, QTextEdit, QColorDialog, QMessageBox,
-)
-from PyQt6.QtCore import Qt
-
-RECURRENCE_OPTIONS = [
-    ("", "No repeat"),
-    ("daily", "Daily"),
-    ("weekly", "Weekly"),
+_SOFT_RECURRENCE_OPTIONS = [
+    ("",        "No repeat"),
+    ("daily",   "Daily"),
+    ("weekly",  "Weekly"),
     ("monthly", "Monthly"),
-    ("yearly", "Yearly"),
+    ("yearly",  "Yearly"),
 ]
-
-WEEKDAY_LABELS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
 
 
 class RecurrenceWidget(QWidget):
@@ -7857,7 +8145,7 @@ class RecurrenceWidget(QWidget):
 
         layout.addWidget(QLabel("Repeat pattern"))
         self.rec_combo = QComboBox()
-        for val, label in RECURRENCE_OPTIONS:
+        for val, label in _SOFT_RECURRENCE_OPTIONS:
             self.rec_combo.addItem(label, val)
         layout.addWidget(self.rec_combo)
 
@@ -7889,9 +8177,7 @@ class RecurrenceWidget(QWidget):
             if not days:
                 return ""
             return "weekly:" + ",".join(str(d) for d in sorted(days))
-        if val:
-            return val
-        return ""
+        return val if val else ""
 
     def set_recurrence(self, rec_str: str):
         """Pre-fill from a recurrence string."""
@@ -7918,7 +8204,7 @@ class RecurrenceWidget(QWidget):
 class TemplateEditDialog(QDialog):
     """Edit fields for a soft event template."""
 
-    def __init__(self, parent=None, template=None):
+    def __init__(self, parent=None, template: SoftEventTemplate | None = None):
         super().__init__(parent)
         self._template = template
         self.setWindowTitle("Edit Template" if template else "New Template")
@@ -7929,7 +8215,6 @@ class TemplateEditDialog(QDialog):
         layout.setSpacing(10)
         layout.setContentsMargins(14, 12, 14, 12)
 
-        # Title
         layout.addWidget(QLabel("Title"))
         self._title_edit = QLineEdit()
         self._title_edit.setPlaceholderText("e.g. Weekly Review")
@@ -7937,16 +8222,14 @@ class TemplateEditDialog(QDialog):
             self._title_edit.setText(template.title)
         layout.addWidget(self._title_edit)
 
-        # Universal note
         layout.addWidget(QLabel("Note (shown on every occurrence)"))
         self._note_edit = QTextEdit()
         self._note_edit.setMaximumHeight(80)
-        self._note_edit.setPlaceholderText("Optional universal note...")
+        self._note_edit.setPlaceholderText("Optional universal note…")
         if template:
             self._note_edit.setPlainText(template.note)
         layout.addWidget(self._note_edit)
 
-        # Color
         color_row = QHBoxLayout()
         color_row.addWidget(QLabel("Color"))
         self._color = template.color if template else "#a6e3a1"
@@ -7958,13 +8241,11 @@ class TemplateEditDialog(QDialog):
         color_row.addStretch()
         layout.addLayout(color_row)
 
-        # Recurrence
         self._rec_widget = RecurrenceWidget()
         if template:
             self._rec_widget.set_recurrence(template.recurrence)
         layout.addWidget(self._rec_widget)
 
-        # Buttons
         sep = QFrame()
         sep.setObjectName("separator")
         sep.setFrameShape(QFrame.Shape.HLine)
@@ -7977,6 +8258,7 @@ class TemplateEditDialog(QDialog):
         cancel.clicked.connect(self.reject)
         btn_row.addWidget(cancel)
         save = QPushButton("Save")
+        save.setDefault(True)
         save.clicked.connect(self._on_save)
         btn_row.addWidget(save)
         layout.addLayout(btn_row)
@@ -8003,9 +8285,9 @@ class TemplateEditDialog(QDialog):
 
     def get_data(self) -> dict:
         return {
-            "title": self._title_edit.text().strip(),
-            "note": self._note_edit.toPlainText(),
-            "color": self._color,
+            "title":      self._title_edit.text().strip(),
+            "note":       self._note_edit.toPlainText(),
+            "color":      self._color,
             "recurrence": self._rec_widget.get_recurrence(),
         }
 
@@ -8017,9 +8299,9 @@ class TemplateEditDialog(QDialog):
 class ViewLogDialog(QDialog):
     """Read-only view of all log entries for a soft event template."""
 
-    def __init__(self, store, template, parent=None):
+    def __init__(self, store: SoftEventStore, template: SoftEventTemplate, parent=None):
         super().__init__(parent)
-        self.setWindowTitle(f"Log \u2014 {template.title}")
+        self.setWindowTitle(f"Log — {template.title}")
         self.setMinimumSize(440, 400)
         self.setModal(True)
 
@@ -8035,7 +8317,8 @@ class ViewLogDialog(QDialog):
 
         viewer = QTextEdit()
         viewer.setReadOnly(True)
-        viewer.setPlainText("\n".join(text_parts) if text_parts else "No log entries yet.")
+        viewer.setPlainText(
+            "\n".join(text_parts) if text_parts else "No log entries yet.")
         layout.addWidget(viewer, 1)
 
         close_btn = QPushButton("Close")
@@ -8054,7 +8337,7 @@ class ViewLogDialog(QDialog):
 class SoftEventManagerDialog(QDialog):
     """Manage soft event templates — list, add, edit, delete, view log."""
 
-    def __init__(self, soft_events_store, parent=None):
+    def __init__(self, soft_events_store: SoftEventStore, parent=None):
         super().__init__(parent)
         self.store = soft_events_store
         self.setWindowTitle("Soft Events — Template Manager")
@@ -8102,13 +8385,14 @@ class SoftEventManagerDialog(QDialog):
         self._list.clear()
         self._templates = self.store.get_templates()
         for tpl in self._templates:
-            item = QListWidgetItem(f"\u25cf {tpl.title}")
-            item.setForeground(self._list.palette().text())
-            # Store template id for retrieval
+            item = QListWidgetItem(f"● {tpl.title}")
+            # Tint the bullet with the template's own color
+            from PyQt6.QtGui import QColor, QBrush
+            item.setForeground(QBrush(QColor(tpl.color)))
             item.setData(Qt.ItemDataRole.UserRole, tpl.id)
             self._list.addItem(item)
 
-    def _selected_template(self):
+    def _selected_template(self) -> SoftEventTemplate | None:
         row = self._list.currentRow()
         if 0 <= row < len(self._templates):
             return self._templates[row]
@@ -8117,8 +8401,7 @@ class SoftEventManagerDialog(QDialog):
     def _add(self):
         dlg = TemplateEditDialog(self)
         if dlg.exec() == QDialog.DialogCode.Accepted:
-            data = dlg.get_data()
-            self.store.add_template(**data)
+            self.store.add_template(**dlg.get_data())
             self._load()
 
     def _edit(self):
@@ -8128,9 +8411,9 @@ class SoftEventManagerDialog(QDialog):
         dlg = TemplateEditDialog(self, tpl)
         if dlg.exec() == QDialog.DialogCode.Accepted:
             data = dlg.get_data()
-            tpl.title = data["title"]
-            tpl.note = data["note"]
-            tpl.color = data["color"]
+            tpl.title      = data["title"]
+            tpl.note       = data["note"]
+            tpl.color      = data["color"]
             tpl.recurrence = data["recurrence"]
             self.store.update_template(tpl)
             self._load()
@@ -8185,9 +8468,17 @@ from src.data.todo_store import TodoStore, PRIORITY_LABELS
 from src.data.calendar_store import CalendarStore
 from src.data.finance_store import FinanceStore
 from src.data.soft_events_store import SoftEventStore
+from src.ui.widgets.nav_button import NavButton
 
 
-PRIORITY_COLORS = {0: "#a6adc8", 1: "#a6e3a1", 2: "#f9e2af", 3: "#f38ba8"}
+def _priority_colors(palette: dict) -> dict:
+    """Return priority-level colours drawn from the current theme palette."""
+    return {
+        0: palette.get("muted",  "#a6adc8"),
+        1: palette.get("green",  "#a6e3a1"),
+        2: palette.get("yellow", "#f9e2af"),
+        3: palette.get("red",    "#f38ba8"),
+    }
 
 # Sentinel → palette key map for store-layer color strings
 SENTINEL_COLORS = {"birthday": "red", "holiday": "yellow", "trip": "accent"}
@@ -8506,6 +8797,9 @@ class SideIncomeGoalSection(QFrame):
     def set_palette(self, palette: dict):
         self._palette = palette
         self._bar.set_palette(palette)
+        # Refresh painter-based nav buttons with new palette colors
+        self._prev_btn.refresh(palette)
+        self._next_btn.refresh(palette)
         self._refresh()
 
     def _load_rate(self):
@@ -8519,10 +8813,8 @@ class SideIncomeGoalSection(QFrame):
 
         hdr = QHBoxLayout()
 
-        self._prev_btn = QPushButton("\u2190")
-        self._prev_btn.setObjectName("secondary")
-        self._prev_btn.setFixedSize(26, 26)
-        self._prev_btn.setStyleSheet("QPushButton{font-size:14px;font-weight:bold;}")
+        # ── Use NavButton for painter-drawn arrows (no font/padding issues) ──
+        self._prev_btn = NavButton("left", size=26, tooltip="Previous month")
         self._prev_btn.clicked.connect(self._prev_month)
         hdr.addWidget(self._prev_btn)
 
@@ -8531,10 +8823,7 @@ class SideIncomeGoalSection(QFrame):
         self._month_lbl.setAlignment(Qt.AlignmentFlag.AlignCenter)
         hdr.addWidget(self._month_lbl, 1)
 
-        self._next_btn = QPushButton("\u2192")
-        self._next_btn.setObjectName("secondary")
-        self._next_btn.setFixedSize(26, 26)
-        self._next_btn.setStyleSheet("QPushButton{font-size:14px;font-weight:bold;}")
+        self._next_btn = NavButton("right", size=26, tooltip="Next month")
         self._next_btn.clicked.connect(self._next_month)
         hdr.addWidget(self._next_btn)
 
@@ -9010,8 +9299,11 @@ class DashboardPanel(QWidget):
                     pass
 
         # Major events — 30-day lookahead, 12 items
+        # Collect IDs so regular get_events() below doesn't duplicate them.
         majors = self.calendar_store.get_next_major_events(today, limit=12)
         thirty_days = today + timedelta(days=30)
+        major_event_ids: set[str] = set()
+
         for ev_date, ev_title, category, color, item_id, is_birthday in majors:
             if ev_date > thirty_days:
                 continue
@@ -9024,12 +9316,19 @@ class DashboardPanel(QWidget):
             upcoming_items.append((delta, UpcomingItem(
                 ev_title, category.title(), resolved, days_text
             )))
+            # Track real event IDs (birthdays have no calendar_events row to skip)
+            if not is_birthday:
+                major_event_ids.add(item_id)
 
+        # Regular events for the next 7 days — skip any already shown via majors
         next_week = today + timedelta(days=7)
         upcoming_events = self.calendar_store.get_events(
             today.isoformat(), next_week.isoformat() + "T23:59:59"
         )
         for ev in upcoming_events:
+            # Skip events that were already added from get_next_major_events()
+            if ev.id in major_event_ids:
+                continue
             try:
                 ev_date = datetime.fromisoformat(ev.start_time).date()
                 delta = (ev_date - today).days
@@ -9091,19 +9390,20 @@ class DashboardPanel(QWidget):
             priority_counts[task.priority] = priority_counts.get(task.priority, 0) + 1
 
         max_count = max(priority_counts.values()) if any(priority_counts.values()) else 1
+        pcolors = _priority_colors(self._palette)
         for pri in [3, 2, 1, 0]:
             count = priority_counts[pri]
             row = QHBoxLayout()
             label = QLabel(PRIORITY_LABELS[pri])
             label.setFixedWidth(55)
-            label.setStyleSheet(f"font-size: 11px; color: {PRIORITY_COLORS[pri]};")
+            label.setStyleSheet(f"font-size: 11px; color: {pcolors[pri]};")
             row.addWidget(label)
 
             bar = QFrame()
             width = max(int(count / max_count * 120), 2) if max_count > 0 else 2
             bar.setFixedSize(width, 14)
             bar.setStyleSheet(
-                f"background-color: {PRIORITY_COLORS[pri]}; border-radius: 2px;"
+                f"background-color: {pcolors[pri]}; border-radius: 2px;"
             )
             row.addWidget(bar)
 
@@ -10419,9 +10719,10 @@ class MonthlyExpensesDialog(QDialog):
     making them easy to filter for 確定申告 year-end reporting.
     """
 
-    def __init__(self, store: FinanceStore, parent=None):
+    def __init__(self, store: FinanceStore, palette: dict = None, parent=None):
         super().__init__(parent)
         self.store = store
+        self._palette = palette or {}
         self.setWindowTitle("Monthly Expenses")
         self.setMinimumSize(600, 500)
         self.setStyleSheet(_COMBO_QSS)
@@ -10459,7 +10760,8 @@ class MonthlyExpensesDialog(QDialog):
 
         # ── Duplicate warning ──
         self._warn_lbl = QLabel("")
-        self._warn_lbl.setStyleSheet("color:#f9e2af;font-size:11px;")
+        _warn_color = self._palette.get("yellow", "#f9e2af")
+        self._warn_lbl.setStyleSheet(f"color:{_warn_color};font-size:11px;")
         self._warn_lbl.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self._warn_lbl.setWordWrap(True)
         layout.addWidget(self._warn_lbl)
@@ -11377,7 +11679,7 @@ class FinancePanel(QWidget):
         self._rebuild_preset_buttons(); self._refresh()
 
     def _open_monthly_expenses(self):
-        dlg = MonthlyExpensesDialog(self.store, self)
+        dlg = MonthlyExpensesDialog(self.store, self._palette, self)
         if dlg.exec() == QDialog.DialogCode.Accepted:
             self._refresh()
 
@@ -12349,7 +12651,7 @@ class NotesPanel(QWidget):
 ```python
 """Todo list module UI — modern task manager with priorities, categories, and due dates."""
 
-from datetime import date
+from datetime import date, datetime, timedelta
 
 from PyQt6.QtCore import Qt, QDate
 from PyQt6.QtGui import QColor, QBrush, QFont
@@ -12365,7 +12667,18 @@ from src.data.todo_store import (
 )
 
 
-PRIORITY_COLORS = {0: "#a6adc8", 1: "#a6e3a1", 2: "#f9e2af", 3: "#f38ba8"}
+def _priority_colors(palette: dict) -> dict:
+    """Return priority-level colours drawn from the current theme palette.
+
+    Fallbacks match Catppuccin Dark so the panel looks correct before the
+    first set_palette() call.
+    """
+    return {
+        0: palette.get("muted",  "#a6adc8"),
+        1: palette.get("green",  "#a6e3a1"),
+        2: palette.get("yellow", "#f9e2af"),
+        3: palette.get("red",    "#f38ba8"),
+    }
 PRIORITY_ICONS = {0: "", 1: "!", 2: "!!", 3: "!!!"}
 
 
@@ -12488,12 +12801,13 @@ class TodoDialog(QDialog):
 class TodoItemWidget(QFrame):
     """A single todo item rendered as a compact card."""
 
-    def __init__(self, item: TodoItem, parent_panel, palette: dict | None = None):
+    def __init__(self, item: TodoItem, parent_panel, palette: dict | None = None, priority_colors: dict | None = None):
         super().__init__()
         self.item = item
         self.panel = parent_panel
         self.setCursor(Qt.CursorShape.PointingHandCursor)
         palette = palette or {}
+        priority_colors = priority_colors or _priority_colors(palette)
 
         layout = QHBoxLayout(self)
         layout.setContentsMargins(8, 4, 8, 4)
@@ -12508,7 +12822,7 @@ class TodoItemWidget(QFrame):
         # Priority dot
         if item.priority > 0:
             dot = QLabel(PRIORITY_ICONS[item.priority])
-            color = PRIORITY_COLORS[item.priority]
+            color = priority_colors[item.priority]
             dot.setStyleSheet(f"color: {color}; font-weight: bold; font-size: 11px;")
             dot.setFixedWidth(20)
             layout.addWidget(dot)
@@ -12577,7 +12891,7 @@ class TodoItemWidget(QFrame):
         layout.addWidget(edit_btn)
 
         # Priority color stripe on left
-        border_color = PRIORITY_COLORS.get(item.priority, "transparent")
+        border_color = priority_colors.get(item.priority, "transparent")
         style_parts = []
         if item.priority > 0:
             style_parts.append(f"border-left: 3px solid {border_color};")
@@ -12656,11 +12970,28 @@ class TodoPanel(QWidget):
 
         layout.addLayout(header)
 
-        # Quick add
+        # Search + category filter row
+        search_row = QHBoxLayout()
+        search_row.setSpacing(4)
+        self.search_input = QLineEdit()
+        self.search_input.setPlaceholderText("Search tasks...")
+        self.search_input.setClearButtonEnabled(True)
+        self.search_input.textChanged.connect(self._refresh)
+        search_row.addWidget(self.search_input, 1)
+
+        self.cat_filter_combo = QComboBox()
+        self.cat_filter_combo.addItem("All Categories")
+        self.cat_filter_combo.setFixedWidth(130)
+        self.cat_filter_combo.currentTextChanged.connect(self._refresh)
+        search_row.addWidget(self.cat_filter_combo)
+        layout.addLayout(search_row)
+
+        # Quick add — supports !high/!med/!low and due:YYYY-MM-DD/today/tomorrow
         quick_row = QHBoxLayout()
         quick_row.setSpacing(4)
         self.quick_input = QLineEdit()
-        self.quick_input.setPlaceholderText("Quick add task... (Enter to add)")
+        self.quick_input.setPlaceholderText(
+            "Quick add: Buy milk !high due:tomorrow  (Enter to add)")
         self.quick_input.returnPressed.connect(self._quick_add)
         quick_row.addWidget(self.quick_input, 1)
         layout.addLayout(quick_row)
@@ -12698,6 +13029,33 @@ class TodoPanel(QWidget):
         if filter_mode == "Completed":
             items = [i for i in items if i.done]
 
+        # Rebuild category filter combo while preserving selection
+        selected_cat = self.cat_filter_combo.currentText()
+        self.cat_filter_combo.blockSignals(True)
+        self.cat_filter_combo.clear()
+        self.cat_filter_combo.addItem("All Categories")
+        all_cats = sorted({i.category for i in self.store.get_all() if i.category})
+        for cat in all_cats:
+            self.cat_filter_combo.addItem(cat)
+        idx = self.cat_filter_combo.findText(selected_cat)
+        self.cat_filter_combo.setCurrentIndex(idx if idx >= 0 else 0)
+        self.cat_filter_combo.blockSignals(False)
+
+        # Apply category filter
+        cat_filter = self.cat_filter_combo.currentText()
+        if cat_filter and cat_filter != "All Categories":
+            items = [i for i in items if i.category == cat_filter]
+
+        # Apply search filter (case-insensitive, searches title + notes + category)
+        query = self.search_input.text().strip().lower()
+        if query:
+            items = [
+                i for i in items
+                if query in i.title.lower()
+                or query in (i.notes or "").lower()
+                or query in (i.category or "").lower()
+            ]
+
         # Sort: overdue incomplete first, then priority desc, then created_at asc
         today_iso = date.today().isoformat()
 
@@ -12707,7 +13065,6 @@ class TodoPanel(QWidget):
                 and bool(item.due_date)
                 and item.due_date < today_iso
             )
-            # 0 = overdue incomplete (top), 1 = done, 2 = not done but not overdue
             if item.done:
                 group = 2
             elif is_overdue_incomplete:
@@ -12718,22 +13075,56 @@ class TodoPanel(QWidget):
 
         items.sort(key=_sort_key)
 
+        pcolors = _priority_colors(self._palette)
         for item in items:
-            widget = TodoItemWidget(item, self, self._palette)
+            widget = TodoItemWidget(item, self, self._palette, pcolors)
             self._list_layout.addWidget(widget)
 
         self._list_layout.addStretch()
 
         counts = self.store.get_counts()
-        self.count_label.setText(f"{counts['total']} tasks")
+        shown = len(items)
+        total  = counts["total"]
+        self.count_label.setText(
+            f"{shown} of {total} tasks" if shown != total else f"{total} tasks")
         self.stats_label.setText(
             f"{counts['pending']} pending \u00b7 {counts['done']} completed"
         )
 
     def _quick_add(self):
+        import re as _re
         text = self.quick_input.text().strip()
+        if not text:
+            return
+
+        # Parse priority tags: !high (3), !med (2), !low (1)
+        priority = 0
+        for tag, val in [("!high", 3), ("!med", 2), ("!low", 1)]:
+            if tag in text.lower():
+                text = _re.sub(_re.escape(tag), "", text, flags=_re.IGNORECASE).strip()
+                priority = val
+                break  # only first tag counts
+
+        # Parse due date: due:today / due:tomorrow / due:YYYY-MM-DD
+        due_date = ""
+        m = _re.search(r'due:(\S+)', text, _re.IGNORECASE)
+        if m:
+            raw = m.group(1).lower()
+            today = date.today()
+            if raw == "today":
+                due_date = today.isoformat()
+            elif raw in ("tomorrow", "tmr", "tmrw"):
+                due_date = (today + timedelta(days=1)).isoformat()
+            else:
+                try:
+                    datetime.strptime(raw, "%Y-%m-%d")
+                    due_date = raw
+                except ValueError:
+                    pass  # unrecognised format — ignore silently
+            text = (text[:m.start()] + " " + text[m.end():]).strip()
+
         if text:
-            self.store.add(title=text)
+            self.store.add(title=text, priority=priority, due_date=due_date)
             self.quick_input.clear()
             self._refresh()
 
@@ -12797,25 +13188,81 @@ Themes included:
   Medium — Nord, Gruvbox Dark
   Light  — Catppuccin Latte, Solarized Light
 
-Fixes over previous version:
-  - Full QTabBar / QTabWidget styling (dialogs now have proper tabs)
-  - QMenuBar / QMenu styling (menu bar no longer inherits OS chrome)
-  - QToolButton styling (color swatches, weekday pickers, etc.)
-  - QComboBox, QDateEdit, QTimeEdit, QSpinBox arrow-button subcontrols
-    styled with visible backgrounds so arrows are legible on all themes
-  - Secondary button contrast improved (explicit text color + stronger border)
-  - QProgressBar added (used in dashboard)
-  - QScrollArea viewport now transparent (no mismatched bg panels)
-  - Solarized Light replaces Solarized Dark (fg was too muted for readability)
+Arrow rendering:
+  All dropdown / spinner arrows use inline SVG data-URIs so they render
+  correctly in Qt6. The CSS border-trick (width:0; height:0; border-left…)
+  creates triangles in web browsers but has no effect in Qt's QSS engine —
+  the borders appear on a zero-size box and produce nothing visible.
 """
 
 
+# ─────────────────────────────────────────────────────────
+#  SVG arrow helper
+# ─────────────────────────────────────────────────────────
+
+def _svg_arrow(direction: str, color: str) -> str:
+    """Return a QSS url() value for an inline SVG triangle arrow.
+
+    direction: 'down' | 'up'
+    color    : hex string e.g. '#cdd6f4'
+    """
+    col = color.replace("#", "%23")
+    # 10×6 triangle
+    if direction == "down":
+        pts = "0,0 10,0 5,6"    # ▼
+    else:                        # "up"
+        pts = "0,6 10,6 5,0"    # ▲
+    svg = (
+        "%3Csvg xmlns='http://www.w3.org/2000/svg' "
+        "width='10' height='6'%3E"
+        f"%3Cpolygon points='{pts}' fill='{col}'/%3E"
+        "%3C/svg%3E"
+    )
+    return f'url("data:image/svg+xml,{svg}")'
+
+
+# ─────────────────────────────────────────────────────────
+#  Theme builder
+# ─────────────────────────────────────────────────────────
+
+def _rgba(hex_color: str, alpha: int) -> str:
+    """Convert a hex color string to a QSS rgba() value.
+
+    Qt's QSS uses 0-255 for the alpha channel (not 0.0-1.0 like web CSS).
+    """
+    h = hex_color.lstrip("#")
+    r, g, b = int(h[0:2], 16), int(h[2:4], 16), int(h[4:6], 16)
+    return f"rgba({r}, {g}, {b}, {alpha})"
+
+
 def _build_theme(c: dict) -> str:
-    """Generate a full QSS stylesheet from a color palette dict."""
+    """Generate a full QSS stylesheet from a color palette dict.
+
+    If the palette contains a ``panel_alpha`` key (int, 0-255), all panel
+    background surfaces are rendered with that opacity level so an animated
+    background (e.g. Matrix rain) bleeds through.
+    """
+    # Pre-compute SVG arrow URLs for each needed state
+    _adn    = _svg_arrow("down", c["fg"])           # dropdown arrow, normal
+    _adn_h  = _svg_arrow("down", c["accent_fg"])    # dropdown arrow, on hover
+    _adn_on = _svg_arrow("up",   c["fg"])           # dropdown arrow, open (flip)
+    _aup    = _svg_arrow("up",   c["fg"])           # spinbox up arrow
+    _aup_h  = _svg_arrow("up",   c["accent_fg"])
+    _adn2   = _svg_arrow("down", c["fg"])           # spinbox down arrow (alias)
+    _adn2_h = _svg_arrow("down", c["accent_fg"])
+
+    # Semi-transparent surface colours for themes with panel_alpha
+    pa = c.get("panel_alpha", 255)
+    _bg      = _rgba(c["bg"],         pa)       if pa < 255 else c["bg"]
+    _surf    = _rgba(c["surface"],    pa)       if pa < 255 else c["surface"]
+    _hdr     = _rgba(c["header_bg"],  min(pa + 25, 255)) if pa < 255 else c["header_bg"]
+    _alt     = _rgba(c["alt_row"],    pa)       if pa < 255 else c["alt_row"]
+    _hover   = _rgba(c["hover"],      min(pa + 30, 255)) if pa < 255 else c["hover"]
+
     return f"""
 /* ━━━━ Base ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
 QMainWindow, QWidget {{
-    background-color: {c['bg']};
+    background-color: {_bg};
     color: {c['fg']};
     font-family: "Segoe UI", "Meiryo UI", "Ubuntu", "Noto Sans", sans-serif;
     font-size: 12px;
@@ -12828,7 +13275,7 @@ QScrollArea > QWidget > QWidget {{
 
 /* ━━━━ Menu bar ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
 QMenuBar {{
-    background-color: {c['header_bg']};
+    background-color: {_hdr};
     color: {c['fg']};
     border-bottom: 1px solid {c['border']};
     padding: 2px 4px;
@@ -12849,7 +13296,7 @@ QMenuBar::item:pressed {{
 }}
 
 QMenu {{
-    background-color: {c['surface']};
+    background-color: {_surf};
     color: {c['fg']};
     border: 1px solid {c['border']};
     border-radius: 6px;
@@ -12910,7 +13357,7 @@ QTabBar::tab:disabled {{
 
 /* ━━━━ Text inputs ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
 QLineEdit, QTextEdit, QPlainTextEdit {{
-    background-color: {c['surface']};
+    background-color: {_surf};
     color: {c['fg']};
     border: 1px solid {c['border']};
     border-radius: 4px;
@@ -12923,7 +13370,7 @@ QLineEdit:focus, QTextEdit:focus, QPlainTextEdit:focus {{
     outline: none;
 }}
 QLineEdit[readOnly="true"] {{
-    background-color: {c['bg']};
+    background-color: {_bg};
     color: {c['muted']};
 }}
 
@@ -12991,7 +13438,7 @@ QPushButton#secondary:disabled {{
 
 /* ━━━━ Tool buttons (color swatches, weekday pickers) ━━━━ */
 QToolButton {{
-    background-color: {c['surface']};
+    background-color: {_surf};
     color: {c['fg']};
     border: 1px solid {c['border']};
     border-radius: 4px;
@@ -12999,7 +13446,7 @@ QToolButton {{
     font-size: 11px;
 }}
 QToolButton:hover {{
-    background-color: {c['hover']};
+    background-color: {_hover};
     border-color: {c['accent']};
 }}
 QToolButton:checked {{
@@ -13018,7 +13465,7 @@ QToolButton::menu-indicator {{
 
 /* ━━━━ Lists ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
 QListWidget {{
-    background-color: {c['surface']};
+    background-color: {_surf};
     border: 1px solid {c['border']};
     border-radius: 6px;
     padding: 4px;
@@ -13033,17 +13480,17 @@ QListWidget::item:selected {{
     color: {c['accent_fg']};
 }}
 QListWidget::item:hover:!selected {{
-    background-color: {c['hover']};
+    background-color: {_hover};
 }}
 
 /* ━━━━ Tables ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
 QTableWidget {{
-    background-color: {c['surface']};
+    background-color: {_surf};
     border: 1px solid {c['border']};
     border-radius: 6px;
     gridline-color: {c['border']};
     outline: none;
-    alternate-background-color: {c['alt_row']};
+    alternate-background-color: {_alt};
 }}
 QTableWidget::item {{
     padding: 4px;
@@ -13053,7 +13500,7 @@ QTableWidget::item:selected {{
     color: {c['accent_fg']};
 }}
 QHeaderView::section {{
-    background-color: {c['header_bg']};
+    background-color: {_hdr};
     color: {c['fg']};
     padding: 5px 6px;
     border: none;
@@ -13068,11 +13515,12 @@ QHeaderView::section:last {{
 
 /* ━━━━ Combo boxes ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
 QComboBox {{
-    background-color: {c['surface']};
+    background-color: {_surf};
     color: {c['fg']};
     border: 1px solid {c['border']};
     border-radius: 4px;
     padding: 4px 6px;
+    padding-right: 28px;
     min-width: 70px;
     font-size: 12px;
 }}
@@ -13083,25 +13531,28 @@ QComboBox:focus {{
     border-color: {c['accent']};
 }}
 QComboBox::drop-down {{
-    subcontrol-origin: padding;
+    subcontrol-origin: border;
     subcontrol-position: top right;
-    width: 22px;
+    width: 26px;
     background-color: {c['border']};
     border-left: 1px solid {c['border']};
-    border-radius: 0 4px 4px 0;
+    border-top-right-radius: 4px;
+    border-bottom-right-radius: 4px;
 }}
 QComboBox::drop-down:hover {{
     background-color: {c['accent']};
 }}
 QComboBox::down-arrow {{
-    width: 0;
-    height: 0;
-    border-left: 4px solid transparent;
-    border-right: 4px solid transparent;
-    border-top: 5px solid {c['fg']};
+    image: {_adn};
+    width: 10px;
+    height: 6px;
 }}
+QComboBox::down-arrow:on {{
+    image: {_adn_on};
+}}
+QComboBox::drop-down:hover + QComboBox::down-arrow,
 QComboBox::down-arrow:hover {{
-    border-top-color: {c['accent_fg']};
+    image: {_adn_h};
 }}
 QComboBox QAbstractItemView {{
     background-color: {c['surface']};
@@ -13116,7 +13567,7 @@ QComboBox QAbstractItemView {{
 
 /* ━━━━ Spin boxes, Date/Time edits ━━━━━━━━━━━━━━━ */
 QDateEdit, QTimeEdit, QSpinBox, QDoubleSpinBox {{
-    background-color: {c['surface']};
+    background-color: {_surf};
     color: {c['fg']};
     border: 1px solid {c['border']};
     border-radius: 4px;
@@ -13130,69 +13581,76 @@ QDateEdit:focus, QTimeEdit:focus, QSpinBox:focus, QDoubleSpinBox:focus {{
     border-color: {c['accent']};
 }}
 
-/* Calendar popup button */
+/* Calendar / time popup drop-down button */
 QDateEdit::drop-down, QTimeEdit::drop-down {{
-    subcontrol-origin: padding;
+    subcontrol-origin: border;
     subcontrol-position: top right;
-    width: 22px;
+    width: 26px;
     background-color: {c['border']};
     border-left: 1px solid {c['border']};
-    border-radius: 0 4px 4px 0;
+    border-top-right-radius: 4px;
+    border-bottom-right-radius: 4px;
 }}
 QDateEdit::drop-down:hover, QTimeEdit::drop-down:hover {{
     background-color: {c['accent']};
 }}
 QDateEdit::down-arrow, QTimeEdit::down-arrow {{
-    width: 0;
-    height: 0;
-    border-left: 4px solid transparent;
-    border-right: 4px solid transparent;
-    border-top: 5px solid {c['fg']};
+    image: {_adn};
+    width: 10px;
+    height: 6px;
 }}
 QDateEdit::down-arrow:hover, QTimeEdit::down-arrow:hover {{
-    border-top-color: {c['accent_fg']};
+    image: {_adn_h};
 }}
 
 /* Spinbox increment buttons */
 QSpinBox::up-button, QDoubleSpinBox::up-button {{
     subcontrol-origin: border;
     subcontrol-position: top right;
-    width: 18px;
+    width: 20px;
     background-color: {c['border']};
     border-left: 1px solid {c['border']};
     border-bottom: 1px solid {c['border']};
-    border-radius: 0 4px 0 0;
+    border-top-right-radius: 4px;
 }}
 QSpinBox::up-button:hover, QDoubleSpinBox::up-button:hover {{
     background-color: {c['accent']};
 }}
+QSpinBox::up-button:pressed, QDoubleSpinBox::up-button:pressed {{
+    background-color: {c['accent_pressed']};
+}}
 QSpinBox::up-arrow, QDoubleSpinBox::up-arrow {{
-    width: 0;
-    height: 0;
-    border-left: 3px solid transparent;
-    border-right: 3px solid transparent;
-    border-bottom: 4px solid {c['fg']};
+    image: {_aup};
+    width: 8px;
+    height: 5px;
+}}
+QSpinBox::up-arrow:hover, QDoubleSpinBox::up-arrow:hover {{
+    image: {_aup_h};
 }}
 QSpinBox::down-button, QDoubleSpinBox::down-button {{
     subcontrol-origin: border;
     subcontrol-position: bottom right;
-    width: 18px;
+    width: 20px;
     background-color: {c['border']};
     border-left: 1px solid {c['border']};
-    border-radius: 0 0 4px 0;
+    border-bottom-right-radius: 4px;
 }}
 QSpinBox::down-button:hover, QDoubleSpinBox::down-button:hover {{
     background-color: {c['accent']};
 }}
+QSpinBox::down-button:pressed, QDoubleSpinBox::down-button:pressed {{
+    background-color: {c['accent_pressed']};
+}}
 QSpinBox::down-arrow, QDoubleSpinBox::down-arrow {{
-    width: 0;
-    height: 0;
-    border-left: 3px solid transparent;
-    border-right: 3px solid transparent;
-    border-top: 4px solid {c['fg']};
+    image: {_adn2};
+    width: 8px;
+    height: 5px;
+}}
+QSpinBox::down-arrow:hover, QDoubleSpinBox::down-arrow:hover {{
+    image: {_adn2_h};
 }}
 
-/* Calendar popup widget (the calendar picker) */
+/* Calendar popup widget (the QCalendarWidget) */
 QCalendarWidget QWidget {{
     background-color: {c['surface']};
     color: {c['fg']};
@@ -13351,10 +13809,10 @@ QToolTip {{
 
 /* ━━━━ Dialogs ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
 QDialog {{
-    background-color: {c['bg']};
+    background-color: {_bg};
 }}
 QMessageBox {{
-    background-color: {c['bg']};
+    background-color: {_bg};
 }}
 QMessageBox QLabel {{
     color: {c['fg']};
@@ -13392,9 +13850,9 @@ QGroupBox::title {{
 """
 
 
-# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+# ─────────────────────────────────────────────────────────
 #  Dark themes
-# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+# ─────────────────────────────────────────────────────────
 
 # Catppuccin Mocha — deep purple-dark, blue accent
 _CATPPUCCIN_DARK = {
@@ -13462,9 +13920,9 @@ _ROSE_PINE = {
     "header_bg": "#12111f", "alt_row": "#201e2e",
 }
 
-# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+# ─────────────────────────────────────────────────────────
 #  Medium themes
-# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+# ─────────────────────────────────────────────────────────
 
 # Nord — arctic teal palette
 _NORD = {
@@ -13488,9 +13946,9 @@ _GRUVBOX = {
     "header_bg": "#1d2021", "alt_row": "#32302f",
 }
 
-# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+# ─────────────────────────────────────────────────────────
 #  Light themes
-# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+# ─────────────────────────────────────────────────────────
 
 # Catppuccin Latte — soft warm light
 _CATPPUCCIN_LIGHT = {
@@ -13515,9 +13973,42 @@ _SOLARIZED_LIGHT = {
 }
 
 
-# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+# ─────────────────────────────────────────────────────────
+#  Hacker / Terminal themes
+# ─────────────────────────────────────────────────────────
+
+# Hacker — neon green on near-black; inspired by classic terminal aesthetics
+_HACKER = {
+    "bg": "#0d0d0d",        "surface": "#1a1a1a",   "border": "#2d2d2d",
+    "fg": "#e0e0e0",        "muted": "#606060",      "hover": "#222222",
+    "accent": "#39ff14",    "accent_fg": "#000000",
+    "accent_hover": "#55ff30", "accent_pressed": "#2acc0a",
+    "red": "#ff3355",       "red_hover": "#ff5577",
+    "green": "#39ff14",     "yellow": "#ffdd00",
+    "header_bg": "#080808", "alt_row": "#141414",
+}
+
+# Matrix — phosphor green on pure black; iconic digital-rain palette.
+# Colours are tuned to match the film's organic phosphor-screen aesthetic —
+# muted sage green for UI text rather than blinding neon, with just enough
+# glow to feel authentically "in the Matrix."
+# panel_alpha < 255 activates rgba() semi-transparent surfaces so the
+# animated rain background glows through every panel and widget.
+_MATRIX = {
+    "bg": "#000000",        "surface": "#001500",   "border": "#003800",
+    "fg": "#9fd896",        "muted": "#3e6e3a",      "hover": "#002100",
+    "accent": "#35b055",    "accent_fg": "#000000",
+    "accent_hover": "#45c865", "accent_pressed": "#268040",
+    "red": "#cc2233",       "red_hover": "#e03344",
+    "green": "#35b055",     "yellow": "#88dd00",
+    "header_bg": "#000a00", "alt_row": "#000d00",
+    "panel_alpha": 190,     # panels ~75% opaque — rain glows through
+}
+
+
+# ─────────────────────────────────────────────────────────
 #  Build registry
-# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+# ─────────────────────────────────────────────────────────
 
 _ALL_PALETTES = {
     # Dark
@@ -13526,16 +14017,19 @@ _ALL_PALETTES = {
     "Dracula":          _DRACULA,
     "Monokai Pro":      _MONOKAI,
     "One Dark Pro":     _ONE_DARK,
-    "Rosé Pine":        _ROSE_PINE,
+    "Rose Pine":        _ROSE_PINE,
     # Medium
     "Nord":             _NORD,
     "Gruvbox Dark":     _GRUVBOX,
+    # Terminal
+    "Hacker":           _HACKER,
+    "Matrix":           _MATRIX,
     # Light
     "Catppuccin Light": _CATPPUCCIN_LIGHT,
     "Solarized Light":  _SOLARIZED_LIGHT,
 }
 
-THEMES  = {name: _build_theme(pal) for name, pal in _ALL_PALETTES.items()}
+THEMES   = {name: _build_theme(pal) for name, pal in _ALL_PALETTES.items()}
 PALETTES = dict(_ALL_PALETTES)
 
 
@@ -13552,6 +14046,458 @@ from src.ui.widgets.network_dialog import NetworkDialog
 
 __all__ = ["NetworkDialog"]
 
+```
+
+### `src\ui\widgets\matrix_rain.py`
+
+```python
+"""Matrix digital-rain background widget.
+
+Renders the classic phosphor-green digital rain as the *background* of the
+application's central widget area.  The panels (sidebar, stack) sit on top;
+they use semi-transparent ``rgba()`` backgrounds in the Matrix stylesheet so
+the rain glows through every surface.
+
+Architecture
+------------
+``MatrixRainWidget`` is a plain ``QWidget`` child of the central widget.  It is
+always positioned to fill its parent exactly, and ``lower()`` places it at the
+very bottom of the z-order so every other panel sits in front of it.
+
+``WA_TransparentForMouseEvents`` is set so no click, scroll, or key press is
+intercepted — they all reach the panels in front.
+
+``setAutoFillBackground(False)`` prevents Qt from painting a solid colour over
+the rain surface before our own ``paintEvent`` runs.
+
+Rendering
+---------
+A ``QPixmap`` is used as a phosphor screen.  Each 40 ms tick:
+
+1. A semi-transparent black rectangle fades all existing glyphs toward black
+   (phosphor decay / trailing glow effect).
+2. Each active stream is advanced and its head + trail characters are drawn
+   in successively dimmer greens.
+3. New streams are randomly spawned in idle columns.
+
+Font
+----
+Tries "Matrix Code NFI" first (download free — search that exact name for the
+most authentic look), then falls back through MS Gothic -> Meiryo UI ->
+Noto Sans JP -> Courier New.  Half-width katakana (U+FF66-U+FF9D) renders
+correctly in all of those families.
+"""
+
+from __future__ import annotations
+
+import random
+from dataclasses import dataclass
+from typing import Optional
+
+from PyQt6.QtCore import Qt, QTimer
+from PyQt6.QtGui import (
+    QColor, QFont, QFontDatabase, QFontMetrics, QPainter, QPixmap,
+)
+from PyQt6.QtWidgets import QWidget
+
+
+# ── Character palette ─────────────────────────────────────────────────────
+_KATAKANA = [chr(c) for c in range(0xFF66, 0xFF9E)]   # half-width katakana
+_DIGITS   = list("0123456789")
+_SYMBOLS  = list(":;|=+*#@!")
+_CHARSET  = _KATAKANA + _DIGITS + _SYMBOLS
+
+
+def _rand_char() -> str:
+    return random.choice(_CHARSET)
+
+
+# ── Stream dataclass ──────────────────────────────────────────────────────
+
+@dataclass
+class _Stream:
+    col:    int        # left-edge pixel x (snapped to cell grid)
+    row:    float      # current head row (float for sub-cell smoothness)
+    speed:  float      # rows per tick
+    length: int        # trail depth in cells
+    chars:  list       # one char per trail cell, randomly mutated each tick
+
+
+# ── Widget ────────────────────────────────────────────────────────────────
+
+class MatrixRainWidget(QWidget):
+    """Full-parent-fill background widget that paints Matrix digital rain.
+
+    Drop this widget as a child of your central widget and call lower()
+    after all other children are added.
+    """
+
+    # Phosphor colour palette — tuned for the movie aesthetic:
+    # warm near-white tip, organic mid-green trail, not pure neon
+    _C_HEAD = QColor(210, 255, 200, 255)   # warm near-white — leading char
+    _C_HOT  = QColor(0,   192,  60, 255)   # bright phosphor — 1-2 behind head
+    _C_MID  = QColor(0,   145,  38, 225)   # mid trail
+    _C_DIM  = QColor(0,    88,  22, 170)   # lower trail
+    _C_TAIL = QColor(0,    44,  10,  95)   # tail end, barely visible
+
+    _BAND   = 3    # cells per colour band — wider bands look better at larger size
+    _FADE   = 16   # black-wash alpha per tick — slightly lower = longer, lazier trails
+
+    def __init__(self, parent: QWidget, cell_size: int = 22):
+        super().__init__(parent)
+        self._cell      = cell_size
+        self._streams:   list[_Stream]     = []
+        self._cooldowns: dict[int, int]    = {}
+        self._pixmap:    Optional[QPixmap] = None
+
+        self._timer = QTimer(self)
+        self._timer.setInterval(40)   # 25 fps
+        self._timer.timeout.connect(self._tick)
+
+        self.setAttribute(Qt.WidgetAttribute.WA_TransparentForMouseEvents, True)
+        self.setAttribute(Qt.WidgetAttribute.WA_NoSystemBackground,         True)
+        self.setAutoFillBackground(False)
+
+        self._font = self._make_font(cell_size)
+        self.hide()
+
+    # ── Public API ────────────────────────────────────────────────────────
+
+    def start(self) -> None:
+        """Fill parent, push to back of z-order, begin animating."""
+        self._fit_to_parent()
+        self._reset_pixmap()
+        self._streams.clear()
+        self._cooldowns.clear()
+        self.show()
+        self.lower()
+        self._timer.start()
+
+    def stop(self) -> None:
+        self._timer.stop()
+        self.hide()
+
+    def is_running(self) -> bool:
+        return self._timer.isActive()
+
+    def sync_size(self) -> None:
+        """Call from the parent widget's resizeEvent."""
+        self._fit_to_parent()
+        if self.is_running():
+            self._reset_pixmap()
+            self.lower()
+
+    # ── Internal helpers ──────────────────────────────────────────────────
+
+    def _fit_to_parent(self) -> None:
+        if self.parent():
+            pw = self.parent().width()
+            ph = self.parent().height()
+            self.setGeometry(0, 0, pw, ph)
+
+    @staticmethod
+    def _make_font(size: int) -> QFont:
+        families = QFontDatabase.families()
+        for name in ("Matrix Code NFI", "MS Gothic", "Meiryo UI",
+                     "Noto Sans JP", "Courier New"):
+            if name in families or name == "Courier New":
+                f = QFont(name, max(size - 4, 8))
+                f.setStyleHint(QFont.StyleHint.Monospace)
+                return f
+        f = QFont()
+        f.setFixedPitch(True)
+        f.setPointSize(max(size - 4, 8))
+        return f
+
+    def _reset_pixmap(self) -> None:
+        w = max(self.width(),  1)
+        h = max(self.height(), 1)
+        self._pixmap = QPixmap(w, h)
+        self._pixmap.fill(QColor(0, 0, 0, 255))
+
+    def _col_xs(self) -> list:
+        return list(range(0, max(self.width() - self._cell, 1), self._cell))
+
+    def _n_rows(self) -> int:
+        return max(self.height() // self._cell, 1)
+
+    def _spawn(self, col: int) -> None:
+        length = random.randint(12, 38)   # longer trails suit the bigger cell size
+        self._streams.append(_Stream(
+            col    = col,
+            row    = 0.0,
+            speed  = random.uniform(0.18, 0.55),   # slower — matches the film pacing
+            length = length,
+            chars  = [_rand_char() for _ in range(length)],
+        ))
+
+    def _maybe_spawn(self) -> None:
+        active = {s.col for s in self._streams}
+        for col in self._col_xs():
+            if col in active:
+                continue
+            if col in self._cooldowns:
+                self._cooldowns[col] -= 1
+                if self._cooldowns[col] > 0:
+                    continue
+                del self._cooldowns[col]
+            if random.random() < 0.04:
+                self._spawn(col)
+
+    def _draw_stream(self, p: QPainter, s: _Stream) -> None:
+        head = int(s.row)
+        nr   = self._n_rows()
+        for i, ch in enumerate(s.chars):
+            row = head - i
+            if row < 0:
+                continue
+            if row >= nr:
+                break
+            if   i == 0:              colour = self._C_HEAD
+            elif i < self._BAND:      colour = self._C_HOT
+            elif i < self._BAND * 2:  colour = self._C_MID
+            elif i < self._BAND * 3:  colour = self._C_DIM
+            else:                     colour = self._C_TAIL
+            p.setPen(colour)
+            p.drawText(s.col, row * self._cell,
+                       self._cell, self._cell,
+                       Qt.AlignmentFlag.AlignCenter, ch)
+
+    # ── Qt overrides ──────────────────────────────────────────────────────
+
+    def resizeEvent(self, _) -> None:
+        self._reset_pixmap()
+        valid = set(self._col_xs())
+        self._streams = [s for s in self._streams if s.col in valid]
+
+    def paintEvent(self, _) -> None:
+        if self._pixmap is None:
+            return
+        p = QPainter(self)
+        p.drawPixmap(0, 0, self._pixmap)
+        p.end()
+
+    # ── Animation tick ────────────────────────────────────────────────────
+
+    def _tick(self) -> None:
+        if self._pixmap is None:
+            return
+
+        p = QPainter(self._pixmap)
+        p.setFont(self._font)
+
+        # Phosphor decay: semi-transparent black wash
+        p.fillRect(0, 0, self._pixmap.width(), self._pixmap.height(),
+                   QColor(0, 0, 0, self._FADE))
+
+        # Advance and draw each stream
+        dead: list = []
+        for idx, s in enumerate(self._streams):
+            for ci in range(len(s.chars)):
+                if random.random() < 0.18:   # ~18% chance per cell per tick — active flickering
+                    s.chars[ci] = _rand_char()
+            s.row += s.speed
+            self._draw_stream(p, s)
+            if s.row - s.length > self._n_rows():
+                dead.append(idx)
+                self._cooldowns[s.col] = random.randint(8, 55)
+
+        p.end()
+
+        for idx in reversed(dead):
+            self._streams.pop(idx)
+
+        self._maybe_spawn()
+        self.update()
+```
+
+### `src\ui\widgets\nav_button.py`
+
+```python
+"""Reusable theme-aware navigation arrow button.
+
+Draws its arrow via QPainter — no glyph/font lookup whatsoever.
+Works identically on every OS, every font configuration, every theme.
+
+Usage:
+    btn = NavButton("left")               # 28×28 single arrow
+    btn = NavButton("right", size=24)     # custom size
+    btn = NavButton("left", double=True)  # double arrow  «  style
+    btn.clicked.connect(my_slot)
+
+    # When theme changes:
+    btn.refresh(palette_dict)
+"""
+
+from PyQt6.QtCore import Qt, QPointF
+from PyQt6.QtGui import (
+    QPainter, QColor, QBrush, QPen, QPolygonF,
+)
+from PyQt6.QtWidgets import QPushButton
+
+
+# Module-level defaults (Catppuccin Dark) — overridden immediately when the
+# first theme is applied via refresh().
+_DEFAULTS: dict[str, str] = {
+    "surface":        "#313244",
+    "hover":          "#3b3d54",
+    "border":         "#45475a",
+    "fg":             "#cdd6f4",
+    "accent":         "#89b4fa",
+    "accent_fg":      "#1e1e2e",
+    "accent_pressed": "#74a4ea",
+}
+
+
+class NavButton(QPushButton):
+    """Theme-aware navigation arrow button rendered with QPainter.
+
+    Parameters
+    ----------
+    direction : str
+        One of ``'left'``, ``'right'``, ``'up'``, ``'down'``.
+    size : int
+        Width and height in pixels (the button is always square).
+    double : bool
+        When True, draws two chevrons (‹‹ / ›› style) for year-jump buttons.
+    tooltip : str
+        Optional tooltip text.
+    """
+
+    def __init__(
+        self,
+        direction: str,
+        size: int = 28,
+        double: bool = False,
+        tooltip: str = "",
+        parent=None,
+    ):
+        super().__init__(parent)
+        self._direction = direction
+        self._double = double
+        self._hovered = False
+        self._pressed_state = False
+        self._c: dict[str, str] = dict(_DEFAULTS)
+
+        self.setFixedSize(size, size)
+        self.setText("")           # pure painter — no text label
+        self.setFlat(True)         # suppress default QPushButton chrome
+        self.setAttribute(Qt.WidgetAttribute.WA_Hover, True)
+        self.setCursor(Qt.CursorShape.PointingHandCursor)
+        if tooltip:
+            self.setToolTip(tooltip)
+
+    # ── Public API ───────────────────────────────────────────────────────────
+
+    def refresh(self, palette: dict) -> None:
+        """Apply new palette colors and schedule a repaint."""
+        for key in _DEFAULTS:
+            if key in palette:
+                self._c[key] = palette[key]
+        self.update()
+
+    # ── Qt overrides ─────────────────────────────────────────────────────────
+
+    def enterEvent(self, e) -> None:
+        self._hovered = True
+        self.update()
+
+    def leaveEvent(self, e) -> None:
+        self._hovered = False
+        self.update()
+
+    def mousePressEvent(self, e) -> None:
+        self._pressed_state = True
+        self.update()
+        super().mousePressEvent(e)
+
+    def mouseReleaseEvent(self, e) -> None:
+        self._pressed_state = False
+        self.update()
+        super().mouseReleaseEvent(e)
+
+    def paintEvent(self, _) -> None:
+        p = QPainter(self)
+        p.setRenderHint(QPainter.RenderHint.Antialiasing)
+        w, h = self.width(), self.height()
+
+        # ── Background fill ──────────────────────────────────────────────────
+        if self._pressed_state:
+            bg = QColor(self._c["accent"])
+            bg.setAlpha(210)
+        elif self._hovered:
+            bg = QColor(self._c["accent"])
+            bg.setAlpha(38)
+        else:
+            bg = QColor(self._c["surface"])
+
+        p.setBrush(QBrush(bg))
+        p.setPen(Qt.PenStyle.NoPen)
+        p.drawRoundedRect(1, 1, w - 2, h - 2, 4, 4)
+
+        # ── Border ───────────────────────────────────────────────────────────
+        border_col = QColor(
+            self._c["accent"] if (self._hovered or self._pressed_state)
+            else self._c["border"]
+        )
+        p.setPen(QPen(border_col, 1))
+        p.setBrush(Qt.BrushStyle.NoBrush)
+        p.drawRoundedRect(0, 0, w - 1, h - 1, 4, 4)
+
+        # ── Arrow(s) ─────────────────────────────────────────────────────────
+        arrow_col = QColor(
+            self._c["accent_fg"] if self._pressed_state
+            else (self._c["accent"] if self._hovered else self._c["fg"])
+        )
+        p.setPen(Qt.PenStyle.NoPen)
+        p.setBrush(QBrush(arrow_col))
+
+        if self._double:
+            self._draw_double(p, w, h)
+        else:
+            self._draw_single(p, w / 2.0, h / 2.0, w, h)
+
+        p.end()
+
+    # ── Drawing helpers ───────────────────────────────────────────────────────
+
+    def _arrow_pts(
+        self, cx: float, cy: float, w: int, h: int
+    ) -> list[QPointF]:
+        """Return triangle vertices for a single chevron centred at (cx, cy)."""
+        s = min(w, h) * 0.18          # half the arrow's cross-axis span
+        r = min(w, h) * 0.14          # depth along the pointing axis
+        d = self._direction
+        if d == "left":
+            return [QPointF(cx + r, cy - s), QPointF(cx + r, cy + s), QPointF(cx - r, cy)]
+        if d == "right":
+            return [QPointF(cx - r, cy - s), QPointF(cx - r, cy + s), QPointF(cx + r, cy)]
+        if d == "up":
+            return [QPointF(cx - s, cy + r), QPointF(cx + s, cy + r), QPointF(cx, cy - r)]
+        # down
+        return [QPointF(cx - s, cy - r), QPointF(cx + s, cy - r), QPointF(cx, cy + r)]
+
+    def _draw_single(
+        self, p: QPainter, cx: float, cy: float, w: int, h: int
+    ) -> None:
+        pts = self._arrow_pts(cx, cy, w, h)
+        p.drawPolygon(QPolygonF(pts))
+
+    def _draw_double(self, p: QPainter, w: int, h: int) -> None:
+        """Draw two small chevrons offset along the pointing axis."""
+        gap = min(w, h) * 0.22        # spacing between the two chevrons
+        cx, cy = w / 2.0, h / 2.0
+        d = self._direction
+        if d in ("left", "right"):
+            off = QPointF(gap / 2 if d == "right" else -gap / 2, 0)
+        else:
+            off = QPointF(0, gap / 2 if d == "down" else -gap / 2)
+
+        for sign in (-1, 1):
+            ocx = cx + off.x() * sign
+            ocy = cy + off.y() * sign
+            pts = self._arrow_pts(ocx, ocy, w, h)
+            p.drawPolygon(QPolygonF(pts))
 ```
 
 ### `src\ui\widgets\network_dialog.py`

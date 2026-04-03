@@ -29,6 +29,7 @@ from src.data.activity_store import (
     ActivityStore, Activity,
     DEFAULT_ACTIVITIES, ACTIVITY_COLORS, DEFAULT_COLOR, QUICK_CATEGORIES,
 )
+from src.ui.widgets.nav_button import NavButton
 
 
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -98,165 +99,133 @@ class WeekBlockWidget(QWidget):
         self._blocks:  list[ActivityBlock] = []
         self._week_start = date.today() - timedelta(days=date.today().weekday())
         self._selected: ActivityBlock | None = None
-        self._hovered:  ActivityBlock | None = None
-        self.setFixedHeight(TOTAL_H)
-        self.setMinimumWidth(400)
+        self._drag_start: QPointF | None = None
+        self.setMinimumHeight(TOTAL_H)
         self.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
-        self.setMouseTracking(True)
+        self.setCursor(Qt.CursorShape.CrossCursor)
 
     def set_palette(self, palette: dict):
-        self._palette = palette; self.update()
+        self._palette = palette
+        self.update()
 
-    def load_week(self, week_start: date, activities_by_date: dict[date, list[Activity]]):
+    def load_week(self, week_start: date, activities_by_date: dict):
         self._week_start = week_start
         self._blocks = []
+        for col, (d, acts) in enumerate(activities_by_date.items()):
+            for act in acts:
+                y0 = _hours_to_px(_parse_hhmm(act.start_time))
+                y1 = _hours_to_px(_parse_hhmm(act.end_time))
+                overflow = y1 <= y0
+                if overflow:
+                    y1 = _hours_to_px(24.0)
+                self._blocks.append(ActivityBlock(act, col, y0, y1, overflow))
         self._selected = None
-        for col in range(DAY_COUNT):
-            day = week_start + timedelta(days=col)
-            prev_day = day - timedelta(days=1)
-            for prev_act in activities_by_date.get(prev_day, []):
-                sh = _parse_hhmm(prev_act.start_time)
-                eh = _parse_hhmm(prev_act.end_time)
-                if eh < sh:
-                    y0, y1 = _hours_to_px(0.0), _hours_to_px(eh)
-                    if y1 > y0:
-                        self._blocks.append(ActivityBlock(prev_act, col, y0, y1, overflow=True))
-            for act in activities_by_date.get(day, []):
-                sh = _parse_hhmm(act.start_time)
-                eh = _parse_hhmm(act.end_time)
-                if eh < sh:
-                    self._blocks.append(ActivityBlock(act, col, _hours_to_px(sh), _hours_to_px(24.0)))
-                else:
-                    self._blocks.append(ActivityBlock(act, col, _hours_to_px(sh), _hours_to_px(eh)))
         self.update()
-
-    def select_activity(self, activity: Activity | None):
-        self._selected = None
-        if activity:
-            for b in self._blocks:
-                if b.activity.id == activity.id:
-                    self._selected = b; break
-        self.update()
-
-    def _col_width(self) -> float:
-        return (self.width() - TIME_W) / DAY_COUNT
-
-    def _block_at(self, pos: QPointF) -> ActivityBlock | None:
-        for b in reversed(self._blocks):
-            if b.rect.contains(pos): return b
-        return None
-
-    def _pos_to_col_hour(self, pos: QPointF):
-        cw  = self._col_width()
-        col = max(0, min(DAY_COUNT - 1, int((pos.x() - TIME_W) / cw)))
-        return col, _px_to_hours(pos.y())
 
     def mousePressEvent(self, ev: QMouseEvent):
-        b = self._block_at(ev.position())
-        if b:
-            self._selected = b; self.update(); self.block_clicked.emit(b.activity)
-        else:
-            self._selected = None; self.update()
+        if ev.button() != Qt.MouseButton.LeftButton:
+            return
+        pos = ev.position()
+        for b in self._blocks:
+            if b.rect.contains(pos):
+                self._selected = b
+                self.update()
+                self.block_clicked.emit(b.activity)
+                return
+        # Empty click — work out which day/hour
+        total_w = self.width() - TIME_W
+        col_w   = total_w / DAY_COUNT
+        col     = int((pos.x() - TIME_W) / col_w)
+        col     = max(0, min(DAY_COUNT - 1, col))
+        d       = self._week_start + timedelta(days=col)
+        hour    = _px_to_hours(pos.y())
+        self.empty_clicked.emit(d, hour)
 
-    def mouseDoubleClickEvent(self, ev: QMouseEvent):
-        b = self._block_at(ev.position())
-        if not b:
-            col, hour = self._pos_to_col_hour(ev.position())
-            self.empty_clicked.emit(self._week_start + timedelta(days=col), hour)
-
-    def mouseMoveEvent(self, ev: QMouseEvent):
-        b = self._block_at(ev.position())
-        if b != self._hovered:
-            self._hovered = b
-            if b:
-                a = b.activity
-                tip = f"{a.activity}\n{a.start_time} – {a.end_time}  ({a.duration_minutes}m)"
-                if a.notes: tip += f"\n{a.notes}"
-                self.setToolTip(tip)
-            else:
-                self.setToolTip("")
-            self.update()
-
-    def paintEvent(self, event):
+    def paintEvent(self, _):
         p = QPainter(self)
         p.setRenderHint(QPainter.RenderHint.Antialiasing)
-        w = self.width()
 
-        bg     = QColor(self._palette.get("bg",        "#1e1e2e"))
-        surf   = QColor(self._palette.get("surface",   "#313244"))
-        border = QColor(self._palette.get("border",    "#45475a"))
-        fg     = QColor(self._palette.get("fg",        "#cdd6f4"))
-        muted  = QColor(self._palette.get("muted",     "#7f849c"))
-        accent = QColor(self._palette.get("accent",    "#89b4fa"))
-        hdr_bg = QColor(self._palette.get("header_bg", "#181825"))
-        col_w  = self._col_width()
+        w    = self.width()
+        bg   = QColor(self._palette.get("bg",      "#1e1e2e"))
+        surf = QColor(self._palette.get("surface", "#313244"))
+        bord = QColor(self._palette.get("border",  "#45475a"))
+        fg   = QColor(self._palette.get("fg",      "#cdd6f4"))
+        mut  = QColor(self._palette.get("muted",   "#7f849c"))
+        acc  = QColor(self._palette.get("accent",  "#89b4fa"))
+        today = date.today()
 
+        total_w = w - TIME_W
+        col_w   = total_w / DAY_COUNT
+
+        # Background
         p.fillRect(0, 0, w, TOTAL_H, bg)
-        p.fillRect(0, 0, w, HEADER_H, hdr_bg)
 
-        hour_font = QFont(); hour_font.setPixelSize(9)
-        p.setFont(hour_font)
-        for h in range(25):
-            y = _hours_to_px(h)
-            c = QColor(border); c.setAlpha(200 if h % 6 == 0 else 80)
-            p.setPen(QPen(c, 1 if h % 6 == 0 else 0.5))
-            p.drawLine(QPointF(TIME_W, y), QPointF(w, y))
-            if h < 24:
-                p.setPen(muted if h % 6 else fg)
-                p.drawText(QRectF(0, y+1, TIME_W-4, HOUR_H-2),
+        # Hour grid lines + time labels
+        time_font = QFont(); time_font.setPixelSize(10)
+        p.setFont(time_font)
+        for hour in range(25):
+            y = int(_hours_to_px(hour))
+            p.setPen(QPen(bord, 1))
+            p.drawLine(TIME_W, y, w, y)
+            if hour < 24:
+                p.setPen(mut)
+                p.drawText(0, y, TIME_W - 4, HOUR_H,
                            Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignTop,
-                           f"{h:02d}:00")
+                           f"{hour:02d}:00")
 
-        today    = date.today()
-        day_font = QFont(); day_font.setPixelSize(11); day_font.setBold(True)
-        num_font = QFont(); num_font.setPixelSize(15); num_font.setBold(True)
-
+        # Column separators + day headers
+        day_names  = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
+        hdr_font   = QFont(); hdr_font.setPixelSize(11); hdr_font.setBold(True)
+        p.setFont(hdr_font)
         for col in range(DAY_COUNT):
-            x = TIME_W + col * col_w
-            d = self._week_start + timedelta(days=col)
-            is_today   = (d == today)
-            is_weekend = (col >= 5)
-            if is_weekend:
-                tint = QColor(surf); tint.setAlpha(30)
-                p.fillRect(QRectF(x, HEADER_H, col_w, TOTAL_H - HEADER_H), QBrush(tint))
-            if col > 0:
-                p.setPen(QPen(border, 1))
-                p.drawLine(QPointF(x, 0), QPointF(x, TOTAL_H))
+            x  = TIME_W + col * col_w
+            d  = self._week_start + timedelta(days=col)
+            is_today = (d == today)
+
+            # Column background
             if is_today:
-                p.fillRect(QRectF(x, 0, col_w, HEADER_H), QBrush(accent))
-                text_c = QColor(self._palette.get("accent_fg", "#1e1e2e"))
-            else:
-                text_c = fg
-            p.setPen(text_c)
-            p.setFont(day_font)
-            p.drawText(QRectF(x, 4, col_w, 18), Qt.AlignmentFlag.AlignCenter,
-                       d.strftime("%a").upper())
-            p.setFont(num_font)
-            p.drawText(QRectF(x, 20, col_w, 22), Qt.AlignmentFlag.AlignCenter,
-                       str(d.day))
+                today_bg = QColor(acc); today_bg.setAlpha(15)
+                p.fillRect(int(x), HEADER_H, int(col_w), TOTAL_H - HEADER_H, today_bg)
 
-        p.setPen(QPen(border, 1))
-        p.drawLine(QPointF(TIME_W, 0), QPointF(TIME_W, TOTAL_H))
+            # Vertical separator
+            p.setPen(QPen(bord, 1))
+            p.drawLine(int(x), 0, int(x), TOTAL_H)
 
+            # Header cell
+            hdr_bg = QColor(acc) if is_today else surf
+            p.fillRect(int(x) + 1, 0, int(col_w) - 1, HEADER_H, hdr_bg)
+
+            p.setPen(QColor(self._palette.get("accent_fg", "#1e1e2e")) if is_today else fg)
+            label = f"{day_names[col]}\n{d.day}"
+            p.drawText(int(x), 0, int(col_w), HEADER_H,
+                       Qt.AlignmentFlag.AlignCenter, label)
+
+        # Right border
+        p.setPen(QPen(bord, 1))
+        p.drawLine(w - 1, 0, w - 1, TOTAL_H)
+
+        # Activity blocks
         for b in self._blocks:
-            x  = TIME_W + b.col * col_w
-            bx, bw = x + 2, col_w - 4
-            by, bh = b.y_start, b.y_end - b.y_start
-            if bh < 1: continue
-            b.rect = QRectF(bx, by, bw, bh)
+            x  = TIME_W + b.col * col_w + 2
+            bw = col_w - 4
+            by = b.y_start + 1
+            bh = max(b.y_end - b.y_start - 2, 4)
+            b.rect = QRectF(x, by, bw, bh)
 
-            color = QColor(b.activity.color)
+            color = QColor(ACTIVITY_COLORS.get(b.activity.activity, DEFAULT_COLOR))
+            fill  = QColor(color); fill.setAlpha(55)
+
             is_sel = (b is self._selected)
-            is_hov = (b is self._hovered)
-            if b.overflow:   color.setAlpha(160)
-            if is_sel:       color = color.lighter(135)
-            elif is_hov:     color = color.lighter(115)
+            if is_sel:
+                fill.setAlpha(90)
+                p.setPen(QPen(color, 2))
+            else:
+                p.setPen(QPen(color, 1))
 
-            p.setBrush(QBrush(color))
-            p.setPen(QPen(color.lighter(160), 1) if is_sel else Qt.PenStyle.NoPen)
-            p.drawRoundedRect(b.rect, 3, 3)
+            p.setBrush(QBrush(fill))
+            p.drawRoundedRect(b.rect, 4, 4)
 
-            if bh >= 18:
+            if bh >= 14:
                 lf = QFont(); lf.setPixelSize(10 if bh < 32 else 11); lf.setBold(True)
                 p.setFont(lf)
                 p.setPen(QColor("#11111b") if color.lightness() > 128 else QColor("#cdd6f4"))
@@ -267,7 +236,7 @@ class WeekBlockWidget(QWidget):
                 if bh >= 32:
                     p.drawText(tr, Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop, etext)
                     lf.setPixelSize(9); lf.setBold(False); p.setFont(lf)
-                    p.drawText(QRectF(bx+4, by+13, bw-8, 12),
+                    p.drawText(QRectF(x+4, by+13, bw-8, 12),
                                Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop,
                                f"{b.activity.start_time}\u2013{b.activity.end_time}")
                 else:
@@ -463,44 +432,34 @@ class QuickCard(QFrame):
 #  TodayBreakdown
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
+def _make_lbl(text: str, style: str) -> QLabel:
+    l = QLabel(text); l.setStyleSheet(style); return l
+
+
 class TodayBreakdown(QWidget):
     def __init__(self, parent=None):
         super().__init__(parent)
         self._palette: dict = {}
-        outer = QVBoxLayout(self)
-        outer.setContentsMargins(0, 0, 0, 0); outer.setSpacing(4)
-        hdr = QLabel("Today's Log")
-        hdr.setStyleSheet("font-size:11px;font-weight:bold;")
-        outer.addWidget(hdr)
-        self._scroll = QScrollArea()
-        self._scroll.setWidgetResizable(True)
-        self._scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
-        self._scroll.setFrameShape(QFrame.Shape.NoFrame)
-        self._scroll.setMaximumHeight(150)
-        self._container = QWidget()
-        self._layout = QVBoxLayout(self._container)
-        self._layout.setContentsMargins(0, 0, 0, 0); self._layout.setSpacing(2)
-        self._scroll.setWidget(self._container)
-        outer.addWidget(self._scroll)
+        self._layout = QVBoxLayout(self)
+        self._layout.setContentsMargins(0, 0, 0, 0)
+        self._layout.setSpacing(2)
 
     def set_palette(self, palette: dict):
         self._palette = palette
 
-    def refresh(self, activities: list[Activity], active_category: str | None,
-                session_start: datetime | None):
+    def refresh(self, activities: list, active_category=None, session_start=None):
         while self._layout.count():
             child = self._layout.takeAt(0)
-            if child.widget(): child.widget().deleteLater()
+            if child.widget():
+                child.widget().deleteLater()
 
         muted = self._palette.get("muted", "#7f849c")
 
         if not activities and not active_category:
-            lbl = QLabel("Nothing logged yet")
-            lbl.setStyleSheet(f"font-size:10px;color:{muted};")
-            self._layout.addWidget(lbl)
+            self._layout.addWidget(_make_lbl(
+                "No activity logged today.", f"font-size:10px;color:{muted};"))
             return
 
-        # Active session row (top)
         if active_category and session_start:
             color = ACTIVITY_COLORS.get(active_category, DEFAULT_COLOR)
             elapsed_mins = int((datetime.now() - session_start).total_seconds() // 60)
@@ -533,17 +492,8 @@ class TodayBreakdown(QWidget):
         self._layout.addStretch()
 
 
-def _make_lbl(text: str, style: str) -> QLabel:
-    l = QLabel(text); l.setStyleSheet(style); return l
-
-
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 #  CategoryPillPicker — compact pill grid for LogForm
-#
-#  Same pill style as QuickCard but smaller (height ~40px).
-#  Clicking a pill selects it; a custom text field below
-#  lets the user type a one-off activity name instead.
-#  Priority: custom text (if non-empty) > selected pill.
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 class _SmallPill(QFrame):
@@ -631,7 +581,6 @@ class CategoryPillPicker(QWidget):
             grid.addWidget(pill, i // 3, i % 3)
         root.addLayout(grid)
 
-        # Custom / other text field
         self._custom = QLineEdit()
         self._custom.setPlaceholderText("Other activity\u2026")
         self._custom.setFixedHeight(26)
@@ -640,11 +589,9 @@ class CategoryPillPicker(QWidget):
         root.addWidget(self._custom)
 
     def _on_pill_tapped(self, category: str):
-        # Clear custom text when a pill is chosen
         self._custom.blockSignals(True)
         self._custom.clear()
         self._custom.blockSignals(False)
-        # Toggle: tap again to deselect
         if self._selected_cat == category:
             self._selected_cat = None
         else:
@@ -652,7 +599,6 @@ class CategoryPillPicker(QWidget):
         self._sync_pill_styles()
 
     def _on_custom_changed(self, text: str):
-        # If the user is typing a custom name, deselect all pills
         if text.strip():
             self._selected_cat = None
             self._sync_pill_styles()
@@ -661,33 +607,26 @@ class CategoryPillPicker(QWidget):
         for pill in self._pills:
             pill.set_selected(pill._category == self._selected_cat)
 
-    # ── Public API ──────────────────────────────────
-
     def get_activity(self) -> str:
-        """Returns the custom text if filled, otherwise the selected pill name."""
         custom = self._custom.text().strip()
         if custom:
             return custom
         return self._selected_cat or ""
 
     def set_activity(self, name: str):
-        """Pre-select a pill matching `name`, or fill custom field if no match."""
         self._custom.blockSignals(True)
         self._custom.clear()
         self._custom.blockSignals(False)
-        # Check if name matches one of the pills
         self._selected_cat = None
         for pill in self._pills:
             if pill._category == name:
                 self._selected_cat = name
                 break
         if self._selected_cat is None and name:
-            # No matching pill — put it in the custom field
             self._custom.setText(name)
         self._sync_pill_styles()
 
     def clear(self):
-        """Deselect everything and clear custom text."""
         self._selected_cat = None
         self._custom.blockSignals(True)
         self._custom.clear()
@@ -695,10 +634,8 @@ class CategoryPillPicker(QWidget):
         self._sync_pill_styles()
 
     def update_categories(self, categories: list[str]):
-        """Called when the user renames the quick cats."""
         for pill, cat in zip(self._pills, categories):
             pill.update_category(cat)
-        # If current selection no longer exists, clear it
         if self._selected_cat not in categories:
             self._selected_cat = None
             self._sync_pill_styles()
@@ -721,6 +658,7 @@ class LogForm(QWidget):
         self._pending_notes = ""
         self._timer: QTimer | None = None
         self._timer_start: datetime | None = None
+        self._palette: dict = {}
         self._build_ui()
 
     def set_palette(self, palette: dict):
@@ -731,7 +669,6 @@ class LogForm(QWidget):
         root.setContentsMargins(0, 0, 0, 0)
         root.setSpacing(5)
 
-        # ── Header ──
         hdr = QHBoxLayout()
         self._form_title = QLabel("Log Activity")
         self._form_title.setStyleSheet("font-size:12px;font-weight:bold;")
@@ -744,19 +681,16 @@ class LogForm(QWidget):
         hdr.addWidget(self._cancel_btn)
         root.addLayout(hdr)
 
-        # ── Pill picker (same categories as QuickCards) ──
         self._pill_picker = CategoryPillPicker(self._quick_cats)
         root.addWidget(self._pill_picker)
 
-        # ── Day selector ──
         self.day_combo = QComboBox()
         self._rebuild_day_combo()
         root.addWidget(self.day_combo)
 
-        # ── Start / End times ──
         time_row = QHBoxLayout(); time_row.setSpacing(6)
         self._start_lbl = QLabel("Start"); self._start_lbl.setFixedWidth(30)
-        muted = self._palette.get("muted", "#7f849c") if hasattr(self, "_palette") and self._palette else "#7f849c"
+        muted = "#7f849c"
         self._start_lbl.setStyleSheet(f"font-size:10px;color:{muted};")
         time_row.addWidget(self._start_lbl)
         self.start_edit = QTimeEdit()
@@ -774,7 +708,6 @@ class LogForm(QWidget):
         time_row.addWidget(self.end_edit, 1)
         root.addLayout(time_row)
 
-        # ── Timer ──
         timer_row = QHBoxLayout(); timer_row.setSpacing(6)
         timer_icon = QLabel("\u23f1"); timer_icon.setStyleSheet("font-size:13px;")
         timer_icon.setFixedWidth(18); timer_row.addWidget(timer_icon)
@@ -785,25 +718,21 @@ class LogForm(QWidget):
         timer_row.addWidget(self._timer_label); timer_row.addStretch()
         self._start_btn = QPushButton("Start")
         self._start_btn.setFixedHeight(26)
-        _green = self._palette.get("green", "#a6e3a1") if hasattr(self, "_palette") and self._palette else "#a6e3a1"
-        _acc_fg = self._palette.get("accent_fg", "#1e1e2e") if hasattr(self, "_palette") and self._palette else "#1e1e2e"
         self._start_btn.setStyleSheet(
-            f"background-color:{_green};color:{_acc_fg};font-weight:bold;"
+            "background-color:#a6e3a1;color:#1e1e2e;font-weight:bold;"
             "border-radius:4px;padding:2px 10px;font-size:11px;")
         self._start_btn.clicked.connect(self._start_timer)
         timer_row.addWidget(self._start_btn)
         self._stop_btn = QPushButton("Stop")
         self._stop_btn.setFixedHeight(26)
-        _red = self._palette.get("red", "#f38ba8") if hasattr(self, "_palette") and self._palette else "#f38ba8"
         self._stop_btn.setStyleSheet(
-            f"background-color:{_red};color:{_acc_fg};font-weight:bold;"
+            "background-color:#f38ba8;color:#1e1e2e;font-weight:bold;"
             "border-radius:4px;padding:2px 10px;font-size:11px;")
         self._stop_btn.setEnabled(False)
         self._stop_btn.clicked.connect(self._stop_timer)
         timer_row.addWidget(self._stop_btn)
         root.addLayout(timer_row)
 
-        # ── Notes + action buttons ──
         action_row = QHBoxLayout(); action_row.setSpacing(5)
         self._notes_btn = QPushButton("Notes\u2026")
         self._notes_btn.setObjectName("secondary")
@@ -822,14 +751,11 @@ class LogForm(QWidget):
         action_row.addWidget(self._action_btn)
         root.addLayout(action_row)
 
-    # ── Public ─────────────────────────────────────
-
     def set_week_start(self, week_start: date):
         self._week_start = week_start
         self._rebuild_day_combo()
 
     def update_categories(self, categories: list[str]):
-        """Sync pill labels when categories are renamed."""
         self._quick_cats = categories
         self._pill_picker.update_categories(categories)
 
@@ -860,8 +786,6 @@ class LogForm(QWidget):
         self._cancel_btn.setVisible(True)
         self._delete_btn.setVisible(True)
         self._notes_btn.setText("Notes \u2713" if self._pending_notes else "Notes\u2026")
-
-    # ── Private ────────────────────────────────────
 
     def _rebuild_day_combo(self):
         self.day_combo.clear()
@@ -978,6 +902,10 @@ class ActivityPanel(QWidget):
         self._session_start: datetime | None = None
         self._card_timer: QTimer | None = None
 
+        # NavButton references stored for palette refresh
+        self._prev_week_btn: NavButton | None = None
+        self._next_week_btn: NavButton | None = None
+
         self._quick_cats = self._load_quick_cats()
         self._build_ui()
         self._refresh()
@@ -1001,6 +929,11 @@ class ActivityPanel(QWidget):
         red     = palette.get("red",       "#f38ba8")
         acc_fg  = palette.get("accent_fg", "#1e1e2e")
         btn_css = "font-weight:bold;border-radius:4px;padding:2px 10px;font-size:11px;"
+        # Refresh painter-based nav buttons with new theme colors
+        if self._prev_week_btn:
+            self._prev_week_btn.refresh(palette)
+        if self._next_week_btn:
+            self._next_week_btn.refresh(palette)
         if hasattr(self, "_log_form"):
             self._log_form.set_palette(palette)
             if hasattr(self._log_form, "_start_lbl"):
@@ -1028,17 +961,20 @@ class ActivityPanel(QWidget):
         self._week_label.setStyleSheet("font-size:12px;font-weight:bold;")
         top_bar.addWidget(self._week_label); top_bar.addSpacing(8)
 
-        for sym, slot, tip in [("\u2190", self._prev_week, "Previous week"),
-                                ("Today", self._go_today,  ""),
-                                ("\u2192", self._next_week, "Next week")]:
-            btn = QPushButton(sym); btn.setObjectName("secondary")
-            btn.setToolTip(tip)
-            if sym in ("\u2190", "\u2192"):
-                btn.setFixedSize(28, 28)
-                btn.setStyleSheet("QPushButton{font-size:14px;font-weight:bold;}")
-            else:
-                btn.setFixedHeight(28)
-            btn.clicked.connect(slot); top_bar.addWidget(btn)
+        # ── NavButton for week navigation (painter-drawn — no font/padding issues) ──
+        self._prev_week_btn = NavButton("left", size=28, tooltip="Previous week")
+        self._prev_week_btn.clicked.connect(self._prev_week)
+        top_bar.addWidget(self._prev_week_btn)
+
+        today_btn = QPushButton("Today")
+        today_btn.setObjectName("secondary")
+        today_btn.setFixedHeight(28)
+        today_btn.clicked.connect(self._go_today)
+        top_bar.addWidget(today_btn)
+
+        self._next_week_btn = NavButton("right", size=28, tooltip="Next week")
+        self._next_week_btn.clicked.connect(self._next_week)
+        top_bar.addWidget(self._next_week_btn)
 
         top_bar.addSpacing(8)
         btn_exp = QPushButton("Export\u2026"); btn_exp.setObjectName("secondary")
