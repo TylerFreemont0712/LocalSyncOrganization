@@ -1,21 +1,26 @@
-"""Network settings dialog — configure sync, view peers, manage connections."""
+"""Network settings dialog — configure sync, view peers, manage connections, AI/LLM."""
 
 import socket
 import threading
 
-from PyQt6.QtCore import Qt, QTimer
+from PyQt6.QtCore import Qt, QTimer, pyqtSignal
 from PyQt6.QtWidgets import (
     QDialog, QVBoxLayout, QHBoxLayout, QGridLayout,
     QLabel, QPushButton, QLineEdit, QSpinBox, QCheckBox,
     QFrame, QTableWidget, QTableWidgetItem, QHeaderView,
     QTextEdit, QTabWidget, QWidget, QMessageBox, QFileDialog,
+    QFormLayout,
 )
 
 from src.config import load_config, save_config
+from src.utils.llm import LLMClient, LLMResult, LLMSignals, DEFAULT_MODEL, save_llm_config
 
 
 class NetworkDialog(QDialog):
-    """Network and sync settings with live peer status and log viewer."""
+    """Network and sync settings with live peer status, log viewer, and AI config."""
+
+    # Emitted after AI settings are saved so MainWindow can reload the client
+    llm_settings_saved = pyqtSignal()
 
     def __init__(self, sync_engine=None, parent=None):
         super().__init__(parent)
@@ -23,15 +28,15 @@ class NetworkDialog(QDialog):
         self.setWindowTitle("Network & Sync Settings")
         self.setMinimumSize(650, 520)
         self.cfg = load_config()
+        # Keep test signals alive — must be on self, not a local variable
+        self._test_signals: LLMSignals | None = None
         self._build_ui()
         self._load_values()
 
-        # Connect to sync engine signals
         if self.sync_engine:
             self.sync_engine.peers_updated.connect(self._update_peer_table)
             self.sync_engine.sync_log.connect(self._append_log)
 
-        # Refresh peer table periodically
         self._refresh_timer = QTimer(self)
         self._refresh_timer.timeout.connect(self._refresh_peers)
         self._refresh_timer.start(5000)
@@ -39,15 +44,13 @@ class NetworkDialog(QDialog):
 
     def _build_ui(self):
         layout = QVBoxLayout(self)
-
         tabs = QTabWidget()
 
-        # ── Tab 1: Network Settings ───────────────────
+        # ── Tab 0: Network Settings ───────────────────
         settings_tab = QWidget()
         settings_layout = QVBoxLayout(settings_tab)
         settings_layout.setSpacing(12)
 
-        # Local info
         info_label = QLabel("This Device")
         info_label.setObjectName("sectionTitle")
         settings_layout.addWidget(info_label)
@@ -66,7 +69,6 @@ class NetworkDialog(QDialog):
         sep.setFrameShape(QFrame.Shape.HLine)
         settings_layout.addWidget(sep)
 
-        # Sync config
         sync_label = QLabel("Sync Configuration")
         sync_label.setObjectName("sectionTitle")
         settings_layout.addWidget(sync_label)
@@ -107,7 +109,6 @@ class NetworkDialog(QDialog):
         settings_layout.addLayout(form)
         settings_layout.addStretch()
 
-        # Save button
         save_row = QHBoxLayout()
         save_row.addStretch()
         save_btn = QPushButton("Save Settings")
@@ -117,7 +118,7 @@ class NetworkDialog(QDialog):
 
         tabs.addTab(settings_tab, "Settings")
 
-        # ── Tab 1.5: Obsidian ─────────────────────────
+        # ── Tab 1: Obsidian ───────────────────────────
         obs_tab = QWidget()
         obs_layout = QVBoxLayout(obs_tab)
         obs_layout.setSpacing(10)
@@ -182,7 +183,77 @@ class NetworkDialog(QDialog):
 
         tabs.addTab(obs_tab, "Obsidian")
 
-        # ── Tab 2: Peers ──────────────────────────────
+        # ── Tab 2: AI / LLM ──────────────────────────
+        ai_tab = QWidget()
+        ai_layout = QVBoxLayout(ai_tab)
+        ai_layout.setSpacing(12)
+
+        ai_title = QLabel("AI Assistant — OpenRouter")
+        ai_title.setObjectName("sectionTitle")
+        ai_layout.addWidget(ai_title)
+
+        ai_desc = QLabel(
+            "LocalSync uses OpenRouter to access free LLMs for features like the "
+            "Work Panel Japanese write-up generator. "
+            "Get a free API key at openrouter.ai/keys and paste any model ID from "
+            "openrouter.ai/models below. Free-tier models end in :free."
+        )
+        ai_desc.setObjectName("subtitle")
+        ai_desc.setWordWrap(True)
+        ai_layout.addWidget(ai_desc)
+
+        ai_form = QFormLayout()
+        ai_form.setSpacing(10)
+
+        self.llm_key_edit = QLineEdit()
+        self.llm_key_edit.setPlaceholderText("sk-or-v1-…")
+        self.llm_key_edit.setEchoMode(QLineEdit.EchoMode.Password)
+        self.llm_key_edit.setText(self.cfg.get("openrouter_api_key", ""))
+        ai_form.addRow("API Key:", self.llm_key_edit)
+
+        self.llm_model_edit = QLineEdit()
+        self.llm_model_edit.setPlaceholderText("e.g. qwen/qwen3-6b-plus:free")
+        self.llm_model_edit.setText(
+            self.cfg.get("openrouter_model", DEFAULT_MODEL))
+        ai_form.addRow("Model ID:", self.llm_model_edit)
+
+        ai_layout.addLayout(ai_form)
+
+        # Test row
+        test_row = QHBoxLayout()
+        self._ai_test_btn = QPushButton("Test Connection")
+        self._ai_test_btn.setObjectName("secondary")
+        self._ai_test_btn.clicked.connect(self._test_ai)
+        test_row.addWidget(self._ai_test_btn)
+        self._ai_test_lbl = QLabel("")
+        self._ai_test_lbl.setWordWrap(True)
+        test_row.addWidget(self._ai_test_lbl, 1)
+        ai_layout.addLayout(test_row)
+
+        # Current model status
+        key_set = bool(self.cfg.get("openrouter_api_key", "").strip())
+        model   = self.cfg.get("openrouter_model", DEFAULT_MODEL)
+        status_lbl = QLabel(
+            f"Status: {'API key configured' if key_set else 'No API key set'}  "
+            f"|  Model: {model}"
+        )
+        status_lbl.setObjectName("subtitle")
+        status_lbl.setWordWrap(True)
+        ai_layout.addWidget(status_lbl)
+        self._ai_status_lbl = status_lbl
+
+        ai_layout.addStretch()
+
+        ai_save_row = QHBoxLayout()
+        ai_save_row.addStretch()
+        ai_save_btn = QPushButton("Save AI Settings")
+        ai_save_btn.clicked.connect(self._save_ai_settings)
+        ai_save_row.addWidget(ai_save_btn)
+        ai_layout.addLayout(ai_save_row)
+
+        tabs.addTab(ai_tab, "AI")
+
+        # ── Tab 3: Peers ──────────────────────────────
         peers_tab = QWidget()
         peers_layout = QVBoxLayout(peers_tab)
 
@@ -212,7 +283,6 @@ class NetworkDialog(QDialog):
         self.peer_table.setEditTriggers(QTableWidget.EditTrigger.NoEditTriggers)
         peers_layout.addWidget(self.peer_table)
 
-        # Manual peer add
         add_row = QHBoxLayout()
         add_row.addWidget(QLabel("Add peer:"))
         self.manual_ip_edit = QLineEdit()
@@ -236,7 +306,7 @@ class NetworkDialog(QDialog):
 
         tabs.addTab(peers_tab, "Peers")
 
-        # ── Tab 3: Log ────────────────────────────────
+        # ── Tab 4: Log ────────────────────────────────
         log_tab = QWidget()
         log_layout = QVBoxLayout(log_tab)
 
@@ -260,6 +330,8 @@ class NetworkDialog(QDialog):
 
         layout.addWidget(tabs)
 
+    # ── Load / save ──────────────────────────────────
+
     def _load_values(self):
         self.sync_enabled_check.setChecked(self.cfg.get("sync_enabled", True))
         self.subnet_edit.setText(self.cfg.get("subnet", "192.168.0"))
@@ -277,6 +349,52 @@ class NetworkDialog(QDialog):
         if self.sync_engine:
             self.sync_engine.reload_config()
         QMessageBox.information(self, "Saved", "Network settings saved.")
+
+    def _save_ai_settings(self):
+        key   = self.llm_key_edit.text().strip()
+        model = self.llm_model_edit.text().strip() or DEFAULT_MODEL
+        save_llm_config(key, model)
+        self._ai_status_lbl.setText(
+            f"Status: {'API key configured' if key else 'No API key set'}"
+            f"  |  Model: {model}"
+        )
+        self.llm_settings_saved.emit()
+        QMessageBox.information(self, "Saved",
+            "AI settings saved.\nThe LLM client has been updated.")
+
+    # ── AI test ─────────────────────────────────────
+
+    def _test_ai(self):
+        key   = self.llm_key_edit.text().strip()
+        model = self.llm_model_edit.text().strip() or DEFAULT_MODEL
+        if not key:
+            self._ai_test_lbl.setText("Enter an API key first.")
+            return
+        self._ai_test_btn.setEnabled(False)
+        self._ai_test_lbl.setText("Testing…")
+
+        # Must be stored on self — local var would be GC'd before thread fires
+        self._test_signals = LLMSignals()
+
+        def _on_ok(result: LLMResult):
+            self._ai_test_lbl.setText(f"Connected — {result.timing_summary()}")
+            self._ai_test_btn.setEnabled(True)
+
+        def _on_err(err: str):
+            self._ai_test_lbl.setText(f"Error: {err}")
+            self._ai_test_btn.setEnabled(True)
+
+        self._test_signals.result.connect(_on_ok)
+        self._test_signals.error.connect(_on_err)
+
+        LLMClient(api_key=key, model=model).complete_async(
+            [{"role": "user", "content": "Say hello in one word."}],
+            on_result=self._test_signals.result.emit,
+            on_error=self._test_signals.error.emit,
+            max_tokens=16,
+        )
+
+    # ── Peer management ──────────────────────────────
 
     def _refresh_peers(self):
         if self.sync_engine:
@@ -303,7 +421,6 @@ class NetworkDialog(QDialog):
         ip = self.manual_ip_edit.text().strip()
         if ip and self.sync_engine:
             self.sync_engine.add_manual_peer(ip)
-            # Also save to known_peers
             known = self.cfg.get("known_peers", [])
             if ip not in known:
                 known.append(ip)
@@ -319,28 +436,21 @@ class NetworkDialog(QDialog):
             if ip_item:
                 ip = ip_item.text()
                 self._append_log(f"Pinging {ip}...")
-
                 def do_ping():
                     ok, info = self.sync_engine.ping_peer(ip)
-                    if ok:
-                        self._append_log(f"Ping {ip}: OK ({info})")
-                    else:
-                        self._append_log(f"Ping {ip}: FAILED ({info})")
-
+                    self._append_log(
+                        f"Ping {ip}: OK ({info})" if ok
+                        else f"Ping {ip}: FAILED ({info})")
                 threading.Thread(target=do_ping, daemon=True).start()
         elif not rows:
-            # Ping the manual IP field
             ip = self.manual_ip_edit.text().strip()
             if ip and self.sync_engine:
                 self._append_log(f"Pinging {ip}...")
-
                 def do_ping():
                     ok, info = self.sync_engine.ping_peer(ip)
-                    if ok:
-                        self._append_log(f"Ping {ip}: OK ({info})")
-                    else:
-                        self._append_log(f"Ping {ip}: FAILED ({info})")
-
+                    self._append_log(
+                        f"Ping {ip}: OK ({info})" if ok
+                        else f"Ping {ip}: FAILED ({info})")
                 threading.Thread(target=do_ping, daemon=True).start()
 
     def _force_scan(self):
@@ -354,26 +464,25 @@ class NetworkDialog(QDialog):
             self.sync_engine.force_sync()
 
     def _browse_vault(self):
-        from PyQt6.QtWidgets import QFileDialog
         path = QFileDialog.getExistingDirectory(
-            self, "Select Obsidian Vault",
-            self.vault_path_edit.text(),
-        )
+            self, "Select Obsidian Vault", self.vault_path_edit.text())
         if path:
             self.vault_path_edit.setText(path)
 
     def _save_obsidian_settings(self):
-        self.cfg["obsidian_vault_path"] = self.vault_path_edit.text().strip()
+        self.cfg["obsidian_vault_path"]   = self.vault_path_edit.text().strip()
         self.cfg["obsidian_sync_enabled"] = self.vault_sync_check.isChecked()
-        self.cfg["obsidian_api_key"] = self.api_key_edit.text().strip()
-        self.cfg["obsidian_api_url"] = self.api_url_edit.text().strip() or "http://127.0.0.1:27123"
+        self.cfg["obsidian_api_key"]      = self.api_key_edit.text().strip()
+        self.cfg["obsidian_api_url"]      = (
+            self.api_url_edit.text().strip() or "http://127.0.0.1:27123")
         save_config(self.cfg)
-        QMessageBox.information(self, "Saved", "Obsidian settings saved.\nRestart the app for vault changes to take effect.")
+        QMessageBox.information(self, "Saved",
+            "Obsidian settings saved.\nRestart the app for vault changes to take effect.")
 
     def _append_log(self, msg: str):
         self.log_view.append(msg)
-        scrollbar = self.log_view.verticalScrollBar()
-        scrollbar.setValue(scrollbar.maximum())
+        self.log_view.verticalScrollBar().setValue(
+            self.log_view.verticalScrollBar().maximum())
 
     @staticmethod
     def _get_local_ip() -> str:

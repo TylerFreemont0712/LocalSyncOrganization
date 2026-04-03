@@ -712,6 +712,7 @@ class DashboardPanel(QWidget):
         upcoming_scroll.setWidgetResizable(True)
         upcoming_scroll.setWidget(self._upcoming_container)
         upcoming_scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+        upcoming_scroll.setMinimumHeight(160)   # guarantee ~4-5 rows always visible
         left.addWidget(upcoming_scroll, 1)
 
         # ── Coming Up (Next 7 Days) section ──
@@ -723,7 +724,14 @@ class DashboardPanel(QWidget):
         self._coming_up_layout = QVBoxLayout(self._coming_up_container)
         self._coming_up_layout.setContentsMargins(0, 0, 0, 0)
         self._coming_up_layout.setSpacing(2)
-        left.addWidget(self._coming_up_container)
+
+        coming_up_scroll = QScrollArea()
+        coming_up_scroll.setWidgetResizable(True)
+        coming_up_scroll.setWidget(self._coming_up_container)
+        coming_up_scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+        coming_up_scroll.setFrameShape(QFrame.Shape.NoFrame)
+        coming_up_scroll.setMaximumHeight(180)  # cap at ~5 rows; scrollable if more
+        left.addWidget(coming_up_scroll)
 
         columns.addLayout(left, 3)
 

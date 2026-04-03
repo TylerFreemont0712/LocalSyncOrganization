@@ -26,6 +26,7 @@ from src.ui.modules.todo_panel import TodoPanel
 from src.ui.modules.dashboard_panel import DashboardPanel
 from src.ui.modules.finance_charts import FinanceChartsPanel
 from src.ui.modules.activity_panel import ActivityPanel
+from src.ui.modules.work_panel import WorkPanel
 
 from src.data.todo_store import TodoStore
 from src.data.calendar_store import CalendarStore
@@ -79,6 +80,8 @@ class MainWindow(QMainWindow):
         self.finance_store = FinanceStore()
         self.activity_store = ActivityStore()
         self.soft_events_store = SoftEventStore()
+        from src.utils.llm import load_llm_client
+        self.llm_client = load_llm_client()
 
         self.setWindowTitle(f"{APP_NAME} v{APP_VERSION}")
         self.setMinimumSize(1000, 650)
@@ -129,6 +132,7 @@ class MainWindow(QMainWindow):
         file_menu.addAction(self._action("&Charts", "Ctrl+5", lambda: self._navigate("Charts")))
         file_menu.addAction(self._action("&Tasks", "Ctrl+6", lambda: self._navigate("Tasks")))
         file_menu.addAction(self._action("&Activity", "Ctrl+7", lambda: self._navigate("Activity")))
+        file_menu.addAction(self._action("&Work",     "Ctrl+8", lambda: self._navigate("Work")))
         file_menu.addSeparator()
         file_menu.addAction(self._action("E&xit", "Ctrl+Q", self.close))
 
@@ -200,6 +204,7 @@ class MainWindow(QMainWindow):
             ("Charts", "\U0001f4c8", "Ctrl+5"),
             ("Tasks", "\u2611", "Ctrl+6"),
             ("Activity", "\u23f1", "Ctrl+7"),
+            ("Work",     "\U0001f4bc", "Ctrl+8"),    
         ]
         for name, icon, shortcut_text in nav_items:
             btn = SidebarButton(name, icon, shortcut_text)
@@ -268,7 +273,8 @@ class MainWindow(QMainWindow):
         self.charts_panel = FinanceChartsPanel()
         self.todo_panel = TodoPanel(todo_store=self.todo_store)
         self.activity_panel = ActivityPanel()
-
+        self.work_panel = WorkPanel(llm_client=self.llm_client)
+        
         self.stack.addWidget(self.dashboard_panel)   # 0
         self.stack.addWidget(self.notes_panel)       # 1
         self.stack.addWidget(self.calendar_panel)    # 2
@@ -276,7 +282,9 @@ class MainWindow(QMainWindow):
         self.stack.addWidget(self.charts_panel)      # 4
         self.stack.addWidget(self.todo_panel)        # 5
         self.stack.addWidget(self.activity_panel)    # 6
-
+        self.stack.addWidget(self.work_panel)        # 7
+        self.work_panel.llm_config_changed.connect(self._reload_llm_client)
+        
         main_layout.addWidget(self.stack, 1)
 
     # ── Status bar ─────────────────────────────────────
@@ -374,6 +382,7 @@ class MainWindow(QMainWindow):
         idx_map = {
             "Dashboard": 0, "Notes": 1, "Calendar": 2,
             "Earnings": 3, "Charts": 4, "Tasks": 5, "Activity": 6,
+            "Work": 7,
         }
         idx = idx_map.get(name, 0)
         self.stack.setCurrentIndex(idx)
@@ -416,6 +425,8 @@ class MainWindow(QMainWindow):
             self.charts_panel.set_palette(palette)
         if hasattr(self.activity_panel, 'set_palette'):
             self.activity_panel.set_palette(palette)
+        if hasattr(self.activity_panel, 'set_palette'):
+            self.activity_panel.set_palette(palette)
         if hasattr(self.notes_panel, 'set_palette'):
             self.notes_panel.set_palette(palette)
 
@@ -455,6 +466,8 @@ class MainWindow(QMainWindow):
             self.charts_panel._refresh()
         if hasattr(self.activity_panel, '_refresh'):
             self.activity_panel._refresh()
+        if hasattr(self.work_panel, '_refresh'):
+            self.work_panel._refresh()
 
     def set_sync_status(self, text: str):
         self.sync_label.setText(f"Sync: {text}")
@@ -478,7 +491,14 @@ class MainWindow(QMainWindow):
     def _open_network_dialog(self):
         from src.ui.widgets.network_dialog import NetworkDialog
         dlg = NetworkDialog(sync_engine=self.sync_engine, parent=self)
+        dlg.llm_settings_saved.connect(self._reload_llm_client)
         dlg.exec()
+        
+    def _reload_llm_client(self):
+        """Reload the LLM client from config and push it to all panels that use it."""
+        from src.utils.llm import load_llm_client
+        self.llm_client = load_llm_client()
+        self.work_panel.set_llm_client(self.llm_client)
 
     def _show_about(self):
         from PyQt6.QtWidgets import QMessageBox

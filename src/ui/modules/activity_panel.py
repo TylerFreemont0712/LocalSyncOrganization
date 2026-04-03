@@ -70,6 +70,51 @@ def _fmt_elapsed(secs: int) -> str:
     return f"{h}:{m:02d}:{s:02d}" if h else f"{m:02d}:{s:02d}"
 
 
+def _resolve_overlaps(activities: list) -> list[tuple]:
+    """Resolve overlapping activities using last-created-wins policy.
+
+    Sorts activities by created_at ascending so the most recently added
+    activity claims its time slot, clipping any earlier activities that
+    overlap it.
+
+    Returns a list of (activity, start_hours, end_hours) tuples,
+    sorted by start_hours, with no overlapping segments.
+    """
+    if not activities:
+        return []
+
+    # Oldest first — newest will overwrite overlapping segments below
+    sorted_acts = sorted(activities, key=lambda a: a.created_at or "")
+
+    # Each segment: (start_hour, end_hour, activity)
+    segments: list[tuple[float, float, object]] = []
+
+    for act in sorted_acts:
+        start = _parse_hhmm(act.start_time)
+        end   = _parse_hhmm(act.end_time)
+        if end <= start:
+            end = 24.0          # midnight-overflow: extend to end of day
+
+        new_segments: list[tuple[float, float, object]] = []
+        for (s, e, a) in segments:
+            if e <= start or s >= end:
+                # No overlap — keep as-is
+                new_segments.append((s, e, a))
+            else:
+                # Partial overlap — keep only the non-overlapping tails
+                if s < start:
+                    new_segments.append((s, start, a))
+                if e > end:
+                    new_segments.append((end, e, a))
+                # The middle portion [start, end] is claimed by the newer act
+
+        new_segments.append((start, end, act))
+        segments = new_segments
+
+    segments.sort(key=lambda x: x[0])
+    return segments
+
+
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 #  ActivityBlock
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -112,12 +157,15 @@ class WeekBlockWidget(QWidget):
         self._week_start = week_start
         self._blocks = []
         for col, (d, acts) in enumerate(activities_by_date.items()):
-            for act in acts:
-                y0 = _hours_to_px(_parse_hhmm(act.start_time))
-                y1 = _hours_to_px(_parse_hhmm(act.end_time))
-                overflow = y1 <= y0
-                if overflow:
-                    y1 = _hours_to_px(24.0)
+            # Resolve overlaps: latest-created wins for any time slot
+            segments = _resolve_overlaps(list(acts))
+            for (start_h, end_h, act) in segments:
+                y0 = _hours_to_px(start_h)
+                y1 = _hours_to_px(end_h)
+                # Mark overflow only when the original activity wraps midnight
+                orig_start = _parse_hhmm(act.start_time)
+                orig_end   = _parse_hhmm(act.end_time)
+                overflow   = orig_end <= orig_start
                 self._blocks.append(ActivityBlock(act, col, y0, y1, overflow))
         self._selected = None
         self.update()
@@ -204,7 +252,7 @@ class WeekBlockWidget(QWidget):
         p.setPen(QPen(bord, 1))
         p.drawLine(w - 1, 0, w - 1, TOTAL_H)
 
-        # Activity blocks
+        # Activity blocks — solid fill, latest-wins segments already resolved
         for b in self._blocks:
             x  = TIME_W + b.col * col_w + 2
             bw = col_w - 4
@@ -213,14 +261,15 @@ class WeekBlockWidget(QWidget):
             b.rect = QRectF(x, by, bw, bh)
 
             color = QColor(ACTIVITY_COLORS.get(b.activity.activity, DEFAULT_COLOR))
-            fill  = QColor(color); fill.setAlpha(55)
+            fill  = QColor(color)
 
             is_sel = (b is self._selected)
             if is_sel:
-                fill.setAlpha(90)
-                p.setPen(QPen(color, 2))
+                fill.setAlpha(240)
+                p.setPen(QPen(color.lighter(140), 2))
             else:
-                p.setPen(QPen(color, 1))
+                fill.setAlpha(200)
+                p.setPen(QPen(color.darker(130), 1))
 
             p.setBrush(QBrush(fill))
             p.drawRoundedRect(b.rect, 4, 4)
@@ -228,6 +277,7 @@ class WeekBlockWidget(QWidget):
             if bh >= 14:
                 lf = QFont(); lf.setPixelSize(10 if bh < 32 else 11); lf.setBold(True)
                 p.setFont(lf)
+                # Contrast: dark text on light blocks, light text on dark blocks
                 p.setPen(QColor("#11111b") if color.lightness() > 128 else QColor("#cdd6f4"))
                 fm   = QFontMetrics(lf)
                 text = ("\u2190 " if b.overflow else "") + b.activity.activity
@@ -909,6 +959,7 @@ class ActivityPanel(QWidget):
         self._quick_cats = self._load_quick_cats()
         self._build_ui()
         self._refresh()
+        self._schedule_midnight_refresh()
 
     def _load_quick_cats(self) -> list[str]:
         cfg = load_config()
@@ -920,6 +971,29 @@ class ActivityPanel(QWidget):
         cfg["activity_quick_categories"] = self._quick_cats
         save_config(cfg)
 
+    # ── Midnight rollover ───────────────────────────
+
+    def _schedule_midnight_refresh(self):
+        """Schedule a one-shot timer that fires 5 s after midnight."""
+        now = datetime.now()
+        next_midnight = (now + timedelta(days=1)).replace(
+            hour=0, minute=0, second=5, microsecond=0)
+        ms = max(int((next_midnight - now).total_seconds() * 1000), 1000)
+        QTimer.singleShot(ms, self._midnight_refresh)
+
+    def _midnight_refresh(self):
+        """Called at midnight: snap the week view to contain today, then refresh."""
+        today = date.today()
+        current_week_start = today - timedelta(days=today.weekday())
+        # If the panel is still showing a week that no longer contains today, advance it
+        if self._week_start < current_week_start:
+            self._week_start = current_week_start
+            self._log_form.set_week_start(self._week_start)
+        self._refresh()
+        self._schedule_midnight_refresh()   # re-arm for the next midnight
+
+    # ── Palette ─────────────────────────────────────
+
     def set_palette(self, palette: dict):
         self._palette = palette
         self._grid.set_palette(palette)
@@ -929,7 +1003,6 @@ class ActivityPanel(QWidget):
         red     = palette.get("red",       "#f38ba8")
         acc_fg  = palette.get("accent_fg", "#1e1e2e")
         btn_css = "font-weight:bold;border-radius:4px;padding:2px 10px;font-size:11px;"
-        # Refresh painter-based nav buttons with new theme colors
         if self._prev_week_btn:
             self._prev_week_btn.refresh(palette)
         if self._next_week_btn:
@@ -961,7 +1034,6 @@ class ActivityPanel(QWidget):
         self._week_label.setStyleSheet("font-size:12px;font-weight:bold;")
         top_bar.addWidget(self._week_label); top_bar.addSpacing(8)
 
-        # ── NavButton for week navigation (painter-drawn — no font/padding issues) ──
         self._prev_week_btn = NavButton("left", size=28, tooltip="Previous week")
         self._prev_week_btn.clicked.connect(self._prev_week)
         top_bar.addWidget(self._prev_week_btn)

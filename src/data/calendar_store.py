@@ -16,6 +16,19 @@ from src.utils.timestamps import now_utc
 #   "monthly"       → same day each month
 #   "yearly"        → same day each year
 
+def _nth_weekday_in_month(year: int, month: int, n: int, weekday: int) -> 'date | None':
+    """Return the date of the Nth occurrence (1-indexed) of weekday in year/month.
+    Returns None if that Nth occurrence does not exist (e.g. 5th Sunday in a short month)."""
+    count = 0
+    d = date(year, month, 1)
+    while d.month == month:
+        if d.weekday() == weekday:
+            count += 1
+            if count == n:
+                return d
+        d += timedelta(days=1)
+    return None
+
 def parse_recurrence(rec: str) -> dict:
     """Parse a recurrence string into a dict."""
     if not rec:
@@ -29,11 +42,22 @@ def parse_recurrence(rec: str) -> dict:
         return {"type": "monthly"}
     if rec == "yearly":
         return {"type": "yearly"}
+    if rec.startswith("nth_weekday:"):
+        rest = rec[len("nth_weekday:"):]
+        parts = rest.split(":")
+        if len(parts) == 2:
+            weeks = [int(n) for n in parts[0].split(",") if n.strip().isdigit()]
+            days  = [int(d) for d in parts[1].split(",") if d.strip().isdigit()]
+            if weeks and days:
+                return {"type": "nth_weekday", "weeks": weeks, "days": days}
+        return {"type": "none"}
     return {"type": "none"}
 
 
-def build_recurrence(rec_type: str, weekly_days: list[int] | None = None) -> str:
-    """Build a recurrence string from type and optional weekly days."""
+def build_recurrence(rec_type: str, weekly_days: list[int] | None = None,
+                     nth_weeks: list[int] | None = None,
+                     nth_days: list[int] | None = None) -> str:
+    """Build a recurrence string from type and optional parameters."""
     if rec_type == "daily":
         return "daily"
     if rec_type == "weekly" and weekly_days:
@@ -42,6 +66,11 @@ def build_recurrence(rec_type: str, weekly_days: list[int] | None = None) -> str
         return "monthly"
     if rec_type == "yearly":
         return "yearly"
+    if rec_type == "nth_weekday" and nth_weeks and nth_days:
+        return ("nth_weekday:"
+                + ",".join(str(n) for n in sorted(nth_weeks))
+                + ":"
+                + ",".join(str(d) for d in sorted(nth_days)))
     return ""
 
 
@@ -96,6 +125,25 @@ def expand_recurring_to_range(event: 'Event', range_start: date, range_end: date
                 continue
             if range_start <= d <= range_end:
                 dates.append(d)
+
+    elif rec["type"] == "nth_weekday":
+            weeks_list = rec.get("weeks", [])
+            days_list  = rec.get("days", [])
+            if weeks_list and days_list:
+                start_anchor = max(ev_start.replace(day=1), range_start.replace(day=1))
+                y, m = start_anchor.year, start_anchor.month
+                while True:
+                    for n in weeks_list:
+                        for wd in days_list:
+                            d = _nth_weekday_in_month(y, m, n, wd)
+                            if d and range_start <= d <= range_end and d >= ev_start:
+                                dates.append(d)
+                    m += 1
+                    if m > 12:
+                        m, y = 1, y + 1
+                    if date(y, m, 1) > range_end:
+                        break
+                dates.sort()
 
     return dates
 

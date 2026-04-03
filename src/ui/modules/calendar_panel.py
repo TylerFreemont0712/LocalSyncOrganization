@@ -676,22 +676,43 @@ class MiniMonth(QWidget):
     def _go_today_month(self):
         t = date.today(); self._view_year = t.year; self._view_month = t.month; self._render()
 
-
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-#  EventChip  — painted event chip in week grid
+#  EventChip  — event chip in week grid (word-wrapped, up to ~3 lines)
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-class EventChip(QWidget):
+class EventChip(QFrame):
     double_clicked = pyqtSignal(object)
 
     def __init__(self, event: Event, parent=None):
         super().__init__(parent)
-        self.event = event; self._hovered = False
+        self.event = event
+        self._hovered = False
         self.setCursor(Qt.CursorShape.PointingHandCursor)
         self.setAttribute(Qt.WidgetAttribute.WA_Hover, True)
-        self.setMinimumHeight(28)
-        self.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
+        self.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred)
+        self.setMinimumHeight(24)
 
+        color = QColor(event.color)
+        text_color = color.lighter(140).name()
+
+        # Soft-event reminders get no emoji — they need every pixel for their title
+        if event.category == "reminder":
+            display = event.title
+        else:
+            emoji = _cat_emoji(event.category)
+            display = f"{emoji} {event.title}" if emoji else event.title
+
+        # paintEvent draws the bg tint + left accent bar;
+        # child QLabels handle text so Qt word-wraps for free.
+        root = QHBoxLayout(self)
+        root.setContentsMargins(6, 2, 4, 2)   # 6 px left clears the painted accent bar
+        root.setSpacing(0)
+
+        text_col = QVBoxLayout()
+        text_col.setSpacing(1)
+        text_col.setContentsMargins(0, 0, 0, 0)
+
+        # Time row (timed events only)
         time_str = ""
         if not event.all_day:
             try:
@@ -699,14 +720,31 @@ class EventChip(QWidget):
                 time_str = dt.strftime("%H:%M")
                 if event.end_time:
                     et = datetime.fromisoformat(event.end_time)
-                    time_str += f"–{et.strftime('%H:%M')}"
-            except Exception: pass
-        self._time_str = time_str
-        emoji = _cat_emoji(event.category)
-        self._display = f"{emoji} {event.title}" if emoji else event.title
-        tip = self._display
-        if time_str: tip += f"\n{time_str}"
-        if event.description: tip += f"\n{event.description[:80]}"
+                    time_str += f"\u2013{et.strftime('%H:%M')}"
+            except Exception:
+                pass
+
+        if time_str:
+            tl = QLabel(time_str)
+            tl.setStyleSheet(
+                f"font-size:9px;color:{text_color};background:transparent;border:none;")
+            text_col.addWidget(tl)
+
+        # Title — word-wrapped, grows naturally up to ~3 lines
+        title_lbl = QLabel(display)
+        title_lbl.setWordWrap(True)
+        title_lbl.setStyleSheet(
+            f"font-size:11px;font-weight:bold;color:{text_color};"
+            "background:transparent;border:none;")
+        text_col.addWidget(title_lbl)
+        root.addLayout(text_col, 1)
+
+        # Tooltip
+        tip = display
+        if time_str:
+            tip += f"\n{time_str}"
+        if event.description:
+            tip += f"\n{event.description[:80]}"
         self.setToolTip(tip)
 
     def enterEvent(self, ev): self._hovered = True;  self.update()
@@ -721,22 +759,9 @@ class EventChip(QWidget):
         bg = QColor(color); bg.setAlpha(55 if self._hovered else 35)
         p.setBrush(QBrush(bg)); p.setPen(Qt.PenStyle.NoPen)
         p.drawRoundedRect(0, 0, w, h, 4, 4)
-        p.setBrush(QBrush(color)); p.drawRoundedRect(0, 0, 3, h, 2, 2)
-        text_c = color.lighter(145 if self._hovered else 128)
-        p.setPen(text_c)
-        font = QFont()
-        if self._time_str:
-            font.setPixelSize(9); p.setFont(font)
-            p.drawText(8, 0, w-10, h//2+2, Qt.AlignmentFlag.AlignVCenter, self._time_str)
-            font.setPixelSize(11); font.setBold(True); p.setFont(font)
-            fm = QFontMetrics(font)
-            p.drawText(8, h//2-2, w-10, h//2+2, Qt.AlignmentFlag.AlignVCenter,
-                       fm.elidedText(self._display, Qt.TextElideMode.ElideRight, w-14))
-        else:
-            font.setPixelSize(11); font.setBold(True); p.setFont(font)
-            fm = QFontMetrics(font)
-            p.drawText(8, 0, w-10, h, Qt.AlignmentFlag.AlignVCenter,
-                       fm.elidedText(self._display, Qt.TextElideMode.ElideRight, w-14))
+        # 3-px left accent bar
+        p.setBrush(QBrush(color))
+        p.drawRoundedRect(0, 0, 3, h, 2, 2)
         p.end()
 
 
@@ -1238,7 +1263,7 @@ class CalendarPanel(QWidget):
                 if ws <= occ_date <= we:
                     ebd.setdefault(occ_date, []).append(Event(
                         id=tpl.id,
-                        title=f"📌 {tpl.title}",
+                        title=tpl.title,
                         start_time=datetime(occ_date.year, occ_date.month, occ_date.day).isoformat(),
                         all_day=True,
                         color=tpl.color,
@@ -1618,16 +1643,19 @@ class BirthdayManagerDialog(QDialog):
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 _SOFT_RECURRENCE_OPTIONS = [
-    ("",        "No repeat"),
-    ("daily",   "Daily"),
-    ("weekly",  "Weekly"),
-    ("monthly", "Monthly"),
-    ("yearly",  "Yearly"),
+    ("",            "No repeat"),
+    ("daily",       "Daily"),
+    ("weekly",      "Weekly"),
+    ("monthly",     "Monthly"),
+    ("yearly",      "Yearly"),
+    ("nth_weekday", "Nth Weekday of Month"),
 ]
 
 
 class RecurrenceWidget(QWidget):
-    """Reusable recurrence picker: combo + weekday buttons."""
+    """Reusable recurrence picker: combo + weekday buttons + nth-weekday grid."""
+
+    _NTH_LABELS = ["1st", "2nd", "3rd", "4th", "5th"]
 
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -1640,42 +1668,73 @@ class RecurrenceWidget(QWidget):
         for val, label in _SOFT_RECURRENCE_OPTIONS:
             self.rec_combo.addItem(label, val)
         layout.addWidget(self.rec_combo)
+        self.rec_combo.currentIndexChanged.connect(self._on_combo_changed)
 
-        self.rec_combo.currentIndexChanged.connect(
-            lambda _: self._weekday_frame.setVisible(
-                self.rec_combo.currentData() == "weekly"))
-
+        # ── Weekly sub-frame ──────────────────────────────
         self._weekday_frame = QFrame()
         wdf = QHBoxLayout(self._weekday_frame)
-        wdf.setContentsMargins(0, 4, 0, 0)
-        wdf.setSpacing(4)
+        wdf.setContentsMargins(0, 4, 0, 0); wdf.setSpacing(4)
         self._weekday_btns: list[QToolButton] = []
         for label in WEEKDAY_LABELS:
-            btn = QToolButton()
-            btn.setText(label)
-            btn.setCheckable(True)
-            btn.setFixedSize(42, 30)
-            self._weekday_btns.append(btn)
-            wdf.addWidget(btn)
+            btn = QToolButton(); btn.setText(label)
+            btn.setCheckable(True); btn.setFixedSize(42, 30)
+            self._weekday_btns.append(btn); wdf.addWidget(btn)
         wdf.addStretch()
         layout.addWidget(self._weekday_frame)
         self._weekday_frame.setVisible(False)
 
+        # ── Nth-weekday sub-frame ─────────────────────────
+        self._nth_frame = QFrame()
+        nth_layout = QVBoxLayout(self._nth_frame)
+        nth_layout.setContentsMargins(0, 4, 0, 0); nth_layout.setSpacing(4)
+
+        nth_layout.addWidget(QLabel("Which week(s) of the month:"))
+        week_row = QHBoxLayout(); week_row.setSpacing(4)
+        self._nth_week_btns: list[QToolButton] = []
+        for lbl in self._NTH_LABELS:
+            btn = QToolButton(); btn.setText(lbl)
+            btn.setCheckable(True); btn.setFixedSize(46, 30)
+            self._nth_week_btns.append(btn); week_row.addWidget(btn)
+        week_row.addStretch()
+        nth_layout.addLayout(week_row)
+
+        nth_layout.addWidget(QLabel("Which day(s):"))
+        day_row = QHBoxLayout(); day_row.setSpacing(4)
+        self._nth_day_btns: list[QToolButton] = []
+        for label in WEEKDAY_LABELS:
+            btn = QToolButton(); btn.setText(label)
+            btn.setCheckable(True); btn.setFixedSize(42, 30)
+            self._nth_day_btns.append(btn); day_row.addWidget(btn)
+        day_row.addStretch()
+        nth_layout.addLayout(day_row)
+
+        layout.addWidget(self._nth_frame)
+        self._nth_frame.setVisible(False)
+
+    def _on_combo_changed(self, _):
+        val = self.rec_combo.currentData()
+        self._weekday_frame.setVisible(val == "weekly")
+        self._nth_frame.setVisible(val == "nth_weekday")
+
     def get_recurrence(self) -> str:
-        """Return a recurrence string like 'weekly:0,1,4' or 'daily'."""
+        """Return a recurrence string like 'weekly:0,1,4', 'nth_weekday:2,4:6', etc."""
         val = self.rec_combo.currentData()
         if val == "weekly":
             days = [i for i, b in enumerate(self._weekday_btns) if b.isChecked()]
-            if not days:
-                return ""
-            return "weekly:" + ",".join(str(d) for d in sorted(days))
+            return "weekly:" + ",".join(str(d) for d in sorted(days)) if days else ""
+        if val == "nth_weekday":
+            weeks = [i + 1 for i, b in enumerate(self._nth_week_btns) if b.isChecked()]
+            days  = [i for i, b in enumerate(self._nth_day_btns) if b.isChecked()]
+            if weeks and days:
+                from src.data.calendar_store import build_recurrence
+                return build_recurrence("nth_weekday", nth_weeks=weeks, nth_days=days)
+            return ""
         return val if val else ""
 
     def set_recurrence(self, rec_str: str):
         """Pre-fill from a recurrence string."""
         if not rec_str:
-            self.rec_combo.setCurrentIndex(0)
-            return
+            self.rec_combo.setCurrentIndex(0); return
         if rec_str == "daily":
             self.rec_combo.setCurrentIndex(1)
         elif rec_str.startswith("weekly:"):
@@ -1687,7 +1746,18 @@ class RecurrenceWidget(QWidget):
             self.rec_combo.setCurrentIndex(3)
         elif rec_str == "yearly":
             self.rec_combo.setCurrentIndex(4)
-
+        elif rec_str.startswith("nth_weekday:"):
+            self.rec_combo.setCurrentIndex(5)
+            from src.data.calendar_store import parse_recurrence
+            p = parse_recurrence(rec_str)
+            for n in p.get("weeks", []):
+                idx = n - 1
+                if 0 <= idx < len(self._nth_week_btns):
+                    self._nth_week_btns[idx].setChecked(True)
+            for d in p.get("days", []):
+                if 0 <= d < len(self._nth_day_btns):
+                    self._nth_day_btns[d].setChecked(True)
+        self._on_combo_changed(None)
 
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 #  TemplateEditDialog — edit a single soft event template
