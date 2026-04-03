@@ -39,6 +39,7 @@ This document contains the full context of the repository, formatted for optimal
       - finance_panel.py
       - notes_panel.py
       - todo_panel.py
+      - work_panel.py
       - __init__.py
       - styles.py
       - __init__.py
@@ -46,14 +47,15 @@ This document contains the full context of the repository, formatted for optimal
       - nav_button.py
       - network_dialog.py
     - __init__.py
+    - llm.py
     - paths.py
     - timestamps.py
   - __init__.py
 ```
 
 ## 📊 Project Summary
-- Total Python files: **36**
-- Total lines of code: **13189**
+- Total Python files: **38**
+- Total lines of code: **14343**
 
 ## 🔗 Dependency Graph
 ### main.pyw
@@ -186,14 +188,17 @@ This document contains the full context of the repository, formatted for optimal
 - src.ui.modules.dashboard_panel
 - src.ui.modules.finance_charts
 - src.ui.modules.activity_panel
+- src.ui.modules.work_panel
 - src.data.todo_store
 - src.data.calendar_store
 - src.data.finance_store
 - src.data.activity_store
 - src.data.soft_events_store
 - src.ui.widgets.matrix_rain
+- src.utils.llm
 - PyQt6.QtGui
 - src.ui.widgets.network_dialog
+- src.utils.llm
 - PyQt6.QtWidgets
 
 ### src\ui\modules\__init__.py
@@ -226,6 +231,8 @@ This document contains the full context of the repository, formatted for optimal
 - PyQt6.QtGui
 - src.data.holidays_jp
 - PyQt6.QtGui
+- src.data.calendar_store
+- src.data.calendar_store
 
 ### src\ui\modules\dashboard_panel.py
 - calendar
@@ -294,8 +301,24 @@ This document contains the full context of the repository, formatted for optimal
 - src.data.todo_store
 - re
 
+### src\ui\modules\work_panel.py
+- __future__
+- datetime
+- pathlib
+- PyQt6.QtCore
+- PyQt6.QtGui
+- PyQt6.QtWidgets
+- src.config
+- src.data.activity_store
+- src.utils.llm
+- PyQt6.QtWidgets
+- src.config
+
 ### src\ui\themes\__init__.py
 - src.ui.themes.styles
+
+### src\ui\themes\styles.py
+- matplotlib
 
 ### src\ui\widgets\__init__.py
 - src.ui.widgets.network_dialog
@@ -320,11 +343,26 @@ This document contains the full context of the repository, formatted for optimal
 - PyQt6.QtCore
 - PyQt6.QtWidgets
 - src.config
-- PyQt6.QtWidgets
+- src.utils.llm
 
 ### src\utils\__init__.py
 - src.utils.timestamps
 - src.utils.paths
+- src.utils.llm
+
+### src\utils\llm.py
+- __future__
+- json
+- logging
+- threading
+- time
+- urllib.error
+- urllib.request
+- dataclasses
+- typing
+- PyQt6.QtCore
+- src.config
+- src.config
 
 ### src\utils\paths.py
 - pathlib
@@ -406,8 +444,10 @@ Calendar event storage backed by SQLite — supports recurring events and birthd
 - `CalendarStore`: (No docstring)
 
 **Functions:**
+- `_nth_weekday_in_month`: Return the date of the Nth occurrence (1-indexed) of weekday in year/month.
+Returns None if that Nth occurrence does not exist (e.g. 5th Sunday in a short month).
 - `parse_recurrence`: Parse a recurrence string into a dict.
-- `build_recurrence`: Build a recurrence string from type and optional weekly days.
+- `build_recurrence`: Build a recurrence string from type and optional parameters.
 - `expand_recurring_to_range`: Expand a recurring event into concrete dates within [range_start, range_end].
 - `add_event`: (No docstring)
 - `update_event`: (No docstring)
@@ -756,6 +796,7 @@ Changes in this version:
 - `_on_peers_updated`: (No docstring)
 - `_force_sync`: (No docstring)
 - `_open_network_dialog`: (No docstring)
+- `_reload_llm_client`: Reload the LLM client from config and push it to all panels that use it.
 - `_show_about`: (No docstring)
 
 ### src\ui\modules\__init__.py
@@ -797,6 +838,14 @@ Layout:
 - `_px_to_hours`: (No docstring)
 - `_fmt_hm`: (No docstring)
 - `_fmt_elapsed`: (No docstring)
+- `_resolve_overlaps`: Resolve overlapping activities using last-created-wins policy.
+
+Sorts activities by created_at ascending so the most recently added
+activity claims its time slot, clipping any earlier activities that
+overlap it.
+
+Returns a list of (activity, start_hours, end_hours) tuples,
+sorted by start_hours, with no overlapping segments.
 - `_make_lbl`: (No docstring)
 - `__init__`: (No docstring)
 - `__init__`: (No docstring)
@@ -853,6 +902,8 @@ Layout:
 - `__init__`: (No docstring)
 - `_load_quick_cats`: (No docstring)
 - `_save_quick_cats`: (No docstring)
+- `_schedule_midnight_refresh`: Schedule a one-shot timer that fires 5 s after midnight.
+- `_midnight_refresh`: Called at midnight: snap the week view to contain today, then refresh.
 - `set_palette`: (No docstring)
 - `_build_ui`: (No docstring)
 - `_on_card_tapped`: (No docstring)
@@ -900,7 +951,7 @@ Layout (positions unchanged):
 monkey-patching mousePressEvent so Qt's event system stays intact.
 - `CalendarPanel`: (No docstring)
 - `BirthdayManagerDialog`: (No docstring)
-- `RecurrenceWidget`: Reusable recurrence picker: combo + weekday buttons.
+- `RecurrenceWidget`: Reusable recurrence picker: combo + weekday buttons + nth-weekday grid.
 - `TemplateEditDialog`: Edit fields for a soft event template.
 - `ViewLogDialog`: Read-only view of all log entries for a soft event template.
 - `SoftEventManagerDialog`: Manage soft event templates — list, add, edit, delete, view log.
@@ -997,7 +1048,8 @@ monkey-patching mousePressEvent so Qt's event system stays intact.
 - `_add_birthday`: (No docstring)
 - `_edit_birthday`: (No docstring)
 - `__init__`: (No docstring)
-- `get_recurrence`: Return a recurrence string like 'weekly:0,1,4' or 'daily'.
+- `_on_combo_changed`: (No docstring)
+- `get_recurrence`: Return a recurrence string like 'weekly:0,1,4', 'nth_weekday:2,4:6', etc.
 - `set_recurrence`: Pre-fill from a recurrence string.
 - `__init__`: (No docstring)
 - `_update_color_btn`: (No docstring)
@@ -1336,6 +1388,48 @@ first set_palette() call.
 - `_clear_done`: (No docstring)
 - `_sort_key`: (No docstring)
 
+### src\ui\modules\work_panel.py
+**Module docstring:**
+Work Panel — daily write-up generator with centralised AI client injection.
+
+**Classes:**
+- `_ActivityCheckRow`: (No docstring)
+- `WorkPanel`: Daily 日報 write-up panel with optional AI generation.
+
+The LLMClient is owned by MainWindow and injected here.
+When settings change in the NetworkDialog, MainWindow calls
+set_llm_client() to push the new client in.
+
+**Functions:**
+- `_jp_date`: (No docstring)
+- `_jp_duration`: (No docstring)
+- `_build_report`: (No docstring)
+- `_build_llm_prompt`: (No docstring)
+- `__init__`: (No docstring)
+- `is_checked`: (No docstring)
+- `row_data`: (No docstring)
+- `row_data_with_notes`: (No docstring)
+- `__init__`: (No docstring)
+- `set_llm_client`: (No docstring)
+- `set_palette`: (No docstring)
+- `_build_ui`: (No docstring)
+- `_refresh`: (No docstring)
+- `_update_preview`: (No docstring)
+- `_set_all_checked`: (No docstring)
+- `_run_ai`: (No docstring)
+- `_on_ai_result`: (No docstring)
+- `_on_ai_error`: (No docstring)
+- `_clear_ai`: (No docstring)
+- `_open_settings`: Open a minimal inline settings dialog for the AI key/model.
+- `_load_drafts`: (No docstring)
+- `_save_drafts`: (No docstring)
+- `_copy_to_clipboard`: (No docstring)
+- `_export_to_vault`: (No docstring)
+- `_flash`: (No docstring)
+- `_do_test`: (No docstring)
+- `_ok`: (No docstring)
+- `_err`: (No docstring)
+
 ### src\ui\themes\__init__.py
 **Module docstring:**
 Theme definitions and management.
@@ -1497,16 +1591,18 @@ tooltip : str
 
 ### src\ui\widgets\network_dialog.py
 **Module docstring:**
-Network settings dialog — configure sync, view peers, manage connections.
+Network settings dialog — configure sync, view peers, manage connections, AI/LLM.
 
 **Classes:**
-- `NetworkDialog`: Network and sync settings with live peer status and log viewer.
+- `NetworkDialog`: Network and sync settings with live peer status, log viewer, and AI config.
 
 **Functions:**
 - `__init__`: (No docstring)
 - `_build_ui`: (No docstring)
 - `_load_values`: (No docstring)
 - `_save_settings`: (No docstring)
+- `_save_ai_settings`: (No docstring)
+- `_test_ai`: (No docstring)
 - `_refresh_peers`: (No docstring)
 - `_update_peer_table`: (No docstring)
 - `_add_manual_peer`: (No docstring)
@@ -1517,6 +1613,8 @@ Network settings dialog — configure sync, view peers, manage connections.
 - `_save_obsidian_settings`: (No docstring)
 - `_append_log`: (No docstring)
 - `_get_local_ip`: (No docstring)
+- `_on_ok`: (No docstring)
+- `_on_err`: (No docstring)
 - `do_ping`: (No docstring)
 - `do_ping`: (No docstring)
 
@@ -1529,6 +1627,41 @@ Shared utilities.
 
 **Functions:**
 - (None)
+
+### src\utils\llm.py
+**Module docstring:**
+LLM client — thin wrapper around the OpenRouter chat completions API.
+
+Uses only stdlib (urllib + json + threading + time) — no extra dependencies.
+
+Exports
+-------
+LLMResult   : dataclass returned by every successful call
+LLMSignals  : QObject subclass with result/error pyqtSignals (thread-safe bridge)
+LLMClient   : the actual HTTP client
+load_llm_client / save_llm_config : config helpers
+DEFAULT_MODEL : fallback model string
+
+**Classes:**
+- `LLMResult`: Returned by every successful LLM call.
+- `LLMSignals`: QObject whose signals marshal LLM callbacks onto the Qt main thread.
+
+Always store an instance on *self* (not a local variable) so the
+underlying C++ object is not garbage-collected before the worker
+thread fires.
+- `LLMClient`: Thin OpenRouter chat-completions client.
+
+**Functions:**
+- `load_llm_client`: Return a configured LLMClient, or None if no key is saved.
+- `save_llm_config`: Persist API key and model choice to config.
+- `total_tokens`: (No docstring)
+- `elapsed_s`: (No docstring)
+- `timing_summary`: (No docstring)
+- `__str__`: (No docstring)
+- `__init__`: (No docstring)
+- `complete`: Synchronous call — blocks. Use only from a worker thread.
+- `complete_async`: Non-blocking — fires a daemon thread.  Retries on 429 with back-off.
+- `_worker`: (No docstring)
 
 ### src\utils\paths.py
 **Module docstring:**
@@ -1921,6 +2054,19 @@ from src.utils.timestamps import now_utc
 #   "monthly"       → same day each month
 #   "yearly"        → same day each year
 
+def _nth_weekday_in_month(year: int, month: int, n: int, weekday: int) -> 'date | None':
+    """Return the date of the Nth occurrence (1-indexed) of weekday in year/month.
+    Returns None if that Nth occurrence does not exist (e.g. 5th Sunday in a short month)."""
+    count = 0
+    d = date(year, month, 1)
+    while d.month == month:
+        if d.weekday() == weekday:
+            count += 1
+            if count == n:
+                return d
+        d += timedelta(days=1)
+    return None
+
 def parse_recurrence(rec: str) -> dict:
     """Parse a recurrence string into a dict."""
     if not rec:
@@ -1934,11 +2080,22 @@ def parse_recurrence(rec: str) -> dict:
         return {"type": "monthly"}
     if rec == "yearly":
         return {"type": "yearly"}
+    if rec.startswith("nth_weekday:"):
+        rest = rec[len("nth_weekday:"):]
+        parts = rest.split(":")
+        if len(parts) == 2:
+            weeks = [int(n) for n in parts[0].split(",") if n.strip().isdigit()]
+            days  = [int(d) for d in parts[1].split(",") if d.strip().isdigit()]
+            if weeks and days:
+                return {"type": "nth_weekday", "weeks": weeks, "days": days}
+        return {"type": "none"}
     return {"type": "none"}
 
 
-def build_recurrence(rec_type: str, weekly_days: list[int] | None = None) -> str:
-    """Build a recurrence string from type and optional weekly days."""
+def build_recurrence(rec_type: str, weekly_days: list[int] | None = None,
+                     nth_weeks: list[int] | None = None,
+                     nth_days: list[int] | None = None) -> str:
+    """Build a recurrence string from type and optional parameters."""
     if rec_type == "daily":
         return "daily"
     if rec_type == "weekly" and weekly_days:
@@ -1947,6 +2104,11 @@ def build_recurrence(rec_type: str, weekly_days: list[int] | None = None) -> str
         return "monthly"
     if rec_type == "yearly":
         return "yearly"
+    if rec_type == "nth_weekday" and nth_weeks and nth_days:
+        return ("nth_weekday:"
+                + ",".join(str(n) for n in sorted(nth_weeks))
+                + ":"
+                + ",".join(str(d) for d in sorted(nth_days)))
     return ""
 
 
@@ -2001,6 +2163,25 @@ def expand_recurring_to_range(event: 'Event', range_start: date, range_end: date
                 continue
             if range_start <= d <= range_end:
                 dates.append(d)
+
+    elif rec["type"] == "nth_weekday":
+            weeks_list = rec.get("weeks", [])
+            days_list  = rec.get("days", [])
+            if weeks_list and days_list:
+                start_anchor = max(ev_start.replace(day=1), range_start.replace(day=1))
+                y, m = start_anchor.year, start_anchor.month
+                while True:
+                    for n in weeks_list:
+                        for wd in days_list:
+                            d = _nth_weekday_in_month(y, m, n, wd)
+                            if d and range_start <= d <= range_end and d >= ev_start:
+                                dates.append(d)
+                    m += 1
+                    if m > 12:
+                        m, y = 1, y + 1
+                    if date(y, m, 1) > range_end:
+                        break
+                dates.sort()
 
     return dates
 
@@ -4812,6 +4993,7 @@ from src.ui.modules.todo_panel import TodoPanel
 from src.ui.modules.dashboard_panel import DashboardPanel
 from src.ui.modules.finance_charts import FinanceChartsPanel
 from src.ui.modules.activity_panel import ActivityPanel
+from src.ui.modules.work_panel import WorkPanel
 
 from src.data.todo_store import TodoStore
 from src.data.calendar_store import CalendarStore
@@ -4865,6 +5047,8 @@ class MainWindow(QMainWindow):
         self.finance_store = FinanceStore()
         self.activity_store = ActivityStore()
         self.soft_events_store = SoftEventStore()
+        from src.utils.llm import load_llm_client
+        self.llm_client = load_llm_client()
 
         self.setWindowTitle(f"{APP_NAME} v{APP_VERSION}")
         self.setMinimumSize(1000, 650)
@@ -4915,6 +5099,7 @@ class MainWindow(QMainWindow):
         file_menu.addAction(self._action("&Charts", "Ctrl+5", lambda: self._navigate("Charts")))
         file_menu.addAction(self._action("&Tasks", "Ctrl+6", lambda: self._navigate("Tasks")))
         file_menu.addAction(self._action("&Activity", "Ctrl+7", lambda: self._navigate("Activity")))
+        file_menu.addAction(self._action("&Work",     "Ctrl+8", lambda: self._navigate("Work")))
         file_menu.addSeparator()
         file_menu.addAction(self._action("E&xit", "Ctrl+Q", self.close))
 
@@ -4986,6 +5171,7 @@ class MainWindow(QMainWindow):
             ("Charts", "\U0001f4c8", "Ctrl+5"),
             ("Tasks", "\u2611", "Ctrl+6"),
             ("Activity", "\u23f1", "Ctrl+7"),
+            ("Work",     "\U0001f4bc", "Ctrl+8"),    
         ]
         for name, icon, shortcut_text in nav_items:
             btn = SidebarButton(name, icon, shortcut_text)
@@ -5054,7 +5240,8 @@ class MainWindow(QMainWindow):
         self.charts_panel = FinanceChartsPanel()
         self.todo_panel = TodoPanel(todo_store=self.todo_store)
         self.activity_panel = ActivityPanel()
-
+        self.work_panel = WorkPanel(llm_client=self.llm_client)
+        
         self.stack.addWidget(self.dashboard_panel)   # 0
         self.stack.addWidget(self.notes_panel)       # 1
         self.stack.addWidget(self.calendar_panel)    # 2
@@ -5062,7 +5249,9 @@ class MainWindow(QMainWindow):
         self.stack.addWidget(self.charts_panel)      # 4
         self.stack.addWidget(self.todo_panel)        # 5
         self.stack.addWidget(self.activity_panel)    # 6
-
+        self.stack.addWidget(self.work_panel)        # 7
+        self.work_panel.llm_config_changed.connect(self._reload_llm_client)
+        
         main_layout.addWidget(self.stack, 1)
 
     # ── Status bar ─────────────────────────────────────
@@ -5160,6 +5349,7 @@ class MainWindow(QMainWindow):
         idx_map = {
             "Dashboard": 0, "Notes": 1, "Calendar": 2,
             "Earnings": 3, "Charts": 4, "Tasks": 5, "Activity": 6,
+            "Work": 7,
         }
         idx = idx_map.get(name, 0)
         self.stack.setCurrentIndex(idx)
@@ -5202,6 +5392,8 @@ class MainWindow(QMainWindow):
             self.charts_panel.set_palette(palette)
         if hasattr(self.activity_panel, 'set_palette'):
             self.activity_panel.set_palette(palette)
+        if hasattr(self.activity_panel, 'set_palette'):
+            self.activity_panel.set_palette(palette)
         if hasattr(self.notes_panel, 'set_palette'):
             self.notes_panel.set_palette(palette)
 
@@ -5241,6 +5433,8 @@ class MainWindow(QMainWindow):
             self.charts_panel._refresh()
         if hasattr(self.activity_panel, '_refresh'):
             self.activity_panel._refresh()
+        if hasattr(self.work_panel, '_refresh'):
+            self.work_panel._refresh()
 
     def set_sync_status(self, text: str):
         self.sync_label.setText(f"Sync: {text}")
@@ -5264,7 +5458,14 @@ class MainWindow(QMainWindow):
     def _open_network_dialog(self):
         from src.ui.widgets.network_dialog import NetworkDialog
         dlg = NetworkDialog(sync_engine=self.sync_engine, parent=self)
+        dlg.llm_settings_saved.connect(self._reload_llm_client)
         dlg.exec()
+        
+    def _reload_llm_client(self):
+        """Reload the LLM client from config and push it to all panels that use it."""
+        from src.utils.llm import load_llm_client
+        self.llm_client = load_llm_client()
+        self.work_panel.set_llm_client(self.llm_client)
 
     def _show_about(self):
         from PyQt6.QtWidgets import QMessageBox
@@ -5365,6 +5566,51 @@ def _fmt_elapsed(secs: int) -> str:
     return f"{h}:{m:02d}:{s:02d}" if h else f"{m:02d}:{s:02d}"
 
 
+def _resolve_overlaps(activities: list) -> list[tuple]:
+    """Resolve overlapping activities using last-created-wins policy.
+
+    Sorts activities by created_at ascending so the most recently added
+    activity claims its time slot, clipping any earlier activities that
+    overlap it.
+
+    Returns a list of (activity, start_hours, end_hours) tuples,
+    sorted by start_hours, with no overlapping segments.
+    """
+    if not activities:
+        return []
+
+    # Oldest first — newest will overwrite overlapping segments below
+    sorted_acts = sorted(activities, key=lambda a: a.created_at or "")
+
+    # Each segment: (start_hour, end_hour, activity)
+    segments: list[tuple[float, float, object]] = []
+
+    for act in sorted_acts:
+        start = _parse_hhmm(act.start_time)
+        end   = _parse_hhmm(act.end_time)
+        if end <= start:
+            end = 24.0          # midnight-overflow: extend to end of day
+
+        new_segments: list[tuple[float, float, object]] = []
+        for (s, e, a) in segments:
+            if e <= start or s >= end:
+                # No overlap — keep as-is
+                new_segments.append((s, e, a))
+            else:
+                # Partial overlap — keep only the non-overlapping tails
+                if s < start:
+                    new_segments.append((s, start, a))
+                if e > end:
+                    new_segments.append((end, e, a))
+                # The middle portion [start, end] is claimed by the newer act
+
+        new_segments.append((start, end, act))
+        segments = new_segments
+
+    segments.sort(key=lambda x: x[0])
+    return segments
+
+
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 #  ActivityBlock
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -5407,12 +5653,15 @@ class WeekBlockWidget(QWidget):
         self._week_start = week_start
         self._blocks = []
         for col, (d, acts) in enumerate(activities_by_date.items()):
-            for act in acts:
-                y0 = _hours_to_px(_parse_hhmm(act.start_time))
-                y1 = _hours_to_px(_parse_hhmm(act.end_time))
-                overflow = y1 <= y0
-                if overflow:
-                    y1 = _hours_to_px(24.0)
+            # Resolve overlaps: latest-created wins for any time slot
+            segments = _resolve_overlaps(list(acts))
+            for (start_h, end_h, act) in segments:
+                y0 = _hours_to_px(start_h)
+                y1 = _hours_to_px(end_h)
+                # Mark overflow only when the original activity wraps midnight
+                orig_start = _parse_hhmm(act.start_time)
+                orig_end   = _parse_hhmm(act.end_time)
+                overflow   = orig_end <= orig_start
                 self._blocks.append(ActivityBlock(act, col, y0, y1, overflow))
         self._selected = None
         self.update()
@@ -5499,7 +5748,7 @@ class WeekBlockWidget(QWidget):
         p.setPen(QPen(bord, 1))
         p.drawLine(w - 1, 0, w - 1, TOTAL_H)
 
-        # Activity blocks
+        # Activity blocks — solid fill, latest-wins segments already resolved
         for b in self._blocks:
             x  = TIME_W + b.col * col_w + 2
             bw = col_w - 4
@@ -5508,14 +5757,15 @@ class WeekBlockWidget(QWidget):
             b.rect = QRectF(x, by, bw, bh)
 
             color = QColor(ACTIVITY_COLORS.get(b.activity.activity, DEFAULT_COLOR))
-            fill  = QColor(color); fill.setAlpha(55)
+            fill  = QColor(color)
 
             is_sel = (b is self._selected)
             if is_sel:
-                fill.setAlpha(90)
-                p.setPen(QPen(color, 2))
+                fill.setAlpha(240)
+                p.setPen(QPen(color.lighter(140), 2))
             else:
-                p.setPen(QPen(color, 1))
+                fill.setAlpha(200)
+                p.setPen(QPen(color.darker(130), 1))
 
             p.setBrush(QBrush(fill))
             p.drawRoundedRect(b.rect, 4, 4)
@@ -5523,6 +5773,7 @@ class WeekBlockWidget(QWidget):
             if bh >= 14:
                 lf = QFont(); lf.setPixelSize(10 if bh < 32 else 11); lf.setBold(True)
                 p.setFont(lf)
+                # Contrast: dark text on light blocks, light text on dark blocks
                 p.setPen(QColor("#11111b") if color.lightness() > 128 else QColor("#cdd6f4"))
                 fm   = QFontMetrics(lf)
                 text = ("\u2190 " if b.overflow else "") + b.activity.activity
@@ -6204,6 +6455,7 @@ class ActivityPanel(QWidget):
         self._quick_cats = self._load_quick_cats()
         self._build_ui()
         self._refresh()
+        self._schedule_midnight_refresh()
 
     def _load_quick_cats(self) -> list[str]:
         cfg = load_config()
@@ -6215,6 +6467,29 @@ class ActivityPanel(QWidget):
         cfg["activity_quick_categories"] = self._quick_cats
         save_config(cfg)
 
+    # ── Midnight rollover ───────────────────────────
+
+    def _schedule_midnight_refresh(self):
+        """Schedule a one-shot timer that fires 5 s after midnight."""
+        now = datetime.now()
+        next_midnight = (now + timedelta(days=1)).replace(
+            hour=0, minute=0, second=5, microsecond=0)
+        ms = max(int((next_midnight - now).total_seconds() * 1000), 1000)
+        QTimer.singleShot(ms, self._midnight_refresh)
+
+    def _midnight_refresh(self):
+        """Called at midnight: snap the week view to contain today, then refresh."""
+        today = date.today()
+        current_week_start = today - timedelta(days=today.weekday())
+        # If the panel is still showing a week that no longer contains today, advance it
+        if self._week_start < current_week_start:
+            self._week_start = current_week_start
+            self._log_form.set_week_start(self._week_start)
+        self._refresh()
+        self._schedule_midnight_refresh()   # re-arm for the next midnight
+
+    # ── Palette ─────────────────────────────────────
+
     def set_palette(self, palette: dict):
         self._palette = palette
         self._grid.set_palette(palette)
@@ -6224,7 +6499,6 @@ class ActivityPanel(QWidget):
         red     = palette.get("red",       "#f38ba8")
         acc_fg  = palette.get("accent_fg", "#1e1e2e")
         btn_css = "font-weight:bold;border-radius:4px;padding:2px 10px;font-size:11px;"
-        # Refresh painter-based nav buttons with new theme colors
         if self._prev_week_btn:
             self._prev_week_btn.refresh(palette)
         if self._next_week_btn:
@@ -6256,7 +6530,6 @@ class ActivityPanel(QWidget):
         self._week_label.setStyleSheet("font-size:12px;font-weight:bold;")
         top_bar.addWidget(self._week_label); top_bar.addSpacing(8)
 
-        # ── NavButton for week navigation (painter-drawn — no font/padding issues) ──
         self._prev_week_btn = NavButton("left", size=28, tooltip="Previous week")
         self._prev_week_btn.clicked.connect(self._prev_week)
         top_bar.addWidget(self._prev_week_btn)
@@ -7184,22 +7457,43 @@ class MiniMonth(QWidget):
     def _go_today_month(self):
         t = date.today(); self._view_year = t.year; self._view_month = t.month; self._render()
 
-
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-#  EventChip  — painted event chip in week grid
+#  EventChip  — event chip in week grid (word-wrapped, up to ~3 lines)
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-class EventChip(QWidget):
+class EventChip(QFrame):
     double_clicked = pyqtSignal(object)
 
     def __init__(self, event: Event, parent=None):
         super().__init__(parent)
-        self.event = event; self._hovered = False
+        self.event = event
+        self._hovered = False
         self.setCursor(Qt.CursorShape.PointingHandCursor)
         self.setAttribute(Qt.WidgetAttribute.WA_Hover, True)
-        self.setMinimumHeight(28)
-        self.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
+        self.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred)
+        self.setMinimumHeight(24)
 
+        color = QColor(event.color)
+        text_color = color.lighter(140).name()
+
+        # Soft-event reminders get no emoji — they need every pixel for their title
+        if event.category == "reminder":
+            display = event.title
+        else:
+            emoji = _cat_emoji(event.category)
+            display = f"{emoji} {event.title}" if emoji else event.title
+
+        # paintEvent draws the bg tint + left accent bar;
+        # child QLabels handle text so Qt word-wraps for free.
+        root = QHBoxLayout(self)
+        root.setContentsMargins(6, 2, 4, 2)   # 6 px left clears the painted accent bar
+        root.setSpacing(0)
+
+        text_col = QVBoxLayout()
+        text_col.setSpacing(1)
+        text_col.setContentsMargins(0, 0, 0, 0)
+
+        # Time row (timed events only)
         time_str = ""
         if not event.all_day:
             try:
@@ -7207,14 +7501,31 @@ class EventChip(QWidget):
                 time_str = dt.strftime("%H:%M")
                 if event.end_time:
                     et = datetime.fromisoformat(event.end_time)
-                    time_str += f"–{et.strftime('%H:%M')}"
-            except Exception: pass
-        self._time_str = time_str
-        emoji = _cat_emoji(event.category)
-        self._display = f"{emoji} {event.title}" if emoji else event.title
-        tip = self._display
-        if time_str: tip += f"\n{time_str}"
-        if event.description: tip += f"\n{event.description[:80]}"
+                    time_str += f"\u2013{et.strftime('%H:%M')}"
+            except Exception:
+                pass
+
+        if time_str:
+            tl = QLabel(time_str)
+            tl.setStyleSheet(
+                f"font-size:9px;color:{text_color};background:transparent;border:none;")
+            text_col.addWidget(tl)
+
+        # Title — word-wrapped, grows naturally up to ~3 lines
+        title_lbl = QLabel(display)
+        title_lbl.setWordWrap(True)
+        title_lbl.setStyleSheet(
+            f"font-size:11px;font-weight:bold;color:{text_color};"
+            "background:transparent;border:none;")
+        text_col.addWidget(title_lbl)
+        root.addLayout(text_col, 1)
+
+        # Tooltip
+        tip = display
+        if time_str:
+            tip += f"\n{time_str}"
+        if event.description:
+            tip += f"\n{event.description[:80]}"
         self.setToolTip(tip)
 
     def enterEvent(self, ev): self._hovered = True;  self.update()
@@ -7229,22 +7540,9 @@ class EventChip(QWidget):
         bg = QColor(color); bg.setAlpha(55 if self._hovered else 35)
         p.setBrush(QBrush(bg)); p.setPen(Qt.PenStyle.NoPen)
         p.drawRoundedRect(0, 0, w, h, 4, 4)
-        p.setBrush(QBrush(color)); p.drawRoundedRect(0, 0, 3, h, 2, 2)
-        text_c = color.lighter(145 if self._hovered else 128)
-        p.setPen(text_c)
-        font = QFont()
-        if self._time_str:
-            font.setPixelSize(9); p.setFont(font)
-            p.drawText(8, 0, w-10, h//2+2, Qt.AlignmentFlag.AlignVCenter, self._time_str)
-            font.setPixelSize(11); font.setBold(True); p.setFont(font)
-            fm = QFontMetrics(font)
-            p.drawText(8, h//2-2, w-10, h//2+2, Qt.AlignmentFlag.AlignVCenter,
-                       fm.elidedText(self._display, Qt.TextElideMode.ElideRight, w-14))
-        else:
-            font.setPixelSize(11); font.setBold(True); p.setFont(font)
-            fm = QFontMetrics(font)
-            p.drawText(8, 0, w-10, h, Qt.AlignmentFlag.AlignVCenter,
-                       fm.elidedText(self._display, Qt.TextElideMode.ElideRight, w-14))
+        # 3-px left accent bar
+        p.setBrush(QBrush(color))
+        p.drawRoundedRect(0, 0, 3, h, 2, 2)
         p.end()
 
 
@@ -7746,7 +8044,7 @@ class CalendarPanel(QWidget):
                 if ws <= occ_date <= we:
                     ebd.setdefault(occ_date, []).append(Event(
                         id=tpl.id,
-                        title=f"📌 {tpl.title}",
+                        title=tpl.title,
                         start_time=datetime(occ_date.year, occ_date.month, occ_date.day).isoformat(),
                         all_day=True,
                         color=tpl.color,
@@ -8126,16 +8424,19 @@ class BirthdayManagerDialog(QDialog):
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 _SOFT_RECURRENCE_OPTIONS = [
-    ("",        "No repeat"),
-    ("daily",   "Daily"),
-    ("weekly",  "Weekly"),
-    ("monthly", "Monthly"),
-    ("yearly",  "Yearly"),
+    ("",            "No repeat"),
+    ("daily",       "Daily"),
+    ("weekly",      "Weekly"),
+    ("monthly",     "Monthly"),
+    ("yearly",      "Yearly"),
+    ("nth_weekday", "Nth Weekday of Month"),
 ]
 
 
 class RecurrenceWidget(QWidget):
-    """Reusable recurrence picker: combo + weekday buttons."""
+    """Reusable recurrence picker: combo + weekday buttons + nth-weekday grid."""
+
+    _NTH_LABELS = ["1st", "2nd", "3rd", "4th", "5th"]
 
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -8148,42 +8449,73 @@ class RecurrenceWidget(QWidget):
         for val, label in _SOFT_RECURRENCE_OPTIONS:
             self.rec_combo.addItem(label, val)
         layout.addWidget(self.rec_combo)
+        self.rec_combo.currentIndexChanged.connect(self._on_combo_changed)
 
-        self.rec_combo.currentIndexChanged.connect(
-            lambda _: self._weekday_frame.setVisible(
-                self.rec_combo.currentData() == "weekly"))
-
+        # ── Weekly sub-frame ──────────────────────────────
         self._weekday_frame = QFrame()
         wdf = QHBoxLayout(self._weekday_frame)
-        wdf.setContentsMargins(0, 4, 0, 0)
-        wdf.setSpacing(4)
+        wdf.setContentsMargins(0, 4, 0, 0); wdf.setSpacing(4)
         self._weekday_btns: list[QToolButton] = []
         for label in WEEKDAY_LABELS:
-            btn = QToolButton()
-            btn.setText(label)
-            btn.setCheckable(True)
-            btn.setFixedSize(42, 30)
-            self._weekday_btns.append(btn)
-            wdf.addWidget(btn)
+            btn = QToolButton(); btn.setText(label)
+            btn.setCheckable(True); btn.setFixedSize(42, 30)
+            self._weekday_btns.append(btn); wdf.addWidget(btn)
         wdf.addStretch()
         layout.addWidget(self._weekday_frame)
         self._weekday_frame.setVisible(False)
 
+        # ── Nth-weekday sub-frame ─────────────────────────
+        self._nth_frame = QFrame()
+        nth_layout = QVBoxLayout(self._nth_frame)
+        nth_layout.setContentsMargins(0, 4, 0, 0); nth_layout.setSpacing(4)
+
+        nth_layout.addWidget(QLabel("Which week(s) of the month:"))
+        week_row = QHBoxLayout(); week_row.setSpacing(4)
+        self._nth_week_btns: list[QToolButton] = []
+        for lbl in self._NTH_LABELS:
+            btn = QToolButton(); btn.setText(lbl)
+            btn.setCheckable(True); btn.setFixedSize(46, 30)
+            self._nth_week_btns.append(btn); week_row.addWidget(btn)
+        week_row.addStretch()
+        nth_layout.addLayout(week_row)
+
+        nth_layout.addWidget(QLabel("Which day(s):"))
+        day_row = QHBoxLayout(); day_row.setSpacing(4)
+        self._nth_day_btns: list[QToolButton] = []
+        for label in WEEKDAY_LABELS:
+            btn = QToolButton(); btn.setText(label)
+            btn.setCheckable(True); btn.setFixedSize(42, 30)
+            self._nth_day_btns.append(btn); day_row.addWidget(btn)
+        day_row.addStretch()
+        nth_layout.addLayout(day_row)
+
+        layout.addWidget(self._nth_frame)
+        self._nth_frame.setVisible(False)
+
+    def _on_combo_changed(self, _):
+        val = self.rec_combo.currentData()
+        self._weekday_frame.setVisible(val == "weekly")
+        self._nth_frame.setVisible(val == "nth_weekday")
+
     def get_recurrence(self) -> str:
-        """Return a recurrence string like 'weekly:0,1,4' or 'daily'."""
+        """Return a recurrence string like 'weekly:0,1,4', 'nth_weekday:2,4:6', etc."""
         val = self.rec_combo.currentData()
         if val == "weekly":
             days = [i for i, b in enumerate(self._weekday_btns) if b.isChecked()]
-            if not days:
-                return ""
-            return "weekly:" + ",".join(str(d) for d in sorted(days))
+            return "weekly:" + ",".join(str(d) for d in sorted(days)) if days else ""
+        if val == "nth_weekday":
+            weeks = [i + 1 for i, b in enumerate(self._nth_week_btns) if b.isChecked()]
+            days  = [i for i, b in enumerate(self._nth_day_btns) if b.isChecked()]
+            if weeks and days:
+                from src.data.calendar_store import build_recurrence
+                return build_recurrence("nth_weekday", nth_weeks=weeks, nth_days=days)
+            return ""
         return val if val else ""
 
     def set_recurrence(self, rec_str: str):
         """Pre-fill from a recurrence string."""
         if not rec_str:
-            self.rec_combo.setCurrentIndex(0)
-            return
+            self.rec_combo.setCurrentIndex(0); return
         if rec_str == "daily":
             self.rec_combo.setCurrentIndex(1)
         elif rec_str.startswith("weekly:"):
@@ -8195,7 +8527,18 @@ class RecurrenceWidget(QWidget):
             self.rec_combo.setCurrentIndex(3)
         elif rec_str == "yearly":
             self.rec_combo.setCurrentIndex(4)
-
+        elif rec_str.startswith("nth_weekday:"):
+            self.rec_combo.setCurrentIndex(5)
+            from src.data.calendar_store import parse_recurrence
+            p = parse_recurrence(rec_str)
+            for n in p.get("weeks", []):
+                idx = n - 1
+                if 0 <= idx < len(self._nth_week_btns):
+                    self._nth_week_btns[idx].setChecked(True)
+            for d in p.get("days", []):
+                if 0 <= d < len(self._nth_day_btns):
+                    self._nth_day_btns[d].setChecked(True)
+        self._on_combo_changed(None)
 
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 #  TemplateEditDialog — edit a single soft event template
@@ -9155,6 +9498,7 @@ class DashboardPanel(QWidget):
         upcoming_scroll.setWidgetResizable(True)
         upcoming_scroll.setWidget(self._upcoming_container)
         upcoming_scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+        upcoming_scroll.setMinimumHeight(160)   # guarantee ~4-5 rows always visible
         left.addWidget(upcoming_scroll, 1)
 
         # ── Coming Up (Next 7 Days) section ──
@@ -9166,7 +9510,14 @@ class DashboardPanel(QWidget):
         self._coming_up_layout = QVBoxLayout(self._coming_up_container)
         self._coming_up_layout.setContentsMargins(0, 0, 0, 0)
         self._coming_up_layout.setSpacing(2)
-        left.addWidget(self._coming_up_container)
+
+        coming_up_scroll = QScrollArea()
+        coming_up_scroll.setWidgetResizable(True)
+        coming_up_scroll.setWidget(self._coming_up_container)
+        coming_up_scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+        coming_up_scroll.setFrameShape(QFrame.Shape.NoFrame)
+        coming_up_scroll.setMaximumHeight(180)  # cap at ~5 rows; scrollable if more
+        left.addWidget(coming_up_scroll)
 
         columns.addLayout(left, 3)
 
@@ -13167,6 +13518,620 @@ class TodoPanel(QWidget):
             self._refresh()
 ```
 
+### `src\ui\modules\work_panel.py`
+
+```python
+"""Work Panel — daily write-up generator with centralised AI client injection."""
+
+from __future__ import annotations
+
+from datetime import date
+from pathlib import Path
+
+from PyQt6.QtCore import Qt, QTimer, pyqtSignal
+from PyQt6.QtGui import QFont
+from PyQt6.QtWidgets import (
+    QWidget, QVBoxLayout, QHBoxLayout, QLabel, QPushButton,
+    QTextEdit, QFrame, QScrollArea, QCheckBox,
+    QApplication, QPlainTextEdit, QSplitter, QMessageBox, QDialog,
+)
+
+from src.config import load_config
+from src.data.activity_store import ActivityStore, Activity, ACTIVITY_COLORS, DEFAULT_COLOR
+from src.utils.llm import LLMClient, LLMResult, LLMSignals, DEFAULT_MODEL, save_llm_config
+
+
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+#  Helpers
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+_JP_WEEKDAYS = ["月", "火", "水", "木", "金", "土", "日"]
+
+
+def _jp_date(d: date) -> str:
+    wd = _JP_WEEKDAYS[d.weekday()]
+    return f"{d.year}年{d.month}月{d.day}日（{wd}）"
+
+
+def _jp_duration(minutes: int) -> str:
+    if minutes <= 0:
+        return ""
+    h, m = divmod(minutes, 60)
+    if h and m:
+        return f"{h}時間{m}分"
+    return f"{h}時間" if h else f"{m}分"
+
+
+def _build_report(jp_date_str: str, selected: list[tuple[str, int]],
+                  renraku: str, ashita: str, ai_content: str = "") -> str:
+    lines = [f"【日付】{jp_date_str}", "【本日の作業内容】"]
+    if ai_content.strip():
+        lines += [ln for ln in ai_content.strip().splitlines()]
+    else:
+        for name, mins in selected:
+            dur = _jp_duration(mins)
+            lines.append(f"・{name}（{dur}）" if dur else f"・{name}")
+    lines.append("【連絡事項】")
+    lines += [ln for ln in renraku.strip().splitlines()]
+    lines.append("【明日の予定】")
+    lines += [ln for ln in ashita.strip().splitlines()]
+    return "\n".join(lines)
+
+
+def _build_llm_prompt(activities: list[tuple[str, int, str]]) -> list[dict]:
+    items = []
+    for name, mins, notes in activities:
+        dur       = _jp_duration(mins) or "不明"
+        note_text = notes.strip() if notes.strip() else "（メモなし）"
+        items.append(f"・{name}（{dur}）: {note_text}")
+    system = (
+        "あなたはソフトウェアエンジニアの日報作成を支援するアシスタントです。"
+        "ビジネス向けの丁寧で簡潔な日本語で記述してください。"
+    )
+    user = (
+        "以下の作業内容（英語のメモ付き）を元に、日報の【本日の作業内容】セクションの"
+        "箇条書きを作成してください。\n\n"
+        "【ルール】\n"
+        "- 各項目は「・」で始める\n"
+        "- 作業時間を括弧内に記載（例：2時間、1時間30分）\n"
+        "- 英語のメモは自然なビジネス日本語に意訳する\n"
+        "- 1項目につき1〜2文で簡潔にまとめる\n"
+        "- ヘッダー（【本日の作業内容】）は出力しない、箇条書きのみ出力する\n\n"
+        "作業リスト:\n" + "\n".join(items)
+    )
+    return [{"role": "system", "content": system},
+            {"role": "user",   "content": user}]
+
+
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+#  Activity check row
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+class _ActivityCheckRow(QWidget):
+    def __init__(self, activity: Activity, palette: dict, parent=None):
+        super().__init__(parent)
+        self.activity = activity
+        self.setFixedHeight(32)
+
+        layout = QHBoxLayout(self)
+        layout.setContentsMargins(4, 2, 8, 2)
+        layout.setSpacing(8)
+
+        self.check = QCheckBox()
+        self.check.setChecked(True)
+        layout.addWidget(self.check)
+
+        color_str = ACTIVITY_COLORS.get(activity.activity, DEFAULT_COLOR)
+        dot = QLabel("●")
+        dot.setStyleSheet(f"color:{color_str};font-size:10px;")
+        dot.setFixedWidth(14)
+        layout.addWidget(dot)
+
+        name_lbl = QLabel(activity.activity)
+        name_lbl.setStyleSheet("font-size:12px;font-weight:bold;")
+        layout.addWidget(name_lbl, 1)
+
+        muted = palette.get("muted", "#7f849c")
+        time_lbl = QLabel(f"{activity.start_time}–{activity.end_time}")
+        time_lbl.setStyleSheet(f"font-size:10px;color:{muted};")
+        layout.addWidget(time_lbl)
+
+        dur = activity.duration_minutes
+        dur_lbl = QLabel(_jp_duration(dur) if dur > 0 else "—")
+        dur_lbl.setStyleSheet(f"font-size:11px;color:{muted};min-width:64px;")
+        dur_lbl.setAlignment(Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter)
+        layout.addWidget(dur_lbl)
+
+        if activity.notes and activity.notes.strip():
+            note_dot = QLabel("[note]")
+            note_dot.setStyleSheet(f"font-size:9px;color:{muted};")
+            note_dot.setToolTip(activity.notes.strip())
+            layout.addWidget(note_dot)
+
+    def is_checked(self) -> bool:
+        return self.check.isChecked()
+
+    def row_data(self) -> tuple[str, int]:
+        return (self.activity.activity, self.activity.duration_minutes)
+
+    def row_data_with_notes(self) -> tuple[str, int, str]:
+        return (self.activity.activity,
+                self.activity.duration_minutes,
+                self.activity.notes or "")
+
+
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+#  WorkPanel
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+class WorkPanel(QWidget):
+    """Daily 日報 write-up panel with optional AI generation.
+
+    The LLMClient is owned by MainWindow and injected here.
+    When settings change in the NetworkDialog, MainWindow calls
+    set_llm_client() to push the new client in.
+    """
+
+    llm_config_changed = pyqtSignal()   # emitted after local settings save
+
+    def __init__(self, llm_client: "LLMClient | None" = None, parent=None):
+        super().__init__(parent)
+        self._palette:    dict                    = {}
+        self._llm_client: LLMClient | None        = llm_client
+        self.store                                = ActivityStore()
+        self._rows:       list[_ActivityCheckRow] = []
+        self._ai_content  = ""
+        self._ai_busy     = False
+        # Kept on self — prevents GC before daemon thread fires
+        self._signals     = LLMSignals()
+        self._signals.result.connect(self._on_ai_result)
+        self._signals.error.connect(self._on_ai_error)
+
+        self._build_ui()
+        self._load_drafts()
+        self._refresh()
+
+        self._auto_timer = QTimer(self)
+        self._auto_timer.setInterval(60_000)
+        self._auto_timer.timeout.connect(self._refresh)
+        self._auto_timer.start()
+
+    # ── Public API ──────────────────────────────────
+
+    def set_llm_client(self, client: "LLMClient | None") -> None:
+        self._llm_client = client
+        status = "connected" if client else "no API key configured"
+        self._ai_status.setText(f"AI: {status}")
+        QTimer.singleShot(3000, lambda: self._ai_status.setText(""))
+
+    def set_palette(self, palette: dict) -> None:
+        self._palette = palette
+        self._refresh()
+
+    # ── Build UI ────────────────────────────────────
+
+    def _build_ui(self):
+        root = QVBoxLayout(self)
+        root.setContentsMargins(14, 10, 14, 10)
+        root.setSpacing(8)
+
+        # ── Header ──────────────────────────────────
+        hdr = QHBoxLayout()
+        title = QLabel("Work Panel — 日報作成")
+        title.setObjectName("sectionTitle")
+        hdr.addWidget(title)
+        hdr.addStretch()
+
+        self._date_lbl = QLabel()
+        self._date_lbl.setStyleSheet("font-size:12px;font-weight:bold;")
+        hdr.addWidget(self._date_lbl)
+
+        # Text-label buttons — no emoji, always renders
+        settings_btn = QPushButton("AI Settings")
+        settings_btn.setObjectName("secondary")
+        settings_btn.setFixedHeight(28)
+        settings_btn.setToolTip("Configure OpenRouter API key and model")
+        settings_btn.clicked.connect(self._open_settings)
+        hdr.addWidget(settings_btn)
+
+        refresh_btn = QPushButton("Refresh")
+        refresh_btn.setObjectName("secondary")
+        refresh_btn.setFixedHeight(28)
+        refresh_btn.setToolTip("Reload today's activities")
+        refresh_btn.clicked.connect(self._refresh)
+        hdr.addWidget(refresh_btn)
+
+        root.addLayout(hdr)
+
+        sep = QFrame(); sep.setFrameShape(QFrame.Shape.HLine)
+        sep.setObjectName("separator")
+        root.addWidget(sep)
+
+        # ── Main splitter ───────────────────────────
+        splitter = QSplitter(Qt.Orientation.Horizontal)
+        splitter.setChildrenCollapsible(False)
+
+        # LEFT pane
+        left = QWidget()
+        left_l = QVBoxLayout(left)
+        left_l.setContentsMargins(0, 0, 8, 0)
+        left_l.setSpacing(8)
+
+        # Activity list header with All / None buttons
+        act_hdr = QHBoxLayout()
+        act_title = QLabel("Today's Activities")
+        act_title.setStyleSheet("font-size:12px;font-weight:bold;")
+        act_hdr.addWidget(act_title)
+        act_hdr.addStretch()
+
+        all_btn = QPushButton("Select All")
+        all_btn.setObjectName("secondary")
+        all_btn.setFixedHeight(26)
+        all_btn.clicked.connect(lambda: self._set_all_checked(True))
+        act_hdr.addWidget(all_btn)
+
+        none_btn = QPushButton("Select None")
+        none_btn.setObjectName("secondary")
+        none_btn.setFixedHeight(26)
+        none_btn.clicked.connect(lambda: self._set_all_checked(False))
+        act_hdr.addWidget(none_btn)
+
+        left_l.addLayout(act_hdr)
+
+        # Scrollable checklist
+        self._act_container = QWidget()
+        self._act_layout = QVBoxLayout(self._act_container)
+        self._act_layout.setContentsMargins(0, 0, 0, 0)
+        self._act_layout.setSpacing(1)
+
+        act_scroll = QScrollArea()
+        act_scroll.setWidgetResizable(True)
+        act_scroll.setWidget(self._act_container)
+        act_scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+        act_scroll.setFrameShape(QFrame.Shape.NoFrame)
+        act_scroll.setMinimumHeight(100)
+        act_scroll.setMaximumHeight(240)
+        left_l.addWidget(act_scroll)
+
+        # AI generate row
+        ai_row = QHBoxLayout()
+        self._ai_btn = QPushButton("AI Generate Japanese Write-up")
+        self._ai_btn.setFixedHeight(30)
+        self._ai_btn.setToolTip(
+            "Uses the configured LLM to write polished Japanese descriptions\n"
+            "from your activity notes. Configure via AI Settings above.")
+        self._ai_btn.clicked.connect(self._run_ai)
+        ai_row.addWidget(self._ai_btn, 1)
+
+        self._clear_ai_btn = QPushButton("Clear AI")
+        self._clear_ai_btn.setObjectName("secondary")
+        self._clear_ai_btn.setFixedHeight(30)
+        self._clear_ai_btn.setToolTip("Revert to auto-generated bullets")
+        self._clear_ai_btn.clicked.connect(self._clear_ai)
+        self._clear_ai_btn.setVisible(False)
+        ai_row.addWidget(self._clear_ai_btn)
+        left_l.addLayout(ai_row)
+
+        self._ai_status = QLabel("")
+        self._ai_status.setStyleSheet("font-size:10px;")
+        self._ai_status.setWordWrap(True)
+        left_l.addWidget(self._ai_status)
+
+        sep2 = QFrame(); sep2.setFrameShape(QFrame.Shape.HLine)
+        sep2.setObjectName("separator")
+        left_l.addWidget(sep2)
+
+        ren_lbl = QLabel("【連絡事項】")
+        ren_lbl.setStyleSheet("font-size:12px;font-weight:bold;")
+        left_l.addWidget(ren_lbl)
+        self._renraku_edit = QPlainTextEdit()
+        self._renraku_edit.setPlaceholderText("Communications, blockers, notices…")
+        self._renraku_edit.setFixedHeight(75)
+        self._renraku_edit.textChanged.connect(self._update_preview)
+        left_l.addWidget(self._renraku_edit)
+
+        ash_lbl = QLabel("【明日の予定】")
+        ash_lbl.setStyleSheet("font-size:12px;font-weight:bold;")
+        left_l.addWidget(ash_lbl)
+        self._ashita_edit = QPlainTextEdit()
+        self._ashita_edit.setPlaceholderText(
+            "e.g.\nバックアップ手順書の仕上げに集中する\nコードレビューの対応")
+        self._ashita_edit.setMinimumHeight(90)
+        self._ashita_edit.textChanged.connect(self._update_preview)
+        left_l.addWidget(self._ashita_edit, 1)
+
+        save_btn = QPushButton("Save Draft")
+        save_btn.setObjectName("secondary")
+        save_btn.setFixedHeight(28)
+        save_btn.clicked.connect(self._save_drafts)
+        left_l.addWidget(save_btn)
+
+        splitter.addWidget(left)
+
+        # RIGHT pane
+        right = QWidget()
+        right_l = QVBoxLayout(right)
+        right_l.setContentsMargins(8, 0, 0, 0)
+        right_l.setSpacing(6)
+
+        prev_hdr = QHBoxLayout()
+        prev_title = QLabel("Preview")
+        prev_title.setStyleSheet("font-size:12px;font-weight:bold;")
+        prev_hdr.addWidget(prev_title)
+        prev_hdr.addStretch()
+
+        copy_btn = QPushButton("Copy to Clipboard")
+        copy_btn.setFixedHeight(28)
+        copy_btn.clicked.connect(self._copy_to_clipboard)
+        prev_hdr.addWidget(copy_btn)
+        right_l.addLayout(prev_hdr)
+
+        self._preview = QTextEdit()
+        self._preview.setReadOnly(True)
+        pf = QFont()
+        pf.setFamilies(["Meiryo UI", "Yu Gothic UI", "Segoe UI", "sans-serif"])
+        pf.setPixelSize(13)
+        self._preview.setFont(pf)
+        self._preview.setStyleSheet(
+            "QTextEdit{border:1px solid palette(mid);border-radius:6px;padding:8px;}")
+        right_l.addWidget(self._preview, 1)
+
+        export_btn = QPushButton("Export to Vault")
+        export_btn.setObjectName("secondary")
+        export_btn.setFixedHeight(28)
+        export_btn.clicked.connect(self._export_to_vault)
+        right_l.addWidget(export_btn)
+
+        splitter.addWidget(right)
+        splitter.setSizes([440, 360])
+        root.addWidget(splitter, 1)
+
+        self._feedback_lbl = QLabel("")
+        self._feedback_lbl.setStyleSheet("font-size:11px;")
+        root.addWidget(self._feedback_lbl)
+
+    # ── Data ────────────────────────────────────────
+
+    def _refresh(self):
+        today = date.today()
+        self._date_lbl.setText(_jp_date(today))
+        activities = self.store.get_for_date(today.isoformat())
+
+        while self._act_layout.count():
+            child = self._act_layout.takeAt(0)
+            if child.widget():
+                child.widget().deleteLater()
+        self._rows = []
+
+        if activities:
+            for act in activities:
+                row = _ActivityCheckRow(act, self._palette)
+                row.check.stateChanged.connect(self._update_preview)
+                self._rows.append(row)
+                self._act_layout.addWidget(row)
+        else:
+            muted = self._palette.get("muted", "#7f849c")
+            lbl = QLabel("No activities logged today yet.")
+            lbl.setStyleSheet(f"font-size:11px;color:{muted};padding:6px 2px;")
+            lbl.setWordWrap(True)
+            self._act_layout.addWidget(lbl)
+
+        self._act_layout.addStretch()
+        self._update_preview()
+
+    def _update_preview(self):
+        selected = [r.row_data() for r in self._rows if r.is_checked()]
+        self._preview.setPlainText(_build_report(
+            _jp_date(date.today()),
+            selected,
+            self._renraku_edit.toPlainText(),
+            self._ashita_edit.toPlainText(),
+            self._ai_content,
+        ))
+
+    def _set_all_checked(self, checked: bool):
+        for row in self._rows:
+            row.check.setChecked(checked)
+
+    # ── AI generation ───────────────────────────────
+
+    def _run_ai(self):
+        if self._ai_busy:
+            return
+        if self._llm_client is None:
+            QMessageBox.information(
+                self, "API Key Required",
+                "No OpenRouter API key configured.\n\n"
+                "Click 'AI Settings' to add your key and model ID,\n"
+                "or use Network Settings (Ctrl+Shift+N) → AI tab."
+            )
+            return
+        checked = [r for r in self._rows if r.is_checked()]
+        if not checked:
+            self._flash("No activities selected.", ms=2500)
+            return
+
+        self._ai_busy = True
+        self._ai_btn.setEnabled(False)
+        self._ai_status.setText("Generating Japanese write-up…")
+
+        self._llm_client.complete_async(
+            _build_llm_prompt([r.row_data_with_notes() for r in checked]),
+            on_result=self._signals.result.emit,
+            on_error=self._signals.error.emit,
+            max_tokens=800,
+            temperature=0.35,
+        )
+
+    def _on_ai_result(self, result: LLMResult):
+        self._ai_busy = False
+        self._ai_btn.setEnabled(True)
+        self._ai_content = result.text.strip()
+        self._clear_ai_btn.setVisible(True)
+        self._ai_status.setText(f"Done — {result.timing_summary()}")
+        self._update_preview()
+
+    def _on_ai_error(self, err: str):
+        self._ai_busy = False
+        self._ai_btn.setEnabled(True)
+        self._ai_status.setText(f"Error: {err}")
+
+    def _clear_ai(self):
+        self._ai_content = ""
+        self._clear_ai_btn.setVisible(False)
+        self._ai_status.setText("")
+        self._update_preview()
+
+    # ── Settings ────────────────────────────────────
+
+    def _open_settings(self):
+        """Open a minimal inline settings dialog for the AI key/model."""
+        from PyQt6.QtWidgets import (
+            QDialogButtonBox, QLineEdit, QFormLayout, QDialog
+        )
+
+        dlg = QDialog(self)
+        dlg.setWindowTitle("AI Settings — OpenRouter")
+        dlg.setMinimumWidth(460)
+        dlg.setModal(True)
+
+        layout = QVBoxLayout(dlg)
+        layout.setSpacing(10)
+        layout.setContentsMargins(14, 12, 14, 12)
+
+        info = QLabel(
+            "Get a free key at openrouter.ai/keys  |  "
+            "Find model IDs at openrouter.ai/models  |  "
+            "Free-tier models end in :free"
+        )
+        info.setWordWrap(True)
+        info.setStyleSheet("font-size:11px;")
+        layout.addWidget(info)
+
+        form = QFormLayout(); form.setSpacing(8)
+        cfg = load_config()
+
+        key_edit = QLineEdit()
+        key_edit.setPlaceholderText("sk-or-v1-…")
+        key_edit.setEchoMode(QLineEdit.EchoMode.Password)
+        key_edit.setText(cfg.get("openrouter_api_key", ""))
+        form.addRow("API Key:", key_edit)
+
+        model_edit = QLineEdit()
+        model_edit.setPlaceholderText("e.g. qwen/qwen3-6b-plus:free")
+        model_edit.setText(cfg.get("openrouter_model", DEFAULT_MODEL))
+        form.addRow("Model ID:", model_edit)
+        layout.addLayout(form)
+
+        # Test row
+        test_row = QHBoxLayout()
+        test_btn = QPushButton("Test Connection")
+        test_btn.setObjectName("secondary")
+        test_lbl = QLabel("")
+        test_lbl.setWordWrap(True)
+        test_row.addWidget(test_btn)
+        test_row.addWidget(test_lbl, 1)
+        layout.addLayout(test_row)
+
+        # Keep signals alive on the dialog
+        dlg._test_signals = LLMSignals()
+
+        def _do_test():
+            key   = key_edit.text().strip()
+            model = model_edit.text().strip() or DEFAULT_MODEL
+            if not key:
+                test_lbl.setText("Enter an API key first.")
+                return
+            test_btn.setEnabled(False)
+            test_lbl.setText("Testing…")
+            def _ok(r: LLMResult):
+                test_lbl.setText(f"Connected — {r.timing_summary()}")
+                test_btn.setEnabled(True)
+            def _err(e: str):
+                test_lbl.setText(f"Error: {e}")
+                test_btn.setEnabled(True)
+            dlg._test_signals.result.connect(_ok)
+            dlg._test_signals.error.connect(_err)
+            LLMClient(api_key=key, model=model).complete_async(
+                [{"role": "user", "content": "Say hello in one word."}],
+                on_result=dlg._test_signals.result.emit,
+                on_error=dlg._test_signals.error.emit,
+                max_tokens=16,
+            )
+
+        test_btn.clicked.connect(_do_test)
+
+        btn_box = QDialogButtonBox(
+            QDialogButtonBox.StandardButton.Save |
+            QDialogButtonBox.StandardButton.Cancel
+        )
+        btn_box.accepted.connect(dlg.accept)
+        btn_box.rejected.connect(dlg.reject)
+        layout.addWidget(btn_box)
+
+        if dlg.exec() == QDialog.DialogCode.Accepted:
+            save_llm_config(key_edit.text().strip(),
+                            model_edit.text().strip() or DEFAULT_MODEL)
+            self.llm_config_changed.emit()
+
+    # ── Drafts ──────────────────────────────────────
+
+    def _load_drafts(self):
+        cfg     = load_config()
+        drafts  = cfg.get("work_panel_drafts", {})
+        day_key = date.today().isoformat()
+        saved   = drafts.get(day_key, {})
+        self._renraku_edit.setPlainText(saved.get("renraku", ""))
+        self._ashita_edit.setPlainText(saved.get("ashita", ""))
+
+    def _save_drafts(self):
+        from src.config import load_config, save_config
+        cfg     = load_config()
+        drafts  = cfg.get("work_panel_drafts", {})
+        day_key = date.today().isoformat()
+        cutoff  = date.today().toordinal() - 14
+        drafts  = {k: v for k, v in drafts.items()
+                   if date.fromisoformat(k).toordinal() >= cutoff}
+        drafts[day_key] = {
+            "renraku": self._renraku_edit.toPlainText(),
+            "ashita":  self._ashita_edit.toPlainText(),
+        }
+        cfg["work_panel_drafts"] = drafts
+        save_config(cfg)
+        self._flash("Draft saved.")
+
+    # ── Clipboard / export ───────────────────────────
+
+    def _copy_to_clipboard(self):
+        text = self._preview.toPlainText()
+        if text:
+            QApplication.clipboard().setText(text)
+            self._flash("Copied to clipboard.")
+
+    def _export_to_vault(self):
+        cfg        = load_config()
+        vault_path = cfg.get("obsidian_vault_path", "")
+        if not vault_path or not Path(vault_path).is_dir():
+            QMessageBox.warning(self, "No Vault",
+                "Set an Obsidian vault path first (Notes → Set Vault).")
+            return
+        today   = date.today()
+        out_dir = (Path(vault_path) / "Daily Reports"
+                   / str(today.year)
+                   / f"{today.month:02d} - {today.strftime('%B')}")
+        out_dir.mkdir(parents=True, exist_ok=True)
+        filename = f"{today.isoformat()} 日報.md"
+        (out_dir / filename).write_text(
+            self._preview.toPlainText(), encoding="utf-8")
+        self._flash(
+            f"Saved to Daily Reports/{today.year}/{today.month:02d}/…/{filename}",
+            ms=4000)
+
+    def _flash(self, msg: str, ms: int = 3000):
+        self._feedback_lbl.setText(msg)
+        QTimer.singleShot(ms, lambda: self._feedback_lbl.setText(""))
+```
+
 ### `src\ui\themes\__init__.py`
 
 ```python
@@ -13199,6 +14164,9 @@ Arrow rendering:
 # ─────────────────────────────────────────────────────────
 #  SVG arrow helper
 # ─────────────────────────────────────────────────────────
+
+from matplotlib import image
+
 
 def _svg_arrow(direction: str, color: str) -> str:
     """Return a QSS url() value for an inline SVG triangle arrow.
@@ -13264,7 +14232,7 @@ def _build_theme(c: dict) -> str:
 QMainWindow, QWidget {{
     background-color: {_bg};
     color: {c['fg']};
-    font-family: "Segoe UI", "Meiryo UI", "Ubuntu", "Noto Sans", sans-serif;
+    font-family: "Segoe UI", "Segoe UI Emoji", "Segoe UI Symbol", "Meiryo UI", "Ubuntu", "Noto Sans", sans-serif;
     font-size: 12px;
 }}
 
@@ -13547,10 +14515,11 @@ QComboBox::down-arrow {{
     width: 10px;
     height: 6px;
 }}
-QComboBox::down-arrow:on {{
+/* Popup open (drop-down stays pressed while popup is visible) */
+QComboBox::drop-down:pressed QComboBox::down-arrow {{
     image: {_adn_on};
 }}
-QComboBox::drop-down:hover + QComboBox::down-arrow,
+
 QComboBox::down-arrow:hover {{
     image: {_adn_h};
 }}
@@ -14503,24 +15472,29 @@ class NavButton(QPushButton):
 ### `src\ui\widgets\network_dialog.py`
 
 ```python
-"""Network settings dialog — configure sync, view peers, manage connections."""
+"""Network settings dialog — configure sync, view peers, manage connections, AI/LLM."""
 
 import socket
 import threading
 
-from PyQt6.QtCore import Qt, QTimer
+from PyQt6.QtCore import Qt, QTimer, pyqtSignal
 from PyQt6.QtWidgets import (
     QDialog, QVBoxLayout, QHBoxLayout, QGridLayout,
     QLabel, QPushButton, QLineEdit, QSpinBox, QCheckBox,
     QFrame, QTableWidget, QTableWidgetItem, QHeaderView,
     QTextEdit, QTabWidget, QWidget, QMessageBox, QFileDialog,
+    QFormLayout,
 )
 
 from src.config import load_config, save_config
+from src.utils.llm import LLMClient, LLMResult, LLMSignals, DEFAULT_MODEL, save_llm_config
 
 
 class NetworkDialog(QDialog):
-    """Network and sync settings with live peer status and log viewer."""
+    """Network and sync settings with live peer status, log viewer, and AI config."""
+
+    # Emitted after AI settings are saved so MainWindow can reload the client
+    llm_settings_saved = pyqtSignal()
 
     def __init__(self, sync_engine=None, parent=None):
         super().__init__(parent)
@@ -14528,15 +15502,15 @@ class NetworkDialog(QDialog):
         self.setWindowTitle("Network & Sync Settings")
         self.setMinimumSize(650, 520)
         self.cfg = load_config()
+        # Keep test signals alive — must be on self, not a local variable
+        self._test_signals: LLMSignals | None = None
         self._build_ui()
         self._load_values()
 
-        # Connect to sync engine signals
         if self.sync_engine:
             self.sync_engine.peers_updated.connect(self._update_peer_table)
             self.sync_engine.sync_log.connect(self._append_log)
 
-        # Refresh peer table periodically
         self._refresh_timer = QTimer(self)
         self._refresh_timer.timeout.connect(self._refresh_peers)
         self._refresh_timer.start(5000)
@@ -14544,15 +15518,13 @@ class NetworkDialog(QDialog):
 
     def _build_ui(self):
         layout = QVBoxLayout(self)
-
         tabs = QTabWidget()
 
-        # ── Tab 1: Network Settings ───────────────────
+        # ── Tab 0: Network Settings ───────────────────
         settings_tab = QWidget()
         settings_layout = QVBoxLayout(settings_tab)
         settings_layout.setSpacing(12)
 
-        # Local info
         info_label = QLabel("This Device")
         info_label.setObjectName("sectionTitle")
         settings_layout.addWidget(info_label)
@@ -14571,7 +15543,6 @@ class NetworkDialog(QDialog):
         sep.setFrameShape(QFrame.Shape.HLine)
         settings_layout.addWidget(sep)
 
-        # Sync config
         sync_label = QLabel("Sync Configuration")
         sync_label.setObjectName("sectionTitle")
         settings_layout.addWidget(sync_label)
@@ -14612,7 +15583,6 @@ class NetworkDialog(QDialog):
         settings_layout.addLayout(form)
         settings_layout.addStretch()
 
-        # Save button
         save_row = QHBoxLayout()
         save_row.addStretch()
         save_btn = QPushButton("Save Settings")
@@ -14622,7 +15592,7 @@ class NetworkDialog(QDialog):
 
         tabs.addTab(settings_tab, "Settings")
 
-        # ── Tab 1.5: Obsidian ─────────────────────────
+        # ── Tab 1: Obsidian ───────────────────────────
         obs_tab = QWidget()
         obs_layout = QVBoxLayout(obs_tab)
         obs_layout.setSpacing(10)
@@ -14687,7 +15657,77 @@ class NetworkDialog(QDialog):
 
         tabs.addTab(obs_tab, "Obsidian")
 
-        # ── Tab 2: Peers ──────────────────────────────
+        # ── Tab 2: AI / LLM ──────────────────────────
+        ai_tab = QWidget()
+        ai_layout = QVBoxLayout(ai_tab)
+        ai_layout.setSpacing(12)
+
+        ai_title = QLabel("AI Assistant — OpenRouter")
+        ai_title.setObjectName("sectionTitle")
+        ai_layout.addWidget(ai_title)
+
+        ai_desc = QLabel(
+            "LocalSync uses OpenRouter to access free LLMs for features like the "
+            "Work Panel Japanese write-up generator. "
+            "Get a free API key at openrouter.ai/keys and paste any model ID from "
+            "openrouter.ai/models below. Free-tier models end in :free."
+        )
+        ai_desc.setObjectName("subtitle")
+        ai_desc.setWordWrap(True)
+        ai_layout.addWidget(ai_desc)
+
+        ai_form = QFormLayout()
+        ai_form.setSpacing(10)
+
+        self.llm_key_edit = QLineEdit()
+        self.llm_key_edit.setPlaceholderText("sk-or-v1-…")
+        self.llm_key_edit.setEchoMode(QLineEdit.EchoMode.Password)
+        self.llm_key_edit.setText(self.cfg.get("openrouter_api_key", ""))
+        ai_form.addRow("API Key:", self.llm_key_edit)
+
+        self.llm_model_edit = QLineEdit()
+        self.llm_model_edit.setPlaceholderText("e.g. qwen/qwen3-6b-plus:free")
+        self.llm_model_edit.setText(
+            self.cfg.get("openrouter_model", DEFAULT_MODEL))
+        ai_form.addRow("Model ID:", self.llm_model_edit)
+
+        ai_layout.addLayout(ai_form)
+
+        # Test row
+        test_row = QHBoxLayout()
+        self._ai_test_btn = QPushButton("Test Connection")
+        self._ai_test_btn.setObjectName("secondary")
+        self._ai_test_btn.clicked.connect(self._test_ai)
+        test_row.addWidget(self._ai_test_btn)
+        self._ai_test_lbl = QLabel("")
+        self._ai_test_lbl.setWordWrap(True)
+        test_row.addWidget(self._ai_test_lbl, 1)
+        ai_layout.addLayout(test_row)
+
+        # Current model status
+        key_set = bool(self.cfg.get("openrouter_api_key", "").strip())
+        model   = self.cfg.get("openrouter_model", DEFAULT_MODEL)
+        status_lbl = QLabel(
+            f"Status: {'API key configured' if key_set else 'No API key set'}  "
+            f"|  Model: {model}"
+        )
+        status_lbl.setObjectName("subtitle")
+        status_lbl.setWordWrap(True)
+        ai_layout.addWidget(status_lbl)
+        self._ai_status_lbl = status_lbl
+
+        ai_layout.addStretch()
+
+        ai_save_row = QHBoxLayout()
+        ai_save_row.addStretch()
+        ai_save_btn = QPushButton("Save AI Settings")
+        ai_save_btn.clicked.connect(self._save_ai_settings)
+        ai_save_row.addWidget(ai_save_btn)
+        ai_layout.addLayout(ai_save_row)
+
+        tabs.addTab(ai_tab, "AI")
+
+        # ── Tab 3: Peers ──────────────────────────────
         peers_tab = QWidget()
         peers_layout = QVBoxLayout(peers_tab)
 
@@ -14717,7 +15757,6 @@ class NetworkDialog(QDialog):
         self.peer_table.setEditTriggers(QTableWidget.EditTrigger.NoEditTriggers)
         peers_layout.addWidget(self.peer_table)
 
-        # Manual peer add
         add_row = QHBoxLayout()
         add_row.addWidget(QLabel("Add peer:"))
         self.manual_ip_edit = QLineEdit()
@@ -14741,7 +15780,7 @@ class NetworkDialog(QDialog):
 
         tabs.addTab(peers_tab, "Peers")
 
-        # ── Tab 3: Log ────────────────────────────────
+        # ── Tab 4: Log ────────────────────────────────
         log_tab = QWidget()
         log_layout = QVBoxLayout(log_tab)
 
@@ -14765,6 +15804,8 @@ class NetworkDialog(QDialog):
 
         layout.addWidget(tabs)
 
+    # ── Load / save ──────────────────────────────────
+
     def _load_values(self):
         self.sync_enabled_check.setChecked(self.cfg.get("sync_enabled", True))
         self.subnet_edit.setText(self.cfg.get("subnet", "192.168.0"))
@@ -14782,6 +15823,52 @@ class NetworkDialog(QDialog):
         if self.sync_engine:
             self.sync_engine.reload_config()
         QMessageBox.information(self, "Saved", "Network settings saved.")
+
+    def _save_ai_settings(self):
+        key   = self.llm_key_edit.text().strip()
+        model = self.llm_model_edit.text().strip() or DEFAULT_MODEL
+        save_llm_config(key, model)
+        self._ai_status_lbl.setText(
+            f"Status: {'API key configured' if key else 'No API key set'}"
+            f"  |  Model: {model}"
+        )
+        self.llm_settings_saved.emit()
+        QMessageBox.information(self, "Saved",
+            "AI settings saved.\nThe LLM client has been updated.")
+
+    # ── AI test ─────────────────────────────────────
+
+    def _test_ai(self):
+        key   = self.llm_key_edit.text().strip()
+        model = self.llm_model_edit.text().strip() or DEFAULT_MODEL
+        if not key:
+            self._ai_test_lbl.setText("Enter an API key first.")
+            return
+        self._ai_test_btn.setEnabled(False)
+        self._ai_test_lbl.setText("Testing…")
+
+        # Must be stored on self — local var would be GC'd before thread fires
+        self._test_signals = LLMSignals()
+
+        def _on_ok(result: LLMResult):
+            self._ai_test_lbl.setText(f"Connected — {result.timing_summary()}")
+            self._ai_test_btn.setEnabled(True)
+
+        def _on_err(err: str):
+            self._ai_test_lbl.setText(f"Error: {err}")
+            self._ai_test_btn.setEnabled(True)
+
+        self._test_signals.result.connect(_on_ok)
+        self._test_signals.error.connect(_on_err)
+
+        LLMClient(api_key=key, model=model).complete_async(
+            [{"role": "user", "content": "Say hello in one word."}],
+            on_result=self._test_signals.result.emit,
+            on_error=self._test_signals.error.emit,
+            max_tokens=16,
+        )
+
+    # ── Peer management ──────────────────────────────
 
     def _refresh_peers(self):
         if self.sync_engine:
@@ -14808,7 +15895,6 @@ class NetworkDialog(QDialog):
         ip = self.manual_ip_edit.text().strip()
         if ip and self.sync_engine:
             self.sync_engine.add_manual_peer(ip)
-            # Also save to known_peers
             known = self.cfg.get("known_peers", [])
             if ip not in known:
                 known.append(ip)
@@ -14824,28 +15910,21 @@ class NetworkDialog(QDialog):
             if ip_item:
                 ip = ip_item.text()
                 self._append_log(f"Pinging {ip}...")
-
                 def do_ping():
                     ok, info = self.sync_engine.ping_peer(ip)
-                    if ok:
-                        self._append_log(f"Ping {ip}: OK ({info})")
-                    else:
-                        self._append_log(f"Ping {ip}: FAILED ({info})")
-
+                    self._append_log(
+                        f"Ping {ip}: OK ({info})" if ok
+                        else f"Ping {ip}: FAILED ({info})")
                 threading.Thread(target=do_ping, daemon=True).start()
         elif not rows:
-            # Ping the manual IP field
             ip = self.manual_ip_edit.text().strip()
             if ip and self.sync_engine:
                 self._append_log(f"Pinging {ip}...")
-
                 def do_ping():
                     ok, info = self.sync_engine.ping_peer(ip)
-                    if ok:
-                        self._append_log(f"Ping {ip}: OK ({info})")
-                    else:
-                        self._append_log(f"Ping {ip}: FAILED ({info})")
-
+                    self._append_log(
+                        f"Ping {ip}: OK ({info})" if ok
+                        else f"Ping {ip}: FAILED ({info})")
                 threading.Thread(target=do_ping, daemon=True).start()
 
     def _force_scan(self):
@@ -14859,26 +15938,25 @@ class NetworkDialog(QDialog):
             self.sync_engine.force_sync()
 
     def _browse_vault(self):
-        from PyQt6.QtWidgets import QFileDialog
         path = QFileDialog.getExistingDirectory(
-            self, "Select Obsidian Vault",
-            self.vault_path_edit.text(),
-        )
+            self, "Select Obsidian Vault", self.vault_path_edit.text())
         if path:
             self.vault_path_edit.setText(path)
 
     def _save_obsidian_settings(self):
-        self.cfg["obsidian_vault_path"] = self.vault_path_edit.text().strip()
+        self.cfg["obsidian_vault_path"]   = self.vault_path_edit.text().strip()
         self.cfg["obsidian_sync_enabled"] = self.vault_sync_check.isChecked()
-        self.cfg["obsidian_api_key"] = self.api_key_edit.text().strip()
-        self.cfg["obsidian_api_url"] = self.api_url_edit.text().strip() or "http://127.0.0.1:27123"
+        self.cfg["obsidian_api_key"]      = self.api_key_edit.text().strip()
+        self.cfg["obsidian_api_url"]      = (
+            self.api_url_edit.text().strip() or "http://127.0.0.1:27123")
         save_config(self.cfg)
-        QMessageBox.information(self, "Saved", "Obsidian settings saved.\nRestart the app for vault changes to take effect.")
+        QMessageBox.information(self, "Saved",
+            "Obsidian settings saved.\nRestart the app for vault changes to take effect.")
 
     def _append_log(self, msg: str):
         self.log_view.append(msg)
-        scrollbar = self.log_view.verticalScrollBar()
-        scrollbar.setValue(scrollbar.maximum())
+        self.log_view.verticalScrollBar().setValue(
+            self.log_view.verticalScrollBar().maximum())
 
     @staticmethod
     def _get_local_ip() -> str:
@@ -14890,7 +15968,6 @@ class NetworkDialog(QDialog):
             return ip
         except Exception:
             return "unknown"
-
 ```
 
 ### `src\utils\__init__.py`
@@ -14900,9 +15977,228 @@ class NetworkDialog(QDialog):
 
 from src.utils.timestamps import now_utc, parse_ts
 from src.utils.paths import normalize_path, ensure_parent
+from src.utils.llm import LLMClient, load_llm_client, save_llm_config
 
-__all__ = ["now_utc", "parse_ts", "normalize_path", "ensure_parent"]
+__all__ = ["now_utc", "parse_ts", "normalize_path", "ensure_parent", "LLMClient", "load_llm_client", "save_llm_config"]
 
+```
+
+### `src\utils\llm.py`
+
+```python
+"""LLM client — thin wrapper around the OpenRouter chat completions API.
+
+Uses only stdlib (urllib + json + threading + time) — no extra dependencies.
+
+Exports
+-------
+LLMResult   : dataclass returned by every successful call
+LLMSignals  : QObject subclass with result/error pyqtSignals (thread-safe bridge)
+LLMClient   : the actual HTTP client
+load_llm_client / save_llm_config : config helpers
+DEFAULT_MODEL : fallback model string
+"""
+
+from __future__ import annotations
+
+import json
+import logging
+import threading
+import time
+import urllib.error
+import urllib.request
+from dataclasses import dataclass
+from typing import Callable
+
+from PyQt6.QtCore import QObject, pyqtSignal
+
+logger = logging.getLogger(__name__)
+
+OPENROUTER_BASE = "https://openrouter.ai/api/v1"
+DEFAULT_MODEL   = "qwen/qwen3-6b-plus:free"
+
+
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+#  Result dataclass
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+@dataclass
+class LLMResult:
+    """Returned by every successful LLM call."""
+    text:              str
+    elapsed_ms:        int
+    model:             str
+    prompt_tokens:     int = 0
+    completion_tokens: int = 0
+
+    @property
+    def total_tokens(self) -> int:
+        return self.prompt_tokens + self.completion_tokens
+
+    @property
+    def elapsed_s(self) -> float:
+        return self.elapsed_ms / 1000
+
+    def timing_summary(self) -> str:
+        parts = [f"{self.elapsed_s:.1f}s"]
+        if self.total_tokens:
+            parts.append(
+                f"{self.total_tokens} tokens"
+                f" ({self.prompt_tokens}↑ {self.completion_tokens}↓)"
+            )
+        if self.model:
+            short = self.model.split("/")[-1].replace(":free", "").replace(":nitro", "")
+            parts.append(short)
+        return " · ".join(parts)
+
+    def __str__(self) -> str:
+        return self.text
+
+
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+#  Thread-safe signal bridge  (shared by all UI components)
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+class LLMSignals(QObject):
+    """QObject whose signals marshal LLM callbacks onto the Qt main thread.
+
+    Always store an instance on *self* (not a local variable) so the
+    underlying C++ object is not garbage-collected before the worker
+    thread fires.
+    """
+    result = pyqtSignal(object)   # carries LLMResult
+    error  = pyqtSignal(str)
+
+
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+#  Client
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+class LLMClient:
+    """Thin OpenRouter chat-completions client."""
+
+    def __init__(self, api_key: str,
+                 model:   str = DEFAULT_MODEL,
+                 timeout: int = 60):
+        self.api_key = api_key.strip()
+        self.model   = model.strip()
+        self.timeout = timeout
+
+    def complete(self, messages: list[dict],
+                 max_tokens:   int   = 1200,
+                 temperature:  float = 0.4) -> LLMResult:
+        """Synchronous call — blocks. Use only from a worker thread."""
+        payload = json.dumps({
+            "model":       self.model,
+            "messages":    messages,
+            "max_tokens":  max_tokens,
+            "temperature": temperature,
+        }).encode("utf-8")
+
+        req = urllib.request.Request(
+            f"{OPENROUTER_BASE}/chat/completions",
+            data=payload,
+            headers={
+                "Authorization": f"Bearer {self.api_key}",
+                "Content-Type":  "application/json",
+                "HTTP-Referer":  "https://localsync.app",
+                "X-Title":       "LocalSync",
+            },
+            method="POST",
+        )
+
+        t0 = time.perf_counter()
+        try:
+            with urllib.request.urlopen(req, timeout=self.timeout) as resp:
+                raw = resp.read().decode("utf-8")
+        except urllib.error.HTTPError as exc:
+            body = exc.read().decode("utf-8", errors="replace")
+            try:
+                msg = json.loads(body).get("error", {}).get("message", body)
+            except Exception:
+                msg = body
+            raise RuntimeError(f"OpenRouter API error {exc.code}: {msg}") from exc
+        except urllib.error.URLError as exc:
+            raise RuntimeError(f"Network error: {exc.reason}") from exc
+        elapsed_ms = int((time.perf_counter() - t0) * 1000)
+
+        try:
+            data = json.loads(raw)
+        except json.JSONDecodeError as exc:
+            raise RuntimeError(f"Invalid JSON response: {raw[:120]}") from exc
+
+        try:
+            text = data["choices"][0]["message"]["content"]
+        except (KeyError, IndexError) as exc:
+            raise RuntimeError(
+                f"Unexpected response schema: {json.dumps(data)[:200]}"
+            ) from exc
+
+        usage = data.get("usage") or {}
+        model = data.get("model") or self.model
+        return LLMResult(
+            text              = text,
+            elapsed_ms        = elapsed_ms,
+            model             = model,
+            prompt_tokens     = usage.get("prompt_tokens",     0),
+            completion_tokens = usage.get("completion_tokens", 0),
+        )
+
+    def complete_async(
+        self,
+        messages:    list[dict],
+        on_result:   Callable[[LLMResult], None],
+        on_error:    Callable[[str],       None],
+        max_tokens:  int   = 1200,
+        temperature: float = 0.4,
+        retries:     int   = 3,
+    ) -> None:
+        """Non-blocking — fires a daemon thread.  Retries on 429 with back-off."""
+        def _worker():
+            last_err = ""
+            for attempt in range(max(retries, 1)):
+                try:
+                    result = self.complete(messages, max_tokens, temperature)
+                    on_result(result)
+                    return
+                except RuntimeError as exc:
+                    last_err = str(exc)
+                    if "429" in last_err and attempt < retries - 1:
+                        wait = 4 * (attempt + 1)
+                        logger.info("LLM 429 — retrying in %ss (%d/%d)",
+                                    wait, attempt + 1, retries)
+                        time.sleep(wait)
+                    else:
+                        break
+                except Exception as exc:
+                    last_err = str(exc)
+                    break
+            logger.warning("LLM call failed after %d attempt(s): %s", retries, last_err)
+            on_error(last_err)
+
+        threading.Thread(target=_worker, daemon=True).start()
+
+
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+#  Config helpers
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+def load_llm_client() -> "LLMClient | None":
+    """Return a configured LLMClient, or None if no key is saved."""
+    from src.config import load_config
+    cfg   = load_config()
+    key   = cfg.get("openrouter_api_key", "").strip()
+    model = cfg.get("openrouter_model",   DEFAULT_MODEL).strip() or DEFAULT_MODEL
+    return LLMClient(api_key=key, model=model) if key else None
+
+
+def save_llm_config(api_key: str, model: str) -> None:
+    """Persist API key and model choice to config."""
+    from src.config import load_config, save_config
+    cfg = load_config()
+    cfg["openrouter_api_key"] = api_key.strip()
+    cfg["openrouter_model"]   = model.strip() or DEFAULT_MODEL
+    save_config(cfg)
 ```
 
 ### `src\utils\paths.py`

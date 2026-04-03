@@ -17,6 +17,9 @@ Arrow rendering:
 #  SVG arrow helper
 # ─────────────────────────────────────────────────────────
 
+from matplotlib import image
+
+
 def _svg_arrow(direction: str, color: str) -> str:
     """Return a QSS url() value for an inline SVG triangle arrow.
 
@@ -364,10 +367,11 @@ QComboBox::down-arrow {{
     width: 10px;
     height: 6px;
 }}
-QComboBox::down-arrow:on {{
+/* Popup open (drop-down stays pressed while popup is visible) */
+QComboBox::drop-down:pressed QComboBox::down-arrow {{
     image: {_adn_on};
 }}
-QComboBox::drop-down:hover + QComboBox::down-arrow,
+
 QComboBox::down-arrow:hover {{
     image: {_adn_h};
 }}
