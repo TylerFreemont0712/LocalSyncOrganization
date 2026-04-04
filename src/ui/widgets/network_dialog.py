@@ -9,11 +9,17 @@ from PyQt6.QtWidgets import (
     QLabel, QPushButton, QLineEdit, QSpinBox, QCheckBox,
     QFrame, QTableWidget, QTableWidgetItem, QHeaderView,
     QTextEdit, QTabWidget, QWidget, QMessageBox, QFileDialog,
-    QFormLayout,
+    QFormLayout, QListWidget, QComboBox, QScrollArea,
 )
 
 from src.config import load_config, save_config
-from src.utils.llm import LLMClient, LLMResult, LLMSignals, DEFAULT_MODEL, save_llm_config
+from src.utils.llm import (
+    LLMClient, LLMResult, LLMSignals,
+    CouncilSignals, CouncilResult,
+    DEFAULT_MODEL, save_llm_config,
+    COUNCIL_SYNTHESIS_MODES, DEFAULT_SYNTHESIS_MODE,
+    load_council_config, save_council_config,
+)
 
 
 class NetworkDialog(QDialog):
@@ -26,10 +32,11 @@ class NetworkDialog(QDialog):
         super().__init__(parent)
         self.sync_engine = sync_engine
         self.setWindowTitle("Network & Sync Settings")
-        self.setMinimumSize(650, 520)
+        self.setMinimumSize(650, 560)
         self.cfg = load_config()
         # Keep test signals alive — must be on self, not a local variable
         self._test_signals: LLMSignals | None = None
+        self._council_test_signals: CouncilSignals | None = None
         self._build_ui()
         self._load_values()
 
@@ -184,10 +191,17 @@ class NetworkDialog(QDialog):
         tabs.addTab(obs_tab, "Obsidian")
 
         # ── Tab 2: AI / LLM ──────────────────────────
+        ai_outer = QWidget()
+        ai_scroll = QScrollArea()
+        ai_scroll.setWidgetResizable(True)
+        ai_scroll.setFrameShape(QFrame.Shape.NoFrame)
+        ai_scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+
         ai_tab = QWidget()
         ai_layout = QVBoxLayout(ai_tab)
         ai_layout.setSpacing(12)
 
+        # ── Primary model ──────────────────────────────
         ai_title = QLabel("AI Assistant — OpenRouter")
         ai_title.setObjectName("sectionTitle")
         ai_layout.addWidget(ai_title)
@@ -215,7 +229,7 @@ class NetworkDialog(QDialog):
         self.llm_model_edit.setPlaceholderText("e.g. qwen/qwen3-6b-plus:free")
         self.llm_model_edit.setText(
             self.cfg.get("openrouter_model", DEFAULT_MODEL))
-        ai_form.addRow("Model ID:", self.llm_model_edit)
+        ai_form.addRow("Primary Model ID:", self.llm_model_edit)
 
         ai_layout.addLayout(ai_form)
 
@@ -242,8 +256,115 @@ class NetworkDialog(QDialog):
         ai_layout.addWidget(status_lbl)
         self._ai_status_lbl = status_lbl
 
+        ai_layout.addSpacing(4)
+
+        # ── Council section ────────────────────────────
+        council_sep = QFrame()
+        council_sep.setObjectName("separator")
+        council_sep.setFrameShape(QFrame.Shape.HLine)
+        ai_layout.addWidget(council_sep)
+
+        council_title = QLabel("LLM Council")
+        council_title.setObjectName("sectionTitle")
+        ai_layout.addWidget(council_title)
+
+        council_desc = QLabel(
+            "Fan out a single prompt to 3–6 models in parallel, then synthesise "
+            "their responses into one final answer. Uses the same API key as above. "
+            "Configure via the Debug panel (Ctrl+0)."
+        )
+        council_desc.setObjectName("subtitle")
+        council_desc.setWordWrap(True)
+        ai_layout.addWidget(council_desc)
+
+        # Enable toggle
+        enable_row = QHBoxLayout()
+        enable_row.addWidget(QLabel("Enable Council:"))
+        self._council_enabled_check = QCheckBox()
+        self._council_enabled_check.setChecked(self.cfg.get("council_enabled", False))
+        self._council_enabled_check.toggled.connect(self._on_council_toggled)
+        enable_row.addWidget(self._council_enabled_check)
+        enable_row.addStretch()
+        ai_layout.addLayout(enable_row)
+
+        # Council body (hidden when disabled)
+        self._council_body = QWidget()
+        council_body_layout = QVBoxLayout(self._council_body)
+        council_body_layout.setContentsMargins(0, 0, 0, 0)
+        council_body_layout.setSpacing(8)
+
+        # Synthesis model + mode
+        synth_form = QFormLayout()
+        synth_form.setSpacing(8)
+
+        self._synth_model_edit = QLineEdit()
+        self._synth_model_edit.setPlaceholderText(
+            "Synthesis model (leave blank to use first council model)")
+        self._synth_model_edit.setText(
+            self.cfg.get("council_synthesis_model", ""))
+        synth_form.addRow("Synthesis Model:", self._synth_model_edit)
+
+        self._synth_mode_combo = QComboBox()
+        self._synth_mode_combo.addItems(COUNCIL_SYNTHESIS_MODES)
+        saved_mode = self.cfg.get("council_synthesis_mode", DEFAULT_SYNTHESIS_MODE)
+        idx = self._synth_mode_combo.findText(saved_mode)
+        if idx >= 0:
+            self._synth_mode_combo.setCurrentIndex(idx)
+        synth_form.addRow("Synthesis Mode:", self._synth_mode_combo)
+
+        council_body_layout.addLayout(synth_form)
+
+        # Model list
+        models_lbl = QLabel("Council Models (3–6)")
+        models_lbl.setObjectName("subtitle")
+        council_body_layout.addWidget(models_lbl)
+
+        self._council_model_list = QListWidget()
+        self._council_model_list.setMaximumHeight(130)
+        self._council_model_list.setToolTip(
+            "Double-click a model to edit it")
+        self._council_model_list.itemDoubleClicked.connect(self._edit_council_model)
+        for m in self.cfg.get("council_models", []):
+            self._council_model_list.addItem(m)
+        council_body_layout.addWidget(self._council_model_list)
+
+        # Add / Remove row
+        list_btn_row = QHBoxLayout()
+        add_model_btn = QPushButton("+ Add Model")
+        add_model_btn.setObjectName("secondary")
+        add_model_btn.clicked.connect(self._add_council_model)
+        list_btn_row.addWidget(add_model_btn)
+
+        remove_model_btn = QPushButton("Remove Selected")
+        remove_model_btn.setObjectName("secondary")
+        remove_model_btn.clicked.connect(self._remove_council_model)
+        list_btn_row.addWidget(remove_model_btn)
+
+        list_btn_row.addStretch()
+
+        self._council_count_lbl = QLabel("")
+        self._council_count_lbl.setObjectName("subtitle")
+        list_btn_row.addWidget(self._council_count_lbl)
+        council_body_layout.addLayout(list_btn_row)
+        self._update_council_count()
+
+        # Test council button
+        council_test_row = QHBoxLayout()
+        self._council_test_btn = QPushButton("Test Council")
+        self._council_test_btn.setObjectName("secondary")
+        self._council_test_btn.clicked.connect(self._test_council)
+        council_test_row.addWidget(self._council_test_btn)
+        self._council_test_lbl = QLabel("")
+        self._council_test_lbl.setWordWrap(True)
+        council_test_row.addWidget(self._council_test_lbl, 1)
+        council_body_layout.addLayout(council_test_row)
+
+        ai_layout.addWidget(self._council_body)
+        self._council_body.setVisible(self._council_enabled_check.isChecked())
+
         ai_layout.addStretch()
 
+        # Save button
         ai_save_row = QHBoxLayout()
         ai_save_row.addStretch()
         ai_save_btn = QPushButton("Save AI Settings")
@@ -251,7 +372,13 @@ class NetworkDialog(QDialog):
         ai_save_row.addWidget(ai_save_btn)
         ai_layout.addLayout(ai_save_row)
 
-        tabs.addTab(ai_tab, "AI")
+        ai_scroll.setWidget(ai_tab)
+
+        ai_outer_layout = QVBoxLayout(ai_outer)
+        ai_outer_layout.setContentsMargins(0, 0, 0, 0)
+        ai_outer_layout.addWidget(ai_scroll)
+
+        tabs.addTab(ai_outer, "AI")
 
         # ── Tab 3: Peers ──────────────────────────────
         peers_tab = QWidget()
@@ -358,6 +485,19 @@ class NetworkDialog(QDialog):
             f"Status: {'API key configured' if key else 'No API key set'}"
             f"  |  Model: {model}"
         )
+
+        # Save council settings
+        models = [
+            self._council_model_list.item(i).text().strip()
+            for i in range(self._council_model_list.count())
+        ]
+        save_council_config(
+            enabled         = self._council_enabled_check.isChecked(),
+            models          = models,
+            synthesis_model = self._synth_model_edit.text().strip(),
+            synthesis_mode  = self._synth_mode_combo.currentText(),
+        )
+
         self.llm_settings_saved.emit()
         QMessageBox.information(self, "Saved",
             "AI settings saved.\nThe LLM client has been updated.")
@@ -391,6 +531,96 @@ class NetworkDialog(QDialog):
             [{"role": "user", "content": "Say hello in one word."}],
             on_result=self._test_signals.result.emit,
             on_error=self._test_signals.error.emit,
+            max_tokens=16,
+        )
+
+    # ── Council helpers ──────────────────────────────
+
+    def _on_council_toggled(self, enabled: bool):
+        self._council_body.setVisible(enabled)
+
+    def _update_council_count(self):
+        n = self._council_model_list.count()
+        color = "green" if 3 <= n <= 6 else "red"
+        self._council_count_lbl.setText(
+            f"<span style='color:{color}'>{n} model{'s' if n != 1 else ''}</span>"
+        )
+
+    def _add_council_model(self):
+        if self._council_model_list.count() >= 6:
+            QMessageBox.warning(self, "Council Full",
+                "A council can have at most 6 models.")
+            return
+        from PyQt6.QtWidgets import QInputDialog
+        text, ok = QInputDialog.getText(
+            self, "Add Council Model",
+            "Model ID (e.g. mistralai/mistral-7b-instruct:free):"
+        )
+        if ok and text.strip():
+            self._council_model_list.addItem(text.strip())
+            self._update_council_count()
+
+    def _remove_council_model(self):
+        row = self._council_model_list.currentRow()
+        if row >= 0:
+            self._council_model_list.takeItem(row)
+            self._update_council_count()
+
+    def _edit_council_model(self, item):
+        from PyQt6.QtWidgets import QInputDialog
+        text, ok = QInputDialog.getText(
+            self, "Edit Council Model", "Model ID:", text=item.text()
+        )
+        if ok and text.strip():
+            item.setText(text.strip())
+
+    def _test_council(self):
+        key = self.llm_key_edit.text().strip()
+        if not key:
+            self._council_test_lbl.setText("Enter an API key first.")
+            return
+        models = [
+            self._council_model_list.item(i).text().strip()
+            for i in range(self._council_model_list.count())
+        ]
+        if len(models) < 1:
+            self._council_test_lbl.setText("Add at least one model first.")
+            return
+
+        self._council_test_btn.setEnabled(False)
+        self._council_test_lbl.setText(f"Testing {len(models)} model(s)…")
+
+        from src.utils.llm import LLMCouncil
+        council = LLMCouncil(
+            api_key         = key,
+            council_models  = models,
+            synthesis_model = self._synth_model_edit.text().strip(),
+            synthesis_mode  = self._synth_mode_combo.currentText(),
+        )
+
+        self._council_test_signals = CouncilSignals()
+
+        def _on_ok(result: CouncilResult):
+            ok_count  = result.member_count
+            fail_count = len(result.failed_models)
+            parts = [f"{ok_count} responded"]
+            if fail_count:
+                parts.append(f"{fail_count} failed")
+            parts.append(result.final.timing_summary())
+            self._council_test_lbl.setText("Council OK — " + " · ".join(parts))
+            self._council_test_btn.setEnabled(True)
+
+        def _on_err(err: str):
+            self._council_test_lbl.setText(f"Error: {err}")
+            self._council_test_btn.setEnabled(True)
+
+        self._council_test_signals.result.connect(_on_ok)
+        self._council_test_signals.error.connect(_on_err)
+
+        council.complete_async(
+            [{"role": "user", "content": "Say hello in one word."}],
+            on_result=self._council_test_signals.result.emit,
+            on_error=self._council_test_signals.error.emit,
             max_tokens=16,
         )
 

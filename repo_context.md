@@ -35,6 +35,7 @@ This document contains the full context of the repository, formatted for optimal
       - activity_panel.py
       - calendar_panel.py
       - dashboard_panel.py
+      - debug_panel.py
       - finance_charts.py
       - finance_panel.py
       - notes_panel.py
@@ -54,8 +55,8 @@ This document contains the full context of the repository, formatted for optimal
 ```
 
 ## 📊 Project Summary
-- Total Python files: **38**
-- Total lines of code: **14343**
+- Total Python files: **39**
+- Total lines of code: **15295**
 
 ## 🔗 Dependency Graph
 ### main.pyw
@@ -189,6 +190,7 @@ This document contains the full context of the repository, formatted for optimal
 - src.ui.modules.finance_charts
 - src.ui.modules.activity_panel
 - src.ui.modules.work_panel
+- src.ui.modules.debug_panel
 - src.data.todo_store
 - src.data.calendar_store
 - src.data.finance_store
@@ -247,6 +249,13 @@ This document contains the full context of the repository, formatted for optimal
 - src.data.soft_events_store
 - src.ui.widgets.nav_button
 - PyQt6.QtWidgets
+
+### src\ui\modules\debug_panel.py
+- __future__
+- PyQt6.QtCore
+- PyQt6.QtGui
+- PyQt6.QtWidgets
+- src.utils.llm
 
 ### src\ui\modules\finance_charts.py
 - calendar
@@ -344,6 +353,9 @@ This document contains the full context of the repository, formatted for optimal
 - PyQt6.QtWidgets
 - src.config
 - src.utils.llm
+- PyQt6.QtWidgets
+- PyQt6.QtWidgets
+- src.utils.llm
 
 ### src\utils\__init__.py
 - src.utils.timestamps
@@ -358,9 +370,12 @@ This document contains the full context of the repository, formatted for optimal
 - time
 - urllib.error
 - urllib.request
+- concurrent.futures
 - dataclasses
 - typing
 - PyQt6.QtCore
+- src.config
+- src.config
 - src.config
 - src.config
 
@@ -1130,6 +1145,42 @@ Input can be entered in USD or JPY — get_goals() always returns USD.
 - `_refresh`: (No docstring)
 - `_clear_layout`: (No docstring)
 
+### src\ui\modules\debug_panel.py
+**Module docstring:**
+Debug / Council Sandbox panel.
+
+Always the final panel in the sidebar (Ctrl+0).  Provides:
+  • A free-form prompt box to run any text through the LLM Council
+  • Per-member response cards showing each model's individual answer + timing
+  • A synthesised result box at the bottom with copy-to-clipboard
+  • Graceful fallback to single-model mode when the council is not configured
+
+This panel intentionally has no persistent state — it is a live debug
+surface, not a data store.
+
+**Classes:**
+- `_MemberCard`: Displays a single council member's response.
+- `_FailedCard`: Displayed when a council member errored out.
+- `DebugPanel`: LLM Council debug / sandbox panel — always the last nav item.
+
+**Functions:**
+- `_p`: (No docstring)
+- `__init__`: (No docstring)
+- `_apply_style`: (No docstring)
+- `__init__`: (No docstring)
+- `__init__`: (No docstring)
+- `set_palette`: (No docstring)
+- `_refresh_styles`: (No docstring)
+- `_build_ui`: (No docstring)
+- `_run`: (No docstring)
+- `_on_council_result`: (No docstring)
+- `_on_single_result`: (No docstring)
+- `_on_error`: (No docstring)
+- `_clear_results`: Remove all member cards (keep the trailing stretch).
+- `_clear`: (No docstring)
+- `_copy_result`: (No docstring)
+- `_set_status`: (No docstring)
+
 ### src\ui\modules\finance_charts.py
 **Module docstring:**
 Finance charts — custom painted graphs for earnings data visualization.
@@ -1603,6 +1654,12 @@ Network settings dialog — configure sync, view peers, manage connections, AI/L
 - `_save_settings`: (No docstring)
 - `_save_ai_settings`: (No docstring)
 - `_test_ai`: (No docstring)
+- `_on_council_toggled`: (No docstring)
+- `_update_council_count`: (No docstring)
+- `_add_council_model`: (No docstring)
+- `_remove_council_model`: (No docstring)
+- `_edit_council_model`: (No docstring)
+- `_test_council`: (No docstring)
 - `_refresh_peers`: (No docstring)
 - `_update_peer_table`: (No docstring)
 - `_add_manual_peer`: (No docstring)
@@ -1613,6 +1670,8 @@ Network settings dialog — configure sync, view peers, manage connections, AI/L
 - `_save_obsidian_settings`: (No docstring)
 - `_append_log`: (No docstring)
 - `_get_local_ip`: (No docstring)
+- `_on_ok`: (No docstring)
+- `_on_err`: (No docstring)
 - `_on_ok`: (No docstring)
 - `_on_err`: (No docstring)
 - `do_ping`: (No docstring)
@@ -1636,31 +1695,67 @@ Uses only stdlib (urllib + json + threading + time) — no extra dependencies.
 
 Exports
 -------
-LLMResult   : dataclass returned by every successful call
-LLMSignals  : QObject subclass with result/error pyqtSignals (thread-safe bridge)
-LLMClient   : the actual HTTP client
-load_llm_client / save_llm_config : config helpers
-DEFAULT_MODEL : fallback model string
+LLMResult      : dataclass returned by every successful call
+LLMSignals     : QObject subclass with result/error pyqtSignals (thread-safe bridge)
+LLMClient      : the actual HTTP client
+CouncilResult  : dataclass returned by a council run
+LLMCouncil     : fan-out client that queries multiple models and synthesises
+load_llm_client / save_llm_config          : single-model config helpers
+load_council_config / save_council_config  : council config helpers
+DEFAULT_MODEL  : fallback model string
 
 **Classes:**
 - `LLMResult`: Returned by every successful LLM call.
+- `CouncilResult`: Returned by a successful LLMCouncil run.
+
+Attributes
+----------
+final           : The synthesised LLMResult produced by the synthesis pass.
+members         : One LLMResult per council model that responded successfully.
+failed_models   : Model IDs that errored out during the fan-out phase.
+synthesis_model : The model used for the final synthesis pass.
+synthesis_mode  : One of 'Consensus', 'Best Pick', 'Debate'.
 - `LLMSignals`: QObject whose signals marshal LLM callbacks onto the Qt main thread.
 
 Always store an instance on *self* (not a local variable) so the
 underlying C++ object is not garbage-collected before the worker
 thread fires.
+- `CouncilSignals`: Same pattern as LLMSignals but for CouncilResult.
 - `LLMClient`: Thin OpenRouter chat-completions client.
+- `LLMCouncil`: Queries multiple OpenRouter models in parallel and synthesises their responses.
+
+Parameters
+----------
+api_key         : OpenRouter API key (shared across all members).
+council_models  : List of 3–6 model ID strings.
+synthesis_model : Model used for the synthesis pass (defaults to council_models[0]).
+synthesis_mode  : One of 'Consensus', 'Best Pick', 'Debate'.
+timeout         : Per-request timeout in seconds.
 
 **Functions:**
 - `load_llm_client`: Return a configured LLMClient, or None if no key is saved.
 - `save_llm_config`: Persist API key and model choice to config.
+- `load_council_config`: Return a configured LLMCouncil, or None if council is disabled / unconfigured.
+- `save_council_config`: Persist council settings to config.
 - `total_tokens`: (No docstring)
 - `elapsed_s`: (No docstring)
 - `timing_summary`: (No docstring)
 - `__str__`: (No docstring)
+- `member_count`: (No docstring)
+- `summary`: (No docstring)
 - `__init__`: (No docstring)
 - `complete`: Synchronous call — blocks. Use only from a worker thread.
 - `complete_async`: Non-blocking — fires a daemon thread.  Retries on 429 with back-off.
+- `__init__`: (No docstring)
+- `_client`: (No docstring)
+- `_call_member`: Call one council member.  Returns (model, result_or_None, error_str).
+- `_build_synthesis_messages`: Build the synthesis prompt incorporating all member responses.
+- `complete`: Synchronous council call — blocks until all members and synthesis finish.
+
+Fan-out is parallel; synthesis is sequential after fan-out completes.
+Always run from a worker thread.
+- `complete_async`: Non-blocking council call — fires a single daemon thread.
+- `_worker`: (No docstring)
 - `_worker`: (No docstring)
 
 ### src\utils\paths.py
@@ -4994,6 +5089,7 @@ from src.ui.modules.dashboard_panel import DashboardPanel
 from src.ui.modules.finance_charts import FinanceChartsPanel
 from src.ui.modules.activity_panel import ActivityPanel
 from src.ui.modules.work_panel import WorkPanel
+from src.ui.modules.debug_panel import DebugPanel 
 
 from src.data.todo_store import TodoStore
 from src.data.calendar_store import CalendarStore
@@ -5171,7 +5267,8 @@ class MainWindow(QMainWindow):
             ("Charts", "\U0001f4c8", "Ctrl+5"),
             ("Tasks", "\u2611", "Ctrl+6"),
             ("Activity", "\u23f1", "Ctrl+7"),
-            ("Work",     "\U0001f4bc", "Ctrl+8"),    
+            ("Work",     "\U0001f4bc", "Ctrl+8"),
+            ("Debug",    "\U0001f52c", "Ctrl+0"),
         ]
         for name, icon, shortcut_text in nav_items:
             btn = SidebarButton(name, icon, shortcut_text)
@@ -5240,8 +5337,9 @@ class MainWindow(QMainWindow):
         self.charts_panel = FinanceChartsPanel()
         self.todo_panel = TodoPanel(todo_store=self.todo_store)
         self.activity_panel = ActivityPanel()
-        self.work_panel = WorkPanel(llm_client=self.llm_client)
-        
+        self.work_panel  = WorkPanel(llm_client=self.llm_client)
+        self.debug_panel = DebugPanel()
+
         self.stack.addWidget(self.dashboard_panel)   # 0
         self.stack.addWidget(self.notes_panel)       # 1
         self.stack.addWidget(self.calendar_panel)    # 2
@@ -5250,8 +5348,8 @@ class MainWindow(QMainWindow):
         self.stack.addWidget(self.todo_panel)        # 5
         self.stack.addWidget(self.activity_panel)    # 6
         self.stack.addWidget(self.work_panel)        # 7
-        self.work_panel.llm_config_changed.connect(self._reload_llm_client)
-        
+        self.stack.addWidget(self.debug_panel)       # 8
+        self.work_panel.llm_config_changed.connect(self._reload_llm_client)        
         main_layout.addWidget(self.stack, 1)
 
     # ── Status bar ─────────────────────────────────────
@@ -5349,7 +5447,7 @@ class MainWindow(QMainWindow):
         idx_map = {
             "Dashboard": 0, "Notes": 1, "Calendar": 2,
             "Earnings": 3, "Charts": 4, "Tasks": 5, "Activity": 6,
-            "Work": 7,
+            "Work": 7, "Debug": 8,
         }
         idx = idx_map.get(name, 0)
         self.stack.setCurrentIndex(idx)
@@ -5396,6 +5494,10 @@ class MainWindow(QMainWindow):
             self.activity_panel.set_palette(palette)
         if hasattr(self.notes_panel, 'set_palette'):
             self.notes_panel.set_palette(palette)
+        if hasattr(self.debug_panel, 'set_palette'):
+            self.debug_panel.set_palette(palette)
+
+        # Update tray icon with new theme colors
 
         # Update tray icon with new theme colors
         self._update_tray_icon()
@@ -9814,6 +9916,429 @@ class DashboardPanel(QWidget):
             child = layout.takeAt(0)
             if child.widget():
                 child.widget().deleteLater()
+```
+
+### `src\ui\modules\debug_panel.py`
+
+```python
+"""Debug / Council Sandbox panel.
+
+Always the final panel in the sidebar (Ctrl+0).  Provides:
+  • A free-form prompt box to run any text through the LLM Council
+  • Per-member response cards showing each model's individual answer + timing
+  • A synthesised result box at the bottom with copy-to-clipboard
+  • Graceful fallback to single-model mode when the council is not configured
+
+This panel intentionally has no persistent state — it is a live debug
+surface, not a data store.
+"""
+
+from __future__ import annotations
+
+from PyQt6.QtCore import Qt, QTimer
+from PyQt6.QtGui import QFont
+from PyQt6.QtWidgets import (
+    QWidget, QVBoxLayout, QHBoxLayout, QLabel, QPushButton,
+    QPlainTextEdit, QTextEdit, QScrollArea, QFrame, QSizePolicy,
+    QApplication, QComboBox,
+)
+
+from src.utils.llm import (
+    LLMResult, CouncilResult,
+    LLMSignals, CouncilSignals,
+    load_llm_client, load_council_config,
+    COUNCIL_SYNTHESIS_MODES,
+)
+
+# ── Module-level palette (updated by set_palette) ─────────────────────────────
+_PALETTE: dict = {}
+
+
+def _p(key: str, fallback: str = "") -> str:
+    return _PALETTE.get(key, fallback)
+
+
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+#  Member card widget
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+class _MemberCard(QFrame):
+    """Displays a single council member's response."""
+
+    def __init__(self, index: int, result: LLMResult, parent=None):
+        super().__init__(parent)
+        self.setObjectName("MemberCard")
+        self._apply_style()
+
+        layout = QVBoxLayout(self)
+        layout.setContentsMargins(10, 8, 10, 8)
+        layout.setSpacing(4)
+
+        # Header row
+        short_model = result.model.split("/")[-1].replace(":free", "").replace(":nitro", "")
+        header = QHBoxLayout()
+        model_lbl = QLabel(f"  Model {index + 1}  ·  {short_model}")
+        model_lbl.setStyleSheet(
+            f"font-size:11px;font-weight:bold;"
+            f"color:{_p('accent','#89b4fa')};"
+        )
+        header.addWidget(model_lbl)
+        header.addStretch()
+
+        timing_lbl = QLabel(result.timing_summary())
+        timing_lbl.setStyleSheet(
+            f"font-size:10px;color:{_p('muted','#6c7086')};"
+        )
+        header.addWidget(timing_lbl)
+        layout.addLayout(header)
+
+        # Response text
+        body = QTextEdit()
+        body.setReadOnly(True)
+        body.setPlainText(result.text.strip())
+        body.setMinimumHeight(100)
+        body.setMaximumHeight(200)
+        body.setStyleSheet(
+            f"QTextEdit{{border:1px solid {_p('border','#45475a')};"
+            f"border-radius:4px;"
+            f"background-color:{_p('bg','#1e1e2e')};"
+            f"color:{_p('fg','#cdd6f4')};"
+            f"font-size:12px;padding:4px;}}"
+        )
+        layout.addWidget(body)
+
+        self.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred)
+
+    def _apply_style(self):
+        self.setStyleSheet(
+            f"MemberCard{{border:1px solid {_p('border','#45475a')};"
+            f"border-radius:6px;"
+            f"background-color:{_p('surface','#313244')};}}"
+        )
+
+
+class _FailedCard(QFrame):
+    """Displayed when a council member errored out."""
+
+    def __init__(self, model: str, parent=None):
+        super().__init__(parent)
+        self.setObjectName("FailedCard")
+        self.setStyleSheet(
+            f"FailedCard{{border:1px solid {_p('red','#f38ba8')};"
+            f"border-radius:6px;"
+            f"background-color:{_p('surface','#313244')};}}"
+        )
+
+        layout = QVBoxLayout(self)
+        layout.setContentsMargins(10, 8, 10, 8)
+
+        short = model.split("/")[-1].replace(":free", "").replace(":nitro", "")
+        lbl = QLabel(f"✗  {short}  —  failed to respond")
+        lbl.setStyleSheet(
+            f"font-size:11px;color:{_p('red','#f38ba8')};"
+        )
+        layout.addWidget(lbl)
+        self.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred)
+
+
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+#  Debug Panel
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+class DebugPanel(QWidget):
+    """LLM Council debug / sandbox panel — always the last nav item."""
+
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self._busy           = False
+        self._llm_signals:     LLMSignals    | None = None
+        self._council_signals: CouncilSignals| None = None
+        self._build_ui()
+
+    # ── Palette ─────────────────────────────────────────────────────────────
+
+    def set_palette(self, palette: dict):
+        global _PALETTE
+        _PALETTE = palette
+        self._refresh_styles()
+
+    def _refresh_styles(self):
+        self._header_lbl.setStyleSheet(
+            f"font-size:15px;font-weight:bold;color:{_p('fg')};"
+        )
+        self._status_lbl.setStyleSheet(
+            f"font-size:11px;color:{_p('muted')};"
+        )
+        self._synth_lbl.setStyleSheet(
+            f"font-size:12px;font-weight:bold;color:{_p('accent')};"
+        )
+        self._synth_box.setStyleSheet(
+            f"QTextEdit{{border:2px solid {_p('accent','#89b4fa')};"
+            f"border-radius:6px;"
+            f"background-color:{_p('surface','#313244')};"
+            f"color:{_p('fg','#cdd6f4')};"
+            f"font-size:13px;padding:8px;}}"
+        )
+
+    # ── Build UI ─────────────────────────────────────────────────────────────
+
+    def _build_ui(self):
+        root = QVBoxLayout(self)
+        root.setContentsMargins(16, 12, 16, 12)
+        root.setSpacing(10)
+
+        # ── Top bar ──────────────────────────────────────────────────────────
+        top_bar = QHBoxLayout()
+
+        self._header_lbl = QLabel("🔬  Debug / Council Sandbox")
+        self._header_lbl.setObjectName("sectionTitle")
+        top_bar.addWidget(self._header_lbl)
+        top_bar.addStretch()
+
+        self._mode_combo = QComboBox()
+        self._mode_combo.addItems(["Auto", "Council", "Single Model"])
+        self._mode_combo.setToolTip(
+            "Auto: use Council if configured, else single model\n"
+            "Council: force council mode (requires council config)\n"
+            "Single Model: always use the primary model"
+        )
+        self._mode_combo.setMaximumWidth(140)
+        top_bar.addWidget(QLabel("Mode:"))
+        top_bar.addWidget(self._mode_combo)
+
+        root.addLayout(top_bar)
+
+        # ── Prompt area ───────────────────────────────────────────────────────
+        prompt_lbl = QLabel("Prompt")
+        prompt_lbl.setObjectName("subtitle")
+        root.addWidget(prompt_lbl)
+
+        self._prompt_edit = QPlainTextEdit()
+        self._prompt_edit.setPlaceholderText(
+            "Type a prompt here and click Run to send it to the council…"
+        )
+        self._prompt_edit.setFixedHeight(90)
+        root.addWidget(self._prompt_edit)
+
+        # ── Run / Clear row ───────────────────────────────────────────────────
+        btn_row = QHBoxLayout()
+
+        self._run_btn = QPushButton("▶  Run")
+        self._run_btn.setFixedHeight(32)
+        self._run_btn.clicked.connect(self._run)
+        btn_row.addWidget(self._run_btn)
+
+        self._clear_btn = QPushButton("Clear")
+        self._clear_btn.setObjectName("secondary")
+        self._clear_btn.setFixedHeight(32)
+        self._clear_btn.clicked.connect(self._clear)
+        btn_row.addWidget(self._clear_btn)
+
+        btn_row.addStretch()
+
+        self._status_lbl = QLabel("Idle")
+        self._status_lbl.setAlignment(Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter)
+        btn_row.addWidget(self._status_lbl)
+
+        root.addLayout(btn_row)
+
+        # ── Separator ────────────────────────────────────────────────────────
+        sep = QFrame()
+        sep.setObjectName("separator")
+        sep.setFrameShape(QFrame.Shape.HLine)
+        root.addWidget(sep)
+
+        # ── Member responses (scrollable) ─────────────────────────────────────
+        members_lbl = QLabel("Member Responses")
+        members_lbl.setObjectName("subtitle")
+        root.addWidget(members_lbl)
+
+        self._members_scroll = QScrollArea()
+        self._members_scroll.setWidgetResizable(True)
+        self._members_scroll.setFrameShape(QFrame.Shape.NoFrame)
+        self._members_scroll.setHorizontalScrollBarPolicy(
+            Qt.ScrollBarPolicy.ScrollBarAlwaysOff
+        )
+        self._members_scroll.setMinimumHeight(120)
+        self._members_scroll.setMaximumHeight(320)
+
+        self._members_container = QWidget()
+        self._members_layout = QVBoxLayout(self._members_container)
+        self._members_layout.setContentsMargins(0, 0, 0, 0)
+        self._members_layout.setSpacing(8)
+        self._members_layout.addStretch()
+
+        self._members_scroll.setWidget(self._members_container)
+        root.addWidget(self._members_scroll, 1)
+
+        # ── Synthesised result ────────────────────────────────────────────────
+        sep2 = QFrame()
+        sep2.setObjectName("separator")
+        sep2.setFrameShape(QFrame.Shape.HLine)
+        root.addWidget(sep2)
+
+        synth_hdr = QHBoxLayout()
+        self._synth_lbl = QLabel("Synthesised Result")
+        self._synth_lbl.setObjectName("subtitle")
+        synth_hdr.addWidget(self._synth_lbl)
+        synth_hdr.addStretch()
+
+        self._copy_btn = QPushButton("Copy")
+        self._copy_btn.setObjectName("secondary")
+        self._copy_btn.setFixedHeight(26)
+        self._copy_btn.setFixedWidth(60)
+        self._copy_btn.setEnabled(False)
+        self._copy_btn.clicked.connect(self._copy_result)
+        synth_hdr.addWidget(self._copy_btn)
+        root.addLayout(synth_hdr)
+
+        self._synth_box = QTextEdit()
+        self._synth_box.setReadOnly(True)
+        self._synth_box.setPlaceholderText(
+            "Synthesised answer will appear here after a council run…"
+        )
+        self._synth_box.setMinimumHeight(100)
+        font = QFont()
+        font.setPixelSize(13)
+        self._synth_box.setFont(font)
+        root.addWidget(self._synth_box, 1)
+
+        self._refresh_styles()
+
+    # ── Run logic ────────────────────────────────────────────────────────────
+
+    def _run(self):
+        if self._busy:
+            return
+
+        prompt = self._prompt_edit.toPlainText().strip()
+        if not prompt:
+            self._set_status("Enter a prompt first.")
+            return
+
+        messages = [{"role": "user", "content": prompt}]
+        mode     = self._mode_combo.currentText()
+
+        # Determine whether to use council or single model
+        council = load_council_config() if mode != "Single Model" else None
+        client  = None if council else load_llm_client()
+
+        if mode == "Council" and council is None:
+            self._set_status("Council not configured — check Network → AI tab.")
+            return
+
+        if council is None and client is None:
+            self._set_status("No API key configured — check Network → AI tab.")
+            return
+
+        self._busy = True
+        self._run_btn.setEnabled(False)
+        self._clear_results()
+        self._synth_box.clear()
+        self._copy_btn.setEnabled(False)
+
+        if council:
+            n = len(council.council_models)
+            self._set_status(
+                f"Running council ({n} models · {council.synthesis_mode})…"
+            )
+            self._council_signals = CouncilSignals()
+            self._council_signals.result.connect(self._on_council_result)
+            self._council_signals.error.connect(self._on_error)
+            council.complete_async(
+                messages,
+                on_result=self._council_signals.result.emit,
+                on_error=self._council_signals.error.emit,
+                max_tokens=1200,
+                temperature=0.45,
+            )
+        else:
+            self._set_status("Running single model…")
+            self._llm_signals = LLMSignals()
+            self._llm_signals.result.connect(self._on_single_result)
+            self._llm_signals.error.connect(self._on_error)
+            client.complete_async(
+                messages,
+                on_result=self._llm_signals.result.emit,
+                on_error=self._llm_signals.error.emit,
+                max_tokens=1200,
+                temperature=0.45,
+            )
+
+    # ── Result handlers ──────────────────────────────────────────────────────
+
+    def _on_council_result(self, result: CouncilResult):
+        self._busy = False
+        self._run_btn.setEnabled(True)
+
+        # Render member cards
+        for i, member in enumerate(result.members):
+            card = _MemberCard(i, member)
+            self._members_layout.insertWidget(
+                self._members_layout.count() - 1, card
+            )
+
+        for failed_model in result.failed_models:
+            card = _FailedCard(failed_model)
+            self._members_layout.insertWidget(
+                self._members_layout.count() - 1, card
+            )
+
+        # Show synthesis
+        self._synth_box.setPlainText(result.final.text.strip())
+        self._synth_lbl.setText(
+            f"Synthesised Result  ·  {result.synthesis_mode}"
+        )
+        self._copy_btn.setEnabled(True)
+        self._set_status(result.summary())
+
+    def _on_single_result(self, result: LLMResult):
+        self._busy = False
+        self._run_btn.setEnabled(True)
+
+        # Show as a single member card
+        card = _MemberCard(0, result)
+        self._members_layout.insertWidget(
+            self._members_layout.count() - 1, card
+        )
+
+        # In single-model mode the result IS the synthesis
+        self._synth_box.setPlainText(result.text.strip())
+        self._synth_lbl.setText("Result  ·  Single Model")
+        self._copy_btn.setEnabled(True)
+        self._set_status(result.timing_summary())
+
+    def _on_error(self, err: str):
+        self._busy = False
+        self._run_btn.setEnabled(True)
+        self._set_status(f"Error: {err}")
+
+    # ── Helpers ──────────────────────────────────────────────────────────────
+
+    def _clear_results(self):
+        """Remove all member cards (keep the trailing stretch)."""
+        while self._members_layout.count() > 1:
+            item = self._members_layout.takeAt(0)
+            if item.widget():
+                item.widget().deleteLater()
+
+    def _clear(self):
+        self._prompt_edit.clear()
+        self._clear_results()
+        self._synth_box.clear()
+        self._synth_lbl.setText("Synthesised Result")
+        self._copy_btn.setEnabled(False)
+        self._set_status("Idle")
+
+    def _copy_result(self):
+        text = self._synth_box.toPlainText()
+        if text:
+            QApplication.clipboard().setText(text)
+            self._set_status("Copied to clipboard.")
+            QTimer.singleShot(2500, lambda: self._set_status("Idle"))
+
+    def _set_status(self, msg: str):
+        self._status_lbl.setText(msg)
 ```
 
 ### `src\ui\modules\finance_charts.py`
@@ -15483,11 +16008,17 @@ from PyQt6.QtWidgets import (
     QLabel, QPushButton, QLineEdit, QSpinBox, QCheckBox,
     QFrame, QTableWidget, QTableWidgetItem, QHeaderView,
     QTextEdit, QTabWidget, QWidget, QMessageBox, QFileDialog,
-    QFormLayout,
+    QFormLayout, QListWidget, QComboBox, QScrollArea,
 )
 
 from src.config import load_config, save_config
-from src.utils.llm import LLMClient, LLMResult, LLMSignals, DEFAULT_MODEL, save_llm_config
+from src.utils.llm import (
+    LLMClient, LLMResult, LLMSignals,
+    CouncilSignals, CouncilResult,
+    DEFAULT_MODEL, save_llm_config,
+    COUNCIL_SYNTHESIS_MODES, DEFAULT_SYNTHESIS_MODE,
+    load_council_config, save_council_config,
+)
 
 
 class NetworkDialog(QDialog):
@@ -15500,10 +16031,11 @@ class NetworkDialog(QDialog):
         super().__init__(parent)
         self.sync_engine = sync_engine
         self.setWindowTitle("Network & Sync Settings")
-        self.setMinimumSize(650, 520)
+        self.setMinimumSize(650, 560)
         self.cfg = load_config()
         # Keep test signals alive — must be on self, not a local variable
         self._test_signals: LLMSignals | None = None
+        self._council_test_signals: CouncilSignals | None = None
         self._build_ui()
         self._load_values()
 
@@ -15658,10 +16190,17 @@ class NetworkDialog(QDialog):
         tabs.addTab(obs_tab, "Obsidian")
 
         # ── Tab 2: AI / LLM ──────────────────────────
+        ai_outer = QWidget()
+        ai_scroll = QScrollArea()
+        ai_scroll.setWidgetResizable(True)
+        ai_scroll.setFrameShape(QFrame.Shape.NoFrame)
+        ai_scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+
         ai_tab = QWidget()
         ai_layout = QVBoxLayout(ai_tab)
         ai_layout.setSpacing(12)
 
+        # ── Primary model ──────────────────────────────
         ai_title = QLabel("AI Assistant — OpenRouter")
         ai_title.setObjectName("sectionTitle")
         ai_layout.addWidget(ai_title)
@@ -15689,7 +16228,7 @@ class NetworkDialog(QDialog):
         self.llm_model_edit.setPlaceholderText("e.g. qwen/qwen3-6b-plus:free")
         self.llm_model_edit.setText(
             self.cfg.get("openrouter_model", DEFAULT_MODEL))
-        ai_form.addRow("Model ID:", self.llm_model_edit)
+        ai_form.addRow("Primary Model ID:", self.llm_model_edit)
 
         ai_layout.addLayout(ai_form)
 
@@ -15716,8 +16255,115 @@ class NetworkDialog(QDialog):
         ai_layout.addWidget(status_lbl)
         self._ai_status_lbl = status_lbl
 
+        ai_layout.addSpacing(4)
+
+        # ── Council section ────────────────────────────
+        council_sep = QFrame()
+        council_sep.setObjectName("separator")
+        council_sep.setFrameShape(QFrame.Shape.HLine)
+        ai_layout.addWidget(council_sep)
+
+        council_title = QLabel("LLM Council")
+        council_title.setObjectName("sectionTitle")
+        ai_layout.addWidget(council_title)
+
+        council_desc = QLabel(
+            "Fan out a single prompt to 3–6 models in parallel, then synthesise "
+            "their responses into one final answer. Uses the same API key as above. "
+            "Configure via the Debug panel (Ctrl+0)."
+        )
+        council_desc.setObjectName("subtitle")
+        council_desc.setWordWrap(True)
+        ai_layout.addWidget(council_desc)
+
+        # Enable toggle
+        enable_row = QHBoxLayout()
+        enable_row.addWidget(QLabel("Enable Council:"))
+        self._council_enabled_check = QCheckBox()
+        self._council_enabled_check.setChecked(self.cfg.get("council_enabled", False))
+        self._council_enabled_check.toggled.connect(self._on_council_toggled)
+        enable_row.addWidget(self._council_enabled_check)
+        enable_row.addStretch()
+        ai_layout.addLayout(enable_row)
+
+        # Council body (hidden when disabled)
+        self._council_body = QWidget()
+        council_body_layout = QVBoxLayout(self._council_body)
+        council_body_layout.setContentsMargins(0, 0, 0, 0)
+        council_body_layout.setSpacing(8)
+
+        # Synthesis model + mode
+        synth_form = QFormLayout()
+        synth_form.setSpacing(8)
+
+        self._synth_model_edit = QLineEdit()
+        self._synth_model_edit.setPlaceholderText(
+            "Synthesis model (leave blank to use first council model)")
+        self._synth_model_edit.setText(
+            self.cfg.get("council_synthesis_model", ""))
+        synth_form.addRow("Synthesis Model:", self._synth_model_edit)
+
+        self._synth_mode_combo = QComboBox()
+        self._synth_mode_combo.addItems(COUNCIL_SYNTHESIS_MODES)
+        saved_mode = self.cfg.get("council_synthesis_mode", DEFAULT_SYNTHESIS_MODE)
+        idx = self._synth_mode_combo.findText(saved_mode)
+        if idx >= 0:
+            self._synth_mode_combo.setCurrentIndex(idx)
+        synth_form.addRow("Synthesis Mode:", self._synth_mode_combo)
+
+        council_body_layout.addLayout(synth_form)
+
+        # Model list
+        models_lbl = QLabel("Council Models (3–6)")
+        models_lbl.setObjectName("subtitle")
+        council_body_layout.addWidget(models_lbl)
+
+        self._council_model_list = QListWidget()
+        self._council_model_list.setMaximumHeight(130)
+        self._council_model_list.setToolTip(
+            "Double-click a model to edit it")
+        self._council_model_list.itemDoubleClicked.connect(self._edit_council_model)
+        for m in self.cfg.get("council_models", []):
+            self._council_model_list.addItem(m)
+        council_body_layout.addWidget(self._council_model_list)
+
+        # Add / Remove row
+        list_btn_row = QHBoxLayout()
+        add_model_btn = QPushButton("+ Add Model")
+        add_model_btn.setObjectName("secondary")
+        add_model_btn.clicked.connect(self._add_council_model)
+        list_btn_row.addWidget(add_model_btn)
+
+        remove_model_btn = QPushButton("Remove Selected")
+        remove_model_btn.setObjectName("secondary")
+        remove_model_btn.clicked.connect(self._remove_council_model)
+        list_btn_row.addWidget(remove_model_btn)
+
+        list_btn_row.addStretch()
+
+        self._council_count_lbl = QLabel("")
+        self._council_count_lbl.setObjectName("subtitle")
+        list_btn_row.addWidget(self._council_count_lbl)
+        council_body_layout.addLayout(list_btn_row)
+        self._update_council_count()
+
+        # Test council button
+        council_test_row = QHBoxLayout()
+        self._council_test_btn = QPushButton("Test Council")
+        self._council_test_btn.setObjectName("secondary")
+        self._council_test_btn.clicked.connect(self._test_council)
+        council_test_row.addWidget(self._council_test_btn)
+        self._council_test_lbl = QLabel("")
+        self._council_test_lbl.setWordWrap(True)
+        council_test_row.addWidget(self._council_test_lbl, 1)
+        council_body_layout.addLayout(council_test_row)
+
+        ai_layout.addWidget(self._council_body)
+        self._council_body.setVisible(self._council_enabled_check.isChecked())
+
         ai_layout.addStretch()
 
+        # Save button
         ai_save_row = QHBoxLayout()
         ai_save_row.addStretch()
         ai_save_btn = QPushButton("Save AI Settings")
@@ -15725,7 +16371,13 @@ class NetworkDialog(QDialog):
         ai_save_row.addWidget(ai_save_btn)
         ai_layout.addLayout(ai_save_row)
 
-        tabs.addTab(ai_tab, "AI")
+        ai_scroll.setWidget(ai_tab)
+
+        ai_outer_layout = QVBoxLayout(ai_outer)
+        ai_outer_layout.setContentsMargins(0, 0, 0, 0)
+        ai_outer_layout.addWidget(ai_scroll)
+
+        tabs.addTab(ai_outer, "AI")
 
         # ── Tab 3: Peers ──────────────────────────────
         peers_tab = QWidget()
@@ -15832,6 +16484,19 @@ class NetworkDialog(QDialog):
             f"Status: {'API key configured' if key else 'No API key set'}"
             f"  |  Model: {model}"
         )
+
+        # Save council settings
+        models = [
+            self._council_model_list.item(i).text().strip()
+            for i in range(self._council_model_list.count())
+        ]
+        save_council_config(
+            enabled         = self._council_enabled_check.isChecked(),
+            models          = models,
+            synthesis_model = self._synth_model_edit.text().strip(),
+            synthesis_mode  = self._synth_mode_combo.currentText(),
+        )
+
         self.llm_settings_saved.emit()
         QMessageBox.information(self, "Saved",
             "AI settings saved.\nThe LLM client has been updated.")
@@ -15865,6 +16530,96 @@ class NetworkDialog(QDialog):
             [{"role": "user", "content": "Say hello in one word."}],
             on_result=self._test_signals.result.emit,
             on_error=self._test_signals.error.emit,
+            max_tokens=16,
+        )
+
+    # ── Council helpers ──────────────────────────────
+
+    def _on_council_toggled(self, enabled: bool):
+        self._council_body.setVisible(enabled)
+
+    def _update_council_count(self):
+        n = self._council_model_list.count()
+        color = "green" if 3 <= n <= 6 else "red"
+        self._council_count_lbl.setText(
+            f"<span style='color:{color}'>{n} model{'s' if n != 1 else ''}</span>"
+        )
+
+    def _add_council_model(self):
+        if self._council_model_list.count() >= 6:
+            QMessageBox.warning(self, "Council Full",
+                "A council can have at most 6 models.")
+            return
+        from PyQt6.QtWidgets import QInputDialog
+        text, ok = QInputDialog.getText(
+            self, "Add Council Model",
+            "Model ID (e.g. mistralai/mistral-7b-instruct:free):"
+        )
+        if ok and text.strip():
+            self._council_model_list.addItem(text.strip())
+            self._update_council_count()
+
+    def _remove_council_model(self):
+        row = self._council_model_list.currentRow()
+        if row >= 0:
+            self._council_model_list.takeItem(row)
+            self._update_council_count()
+
+    def _edit_council_model(self, item):
+        from PyQt6.QtWidgets import QInputDialog
+        text, ok = QInputDialog.getText(
+            self, "Edit Council Model", "Model ID:", text=item.text()
+        )
+        if ok and text.strip():
+            item.setText(text.strip())
+
+    def _test_council(self):
+        key = self.llm_key_edit.text().strip()
+        if not key:
+            self._council_test_lbl.setText("Enter an API key first.")
+            return
+        models = [
+            self._council_model_list.item(i).text().strip()
+            for i in range(self._council_model_list.count())
+        ]
+        if len(models) < 1:
+            self._council_test_lbl.setText("Add at least one model first.")
+            return
+
+        self._council_test_btn.setEnabled(False)
+        self._council_test_lbl.setText(f"Testing {len(models)} model(s)…")
+
+        from src.utils.llm import LLMCouncil
+        council = LLMCouncil(
+            api_key         = key,
+            council_models  = models,
+            synthesis_model = self._synth_model_edit.text().strip(),
+            synthesis_mode  = self._synth_mode_combo.currentText(),
+        )
+
+        self._council_test_signals = CouncilSignals()
+
+        def _on_ok(result: CouncilResult):
+            ok_count  = result.member_count
+            fail_count = len(result.failed_models)
+            parts = [f"{ok_count} responded"]
+            if fail_count:
+                parts.append(f"{fail_count} failed")
+            parts.append(result.final.timing_summary())
+            self._council_test_lbl.setText("Council OK — " + " · ".join(parts))
+            self._council_test_btn.setEnabled(True)
+
+        def _on_err(err: str):
+            self._council_test_lbl.setText(f"Error: {err}")
+            self._council_test_btn.setEnabled(True)
+
+        self._council_test_signals.result.connect(_on_ok)
+        self._council_test_signals.error.connect(_on_err)
+
+        council.complete_async(
+            [{"role": "user", "content": "Say hello in one word."}],
+            on_result=self._council_test_signals.result.emit,
+            on_error=self._council_test_signals.error.emit,
             max_tokens=16,
         )
 
@@ -15977,10 +16732,20 @@ class NetworkDialog(QDialog):
 
 from src.utils.timestamps import now_utc, parse_ts
 from src.utils.paths import normalize_path, ensure_parent
-from src.utils.llm import LLMClient, load_llm_client, save_llm_config
+from src.utils.llm import (
+    LLMClient, LLMSignals, LLMResult,
+    LLMCouncil, CouncilSignals, CouncilResult,
+    load_llm_client, save_llm_config,
+    load_council_config, save_council_config,
+)
 
-__all__ = ["now_utc", "parse_ts", "normalize_path", "ensure_parent", "LLMClient", "load_llm_client", "save_llm_config"]
-
+__all__ = [
+    "now_utc", "parse_ts", "normalize_path", "ensure_parent",
+    "LLMClient", "LLMSignals", "LLMResult",
+    "LLMCouncil", "CouncilSignals", "CouncilResult",
+    "load_llm_client", "save_llm_config",
+    "load_council_config", "save_council_config",
+]
 ```
 
 ### `src\utils\llm.py`
@@ -15992,11 +16757,14 @@ Uses only stdlib (urllib + json + threading + time) — no extra dependencies.
 
 Exports
 -------
-LLMResult   : dataclass returned by every successful call
-LLMSignals  : QObject subclass with result/error pyqtSignals (thread-safe bridge)
-LLMClient   : the actual HTTP client
-load_llm_client / save_llm_config : config helpers
-DEFAULT_MODEL : fallback model string
+LLMResult      : dataclass returned by every successful call
+LLMSignals     : QObject subclass with result/error pyqtSignals (thread-safe bridge)
+LLMClient      : the actual HTTP client
+CouncilResult  : dataclass returned by a council run
+LLMCouncil     : fan-out client that queries multiple models and synthesises
+load_llm_client / save_llm_config          : single-model config helpers
+load_council_config / save_council_config  : council config helpers
+DEFAULT_MODEL  : fallback model string
 """
 
 from __future__ import annotations
@@ -16007,7 +16775,8 @@ import threading
 import time
 import urllib.error
 import urllib.request
-from dataclasses import dataclass
+from concurrent.futures import ThreadPoolExecutor, as_completed
+from dataclasses import dataclass, field
 from typing import Callable
 
 from PyQt6.QtCore import QObject, pyqtSignal
@@ -16017,9 +16786,12 @@ logger = logging.getLogger(__name__)
 OPENROUTER_BASE = "https://openrouter.ai/api/v1"
 DEFAULT_MODEL   = "qwen/qwen3-6b-plus:free"
 
+COUNCIL_SYNTHESIS_MODES = ["Consensus", "Best Pick", "Debate"]
+DEFAULT_SYNTHESIS_MODE  = "Consensus"
+
 
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-#  Result dataclass
+#  Result dataclasses
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 @dataclass
@@ -16055,6 +16827,38 @@ class LLMResult:
         return self.text
 
 
+@dataclass
+class CouncilResult:
+    """Returned by a successful LLMCouncil run.
+
+    Attributes
+    ----------
+    final           : The synthesised LLMResult produced by the synthesis pass.
+    members         : One LLMResult per council model that responded successfully.
+    failed_models   : Model IDs that errored out during the fan-out phase.
+    synthesis_model : The model used for the final synthesis pass.
+    synthesis_mode  : One of 'Consensus', 'Best Pick', 'Debate'.
+    """
+    final:           LLMResult
+    members:         list[LLMResult]          = field(default_factory=list)
+    failed_models:   list[str]                = field(default_factory=list)
+    synthesis_model: str                      = ""
+    synthesis_mode:  str                      = DEFAULT_SYNTHESIS_MODE
+
+    @property
+    def member_count(self) -> int:
+        return len(self.members)
+
+    def summary(self) -> str:
+        ok  = self.member_count
+        err = len(self.failed_models)
+        parts = [f"{ok} member{'s' if ok != 1 else ''} responded"]
+        if err:
+            parts.append(f"{err} failed")
+        parts.append(self.final.timing_summary())
+        return " · ".join(parts)
+
+
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 #  Thread-safe signal bridge  (shared by all UI components)
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -16067,6 +16871,12 @@ class LLMSignals(QObject):
     thread fires.
     """
     result = pyqtSignal(object)   # carries LLMResult
+    error  = pyqtSignal(str)
+
+
+class CouncilSignals(QObject):
+    """Same pattern as LLMSignals but for CouncilResult."""
+    result = pyqtSignal(object)   # carries CouncilResult
     error  = pyqtSignal(str)
 
 
@@ -16134,6 +16944,16 @@ class LLMClient:
                 f"Unexpected response schema: {json.dumps(data)[:200]}"
             ) from exc
 
+        if text is None:
+            # Some models (e.g. reasoning/thinking models) return null content.
+            # Treat as an error so the council marks this member as failed
+            # rather than creating a malformed result that crashes synthesis.
+            raise RuntimeError(
+                f"Model returned null content — response: {json.dumps(data)[:200]}"
+            )
+
+        usage = data.get("usage") or {}
+
         usage = data.get("usage") or {}
         model = data.get("model") or self.model
         return LLMResult(
@@ -16180,6 +17000,203 @@ class LLMClient:
 
 
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+#  Council
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+_SYNTHESIS_PROMPTS: dict[str, str] = {
+    "Consensus": (
+        "You are a synthesis engine. Below are responses from {n} different AI models "
+        "to the same question. Your task is to identify the common ground, reconcile "
+        "any differences, and produce a single coherent answer that represents the "
+        "best consensus. Do not mention the individual models or that this is a synthesis.\n\n"
+        "{responses}\n\nProvide the synthesised answer:"
+    ),
+    "Best Pick": (
+        "You are a quality judge. Below are responses from {n} different AI models "
+        "to the same question. Select the single most accurate, well-reasoned, and "
+        "complete response. You may lightly polish it, but preserve its core content. "
+        "Do not mention the selection process.\n\n"
+        "{responses}\n\nProvide the best response:"
+    ),
+    "Debate": (
+        "You are a deliberation moderator. Below are responses from {n} different AI "
+        "models that may agree or disagree with each other. Analyse the strongest "
+        "arguments from each side and produce a final, balanced conclusion that "
+        "acknowledges key tensions where they exist.\n\n"
+        "{responses}\n\nProvide the final conclusion:"
+    ),
+}
+
+
+class LLMCouncil:
+    """Queries multiple OpenRouter models in parallel and synthesises their responses.
+
+    Parameters
+    ----------
+    api_key         : OpenRouter API key (shared across all members).
+    council_models  : List of 3–6 model ID strings.
+    synthesis_model : Model used for the synthesis pass (defaults to council_models[0]).
+    synthesis_mode  : One of 'Consensus', 'Best Pick', 'Debate'.
+    timeout         : Per-request timeout in seconds.
+    """
+
+    MAX_MEMBERS = 6
+    MIN_MEMBERS = 3
+
+    def __init__(
+        self,
+        api_key:         str,
+        council_models:  list[str],
+        synthesis_model: str  = "",
+        synthesis_mode:  str  = DEFAULT_SYNTHESIS_MODE,
+        timeout:         int  = 90,
+    ):
+        if not council_models:
+            raise ValueError("council_models must contain at least one model ID.")
+        self.api_key         = api_key.strip()
+        self.council_models  = council_models[: self.MAX_MEMBERS]
+        self.synthesis_model = (synthesis_model.strip() or self.council_models[0])
+        self.synthesis_mode  = synthesis_mode if synthesis_mode in COUNCIL_SYNTHESIS_MODES \
+                               else DEFAULT_SYNTHESIS_MODE
+        self.timeout         = timeout
+
+    # ── Internal helpers ────────────────────────────────────────────────────
+
+    def _client(self, model: str) -> LLMClient:
+        return LLMClient(api_key=self.api_key, model=model, timeout=self.timeout)
+
+    def _call_member(
+        self,
+        model:       str,
+        messages:    list[dict],
+        max_tokens:  int,
+        temperature: float,
+    ) -> tuple[str, LLMResult | None, str]:
+        """Call one council member.  Returns (model, result_or_None, error_str)."""
+        try:
+            result = self._client(model).complete(messages, max_tokens, temperature)
+            return model, result, ""
+        except Exception as exc:
+            logger.warning("Council member %s failed: %s", model, exc)
+            return model, None, str(exc)
+
+    def _build_synthesis_messages(
+        self,
+        original_messages: list[dict],
+        member_results:    list[LLMResult],
+    ) -> list[dict]:
+        """Build the synthesis prompt incorporating all member responses."""
+        # Re-state the original user question
+        user_question = ""
+        for m in original_messages:
+            if m.get("role") == "user":
+                user_question = m.get("content", "")
+                break
+
+        response_blocks = "\n\n".join(
+            f"--- Model {i + 1} ({r.model.split('/')[-1].replace(':free','').replace(':nitro','')}) ---\n{(r.text or '').strip()}"
+            for i, r in enumerate(member_results)
+        )
+
+        template = _SYNTHESIS_PROMPTS.get(self.synthesis_mode,
+                                          _SYNTHESIS_PROMPTS[DEFAULT_SYNTHESIS_MODE])
+        synthesis_prompt = template.format(
+            n=len(member_results),
+            responses=response_blocks,
+        )
+
+        messages = []
+        if user_question:
+            messages.append({
+                "role": "user",
+                "content": f"Original question: {user_question}",
+            })
+            messages.append({
+                "role": "assistant",
+                "content": "I have received the individual responses and will now synthesise them.",
+            })
+        messages.append({"role": "user", "content": synthesis_prompt})
+        return messages
+
+    # ── Public API ──────────────────────────────────────────────────────────
+
+    def complete(
+        self,
+        messages:    list[dict],
+        max_tokens:  int   = 1200,
+        temperature: float = 0.4,
+    ) -> CouncilResult:
+        """Synchronous council call — blocks until all members and synthesis finish.
+
+        Fan-out is parallel; synthesis is sequential after fan-out completes.
+        Always run from a worker thread.
+        """
+        member_results: list[LLMResult] = []
+        failed_models:  list[str]       = []
+
+        # ── Fan-out phase ──────────────────────────────────────────────────
+        with ThreadPoolExecutor(max_workers=len(self.council_models)) as pool:
+            futures = {
+                pool.submit(self._call_member, model, messages, max_tokens, temperature): model
+                for model in self.council_models
+            }
+            for future in as_completed(futures):
+                model, result, err = future.result()
+                if result is not None:
+                    member_results.append(result)
+                else:
+                    failed_models.append(model)
+
+        if not member_results:
+            raise RuntimeError(
+                f"All {len(self.council_models)} council members failed. "
+                f"Last errors: {', '.join(failed_models)}"
+            )
+
+        # Sort member results to match original council_models order for stable display
+        order = {m: i for i, m in enumerate(self.council_models)}
+        member_results.sort(key=lambda r: order.get(r.model, 999))
+
+        # ── Synthesis phase ────────────────────────────────────────────────
+        if len(member_results) == 1:
+            # Only one member responded — skip synthesis, return it directly
+            final = member_results[0]
+        else:
+            synth_messages = self._build_synthesis_messages(messages, member_results)
+            synth_max      = min(max_tokens, 1200)
+            final = self._client(self.synthesis_model).complete(
+                synth_messages, synth_max, temperature
+            )
+
+        return CouncilResult(
+            final           = final,
+            members         = member_results,
+            failed_models   = failed_models,
+            synthesis_model = self.synthesis_model,
+            synthesis_mode  = self.synthesis_mode,
+        )
+
+    def complete_async(
+        self,
+        messages:    list[dict],
+        on_result:   Callable[[CouncilResult], None],
+        on_error:    Callable[[str],           None],
+        max_tokens:  int   = 1200,
+        temperature: float = 0.4,
+    ) -> None:
+        """Non-blocking council call — fires a single daemon thread."""
+        def _worker():
+            try:
+                result = self.complete(messages, max_tokens, temperature)
+                on_result(result)
+            except Exception as exc:
+                logger.warning("LLMCouncil async failed: %s", exc)
+                on_error(str(exc))
+
+        threading.Thread(target=_worker, daemon=True).start()
+
+
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 #  Config helpers
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
@@ -16198,6 +17215,40 @@ def save_llm_config(api_key: str, model: str) -> None:
     cfg = load_config()
     cfg["openrouter_api_key"] = api_key.strip()
     cfg["openrouter_model"]   = model.strip() or DEFAULT_MODEL
+    save_config(cfg)
+
+
+def load_council_config() -> "LLMCouncil | None":
+    """Return a configured LLMCouncil, or None if council is disabled / unconfigured."""
+    from src.config import load_config
+    cfg = load_config()
+    if not cfg.get("council_enabled", False):
+        return None
+    key    = cfg.get("openrouter_api_key", "").strip()
+    models = cfg.get("council_models", [])
+    if not key or not models:
+        return None
+    return LLMCouncil(
+        api_key         = key,
+        council_models  = models,
+        synthesis_model = cfg.get("council_synthesis_model", "").strip(),
+        synthesis_mode  = cfg.get("council_synthesis_mode",  DEFAULT_SYNTHESIS_MODE),
+    )
+
+
+def save_council_config(
+    enabled:          bool,
+    models:           list[str],
+    synthesis_model:  str,
+    synthesis_mode:   str,
+) -> None:
+    """Persist council settings to config."""
+    from src.config import load_config, save_config
+    cfg = load_config()
+    cfg["council_enabled"]          = enabled
+    cfg["council_models"]           = [m.strip() for m in models if m.strip()]
+    cfg["council_synthesis_model"]  = synthesis_model.strip()
+    cfg["council_synthesis_mode"]   = synthesis_mode
     save_config(cfg)
 ```
 

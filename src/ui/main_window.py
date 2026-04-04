@@ -27,6 +27,7 @@ from src.ui.modules.dashboard_panel import DashboardPanel
 from src.ui.modules.finance_charts import FinanceChartsPanel
 from src.ui.modules.activity_panel import ActivityPanel
 from src.ui.modules.work_panel import WorkPanel
+from src.ui.modules.debug_panel import DebugPanel 
 
 from src.data.todo_store import TodoStore
 from src.data.calendar_store import CalendarStore
@@ -204,7 +205,8 @@ class MainWindow(QMainWindow):
             ("Charts", "\U0001f4c8", "Ctrl+5"),
             ("Tasks", "\u2611", "Ctrl+6"),
             ("Activity", "\u23f1", "Ctrl+7"),
-            ("Work",     "\U0001f4bc", "Ctrl+8"),    
+            ("Work",     "\U0001f4bc", "Ctrl+8"),
+            ("Debug",    "\U0001f52c", "Ctrl+0"),
         ]
         for name, icon, shortcut_text in nav_items:
             btn = SidebarButton(name, icon, shortcut_text)
@@ -273,8 +275,9 @@ class MainWindow(QMainWindow):
         self.charts_panel = FinanceChartsPanel()
         self.todo_panel = TodoPanel(todo_store=self.todo_store)
         self.activity_panel = ActivityPanel()
-        self.work_panel = WorkPanel(llm_client=self.llm_client)
-        
+        self.work_panel  = WorkPanel(llm_client=self.llm_client)
+        self.debug_panel = DebugPanel()
+
         self.stack.addWidget(self.dashboard_panel)   # 0
         self.stack.addWidget(self.notes_panel)       # 1
         self.stack.addWidget(self.calendar_panel)    # 2
@@ -283,8 +286,8 @@ class MainWindow(QMainWindow):
         self.stack.addWidget(self.todo_panel)        # 5
         self.stack.addWidget(self.activity_panel)    # 6
         self.stack.addWidget(self.work_panel)        # 7
-        self.work_panel.llm_config_changed.connect(self._reload_llm_client)
-        
+        self.stack.addWidget(self.debug_panel)       # 8
+        self.work_panel.llm_config_changed.connect(self._reload_llm_client)        
         main_layout.addWidget(self.stack, 1)
 
     # ── Status bar ─────────────────────────────────────
@@ -382,7 +385,7 @@ class MainWindow(QMainWindow):
         idx_map = {
             "Dashboard": 0, "Notes": 1, "Calendar": 2,
             "Earnings": 3, "Charts": 4, "Tasks": 5, "Activity": 6,
-            "Work": 7,
+            "Work": 7, "Debug": 8,
         }
         idx = idx_map.get(name, 0)
         self.stack.setCurrentIndex(idx)
@@ -429,6 +432,10 @@ class MainWindow(QMainWindow):
             self.activity_panel.set_palette(palette)
         if hasattr(self.notes_panel, 'set_palette'):
             self.notes_panel.set_palette(palette)
+        if hasattr(self.debug_panel, 'set_palette'):
+            self.debug_panel.set_palette(palette)
+
+        # Update tray icon with new theme colors
 
         # Update tray icon with new theme colors
         self._update_tray_icon()
