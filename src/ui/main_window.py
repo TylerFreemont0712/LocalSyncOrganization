@@ -28,6 +28,7 @@ from src.ui.modules.finance_charts import FinanceChartsPanel
 from src.ui.modules.activity_panel import ActivityPanel
 from src.ui.modules.work_panel import WorkPanel
 from src.ui.modules.debug_panel import DebugPanel 
+from src.ui.modules.journey_panel import JourneyPanel
 
 from src.data.todo_store import TodoStore
 from src.data.calendar_store import CalendarStore
@@ -206,6 +207,7 @@ class MainWindow(QMainWindow):
             ("Tasks", "\u2611", "Ctrl+6"),
             ("Activity", "\u23f1", "Ctrl+7"),
             ("Work",     "\U0001f4bc", "Ctrl+8"),
+            ("Journey",  "🧭",             "Ctrl+9"),
             ("Debug",    "\U0001f52c", "Ctrl+0"),
         ]
         for name, icon, shortcut_text in nav_items:
@@ -286,7 +288,13 @@ class MainWindow(QMainWindow):
         self.stack.addWidget(self.todo_panel)        # 5
         self.stack.addWidget(self.activity_panel)    # 6
         self.stack.addWidget(self.work_panel)        # 7
-        self.stack.addWidget(self.debug_panel)       # 8
+        self.journey_panel = JourneyPanel(
+            todo_store=self.todo_store,
+            calendar_store=self.calendar_store,
+            activity_store=self.activity_store,
+        )
+        self.stack.addWidget(self.journey_panel)     # 8
+        self.stack.addWidget(self.debug_panel)       # 9
         self.work_panel.llm_config_changed.connect(self._reload_llm_client)        
         main_layout.addWidget(self.stack, 1)
 
@@ -385,7 +393,7 @@ class MainWindow(QMainWindow):
         idx_map = {
             "Dashboard": 0, "Notes": 1, "Calendar": 2,
             "Earnings": 3, "Charts": 4, "Tasks": 5, "Activity": 6,
-            "Work": 7, "Debug": 8,
+            "Work": 7, "Journey": 8, "Debug": 9
         }
         idx = idx_map.get(name, 0)
         self.stack.setCurrentIndex(idx)
@@ -432,6 +440,8 @@ class MainWindow(QMainWindow):
             self.activity_panel.set_palette(palette)
         if hasattr(self.notes_panel, 'set_palette'):
             self.notes_panel.set_palette(palette)
+        if hasattr(self.journey_panel, 'set_palette'):
+            self.journey_panel.set_palette(palette)
         if hasattr(self.debug_panel, 'set_palette'):
             self.debug_panel.set_palette(palette)
 

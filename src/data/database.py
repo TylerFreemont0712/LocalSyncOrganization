@@ -31,33 +31,37 @@ def init_db(conn: sqlite3.Connection | None = None):
 
 
 def _migrate(conn: sqlite3.Connection):
-    """Add columns that may be missing from older databases."""
-    # --- events table ---
+    """Add columns that may be missing from older databases.
+
+    All changes are purely additive (ALTER TABLE ADD COLUMN).
+    Never drop or rename columns — sync relies on stable schemas.
+    """
+
+    # ── events ────────────────────────────────────────────────────────────────
     cols = {r["name"] for r in conn.execute("PRAGMA table_info(events)").fetchall()}
     if "recurrence" not in cols:
         conn.execute("ALTER TABLE events ADD COLUMN recurrence TEXT DEFAULT ''")
     if "category" not in cols:
         conn.execute("ALTER TABLE events ADD COLUMN category TEXT DEFAULT ''")
 
+    # ── birthdays ─────────────────────────────────────────────────────────────
     bcols = {r["name"] for r in conn.execute("PRAGMA table_info(birthdays)").fetchall()}
     if "note" not in bcols:
         conn.execute("ALTER TABLE birthdays ADD COLUMN note TEXT DEFAULT ''")
 
-    # --- transactions table ---
+    # ── transactions ──────────────────────────────────────────────────────────
     txn_cols = {r["name"] for r in conn.execute("PRAGMA table_info(transactions)").fetchall()}
     if "currency" not in txn_cols:
         conn.execute("ALTER TABLE transactions ADD COLUMN currency TEXT DEFAULT 'USD'")
     if "is_job_pay" not in txn_cols:
         conn.execute("ALTER TABLE transactions ADD COLUMN is_job_pay INTEGER DEFAULT 0")
 
-    # --- activities table ---
-    act_cols = {r["name"] for r in conn.execute("PRAGMA table_info(activities)").fetchall()}
-    # Future activity migrations go here
-
-    # --- soft event tables (new tables, guard via sqlite_master) ---
+    # ── Discover all existing tables once ─────────────────────────────────────
     tables = {r["name"] for r in conn.execute(
         "SELECT name FROM sqlite_master WHERE type='table'"
     ).fetchall()}
+
+    # ── soft_event_templates / soft_event_logs ────────────────────────────────
     if "soft_event_templates" not in tables:
         conn.executescript("""
             CREATE TABLE IF NOT EXISTS soft_event_templates (
@@ -79,6 +83,88 @@ def _migrate(conn: sqlite3.Connection):
                 UNIQUE(template_id, log_date)
             );
         """)
+        tables = {r["name"] for r in conn.execute(
+            "SELECT name FROM sqlite_master WHERE type='table'"
+        ).fetchall()}
+
+    # ── Journey tables (v0.3) ─────────────────────────────────────────────────
+    if "journeys" not in tables:
+        conn.executescript("""
+            CREATE TABLE IF NOT EXISTS journeys (
+                id                  TEXT PRIMARY KEY,
+                title               TEXT NOT NULL,
+                goal_description    TEXT DEFAULT '',
+                domain              TEXT DEFAULT 'General',
+                status              TEXT DEFAULT 'active',
+                web_search_enabled  INTEGER DEFAULT 0,
+                created_at          TEXT NOT NULL,
+                updated_at          TEXT NOT NULL,
+                deleted             INTEGER DEFAULT 0,
+                roadmap_json        TEXT DEFAULT ''
+            );
+            CREATE TABLE IF NOT EXISTS journey_steps (
+                id                      TEXT PRIMARY KEY,
+                journey_id              TEXT NOT NULL,
+                step_number             INTEGER NOT NULL,
+                title                   TEXT NOT NULL,
+                user_notes              TEXT DEFAULT '',
+                user_next_suggestions   TEXT DEFAULT '',
+                status                  TEXT DEFAULT 'active',
+                created_at              TEXT NOT NULL,
+                completed_at            TEXT,
+                checklist_state         TEXT DEFAULT '{}'
+            );
+            CREATE TABLE IF NOT EXISTS journey_council_sessions (
+                id                  TEXT PRIMARY KEY,
+                step_id             TEXT NOT NULL,
+                synthesis           TEXT DEFAULT '',
+                synthesis_model     TEXT DEFAULT '',
+                synthesis_mode      TEXT DEFAULT 'Consensus',
+                web_search_used     INTEGER DEFAULT 0,
+                web_search_queries  TEXT DEFAULT '[]',
+                created_at          TEXT NOT NULL,
+                step_checklist      TEXT DEFAULT '[]',
+                step_resources      TEXT DEFAULT '[]',
+                roadmap_text        TEXT DEFAULT ''
+            );
+            CREATE TABLE IF NOT EXISTS journey_council_members (
+                id                TEXT PRIMARY KEY,
+                session_id        TEXT NOT NULL,
+                councilor_label   TEXT DEFAULT '',
+                model             TEXT DEFAULT '',
+                raw_response      TEXT DEFAULT '',
+                created_at        TEXT NOT NULL
+            );
+        """)
+    else:
+        # Journey tables exist — patch any columns added in later revisions
+        jcols = {r["name"] for r in conn.execute(
+            "PRAGMA table_info(journeys)").fetchall()}
+        if "roadmap_json" not in jcols:
+            conn.execute(
+                "ALTER TABLE journeys ADD COLUMN roadmap_json TEXT DEFAULT ''")
+
+        js_cols = {r["name"] for r in conn.execute(
+            "PRAGMA table_info(journey_steps)").fetchall()}
+        if "checklist_state" not in js_cols:
+            conn.execute(
+                "ALTER TABLE journey_steps "
+                "ADD COLUMN checklist_state TEXT DEFAULT '{}'")
+
+        jcs_cols = {r["name"] for r in conn.execute(
+            "PRAGMA table_info(journey_council_sessions)").fetchall()}
+        if "step_checklist" not in jcs_cols:
+            conn.execute(
+                "ALTER TABLE journey_council_sessions "
+                "ADD COLUMN step_checklist TEXT DEFAULT '[]'")
+        if "step_resources" not in jcs_cols:
+            conn.execute(
+                "ALTER TABLE journey_council_sessions "
+                "ADD COLUMN step_resources TEXT DEFAULT '[]'")
+        if "roadmap_text" not in jcs_cols:
+            conn.execute(
+                "ALTER TABLE journey_council_sessions "
+                "ADD COLUMN roadmap_text TEXT DEFAULT ''")
 
 
 _SCHEMA = """
@@ -187,5 +273,54 @@ CREATE TABLE IF NOT EXISTS soft_event_logs (
     updated_at   TEXT NOT NULL,
     deleted      INTEGER DEFAULT 0,
     UNIQUE(template_id, log_date)
+);
+
+CREATE TABLE IF NOT EXISTS journeys (
+    id                  TEXT PRIMARY KEY,
+    title               TEXT NOT NULL,
+    goal_description    TEXT DEFAULT '',
+    domain              TEXT DEFAULT 'General',
+    status              TEXT DEFAULT 'active',
+    web_search_enabled  INTEGER DEFAULT 0,
+    created_at          TEXT NOT NULL,
+    updated_at          TEXT NOT NULL,
+    deleted             INTEGER DEFAULT 0,
+    roadmap_json        TEXT DEFAULT ''
+);
+
+CREATE TABLE IF NOT EXISTS journey_steps (
+    id                      TEXT PRIMARY KEY,
+    journey_id              TEXT NOT NULL,
+    step_number             INTEGER NOT NULL,
+    title                   TEXT NOT NULL,
+    user_notes              TEXT DEFAULT '',
+    user_next_suggestions   TEXT DEFAULT '',
+    status                  TEXT DEFAULT 'active',
+    created_at              TEXT NOT NULL,
+    completed_at            TEXT,
+    checklist_state         TEXT DEFAULT '{}'
+);
+
+CREATE TABLE IF NOT EXISTS journey_council_sessions (
+    id                  TEXT PRIMARY KEY,
+    step_id             TEXT NOT NULL,
+    synthesis           TEXT DEFAULT '',
+    synthesis_model     TEXT DEFAULT '',
+    synthesis_mode      TEXT DEFAULT 'Consensus',
+    web_search_used     INTEGER DEFAULT 0,
+    web_search_queries  TEXT DEFAULT '[]',
+    created_at          TEXT NOT NULL,
+    step_checklist      TEXT DEFAULT '[]',
+    step_resources      TEXT DEFAULT '[]',
+    roadmap_text        TEXT DEFAULT ''
+);
+
+CREATE TABLE IF NOT EXISTS journey_council_members (
+    id                TEXT PRIMARY KEY,
+    session_id        TEXT NOT NULL,
+    councilor_label   TEXT DEFAULT '',
+    model             TEXT DEFAULT '',
+    raw_response      TEXT DEFAULT '',
+    created_at        TEXT NOT NULL
 );
 """
