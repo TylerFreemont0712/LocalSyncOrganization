@@ -12,6 +12,13 @@ LLMCouncil     : fan-out client that queries multiple models and synthesises
 load_llm_client / save_llm_config          : single-model config helpers
 load_council_config / save_council_config  : council config helpers
 DEFAULT_MODEL  : fallback model string
+
+v0.4.0 — Council retry & synthesis fallback
+────────────────────────────────────────────
+  • _call_member now retries up to 3 times per model with exponential backoff
+  • Synthesis phase falls back through successful member models if primary fails
+  • Rate-limit (429) detection triggers longer waits
+  • Null-content responses are retried rather than immediately fatal
 """
 
 from __future__ import annotations
@@ -35,6 +42,12 @@ DEFAULT_MODEL   = "qwen/qwen3-6b-plus:free"
 
 COUNCIL_SYNTHESIS_MODES = ["Consensus", "Best Pick", "Debate"]
 DEFAULT_SYNTHESIS_MODE  = "Consensus"
+
+# Retry configuration
+_MEMBER_MAX_RETRIES     = 3    # per council member
+_MEMBER_RETRY_BASE_WAIT = 3    # seconds, doubles each attempt
+_SYNTH_MAX_RETRIES      = 2    # for synthesis fallback chain
+_RATE_LIMIT_WAIT        = 8    # extra wait on 429
 
 
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -200,8 +213,6 @@ class LLMClient:
             )
 
         usage = data.get("usage") or {}
-
-        usage = data.get("usage") or {}
         model = data.get("model") or self.model
         return LLMResult(
             text              = text,
@@ -275,6 +286,24 @@ _SYNTHESIS_PROMPTS: dict[str, str] = {
 }
 
 
+def _is_retryable_error(error_str: str) -> bool:
+    """Determine if an error is worth retrying (transient failures)."""
+    retryable_codes = ("429", "502", "503", "504", "520", "521", "522", "524")
+    retryable_phrases = (
+        "timed out", "timeout", "connection reset", "connection refused",
+        "temporarily unavailable", "null content", "network error",
+        "remote end closed", "eof occurred", "bad gateway",
+    )
+    lower = error_str.lower()
+    for code in retryable_codes:
+        if code in error_str:
+            return True
+    for phrase in retryable_phrases:
+        if phrase in lower:
+            return True
+    return False
+
+
 class LLMCouncil:
     """Queries multiple OpenRouter models in parallel and synthesises their responses.
 
@@ -319,13 +348,43 @@ class LLMCouncil:
         max_tokens:  int,
         temperature: float,
     ) -> tuple[str, LLMResult | None, str]:
-        """Call one council member.  Returns (model, result_or_None, error_str)."""
-        try:
-            result = self._client(model).complete(messages, max_tokens, temperature)
-            return model, result, ""
-        except Exception as exc:
-            logger.warning("Council member %s failed: %s", model, exc)
-            return model, None, str(exc)
+        """Call one council member with retry logic.
+
+        Retries up to _MEMBER_MAX_RETRIES times on transient errors
+        (429, 502, 503, timeouts, null content, connection resets).
+        Uses exponential backoff with extra delay on rate limits.
+
+        Returns (model, result_or_None, error_str).
+        """
+        last_err = ""
+        for attempt in range(_MEMBER_MAX_RETRIES):
+            try:
+                result = self._client(model).complete(
+                    messages, max_tokens, temperature)
+                return model, result, ""
+            except Exception as exc:
+                last_err = str(exc)
+                is_last = (attempt >= _MEMBER_MAX_RETRIES - 1)
+
+                if is_last or not _is_retryable_error(last_err):
+                    # Non-retryable or exhausted retries
+                    logger.warning(
+                        "Council member %s failed (attempt %d/%d): %s",
+                        model, attempt + 1, _MEMBER_MAX_RETRIES, last_err)
+                    return model, None, last_err
+
+                # Calculate wait with exponential backoff
+                wait = _MEMBER_RETRY_BASE_WAIT * (2 ** attempt)
+                if "429" in last_err:
+                    wait = max(wait, _RATE_LIMIT_WAIT * (attempt + 1))
+
+                logger.info(
+                    "Council member %s transient error (attempt %d/%d), "
+                    "retrying in %ds: %s",
+                    model, attempt + 1, _MEMBER_MAX_RETRIES, wait, last_err)
+                time.sleep(wait)
+
+        return model, None, last_err
 
     def _build_synthesis_messages(
         self,
@@ -365,6 +424,32 @@ class LLMCouncil:
         messages.append({"role": "user", "content": synthesis_prompt})
         return messages
 
+    def _try_synthesis(
+        self,
+        model:     str,
+        messages:  list[dict],
+        max_tokens: int,
+        temperature: float,
+    ) -> LLMResult | None:
+        """Attempt synthesis with a single model, with retry on transient errors."""
+        for attempt in range(_SYNTH_MAX_RETRIES):
+            try:
+                return self._client(model).complete(
+                    messages, max_tokens, temperature)
+            except Exception as exc:
+                err = str(exc)
+                is_last = (attempt >= _SYNTH_MAX_RETRIES - 1)
+                if is_last or not _is_retryable_error(err):
+                    logger.warning("Synthesis with %s failed (attempt %d): %s",
+                                   model, attempt + 1, err)
+                    return None
+                wait = _MEMBER_RETRY_BASE_WAIT * (2 ** attempt)
+                if "429" in err:
+                    wait = max(wait, _RATE_LIMIT_WAIT)
+                logger.info("Synthesis retry %s in %ds: %s", model, wait, err)
+                time.sleep(wait)
+        return None
+
     # ── Public API ──────────────────────────────────────────────────────────
 
     def complete(
@@ -377,6 +462,11 @@ class LLMCouncil:
 
         Fan-out is parallel; synthesis is sequential after fan-out completes.
         Always run from a worker thread.
+
+        Retry behaviour:
+          • Each council member is retried up to 3 times on transient errors
+          • Synthesis tries the primary synthesis_model first, then falls back
+            through each successful member model before giving up
         """
         member_results: list[LLMResult] = []
         failed_models:  list[str]       = []
@@ -396,30 +486,56 @@ class LLMCouncil:
 
         if not member_results:
             raise RuntimeError(
-                f"All {len(self.council_models)} council members failed. "
-                f"Last errors: {', '.join(failed_models)}"
+                f"All {len(self.council_models)} council members failed after "
+                f"{_MEMBER_MAX_RETRIES} retries each. "
+                f"Models: {', '.join(self.council_models)}"
             )
 
         # Sort member results to match original council_models order for stable display
         order = {m: i for i, m in enumerate(self.council_models)}
         member_results.sort(key=lambda r: order.get(r.model, 999))
 
-        # ── Synthesis phase ────────────────────────────────────────────────
+        # ── Synthesis phase with fallback chain ────────────────────────────
         if len(member_results) == 1:
             # Only one member responded — skip synthesis, return it directly
             final = member_results[0]
         else:
             synth_messages = self._build_synthesis_messages(messages, member_results)
             synth_max      = min(max_tokens, 1200)
-            final = self._client(self.synthesis_model).complete(
-                synth_messages, synth_max, temperature
-            )
 
+            # Build fallback chain: primary synthesis model → each member model
+            synth_candidates = [self.synthesis_model]
+            for r in member_results:
+                if r.model not in synth_candidates:
+                    synth_candidates.append(r.model)
+
+            final = None
+            for synth_model in synth_candidates:
+                final = self._try_synthesis(
+                    synth_model, synth_messages, synth_max, temperature)
+                if final is not None:
+                    break
+
+            if final is None:
+                # Absolute last resort: use the longest member response as-is
+                logger.warning(
+                    "All synthesis models failed — using best member response "
+                    "as synthesis output")
+                best = max(member_results, key=lambda r: len(r.text or ""))
+                final = LLMResult(
+                    text=best.text,
+                    elapsed_ms=best.elapsed_ms,
+                    model=best.model,
+                    prompt_tokens=best.prompt_tokens,
+                    completion_tokens=best.completion_tokens,
+                )
+
+        actual_synth_model = final.model if final else self.synthesis_model
         return CouncilResult(
             final           = final,
             members         = member_results,
             failed_models   = failed_models,
-            synthesis_model = self.synthesis_model,
+            synthesis_model = actual_synth_model,
             synthesis_mode  = self.synthesis_mode,
         )
 

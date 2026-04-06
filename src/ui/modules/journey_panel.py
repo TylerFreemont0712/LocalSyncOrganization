@@ -1,17 +1,17 @@
 """Journey Panel — goal-driven step tutoring with Council AI.
 
-Fixed in this revision
-──────────────────────
-  • create_journey SQL bug (backtick in string) — fixed in journey_store.py
-  • RoadmapFlowWidget snake arrow geometry bugs — replaced with simple horizontal
-    single-row RoadmapWidget (no snake, no row reversal, scrollable)
-  • Council synthesis not rendering — now shows member responses as fallback,
-    plus a visible error state rather than silently empty
-  • Auto-convene on journey/step creation removed — council is 100 % manual
-  • Roadmap nodes are selectable: clicking one updates the step-detail panel
-    and highlights the node with an accent ring
-  • "Update Roadmap" in Workspace sends notes+hints to LLM and re-writes the roadmap
-  • Off-roadmap steps are recorded as detours in roadmap_json
+v0.4.0 — Major overhaul
+───────────────────────
+  • Council retry guardrails: if council call fails, error is shown gracefully
+    and state is never left broken (running flag always cleared)
+  • Roadmap generation failure now reports to UI instead of silently failing
+  • Template steps used as fallback when LLM roadmap gen fails
+  • DDG search replaced with proper HTML scraping from lite.duckduckgo.com
+  • 20+ new journey templates (Space, WoW, Game Dev, Cybersecurity, etc.)
+  • Roadmap widget: wider nodes, gradient progress fill, better typography
+  • Council progress: animated spinner card instead of tiny italic label
+  • Overview tab: better visual hierarchy, informative empty states
+  • Robustness: guards against journey/step deletion mid-council-run
 
 Tabs
 ────
@@ -24,8 +24,10 @@ Dependencies: markdown (pip install markdown), stdlib urllib
 
 from __future__ import annotations
 
+import html as _html_mod
 import json
 import logging
+import re
 import threading
 import urllib.parse
 import urllib.request
@@ -38,9 +40,10 @@ try:
 except ImportError:
     _HAS_MARKDOWN = False
 
-from PyQt6.QtCore import Qt, QTimer, pyqtSignal
+from PyQt6.QtCore import Qt, QTimer, pyqtSignal, QRectF
 from PyQt6.QtGui import (
     QColor, QFont, QPainter, QPen, QBrush, QPainterPath,
+    QLinearGradient, QConicalGradient,
 )
 from PyQt6.QtWidgets import (
     QWidget, QVBoxLayout, QHBoxLayout, QLabel, QPushButton,
@@ -78,6 +81,7 @@ _TAB_WORKSPACE = 2
 # ── Journey templates ─────────────────────────────────────────────────────────
 
 JOURNEY_TEMPLATES: dict[str, dict | None] = {
+    # ─── Coding ───────────────────────────────────────────────────────────
     "── Coding ──": None,
     "Learn Python (Beginner → Intermediate)": {
         "domain": "Coding",
@@ -133,6 +137,207 @@ JOURNEY_TEMPLATES: dict[str, dict | None] = {
             "Documentation & Deployment",
         ],
     },
+    "Build a Desktop App with PyQt": {
+        "domain": "Coding",
+        "goal": (
+            "Learn to build polished desktop applications using Python and PyQt6. "
+            "Cover layouts, signals/slots, custom widgets, themes, database integration, "
+            "threading, and packaging for distribution."
+        ),
+        "steps": [
+            "PyQt6 Setup & First Window",
+            "Layouts, Widgets & Signals/Slots",
+            "Menus, Toolbars & Status Bars",
+            "Custom Widgets & QPainter Drawing",
+            "Stylesheets & Theming (QSS)",
+            "Database Integration (SQLite + Models)",
+            "Threading & Background Workers",
+            "Dialogs, Settings & User Preferences",
+            "Packaging & Distribution (PyInstaller)",
+        ],
+    },
+    "Game Dev with Python (Pygame → 2D Game)": {
+        "domain": "Coding",
+        "goal": (
+            "Build a complete 2D game using Python and Pygame. Learn game loops, "
+            "sprite handling, collision detection, audio, particle effects, level "
+            "design, and publishing to itch.io."
+        ),
+        "steps": [
+            "Pygame Setup & Game Loop Basics",
+            "Drawing, Surfaces & Coordinate Systems",
+            "Player Movement & Input Handling",
+            "Sprites, Animation & Sprite Groups",
+            "Collision Detection & Physics",
+            "Sound Effects & Music Integration",
+            "Tile Maps & Level Design",
+            "UI: Menus, HUD & Score Systems",
+            "Particle Effects & Polish",
+            "Packaging & Publishing to itch.io",
+        ],
+    },
+    "Cybersecurity Fundamentals": {
+        "domain": "Coding",
+        "goal": (
+            "Learn core cybersecurity concepts from networking and Linux fundamentals "
+            "through web vulnerabilities, penetration testing methodology, CTF challenges, "
+            "and responsible disclosure."
+        ),
+        "steps": [
+            "Networking Fundamentals (TCP/IP, DNS, HTTP)",
+            "Linux Command Line for Security",
+            "Cryptography Basics (Hashing, Encryption, TLS)",
+            "OWASP Top 10 Web Vulnerabilities",
+            "Reconnaissance & Information Gathering",
+            "Vulnerability Scanning (Nmap, Nikto)",
+            "Exploitation Basics (Metasploit, manual)",
+            "Privilege Escalation Techniques",
+            "CTF Challenges & Practice Labs",
+            "Report Writing & Responsible Disclosure",
+        ],
+    },
+    # ─── Space & Astronomy ────────────────────────────────────────────────
+    "── Space & Astronomy ──": None,
+    "Amateur Astronomy (Beginner Stargazer)": {
+        "domain": "Academic",
+        "goal": (
+            "Go from zero to confident amateur astronomer. Learn to navigate the night "
+            "sky, understand celestial mechanics, choose and use telescopes, photograph "
+            "the cosmos, and track satellites and deep-sky objects."
+        ),
+        "steps": [
+            "The Night Sky: Constellations & Star Maps",
+            "Celestial Mechanics: How the Sky Moves",
+            "Naked-Eye Astronomy: Planets, Meteors & the Moon",
+            "Binoculars & Your First Telescope",
+            "Understanding Magnification, Aperture & Mounts",
+            "Observing the Moon & Planets in Detail",
+            "Deep-Sky Objects: Nebulae, Galaxies & Star Clusters",
+            "Astrophotography Basics (Phone & DSLR)",
+            "Satellite Tracking & ISS Observation",
+            "Joining the Community: Star Parties & Citizen Science",
+        ],
+    },
+    "Space Exploration History & Future": {
+        "domain": "Academic",
+        "goal": (
+            "Deep-dive into humanity's journey to space — from the earliest rocket "
+            "pioneers through Apollo, the Shuttle era, ISS operations, and the current "
+            "commercial space revolution. Understand propulsion, orbital mechanics, "
+            "and the roadmap to Mars and beyond."
+        ),
+        "steps": [
+            "The Pioneers: Tsiolkovsky, Goddard & von Braun",
+            "The Space Race: Sputnik to Apollo 11",
+            "Apollo Deep Dive: Missions, Technology & Legacy",
+            "Space Shuttle Program & Space Station Mir",
+            "The International Space Station (ISS)",
+            "Rocket Science 101: Propulsion & Orbital Mechanics",
+            "The Commercial Era: SpaceX, Blue Origin & Beyond",
+            "Mars Exploration: Rovers, Plans & Challenges",
+            "Artemis & Return to the Moon",
+            "The Future: Starship, Space Habitats & Interstellar",
+        ],
+    },
+    "Astrophysics for Enthusiasts": {
+        "domain": "Academic",
+        "goal": (
+            "Understand the physics of the cosmos at an enthusiast level — stellar "
+            "evolution, black holes, dark matter, the Big Bang, exoplanets, and the "
+            "large-scale structure of the universe."
+        ),
+        "steps": [
+            "Light, Spectra & How We See the Universe",
+            "Stars: Birth, Life & Death",
+            "Neutron Stars, Pulsars & Magnetars",
+            "Black Holes: Theory, Observation & Hawking Radiation",
+            "Galaxies: Types, Collisions & Supermassive Black Holes",
+            "Cosmology: The Big Bang & Cosmic Microwave Background",
+            "Dark Matter & Dark Energy",
+            "Exoplanets & the Search for Life",
+            "Gravitational Waves & Multi-Messenger Astronomy",
+        ],
+    },
+    # ─── World of Warcraft ────────────────────────────────────────────────
+    "── World of Warcraft ──": None,
+    "WoW: Mythic+ Keystone Mastery": {
+        "domain": "General",
+        "goal": (
+            "Push Mythic+ keystones from beginner (+2) to high keys (+15 and beyond). "
+            "Master dungeon routes, affix strategies, class-specific tips, group "
+            "coordination, and the mental game of pushing keys."
+        ),
+        "steps": [
+            "M+ Fundamentals: Timers, Affixes & Loot",
+            "Understanding Your Role (Tank/Healer/DPS)",
+            "Dungeon Routes & MDT/Keystone.guru Planning",
+            "Interrupt & CC Rotations by Dungeon",
+            "Seasonal Affix Strategy & Adaptation",
+            "Consumables, Enchants & Gear Optimization",
+            "Communication & Group Coordination",
+            "Common Wipe Points & How to Prevent Them",
+            "Pushing Higher: +15 → +20 Strategies",
+            "The Mental Game: Tilt, Focus & Improvement",
+        ],
+    },
+    "WoW: Goldmaking & Auction House": {
+        "domain": "Business / Freelance",
+        "goal": (
+            "Build a sustainable WoW gold-making operation. Learn the auction house, "
+            "crafting profits, farming routes, TSM addon mastery, cross-realm arbitrage, "
+            "and long-term market strategy."
+        ),
+        "steps": [
+            "Goldmaking Mindset & Setting Goals",
+            "Understanding the Auction House Economy",
+            "TradeSkillMaster (TSM) Setup & Operations",
+            "Raw Material Farming Routes",
+            "Crafting for Profit: Identifying Margins",
+            "Flipping & Market Sniping",
+            "Transmog & Legacy Content Markets",
+            "Multi-Character Profession Setup",
+            "Long-Term Investment & Patch Speculation",
+        ],
+    },
+    "WoW Lore: Complete Story Guide": {
+        "domain": "General",
+        "goal": (
+            "Understand the full Warcraft story from the Titans and Old Gods through "
+            "every expansion's narrative. Explore character arcs, faction conflicts, "
+            "cosmic forces, and the evolving worldbuilding."
+        ),
+        "steps": [
+            "The Cosmic Forces & Titans' Ordering of Azeroth",
+            "Old Gods, Trolls & the Rise of the Night Elves",
+            "The Burning Legion & War of the Ancients",
+            "Warcraft I–III: Orcs, Humans & the Frozen Throne",
+            "Classic → Burning Crusade → Wrath of the Lich King",
+            "Cataclysm → Mists of Pandaria → Warlords of Draenor",
+            "Legion → Battle for Azeroth → Shadowlands",
+            "Dragonflight → The War Within & Beyond",
+            "Major Character Arcs: Arthas, Sylvanas, Thrall & More",
+        ],
+    },
+    "WoW: Raiding from Normal to Mythic": {
+        "domain": "General",
+        "goal": (
+            "Progress from Normal raiding to Mythic-ready performance. Learn boss "
+            "mechanics, raid awareness, log analysis, consumable optimization, and "
+            "what it takes to join a competitive raid team."
+        ),
+        "steps": [
+            "Raiding Basics: Roles, Ready Checks & Loot",
+            "Boss Mechanics Fundamentals (Soak, Spread, Stack)",
+            "UI & Addon Setup for Raiding (WeakAuras, DBM/BW)",
+            "Normal → Heroic Progression Strategy",
+            "Reading Combat Logs (Warcraft Logs & WipeFest)",
+            "Class Optimization: Sim, Gear & Rotation",
+            "Raid Awareness & Positioning Drills",
+            "Mythic Raiding: What Changes & How to Prepare",
+            "Joining & Trialing with a Mythic Guild",
+        ],
+    },
+    # ─── Language Learning ────────────────────────────────────────────────
     "── Language Learning ──": None,
     "Learn Japanese (N5 → N4)": {
         "domain": "Language Learning",
@@ -152,6 +357,26 @@ JOURNEY_TEMPLATES: dict[str, dict | None] = {
             "N4 Grammar Introduction",
         ],
     },
+    "Japanese Culture & Daily Life": {
+        "domain": "Language Learning",
+        "goal": (
+            "Go beyond textbook Japanese and understand daily life, work culture, "
+            "social norms, seasonal traditions, and how to navigate living in Japan "
+            "as a foreigner."
+        ),
+        "steps": [
+            "Social Norms: Keigo, Bowing & Business Cards",
+            "Navigating Trains, Buses & IC Cards",
+            "Combini Culture & Everyday Shopping",
+            "Japanese Work Culture & Office Etiquette",
+            "Seasonal Events: Hanami, Obon, New Year & Festivals",
+            "Food Culture: Izakaya, Ramen, Etiquette & Ordering",
+            "Healthcare, Banks & City Hall (役所) Basics",
+            "Apartment Living: Trash, Neighbors & Rules",
+            "Making Friends & Community Integration",
+        ],
+    },
+    # ─── Business / Freelance ─────────────────────────────────────────────
     "── Business / Freelance ──": None,
     "Build a Freelance Business from Zero": {
         "domain": "Business / Freelance",
@@ -170,6 +395,26 @@ JOURNEY_TEMPLATES: dict[str, dict | None] = {
             "Client Onboarding & Delivery System",
         ],
     },
+    "Personal Finance & Investing Basics": {
+        "domain": "Business / Freelance",
+        "goal": (
+            "Build a solid personal finance foundation — budgeting, emergency funds, "
+            "debt management, index fund investing, tax optimization, and long-term "
+            "wealth building strategies."
+        ),
+        "steps": [
+            "Net Worth Snapshot & Financial Goals",
+            "Budgeting Systems (50/30/20, Zero-Based, Envelope)",
+            "Emergency Fund: How Much & Where to Keep It",
+            "Debt Payoff Strategy (Avalanche vs. Snowball)",
+            "Investment Basics: Stocks, Bonds, ETFs & Index Funds",
+            "Tax-Advantaged Accounts (401k, IRA, NISA / iDeCo)",
+            "Asset Allocation & Portfolio Construction",
+            "Automation: Auto-Invest & Bill Pay",
+            "Annual Review & Rebalancing Strategy",
+        ],
+    },
+    # ─── Health & Fitness ─────────────────────────────────────────────────
     "── Health & Fitness ──": None,
     "Beginner Strength Training (12 Weeks)": {
         "domain": "Health & Fitness",
@@ -187,6 +432,65 @@ JOURNEY_TEMPLATES: dict[str, dict | None] = {
             "Recovery, Sleep & Deload Strategy",
             "Weeks 7-12: Strength Phase",
             "Progress Assessment & Next Cycle",
+        ],
+    },
+    # ─── Creative ─────────────────────────────────────────────────────────
+    "── Creative ──": None,
+    "Music Production (DAW to First Track)": {
+        "domain": "Creative",
+        "goal": (
+            "Go from zero music production knowledge to finishing your first complete "
+            "track. Learn your DAW, synthesis, sampling, mixing fundamentals, and "
+            "arrangement techniques."
+        ),
+        "steps": [
+            "Choose Your DAW & Learn the Interface",
+            "Audio Basics: Sample Rate, Bit Depth, MIDI",
+            "Beat Making: Drums, Rhythm & Groove",
+            "Synthesis 101: Oscillators, Filters & Envelopes",
+            "Sampling, Chopping & Creative Reuse",
+            "Chord Progressions & Melody Writing",
+            "Song Arrangement & Structure",
+            "Mixing Basics: Levels, EQ, Compression & Reverb",
+            "Finish & Export Your First Track",
+        ],
+    },
+    "Digital Art & Illustration": {
+        "domain": "Creative",
+        "goal": (
+            "Learn digital art from fundamentals through to polished illustration. "
+            "Cover drawing tablets, software, line art, color theory, shading, and "
+            "building a portfolio."
+        ),
+        "steps": [
+            "Hardware & Software Setup (Tablet + App)",
+            "Digital Brushes & Tool Fundamentals",
+            "Line Art: Clean Lines & Confident Strokes",
+            "Shape Language & Basic Forms",
+            "Color Theory & Digital Color Picking",
+            "Light, Shadow & Rendering",
+            "Composition & Visual Storytelling",
+            "Character Design Fundamentals",
+            "Building a Portfolio & Sharing Your Work",
+        ],
+    },
+    "Worldbuilding for Writers & Game Designers": {
+        "domain": "Creative",
+        "goal": (
+            "Create a rich, internally consistent fictional world. Cover geography, "
+            "cultures, magic/technology systems, history, politics, economics, and "
+            "how to make worldbuilding serve your story or game."
+        ),
+        "steps": [
+            "Scope & Purpose: What Is Your World For?",
+            "Geography, Climate & Maps",
+            "Cultures, Societies & Social Structures",
+            "Magic Systems or Technology Frameworks",
+            "History & Timeline Construction",
+            "Politics, Factions & Power Structures",
+            "Economics, Trade & Daily Life",
+            "Language, Naming Conventions & Flavor",
+            "Connecting Your World to Narrative or Gameplay",
         ],
     },
 }
@@ -209,11 +513,70 @@ _TUTOR_SYSTEM = (
 
 # ── Web search ────────────────────────────────────────────────────────────────
 
-def _ddg_search(query: str, timeout: int = 8) -> str:
-    url = ("https://api.duckduckgo.com/?q="
-           + urllib.parse.quote_plus(query)
-           + "&format=json&no_html=1&skip_disambig=1")
+def _ddg_search(query: str, timeout: int = 10) -> str:
+    """Search DuckDuckGo via the lite HTML interface for actual results.
+
+    The previous instant-answer API (?format=json) only returned results for
+    very specific factual queries and was essentially useless for tutorial and
+    learning content.  This scrapes lite.duckduckgo.com which returns real
+    search results even for broad queries.
+    """
+    # First try the lite HTML search for real results
     try:
+        encoded = urllib.parse.quote_plus(query)
+        url = f"https://lite.duckduckgo.com/lite/?q={encoded}"
+        req = urllib.request.Request(url, headers={
+            "User-Agent": "LocalSync/1.0 (Desktop App)",
+            "Accept": "text/html",
+        })
+        with urllib.request.urlopen(req, timeout=timeout) as resp:
+            html = resp.read().decode("utf-8", errors="replace")
+
+        # Extract result snippets from the lite HTML
+        # Lite page uses <td> elements with class "result-snippet" for descriptions
+        snippets: list[str] = []
+
+        # Method 1: Extract from result-snippet spans/tds
+        for pattern in [
+            r'class="result-snippet"[^>]*>(.*?)</(?:td|span)>',
+            r'<a class="result-link"[^>]*>([^<]+)</a>',
+        ]:
+            matches = re.findall(pattern, html, re.DOTALL | re.IGNORECASE)
+            for m in matches:
+                clean = re.sub(r'<[^>]+>', '', m).strip()
+                clean = _html_mod.unescape(clean)
+                if len(clean) > 30 and clean not in snippets:
+                    snippets.append(clean[:300])
+                if len(snippets) >= 4:
+                    break
+            if len(snippets) >= 4:
+                break
+
+        # Method 2: Fallback — grab text between <td> tags that look like snippets
+        if not snippets:
+            td_matches = re.findall(
+                r'<td[^>]*>\s*(.{40,400}?)\s*</td>', html, re.DOTALL)
+            for m in td_matches:
+                clean = re.sub(r'<[^>]+>', '', m).strip()
+                clean = _html_mod.unescape(clean)
+                # Filter out navigation / header text
+                if (len(clean) > 40
+                        and not clean.startswith("1.")
+                        and "DuckDuckGo" not in clean):
+                    snippets.append(clean[:300])
+                if len(snippets) >= 3:
+                    break
+
+        if snippets:
+            return "\n".join(snippets[:4])
+    except Exception as exc:
+        logger.debug("DDG lite search failed for %r: %s", query, exc)
+
+    # Fallback: try the instant answer API (occasionally works for factual queries)
+    try:
+        url = ("https://api.duckduckgo.com/?q="
+               + urllib.parse.quote_plus(query)
+               + "&format=json&no_html=1&skip_disambig=1")
         req = urllib.request.Request(url, headers={"User-Agent": "LocalSync/1.0"})
         with urllib.request.urlopen(req, timeout=timeout) as resp:
             data = json.loads(resp.read().decode("utf-8"))
@@ -227,7 +590,7 @@ def _ddg_search(query: str, timeout: int = 8) -> str:
                 parts.append(txt[:200])
         return "\n".join(parts) if parts else ""
     except Exception as exc:
-        logger.debug("DDG search failed for %r: %s", query, exc)
+        logger.debug("DDG instant answer failed for %r: %s", query, exc)
         return ""
 
 
@@ -524,7 +887,7 @@ def _run_council(
         web_queries = _generate_search_queries(
             llm_client, journey.title, current_step.title, journey.domain)
         if web_queries:
-            _prog(f"\U0001f50d Searching\u2026")
+            _prog(f"\U0001f50d Searching ({len(web_queries)} queries)\u2026")
             for q in web_queries:
                 snip = _ddg_search(q)
                 if snip:
@@ -547,8 +910,9 @@ def _run_council(
         {"role": "user",   "content": user_q},
     ]
 
-    # Fan-out via LLMCouncil
-    _prog(f"\u2694  Convening council ({len(council.council_models)} models)\u2026")
+    # Fan-out via LLMCouncil (now with built-in retry logic)
+    n_models = len(council.council_models)
+    _prog(f"\u2694  Convening council ({n_models} models, retries enabled)\u2026")
     synthesis_text  = ""
     synthesis_model = council.synthesis_model or (council.council_models[0] if council.council_models else "")
     member_records:  list[dict] = []
@@ -573,11 +937,16 @@ def _run_council(
             member_records.append({
                 "label":    failed_model.split("/")[-1],
                 "model":    failed_model,
-                "response": "[Model did not respond]",
+                "response": "[Model did not respond after retries]",
                 "ok":       False,
             })
 
-        _prog(f"  \u2713 {result.member_count} model(s) responded")
+        ok_count = result.member_count
+        fail_count = len(result.failed_models)
+        status_parts = [f"\u2713 {ok_count} model(s) responded"]
+        if fail_count:
+            status_parts.append(f"\u26a0 {fail_count} failed")
+        _prog("  " + ", ".join(status_parts))
 
         # If synthesis is empty, compose from individual members as fallback
         if not synthesis_text and result.members:
@@ -654,8 +1023,7 @@ def _to_html(text: str, p: dict) -> str:
     if _HAS_MARKDOWN:
         body = _md_lib.markdown(text, extensions=["nl2br", "fenced_code", "tables"])
     else:
-        import html as _h
-        body = "<p>" + _h.escape(text).replace("\n\n", "</p><p>") + "</p>"
+        body = "<p>" + _html_mod.escape(text).replace("\n\n", "</p><p>") + "</p>"
     return (
         "<html><head><style>"
         f"body{{background:{bg};color:{fg};font-family:'Segoe UI','Meiryo UI',sans-serif;"
@@ -704,22 +1072,22 @@ def _tab_style(p: dict) -> str:
 # ═══════════════════════════════════════════════════════════════════════════════
 
 class RoadmapWidget(QWidget):
-    """
-    Horizontal roadmap flow — simple single row, scrollable.
-    No snake / no row reversal — eliminates all previous arrow geometry bugs.
-    Each node is a rounded rect with a step-number badge, title, and status.
+    """Horizontal roadmap flow — single row, scrollable, polished nodes.
+
+    Each node is a rounded rect with gradient fill based on status,
+    step-number badge, title, and status label below.
     Clicking a node selects it (accent ring) and emits node_selected(index).
     """
     node_selected = pyqtSignal(int)   # 0-based index into roadmap.steps
 
-    _NW     = 158   # node width
-    _NH     = 62    # node height
-    _GAP    = 28    # gap between nodes (the arrow lives here)
-    _PAD_X  = 10
-    _PAD_Y  = 8
-    _LABEL_H = 16   # height for status text below nodes
-    _R      = 8     # corner radius
-    _BR     = 10    # badge radius
+    _NW     = 180   # node width (wider for readability)
+    _NH     = 68    # node height
+    _GAP    = 32    # gap between nodes (arrow space)
+    _PAD_X  = 14
+    _PAD_Y  = 10
+    _LABEL_H = 18   # height for status text below nodes
+    _R      = 10    # corner radius
+    _BR     = 11    # badge radius
 
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -778,6 +1146,7 @@ class RoadmapWidget(QWidget):
         muted   = QColor(self._palette.get("muted",   "#7f849c"))
         acc_fg  = QColor(self._palette.get("accent_fg","#1e1e2e"))
         yellow  = QColor(self._palette.get("yellow",  "#f9e2af"))
+        bg_col  = QColor(self._palette.get("bg",      "#1e1e2e"))
 
         for i, rs in enumerate(self._roadmap.steps):
             nx       = self._node_x(i)
@@ -788,68 +1157,81 @@ class RoadmapWidget(QWidget):
             hov      = (i == self._hovered_idx)
             detour   = rs.is_detour
 
-            # Colors
+            # ── Node fill with gradient ──
             if status == "completed":
-                fill, text_c, bord_c = green, QColor("#1e1e2e"), green.darker(130)
+                grad = QLinearGradient(nx, ny, nx + nw, ny + nh)
+                g1 = green.lighter(105) if hov else green
+                g2 = green.darker(115)
+                grad.setColorAt(0, g1); grad.setColorAt(1, g2)
+                text_c = QColor("#1e1e2e")
+                bord_c = green.darker(120)
             elif status == "active":
-                fill = accent.lighter(108) if hov else accent
+                grad = QLinearGradient(nx, ny, nx + nw, ny + nh)
+                a1 = accent.lighter(115) if hov else accent
+                a2 = accent.darker(110)
+                grad.setColorAt(0, a1); grad.setColorAt(1, a2)
                 text_c = acc_fg
-                bord_c = accent.lighter(160)
+                bord_c = accent.lighter(150)
             else:
-                fill   = surface.lighter(108) if hov else surface
+                grad = QLinearGradient(nx, ny, nx + nw, ny + nh)
+                s1 = surface.lighter(115) if hov else surface
+                s2 = surface.darker(105)
+                grad.setColorAt(0, s1); grad.setColorAt(1, s2)
                 text_c = fg if hov else muted
                 bord_c = (yellow if detour else
                           (accent if selected else
                            (border.lighter(130) if hov else border)))
 
-            # Selection ring (drawn before node body)
+            # Selection ring
             if selected:
-                sel = QColor(accent); sel.setAlpha(55)
+                sel = QColor(accent); sel.setAlpha(50)
                 p.setBrush(QBrush(sel)); p.setPen(Qt.PenStyle.NoPen)
-                p.drawRoundedRect(nx-5, ny-5, nw+10, nh+10, self._R+3, self._R+3)
+                p.drawRoundedRect(nx-6, ny-6, nw+12, nh+12, self._R+4, self._R+4)
 
             # Active glow
             if status == "active":
-                glow = QColor(accent); glow.setAlpha(28)
+                glow = QColor(accent); glow.setAlpha(25)
                 p.setBrush(QBrush(glow)); p.setPen(Qt.PenStyle.NoPen)
                 p.drawRoundedRect(nx-4, ny-4, nw+8, nh+8, self._R+2, self._R+2)
 
             # Node body
-            p.setBrush(QBrush(fill))
-            p.setPen(QPen(bord_c, 1.8 if selected else 1.2))
+            p.setBrush(QBrush(grad))
+            p.setPen(QPen(bord_c, 2.0 if selected else 1.2))
             p.drawRoundedRect(nx, ny, nw, nh, self._R, self._R)
 
-            # Detour stripe (top-left triangle in yellow)
+            # Detour stripe (top-left corner triangle)
             if detour:
                 tri = QPainterPath()
                 tri.moveTo(nx, ny)
-                tri.lineTo(nx + 18, ny)
-                tri.lineTo(nx, ny + 18)
+                tri.lineTo(nx + 20, ny)
+                tri.lineTo(nx, ny + 20)
                 tri.closeSubpath()
                 p.fillPath(tri, QBrush(yellow))
 
             # Badge circle with step number
             br = self._BR
-            bx = nx + 14 + br
-            p.setBrush(QBrush(bord_c)); p.setPen(Qt.PenStyle.NoPen)
+            bx = nx + 16 + br
+            badge_col = bord_c if status != "completed" else green.darker(130)
+            p.setBrush(QBrush(badge_col)); p.setPen(Qt.PenStyle.NoPen)
             p.drawEllipse(bx - br, cy - br, br*2, br*2)
 
             if status == "completed":
                 # Checkmark inside badge
-                p.setPen(QPen(QColor("#1e1e2e"), 1.8, Qt.PenStyle.SolidLine,
+                p.setPen(QPen(QColor("#1e1e2e"), 2.0, Qt.PenStyle.SolidLine,
                               Qt.PenCapStyle.RoundCap, Qt.PenJoinStyle.RoundJoin))
                 p.drawLine(bx - 4, cy,     bx - 1, cy + 3)
                 p.drawLine(bx - 1, cy + 3, bx + 4, cy - 3)
             else:
                 # Step number
-                p.setPen(QPen(QColor("#ffffff") if status != "unstarted" else muted))
+                num_col = QColor("#ffffff") if status != "unstarted" else muted
+                p.setPen(QPen(num_col))
                 p.setFont(QFont("Segoe UI", 8, QFont.Weight.Bold))
                 p.drawText(bx - br, cy - br, br*2, br*2,
                            Qt.AlignmentFlag.AlignCenter, str(rs.number))
 
-            # Title text
-            tx = bx + br + 6
-            tw = nw - (tx - nx) - 6
+            # Title text (right of badge)
+            tx = bx + br + 8
+            tw = nw - (tx - nx) - 8
             p.setPen(QPen(text_c))
             p.setFont(QFont("Segoe UI", 9,
                             QFont.Weight.Bold if status in ("active","completed")
@@ -866,34 +1248,39 @@ class RoadmapWidget(QWidget):
 
             # Status label below node
             status_txt = {
-                "completed": "Done",
-                "active":    "In Progress",
+                "completed": "\u2713 Done",
+                "active":    "\u25b6 In Progress",
                 "unstarted": "Upcoming",
             }.get(status, "")
             if detour and status == "unstarted":
-                status_txt = "Detour"
+                status_txt = "\u2604 Detour"
             status_col = (green.darker(120) if status == "completed" else
                           (accent if status == "active" else
                            (yellow.darker(130) if detour else muted)))
             p.setPen(QPen(status_col))
-            p.setFont(QFont("Segoe UI", 7))
+            p.setFont(QFont("Segoe UI", 7, QFont.Weight.Bold
+                            if status == "active" else QFont.Weight.Normal))
             p.drawText(nx, ny + nh + 2, nw, self._LABEL_H,
                        Qt.AlignmentFlag.AlignHCenter, status_txt)
 
-            # Arrow to next node — simple horizontal line + arrowhead
+            # Arrow to next node
             if i < n - 1:
-                ax_start = nx + nw + 2
-                ax_end   = ax_start + self._GAP - 4
+                ax_start = nx + nw + 3
+                ax_end   = ax_start + self._GAP - 6
                 ay       = cy
-                p.setPen(QPen(border, 1.5))
-                p.drawLine(ax_start, ay, ax_end - 6, ay)
-                # Filled arrowhead triangle
+
+                # Arrow line
+                arrow_col = green if status == "completed" else border
+                p.setPen(QPen(arrow_col, 1.8))
+                p.drawLine(ax_start, ay, ax_end - 7, ay)
+
+                # Filled arrowhead
                 tri2 = QPainterPath()
                 tri2.moveTo(ax_end,     ay)
-                tri2.lineTo(ax_end - 7, ay - 4)
-                tri2.lineTo(ax_end - 7, ay + 4)
+                tri2.lineTo(ax_end - 8, ay - 5)
+                tri2.lineTo(ax_end - 8, ay + 5)
                 tri2.closeSubpath()
-                p.fillPath(tri2, QBrush(border))
+                p.fillPath(tri2, QBrush(arrow_col))
         p.end()
 
     def mouseMoveEvent(self, event):
@@ -1059,6 +1446,70 @@ class _MiniProgressBar(QWidget):
         fw = int(w * self._done / self._total)
         if fw > 0:
             p.setBrush(QBrush(self._color)); p.drawRoundedRect(0, 0, fw, 4, 2, 2)
+        p.end()
+
+
+class CouncilSpinner(QWidget):
+    """Animated arc spinner for council progress display."""
+
+    def __init__(self, palette: dict, parent=None):
+        super().__init__(parent)
+        self._palette = palette
+        self._angle = 0
+        self._message = "Starting\u2026"
+        self.setFixedHeight(52)
+        self._timer = QTimer(self)
+        self._timer.timeout.connect(self._tick)
+
+    def start(self):
+        self._angle = 0
+        self._timer.start(30)
+        self.show()
+
+    def stop(self):
+        self._timer.stop()
+        self.hide()
+
+    def set_message(self, msg: str):
+        self._message = msg
+        self.update()
+
+    def _tick(self):
+        self._angle = (self._angle + 6) % 360
+        self.update()
+
+    def paintEvent(self, _):
+        p = QPainter(self)
+        p.setRenderHint(QPainter.RenderHint.Antialiasing)
+        accent = QColor(self._palette.get("accent", "#89b4fa"))
+        muted  = QColor(self._palette.get("muted",  "#7f849c"))
+        surface = QColor(self._palette.get("surface", "#313244"))
+        border = QColor(self._palette.get("border", "#45475a"))
+
+        # Background card
+        p.setBrush(QBrush(surface))
+        p.setPen(QPen(border, 1))
+        p.drawRoundedRect(0, 0, self.width(), self.height(), 8, 8)
+
+        # Spinner arc
+        cx, cy = 28, self.height() // 2
+        r = 14
+        pen = QPen(accent, 3, Qt.PenStyle.SolidLine, Qt.PenCapStyle.RoundCap)
+        p.setPen(pen)
+        rect = QRectF(cx - r, cy - r, r * 2, r * 2)
+        p.drawArc(rect, int(self._angle * 16), int(90 * 16))
+
+        # Track ring
+        track_col = QColor(border); track_col.setAlpha(80)
+        p.setPen(QPen(track_col, 2))
+        p.drawEllipse(rect)
+
+        # Message text
+        p.setPen(QPen(muted))
+        p.setFont(QFont("Segoe UI", 11, QFont.Weight.Normal))
+        p.drawText(cx + r + 14, 0, self.width() - cx - r - 20, self.height(),
+                   Qt.AlignmentFlag.AlignVCenter | Qt.AlignmentFlag.AlignLeft,
+                   self._message)
         p.end()
 
 
@@ -1479,7 +1930,7 @@ class AddStepDialog(QDialog):
         layout.addWidget(QLabel("Context / Lesson Focus (optional)"))
         self.notes_edit = QTextEdit()
         self.notes_edit.setPlaceholderText(
-            "Describe what this step should cover. More detail → better tutoring.\u2026")
+            "Describe what this step should cover. More detail \u2192 better tutoring.\u2026")
         self.notes_edit.setFixedHeight(90)
         if self._pfn: self.notes_edit.setPlainText(self._pfn)
         layout.addWidget(self.notes_edit)
@@ -1583,7 +2034,15 @@ class JourneyPanel(QWidget):
         msg.setAlignment(Qt.AlignmentFlag.AlignCenter)
         msg.setStyleSheet(
             f"color:{self._palette.get('muted','#7f849c')};font-size:14px;")
-        layout.addWidget(icon); layout.addSpacing(12); layout.addWidget(msg)
+        hint = QLabel(
+            "Use a template to get started quickly,\n"
+            "or create a custom journey from scratch.")
+        hint.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        hint.setStyleSheet(
+            f"color:{self._palette.get('border','#45475a')};font-size:11px;")
+        layout.addWidget(icon); layout.addSpacing(12)
+        layout.addWidget(msg); layout.addSpacing(6)
+        layout.addWidget(hint)
         return w
 
     def _build_right_panel(self) -> QWidget:
@@ -1761,7 +2220,12 @@ class JourneyPanel(QWidget):
         aux_row.addWidget(self._update_rm_btn)
         sc.addLayout(aux_row)
 
-        # Progress/status line
+        # Council progress spinner (replaces the old tiny italic label)
+        self._council_spinner = CouncilSpinner(self._palette)
+        self._council_spinner.hide()
+        sc.addWidget(self._council_spinner)
+
+        # Progress/status line (kept for quick status flashes)
         self._council_status = QLabel("")
         self._council_status.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self._council_status.setStyleSheet(
@@ -1854,6 +2318,8 @@ class JourneyPanel(QWidget):
                 f"QPushButton:hover{{background:qlineargradient("
                 f"x1:0,y1:0,x2:1,y2:0,stop:0 {accent_h},stop:1 {green});}}"
                 f"QPushButton:disabled{{background:{border};color:{muted};}}")
+        if hasattr(self, "_council_spinner"):
+            self._council_spinner._palette = p
         for item in self._list_items:
             item.set_palette(p)
 
@@ -2001,12 +2467,21 @@ class JourneyPanel(QWidget):
                 self._build_selected_step_card(rs, p)
 
         elif not self._current_step:
-            ph = QLabel(
-                "\u2694  Create and begin a step, then convene the council\n"
-                "to generate your tutoring session, checklist, and roadmap.")
-            ph.setAlignment(Qt.AlignmentFlag.AlignCenter)
-            ph.setStyleSheet(f"color:{p.get('muted','#7f849c')};font-size:13px;padding:20px;")
-            self._overview_layout.addWidget(ph)
+            # Informative empty state
+            empty_card = SectionCard("Getting Started", "\U0001f680", p)
+            ebl = empty_card.body_layout()
+            msg = QLabel(
+                "Your journey has no roadmap yet.\n\n"
+                "1. Add your first step in the Workspace tab\n"
+                "2. Convene the Council to generate tutoring content\n"
+                "3. The AI will create a roadmap based on your journey goal\n\n"
+                "Or choose a template when creating a new journey for\n"
+                "a pre-built roadmap to get started immediately."
+            )
+            msg.setStyleSheet(f"color:{p.get('fg','#cdd6f4')};font-size:12px;line-height:1.6;")
+            msg.setWordWrap(True)
+            ebl.addWidget(msg)
+            self._overview_layout.addWidget(empty_card)
             self._overview_layout.addStretch()
             return
 
@@ -2016,20 +2491,25 @@ class JourneyPanel(QWidget):
 
         sessions = self._store.list_sessions_for_step(self._current_step.id)
         if not sessions:
-            no_sess = QLabel(
-                "\u270f  Go to the Workspace tab and click\n"
-                "\u2694 Convene Council to generate your tutoring session.")
-            no_sess.setAlignment(Qt.AlignmentFlag.AlignCenter)
-            no_sess.setStyleSheet(
-                f"color:{p.get('muted','#7f849c')};font-size:13px;padding:20px;")
-            self._overview_layout.addWidget(no_sess)
+            no_card = SectionCard("Awaiting Council", "\u2694", p)
+            nbl = no_card.body_layout()
+            msg = QLabel(
+                "No council sessions for this step yet.\n\n"
+                "Go to the Workspace tab and click\n"
+                "\u2694 Convene Council to generate your tutoring session,\n"
+                "checklist, and resource recommendations."
+            )
+            msg.setStyleSheet(f"color:{p.get('muted','#7f849c')};font-size:12px;")
+            msg.setWordWrap(True)
+            nbl.addWidget(msg)
+            self._overview_layout.addWidget(no_card)
             self._overview_layout.addStretch()
             return
 
         latest = sessions[-1]
         synth  = (latest.synthesis or "").strip()
 
-        # Synthesis card — always shown, even if empty (shows error message)
+        # Synthesis card
         syn_card = SectionCard("Council Tutoring Session", "\u2694", p)
         bl2 = syn_card.body_layout()
         display_text = synth if synth else (
@@ -2134,7 +2614,7 @@ class JourneyPanel(QWidget):
                 ol.setWordWrap(True); bl.addWidget(ol)
 
         if rs.is_detour:
-            det_lbl = QLabel("\U0001f7e8  This is a detour step — added outside the original plan.")
+            det_lbl = QLabel("\U0001f7e8  This is a detour step \u2014 added outside the original plan.")
             det_lbl.setStyleSheet(f"color:{p.get('yellow','#f9e2af')};font-size:11px;font-style:italic;")
             bl.addWidget(det_lbl)
 
@@ -2227,13 +2707,6 @@ class JourneyPanel(QWidget):
         """Node clicked in the flow widget — update selection and refresh detail."""
         self._selected_rm_idx = idx
         self._refresh_overview()
-        # Also sync step track if the clicked node corresponds to an actual step
-        if self._active_journey and 0 <= idx < len(self._active_journey.roadmap.steps):
-            rs = self._active_journey.roadmap.steps[idx]
-            for i, s in enumerate(self._steps):
-                if s.title.strip().lower() == rs.title.strip().lower():
-                    # Activate that step's council content if it exists
-                    break
 
     def _on_begin_roadmap_step(self, rs: RoadmapStep):
         """User clicked 'Begin Step N' in the selected-step detail card."""
@@ -2274,7 +2747,6 @@ class JourneyPanel(QWidget):
         self._active_journey = self._store.get_journey(self._active_journey.id)
         self._refresh_workspace(); self._refresh_sessions()
         self._refresh_overview(); self._refresh_journey_list()
-        # Switch to Workspace so user can review and manually convene when ready
         self._tabs.setCurrentIndex(_TAB_WORKSPACE)
 
     def _on_roadmap_step_clicked(self, rs: RoadmapStep):
@@ -2311,35 +2783,73 @@ class JourneyPanel(QWidget):
         self._on_journey_selected(journey.id)
 
         llm_client = load_llm_client()
-        if not llm_client:
-            # No LLM — create first step from dialog if given
-            if data["first_step"]:
-                self._store.create_step(journey.id, title=data["first_step"])
-                self._on_journey_selected(journey.id)
-            return
-
-        # Generate roadmap in background — no auto-convene, no auto step creation
         template_steps = data.get("template_steps", [])
         first_step_title = data["first_step"]
 
+        if not llm_client:
+            # No LLM — use template steps as roadmap if available
+            if template_steps:
+                roadmap = Roadmap(
+                    overview="Learning path based on template.",
+                    steps=[RoadmapStep(number=i+1, title=t, description="")
+                           for i, t in enumerate(template_steps)])
+                self._store.update_roadmap(journey.id, roadmap)
+            if first_step_title:
+                self._store.create_step(journey.id, title=first_step_title)
+            self._on_journey_selected(journey.id)
+            return
+
+        # Generate roadmap in background
+        self._council_status.setText("Generating roadmap\u2026")
+        self._council_status.show()
+        journey_id = journey.id
+
         def _gen_roadmap():
-            # Use fresh journey object for roadmap generation
-            fresh = self._store.get_journey(journey.id)
-            if not fresh: return
-            roadmap = _generate_roadmap(llm_client, fresh)
-            if not roadmap.steps:
-                # Fallback: build from template steps
-                if template_steps:
+            try:
+                fresh = self._store.get_journey(journey_id)
+                if not fresh:
+                    return
+                roadmap = _generate_roadmap(llm_client, fresh)
+                if not roadmap.steps and template_steps:
+                    # LLM failed — use template steps as fallback
                     roadmap = Roadmap(
                         overview="Learning path based on template.",
                         steps=[RoadmapStep(number=i+1, title=t, description="")
                                for i, t in enumerate(template_steps)])
-            if roadmap.steps:
-                self._store.update_roadmap(journey.id, roadmap)
-            # Reload in main thread — NO step creation, NO auto-convene
-            QTimer.singleShot(0, lambda: self._on_journey_selected(journey.id))
+                if roadmap.steps:
+                    self._store.update_roadmap(journey_id, roadmap)
+                QTimer.singleShot(0, lambda: self._on_roadmap_gen_done(journey_id))
+            except Exception as exc:
+                err = str(exc)
+                # Still try template fallback
+                if template_steps:
+                    try:
+                        roadmap = Roadmap(
+                            overview="Learning path based on template.",
+                            steps=[RoadmapStep(number=i+1, title=t, description="")
+                                   for i, t in enumerate(template_steps)])
+                        self._store.update_roadmap(journey_id, roadmap)
+                    except Exception:
+                        pass
+                QTimer.singleShot(0, lambda e=err: self._on_roadmap_gen_error(journey_id, e))
 
         threading.Thread(target=_gen_roadmap, daemon=True).start()
+
+    def _on_roadmap_gen_done(self, journey_id: str):
+        """Called on main thread after roadmap generation completes."""
+        self._council_status.hide()
+        # Only reload if we're still looking at this journey
+        if self._active_journey and self._active_journey.id == journey_id:
+            self._on_journey_selected(journey_id)
+
+    def _on_roadmap_gen_error(self, journey_id: str, error: str):
+        """Called on main thread if roadmap generation fails."""
+        self._council_status.hide()
+        if self._active_journey and self._active_journey.id == journey_id:
+            self._on_journey_selected(journey_id)
+        logger.warning("Roadmap generation failed for %s: %s", journey_id, error)
+        # Don't show a blocking dialog for this — the template fallback
+        # should have kicked in, and the user can always update the roadmap later
 
     def _on_add_step(self):
         if not self._active_journey: return
@@ -2466,7 +2976,6 @@ class JourneyPanel(QWidget):
         self._selected_rm_idx = idx_of_step(new_step, self._active_journey.roadmap)
         self._refresh_workspace(); self._refresh_sessions()
         self._refresh_overview(); self._refresh_history(); self._refresh_journey_list()
-        # Switch to Workspace — NO auto-convene, user decides when to convene
         self._tabs.setCurrentIndex(_TAB_WORKSPACE)
 
     def _on_convene_council(self):
@@ -2569,13 +3078,18 @@ class JourneyPanel(QWidget):
         self._council_running = True
         self._council_btn.setEnabled(False)
         self._council_btn.setText("\u23f3  Convening\u2026")
-        self._council_status.show()
-        self._council_status.setText("Starting council\u2026")
+        self._council_spinner.start()
+        self._council_spinner.set_message("Starting council\u2026")
 
-        journey = self._active_journey; steps = list(self._steps); step = self._current_step
+        # Capture IDs for safety check after completion
+        journey_id = self._active_journey.id
+        step_id    = self._current_step.id
+        journey    = self._active_journey
+        steps      = list(self._steps)
+        step       = self._current_step
 
         def _prog(msg: str):
-            QTimer.singleShot(0, lambda m=msg: self._council_status.setText(m))
+            QTimer.singleShot(0, lambda m=msg: self._council_spinner.set_message(m))
 
         def _worker():
             try:
@@ -2585,18 +3099,34 @@ class JourneyPanel(QWidget):
                     journey_store=self._store,
                     todo_store=self._todo_store, activity_store=self._activity_store,
                     calendar_store=self._calendar_store, on_progress=_prog)
-                QTimer.singleShot(0, lambda s=session: self._on_council_done(s))
+                QTimer.singleShot(0, lambda s=session, jid=journey_id, sid=step_id:
+                                  self._on_council_done(s, jid, sid))
             except Exception as exc:
                 err = str(exc)
                 QTimer.singleShot(0, lambda e=err: self._show_council_error(e))
 
         threading.Thread(target=_worker, daemon=True).start()
 
-    def _on_council_done(self, session: CouncilSession):
+    def _on_council_done(self, session: CouncilSession,
+                         orig_journey_id: str, orig_step_id: str):
+        """Handle council completion with safety checks."""
         self._council_running = False
         self._council_btn.setEnabled(True)
         self._council_btn.setText("\u2694  Convene Council")
-        self._council_status.hide()
+        self._council_spinner.stop()
+
+        # Safety: verify the journey/step still exist and are still active
+        if not self._active_journey:
+            return
+        if self._active_journey.id != orig_journey_id:
+            # User switched to a different journey while council was running
+            return
+        if not self._current_step or self._current_step.id != orig_step_id:
+            # Step changed during council run — still save was done, just
+            # don't try to refresh with stale references
+            self._refresh_journey_list()
+            return
+
         fresh = self._store.get_step(self._current_step.id)
         if fresh:
             self._current_step = fresh
@@ -2612,6 +3142,8 @@ class JourneyPanel(QWidget):
         if hasattr(self, "_council_btn"):
             self._council_btn.setEnabled(True)
             self._council_btn.setText("\u2694  Convene Council")
+        if hasattr(self, "_council_spinner"):
+            self._council_spinner.stop()
         if hasattr(self, "_council_status"):
             self._council_status.hide()
         QMessageBox.warning(self, "Council Error", msg)
