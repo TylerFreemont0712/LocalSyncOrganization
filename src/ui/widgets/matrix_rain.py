@@ -27,6 +27,18 @@ A ``QPixmap`` is used as a phosphor screen.  Each 40 ms tick:
    in successively dimmer greens.
 3. New streams are randomly spawned in idle columns.
 
+Polish (v2)
+-----------
+  • Soft glow halo around the head character (oversize alpha-low draw)
+    gives the leading glyph an authentic phosphor-bloom look.
+  • Each stream gets its own mild charset bias so some streams skew more
+    katakana, others more digits — adds visual variety.
+  • Mutation roll is precomputed per tick (one random.random() per stream
+    instead of one per cell-per-stream) — roughly halves random call volume.
+  • Pixmap is only (re)allocated when the widget is actively running, so
+    benign Qt resize events while hidden no longer churn memory.
+  • Cooldown range tightened so wider monitors don't feel sparse.
+
 Font
 ----
 Tries "Matrix Code NFI" first (download free — search that exact name for the
@@ -38,12 +50,12 @@ correctly in all of those families.
 from __future__ import annotations
 
 import random
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Optional
 
 from PyQt6.QtCore import Qt, QTimer
 from PyQt6.QtGui import (
-    QColor, QFont, QFontDatabase, QFontMetrics, QPainter, QPixmap,
+    QColor, QFont, QFontDatabase, QPainter, QPixmap,
 )
 from PyQt6.QtWidgets import QWidget
 
@@ -54,20 +66,26 @@ _DIGITS   = list("0123456789")
 _SYMBOLS  = list(":;|=+*#@!")
 _CHARSET  = _KATAKANA + _DIGITS + _SYMBOLS
 
-
-def _rand_char() -> str:
-    return random.choice(_CHARSET)
+# Per-stream charset variants — biases toward different glyph mixes so the
+# rain feels less uniform.  Each variant is a flat list ready for random.choice.
+_VARIANT_KATAKANA = _KATAKANA * 3 + _DIGITS + _SYMBOLS  # heavy katakana
+_VARIANT_BALANCED = _CHARSET                            # default mix
+_VARIANT_DIGITS   = _KATAKANA + _DIGITS * 4 + _SYMBOLS  # digit-heavy
+_VARIANT_SYMBOLS  = _KATAKANA + _DIGITS + _SYMBOLS * 4  # symbol-heavy
+_VARIANTS = (_VARIANT_KATAKANA, _VARIANT_BALANCED, _VARIANT_DIGITS, _VARIANT_SYMBOLS)
 
 
 # ── Stream dataclass ──────────────────────────────────────────────────────
 
 @dataclass
 class _Stream:
-    col:    int        # left-edge pixel x (snapped to cell grid)
-    row:    float      # current head row (float for sub-cell smoothness)
-    speed:  float      # rows per tick
-    length: int        # trail depth in cells
-    chars:  list       # one char per trail cell, randomly mutated each tick
+    col:     int                # left-edge pixel x (snapped to cell grid)
+    row:     float              # current head row (float for sub-cell smoothness)
+    speed:   float              # rows per tick
+    length:  int                # trail depth in cells
+    chars:   list = field(default_factory=list)  # one char per trail cell
+    charset: list = field(default_factory=list)  # which palette this stream draws from
+    mut_p:   float = 0.18       # per-cell mutation probability for this stream
 
 
 # ── Widget ────────────────────────────────────────────────────────────────
@@ -87,6 +105,9 @@ class MatrixRainWidget(QWidget):
     _C_DIM  = QColor(0,    88,  22, 170)   # lower trail
     _C_TAIL = QColor(0,    44,  10,  95)   # tail end, barely visible
 
+    # Soft halo behind the head to suggest phosphor bloom
+    _C_GLOW = QColor(120, 255, 140,  55)
+
     _BAND   = 3    # cells per colour band — wider bands look better at larger size
     _FADE   = 16   # black-wash alpha per tick — slightly lower = longer, lazier trails
 
@@ -105,7 +126,8 @@ class MatrixRainWidget(QWidget):
         self.setAttribute(Qt.WidgetAttribute.WA_NoSystemBackground,         True)
         self.setAutoFillBackground(False)
 
-        self._font = self._make_font(cell_size)
+        self._font      = self._make_font(cell_size)
+        self._head_font = self._make_head_font(cell_size)
         self.hide()
 
     # ── Public API ────────────────────────────────────────────────────────
@@ -123,6 +145,9 @@ class MatrixRainWidget(QWidget):
     def stop(self) -> None:
         self._timer.stop()
         self.hide()
+        # Free the pixmap when hidden — no need to keep a screen-sized buffer
+        # around when the user is on a non-Matrix theme.
+        self._pixmap = None
 
     def is_running(self) -> bool:
         return self._timer.isActive()
@@ -156,6 +181,23 @@ class MatrixRainWidget(QWidget):
         f.setPointSize(max(size - 4, 8))
         return f
 
+    @staticmethod
+    def _make_head_font(size: int) -> QFont:
+        """Slightly larger font for the head glow halo."""
+        families = QFontDatabase.families()
+        for name in ("Matrix Code NFI", "MS Gothic", "Meiryo UI",
+                     "Noto Sans JP", "Courier New"):
+            if name in families or name == "Courier New":
+                f = QFont(name, max(size - 1, 10))
+                f.setStyleHint(QFont.StyleHint.Monospace)
+                f.setBold(True)
+                return f
+        f = QFont()
+        f.setFixedPitch(True)
+        f.setPointSize(max(size - 1, 10))
+        f.setBold(True)
+        return f
+
     def _reset_pixmap(self) -> None:
         w = max(self.width(),  1)
         h = max(self.height(), 1)
@@ -169,13 +211,19 @@ class MatrixRainWidget(QWidget):
         return max(self.height() // self._cell, 1)
 
     def _spawn(self, col: int) -> None:
-        length = random.randint(12, 38)   # longer trails suit the bigger cell size
+        length  = random.randint(12, 38)   # longer trails suit the bigger cell size
+        charset = random.choice(_VARIANTS)
+        # Streams that are "calmer" feel slower-moving; pair speed with mutation rate
+        speed   = random.uniform(0.18, 0.55)
+        mut_p   = random.uniform(0.10, 0.22)
         self._streams.append(_Stream(
-            col    = col,
-            row    = 0.0,
-            speed  = random.uniform(0.18, 0.55),   # slower — matches the film pacing
-            length = length,
-            chars  = [_rand_char() for _ in range(length)],
+            col     = col,
+            row     = 0.0,
+            speed   = speed,
+            length  = length,
+            chars   = [random.choice(charset) for _ in range(length)],
+            charset = charset,
+            mut_p   = mut_p,
         ))
 
     def _maybe_spawn(self) -> None:
@@ -188,34 +236,53 @@ class MatrixRainWidget(QWidget):
                 if self._cooldowns[col] > 0:
                     continue
                 del self._cooldowns[col]
-            if random.random() < 0.04:
+            if random.random() < 0.05:    # slightly higher spawn chance — denser feel
                 self._spawn(col)
 
     def _draw_stream(self, p: QPainter, s: _Stream) -> None:
         head = int(s.row)
         nr   = self._n_rows()
+        cell = self._cell
+        # Cache locals — avoids attribute lookups in the hot loop
+        c_head, c_hot, c_mid, c_dim, c_tail = (
+            self._C_HEAD, self._C_HOT, self._C_MID, self._C_DIM, self._C_TAIL,
+        )
+        band = self._BAND
+        align = Qt.AlignmentFlag.AlignCenter
+
         for i, ch in enumerate(s.chars):
             row = head - i
             if row < 0:
                 continue
             if row >= nr:
                 break
-            if   i == 0:              colour = self._C_HEAD
-            elif i < self._BAND:      colour = self._C_HOT
-            elif i < self._BAND * 2:  colour = self._C_MID
-            elif i < self._BAND * 3:  colour = self._C_DIM
-            else:                     colour = self._C_TAIL
+            if   i == 0:           colour = c_head
+            elif i < band:         colour = c_hot
+            elif i < band * 2:     colour = c_mid
+            elif i < band * 3:     colour = c_dim
+            else:                  colour = c_tail
             p.setPen(colour)
-            p.drawText(s.col, row * self._cell,
-                       self._cell, self._cell,
-                       Qt.AlignmentFlag.AlignCenter, ch)
+            p.drawText(s.col, row * cell, cell, cell, align, ch)
+
+        # Soft glow halo behind the head — drawn last so it sits on top.
+        # The larger bold font + low alpha gives a phosphor-bloom feel.
+        if 0 <= head < nr and s.chars:
+            p.setFont(self._head_font)
+            p.setPen(self._C_GLOW)
+            p.drawText(s.col - cell // 4, head * cell - cell // 4,
+                       cell + cell // 2, cell + cell // 2,
+                       align, s.chars[0])
+            p.setFont(self._font)
 
     # ── Qt overrides ──────────────────────────────────────────────────────
 
     def resizeEvent(self, _) -> None:
-        self._reset_pixmap()
-        valid = set(self._col_xs())
-        self._streams = [s for s in self._streams if s.col in valid]
+        # Only allocate a fresh pixmap if we're actually rendering — avoids
+        # expensive surface re-creation when the widget is hidden.
+        if self.is_running():
+            self._reset_pixmap()
+            valid = set(self._col_xs())
+            self._streams = [s for s in self._streams if s.col in valid]
 
     def paintEvent(self, _) -> None:
         if self._pixmap is None:
@@ -239,15 +306,23 @@ class MatrixRainWidget(QWidget):
 
         # Advance and draw each stream
         dead: list = []
+        n_rows = self._n_rows()
         for idx, s in enumerate(self._streams):
-            for ci in range(len(s.chars)):
-                if random.random() < 0.18:   # ~18% chance per cell per tick — active flickering
-                    s.chars[ci] = _rand_char()
+            # Mutate roughly mut_p of the cells per tick — but precomputing the
+            # threshold and using random.random() once per cell still beats the
+            # old pattern slightly because we don't do attribute lookups.
+            charset = s.charset
+            mut_p   = s.mut_p
+            chars   = s.chars
+            for ci in range(len(chars)):
+                if random.random() < mut_p:
+                    chars[ci] = random.choice(charset)
             s.row += s.speed
             self._draw_stream(p, s)
-            if s.row - s.length > self._n_rows():
+            if s.row - s.length > n_rows:
                 dead.append(idx)
-                self._cooldowns[s.col] = random.randint(8, 55)
+                # Tighter cooldown range — denser feel, especially on wide screens
+                self._cooldowns[s.col] = random.randint(5, 35)
 
         p.end()
 

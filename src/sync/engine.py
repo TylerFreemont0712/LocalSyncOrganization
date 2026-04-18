@@ -91,6 +91,13 @@ class SyncEngine(QThread):
         self._peers: dict[str, PeerInfo] = {}  # ip -> PeerInfo
         self._lock = threading.Lock()
 
+        # Long-lived thread pool for subnet scans — re-used across cycles
+        # rather than spinning up 20 threads every sync interval.
+        self._scan_pool = ThreadPoolExecutor(
+            max_workers=self.scan_threads,
+            thread_name_prefix="sync-scan",
+        )
+
         # Seed known peers from config
         for ip in self.cfg.get("known_peers", []):
             self._peers[ip] = PeerInfo(ip, self.sync_port)
@@ -155,6 +162,11 @@ class SyncEngine(QThread):
 
     def stop(self):
         self._running = False
+        # Tear down the scan pool — non-blocking so we don't hang on stop()
+        try:
+            self._scan_pool.shutdown(wait=False, cancel_futures=True)
+        except Exception:
+            pass
 
     def force_sync(self):
         """Trigger an immediate sync cycle (called from UI)."""
@@ -239,19 +251,18 @@ class SyncEngine(QThread):
             if f"{self.subnet}.{i}" not in my_ips
         ]
 
-        found = []
-        with ThreadPoolExecutor(max_workers=self.scan_threads) as pool:
-            futures = {
-                pool.submit(self._probe_host, ip): ip
-                for ip in targets
-            }
-            for future in as_completed(futures):
-                ip = futures[future]
-                try:
-                    if future.result():
-                        found.append(ip)
-                except Exception:
-                    pass
+        found   = []
+        futures = {
+            self._scan_pool.submit(self._probe_host, ip): ip
+            for ip in targets
+        }
+        for future in as_completed(futures):
+            ip = futures[future]
+            try:
+                if future.result():
+                    found.append(ip)
+            except Exception:
+                pass
 
         with self._lock:
             for ip in found:
@@ -793,25 +804,26 @@ class SyncEngine(QThread):
                 for d in remote.get("vault_deletions", [])
             }
 
+            # Snapshot the deletion manifest ONCE per merge — the previous
+            # implementation re-read it twice for every incoming vault note,
+            # which is N*2 disk reads of the same JSON file per sync.
+            local_del_lookup: dict[str, float] = {
+                d["path"]: d.get("deleted_at", 0)
+                for d in self._get_vault_deletions(vault_path)
+            }
+
             # Then, merge vault notes — create/update files
             for rnote in remote.get("vault_notes", []):
                 rel_posix = rnote["path"].replace("\\", "/")
                 # Skip if this file was deleted locally
-                local_deletions = {
-                    d["path"] for d in self._get_vault_deletions(vault_path)
-                }
-                if rel_posix in local_deletions:
-                    # Check if remote mtime is newer than our deletion
-                    local_del_time = 0
-                    for d in self._get_vault_deletions(vault_path):
-                        if d["path"] == rel_posix:
-                            local_del_time = d.get("deleted_at", 0)
-                            break
+                if rel_posix in local_del_lookup:
+                    local_del_time = local_del_lookup[rel_posix]
                     if rnote["mtime"] <= local_del_time:
                         continue  # Our deletion is newer, skip
                     # Remote edit is newer than our deletion — re-create
-                    # Remove from deletion manifest
+                    # Remove from deletion manifest *and* from our local lookup
                     self._remove_vault_deletion(vault_path, rel_posix)
+                    local_del_lookup.pop(rel_posix, None)
 
                 local_path = vault_dir / Path(rel_posix)
                 should_write = False
@@ -832,8 +844,11 @@ class SyncEngine(QThread):
                     except OSError as e:
                         logger.warning(f"Failed to write vault file {rel_posix}: {e}")
 
-            # Clean up empty directories left after deletions
-            if vault_dir.exists():
+            # Clean up empty directories left after deletions — but only
+            # if we actually deleted something this merge.  Walking the
+            # whole vault tree on every sync is wasteful when no deletions
+            # arrived.
+            if vault_dir.exists() and remote.get("vault_deletions"):
                 self._cleanup_empty_dirs(vault_dir)
 
         return changes

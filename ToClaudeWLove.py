@@ -8,7 +8,7 @@ def collect_python_files(root_dir, self_filename):
     python_files = []
     for dirpath, _, filenames in os.walk(root_dir):
         for f in filenames:
-            if (f.endswith(".py") or f.endswith(".pyw")) and f != self_filename:
+            if (f.endswith(".py") or f.endswith(".pyw") or f.endswith(".js") or f.endswith(".cs") ) and f != self_filename:
                 full_path = os.path.join(dirpath, f)
                 python_files.append(full_path)
     return python_files

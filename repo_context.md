@@ -58,7 +58,7 @@ This document contains the full context of the repository, formatted for optimal
 
 ## 📊 Project Summary
 - Total Python files: **41**
-- Total lines of code: **18514**
+- Total lines of code: **18804**
 
 ## 🔗 Dependency Graph
 ### main.pyw
@@ -202,7 +202,6 @@ This document contains the full context of the repository, formatted for optimal
 - src.ui.modules.activity_panel
 - src.ui.modules.work_panel
 - src.ui.modules.debug_panel
-- src.ui.modules.journey_panel
 - src.data.todo_store
 - src.data.calendar_store
 - src.data.finance_store
@@ -297,8 +296,10 @@ This document contains the full context of the repository, formatted for optimal
 
 ### src\ui\modules\journey_panel.py
 - __future__
+- html
 - json
 - logging
+- re
 - threading
 - urllib.parse
 - urllib.request
@@ -310,7 +311,6 @@ This document contains the full context of the repository, formatted for optimal
 - src.data.journey_store
 - src.utils.llm
 - markdown
-- html
 - src.data.database
 
 ### src\ui\modules\notes_panel.py
@@ -382,9 +382,6 @@ This document contains the full context of the repository, formatted for optimal
 - PyQt6.QtCore
 - PyQt6.QtWidgets
 - src.config
-- src.utils.llm
-- PyQt6.QtWidgets
-- PyQt6.QtWidgets
 - src.utils.llm
 
 ### src\utils\__init__.py
@@ -1426,18 +1423,18 @@ making them easy to filter for 確定申告 year-end reporting.
 **Module docstring:**
 Journey Panel — goal-driven step tutoring with Council AI.
 
-Fixed in this revision
-──────────────────────
-  • create_journey SQL bug (backtick in string) — fixed in journey_store.py
-  • RoadmapFlowWidget snake arrow geometry bugs — replaced with simple horizontal
-    single-row RoadmapWidget (no snake, no row reversal, scrollable)
-  • Council synthesis not rendering — now shows member responses as fallback,
-    plus a visible error state rather than silently empty
-  • Auto-convene on journey/step creation removed — council is 100 % manual
-  • Roadmap nodes are selectable: clicking one updates the step-detail panel
-    and highlights the node with an accent ring
-  • "Update Roadmap" in Workspace sends notes+hints to LLM and re-writes the roadmap
-  • Off-roadmap steps are recorded as detours in roadmap_json
+v0.4.0 — Major overhaul
+───────────────────────
+  • Council retry guardrails: if council call fails, error is shown gracefully
+    and state is never left broken (running flag always cleared)
+  • Roadmap generation failure now reports to UI instead of silently failing
+  • Template steps used as fallback when LLM roadmap gen fails
+  • DDG search replaced with proper HTML scraping from lite.duckduckgo.com
+  • 20+ new journey templates (Space, WoW, Game Dev, Cybersecurity, etc.)
+  • Roadmap widget: wider nodes, gradient progress fill, better typography
+  • Council progress: animated spinner card instead of tiny italic label
+  • Overview tab: better visual hierarchy, informative empty states
+  • Robustness: guards against journey/step deletion mid-council-run
 
 Tabs
 ────
@@ -1448,13 +1445,15 @@ Tabs
 Dependencies: markdown (pip install markdown), stdlib urllib
 
 **Classes:**
-- `RoadmapWidget`: Horizontal roadmap flow — simple single row, scrollable.
-No snake / no row reversal — eliminates all previous arrow geometry bugs.
-Each node is a rounded rect with a step-number badge, title, and status.
+- `RoadmapWidget`: Horizontal roadmap flow — single row, scrollable, polished nodes.
+
+Each node is a rounded rect with gradient fill based on status,
+step-number badge, title, and status label below.
 Clicking a node selects it (accent ring) and emits node_selected(index).
 - `StepTrack`: (No docstring)
 - `DomainBadge`: (No docstring)
 - `_MiniProgressBar`: (No docstring)
+- `CouncilSpinner`: Animated arc spinner for council progress display.
 - `ChecklistItem`: (No docstring)
 - `SectionCard`: (No docstring)
 - `CouncilorBadge`: (No docstring)
@@ -1467,7 +1466,12 @@ Clicking a node selects it (accent ring) and emits node_selected(index).
 - `JourneyPanel`: (No docstring)
 
 **Functions:**
-- `_ddg_search`: (No docstring)
+- `_ddg_search`: Search DuckDuckGo via the lite HTML interface for actual results.
+
+The previous instant-answer API (?format=json) only returned results for
+very specific factual queries and was essentially useless for tutorial and
+learning content.  This scrapes lite.duckduckgo.com which returns real
+search results even for broad queries.
 - `_generate_search_queries`: (No docstring)
 - `_build_context`: (No docstring)
 - `_parse_structured`: (No docstring)
@@ -1502,6 +1506,12 @@ Clicking a node selects it (accent ring) and emits node_selected(index).
 - `__init__`: (No docstring)
 - `update_domain`: (No docstring)
 - `__init__`: (No docstring)
+- `paintEvent`: (No docstring)
+- `__init__`: (No docstring)
+- `start`: (No docstring)
+- `stop`: (No docstring)
+- `set_message`: (No docstring)
+- `_tick`: (No docstring)
 - `paintEvent`: (No docstring)
 - `__init__`: (No docstring)
 - `_task_style`: (No docstring)
@@ -1560,6 +1570,8 @@ Clicking a node selects it (accent ring) and emits node_selected(index).
 - `_on_begin_roadmap_step`: User clicked 'Begin Step N' in the selected-step detail card.
 - `_on_roadmap_step_clicked`: 'Up Next' button clicked — open AddStepDialog pre-filled.
 - `_on_new_journey`: (No docstring)
+- `_on_roadmap_gen_done`: Called on main thread after roadmap generation completes.
+- `_on_roadmap_gen_error`: Called on main thread if roadmap generation fails.
 - `_on_add_step`: (No docstring)
 - `_on_web_toggle`: (No docstring)
 - `_on_step_track_clicked`: (No docstring)
@@ -1575,7 +1587,7 @@ Clicking a node selects it (accent ring) and emits node_selected(index).
 - `_on_roadmap_update_failed`: (No docstring)
 - `_on_regen_overview`: (No docstring)
 - `_convene_council_async`: (No docstring)
-- `_on_council_done`: (No docstring)
+- `_on_council_done`: Handle council completion with safety checks.
 - `_show_council_error`: (No docstring)
 - `_refresh`: (No docstring)
 - `_gen_roadmap`: (No docstring)
@@ -1879,21 +1891,27 @@ tooltip : str
 **Module docstring:**
 Network settings dialog — configure sync, view peers, manage connections, AI/LLM.
 
+Tabs
+────
+  ⚙  Settings  : Sync subnet/port/interval/timeout, peer table, force scan/sync, log
+  📓  Obsidian  : Vault path, sync toggle, REST API key/URL
+  🤖  AI / LLM  : llama.cpp server host, connection test, multi-pass council toggle
+
 **Classes:**
 - `NetworkDialog`: Network and sync settings with live peer status, log viewer, and AI config.
 
 **Functions:**
+- `_input_dialog`: (No docstring)
 - `__init__`: (No docstring)
 - `_build_ui`: (No docstring)
+- `_build_settings_tab`: (No docstring)
+- `_build_obsidian_tab`: (No docstring)
+- `_build_ai_tab`: (No docstring)
 - `_load_values`: (No docstring)
 - `_save_settings`: (No docstring)
 - `_save_ai_settings`: (No docstring)
+- `_save_obsidian_settings`: (No docstring)
 - `_test_ai`: (No docstring)
-- `_on_council_toggled`: (No docstring)
-- `_update_council_count`: (No docstring)
-- `_add_council_model`: (No docstring)
-- `_remove_council_model`: (No docstring)
-- `_edit_council_model`: (No docstring)
 - `_test_council`: (No docstring)
 - `_refresh_peers`: (No docstring)
 - `_update_peer_table`: (No docstring)
@@ -1902,14 +1920,12 @@ Network settings dialog — configure sync, view peers, manage connections, AI/L
 - `_force_scan`: (No docstring)
 - `_force_sync`: (No docstring)
 - `_browse_vault`: (No docstring)
-- `_save_obsidian_settings`: (No docstring)
 - `_append_log`: (No docstring)
 - `_get_local_ip`: (No docstring)
 - `_on_ok`: (No docstring)
 - `_on_err`: (No docstring)
 - `_on_ok`: (No docstring)
 - `_on_err`: (No docstring)
-- `do_ping`: (No docstring)
 - `do_ping`: (No docstring)
 
 ### src\utils\__init__.py
@@ -1924,72 +1940,81 @@ Shared utilities.
 
 ### src\utils\llm.py
 **Module docstring:**
-LLM client — thin wrapper around the OpenRouter chat completions API.
+LLM client — llama.cpp server backend with lightweight multi-pass council.
 
-Uses only stdlib (urllib + json + threading + time) — no extra dependencies.
+Uses only stdlib (urllib + json + threading) — no extra dependencies.
+
+The llama.cpp server exposes an OpenAI-compatible /v1/chat/completions endpoint.
+No model selection is needed — the model is locked server-side.
 
 Exports
 -------
-LLMResult      : dataclass returned by every successful call
-LLMSignals     : QObject subclass with result/error pyqtSignals (thread-safe bridge)
-LLMClient      : the actual HTTP client
-CouncilResult  : dataclass returned by a council run
-LLMCouncil     : fan-out client that queries multiple models and synthesises
-load_llm_client / save_llm_config          : single-model config helpers
-load_council_config / save_council_config  : council config helpers
-DEFAULT_MODEL  : fallback model string
+LLMResult       : dataclass returned by every successful call
+LLMSignals      : QObject with result/error pyqtSignals (thread-safe bridge)
+LLMClient       : thin /v1/chat/completions client
+CouncilResult   : dataclass returned by a multi-pass council run
+CouncilSignals  : QObject with result/error pyqtSignals for council
+LightCouncil    : 3-pass council (Precise / Balanced / Creative) + synthesis
+LLMCouncil      : alias for LightCouncil (backwards compat)
+load_llm_client       : config helper → LLMClient
+load_council_config   : config helper → LightCouncil | None
+save_llm_config       : persist host to config
+save_council_config   : persist council enabled flag to config
+LLAMA_DEFAULT_HOST    : default server URL
+COUNCIL_SYNTHESIS_MODES : kept for UI compat
+
+v0.6.0 — llama.cpp backend + LightCouncil
+──────────────────────────────────────────
+  • Switched from Ollama /api/chat to OpenAI-compat /v1/chat/completions
+  • No model name needed — locked server-side
+  • Removed ToolRunner and 5-role named council
+  • Replaced with LightCouncil: 3 parallel passes at different temperatures
+    (Precise 0.2 / Balanced 0.6 / Creative 1.0) then a synthesis pass
+  • LLMCouncil kept as alias so existing call sites continue to work
+  • Config key: llama_host (was ollama_host)
 
 **Classes:**
 - `LLMResult`: Returned by every successful LLM call.
-- `CouncilResult`: Returned by a successful LLMCouncil run.
-
-Attributes
-----------
-final           : The synthesised LLMResult produced by the synthesis pass.
-members         : One LLMResult per council model that responded successfully.
-failed_models   : Model IDs that errored out during the fan-out phase.
-synthesis_model : The model used for the final synthesis pass.
-synthesis_mode  : One of 'Consensus', 'Best Pick', 'Debate'.
+- `CouncilResult`: Returned by a successful LightCouncil run.
 - `LLMSignals`: QObject whose signals marshal LLM callbacks onto the Qt main thread.
 
 Always store an instance on *self* (not a local variable) so the
-underlying C++ object is not garbage-collected before the worker
-thread fires.
+underlying C++ object is not garbage-collected before the worker thread fires.
 - `CouncilSignals`: Same pattern as LLMSignals but for CouncilResult.
-- `LLMClient`: Thin OpenRouter chat-completions client.
-- `LLMCouncil`: Queries multiple OpenRouter models in parallel and synthesises their responses.
+- `LLMClient`: Thin OpenAI-compatible /v1/chat/completions client for a llama.cpp server.
 
-Parameters
-----------
-api_key         : OpenRouter API key (shared across all members).
-council_models  : List of 3–6 model ID strings.
-synthesis_model : Model used for the synthesis pass (defaults to council_models[0]).
-synthesis_mode  : One of 'Consensus', 'Best Pick', 'Debate'.
-timeout         : Per-request timeout in seconds.
+The model is locked server-side; the `model` parameter is optional and
+only sent if explicitly set (some server configs require it, most ignore it).
+- `LightCouncil`: Three parallel passes at different temperatures, followed by a synthesis call.
+
+All calls hit the same llama.cpp server; the model is server-side locked.
+
+Passes
+------
+Precise  (temp 0.2) — analytical, structured, accurate
+Balanced (temp 0.6) — well-rounded, thorough
+Creative (temp 1.0) — lateral, divergent, exploratory
+
+The synthesis pass (temp 0.4) sees all three responses and produces the
+final consolidated answer.
 
 **Functions:**
-- `load_llm_client`: Return a configured LLMClient, or None if no key is saved.
-- `save_llm_config`: Persist API key and model choice to config.
-- `load_council_config`: Return a configured LLMCouncil, or None if council is disabled / unconfigured.
-- `save_council_config`: Persist council settings to config.
-- `total_tokens`: (No docstring)
-- `elapsed_s`: (No docstring)
+- `load_llm_client`: Return a configured LLMClient pointed at the llama.cpp server.
+- `save_llm_config`: Persist llama.cpp host to config.
+- `load_council_config`: Return a configured LightCouncil, or None if council is disabled.
+- `save_council_config`: Persist council enabled flag to config.
 - `timing_summary`: (No docstring)
-- `__str__`: (No docstring)
-- `member_count`: (No docstring)
 - `summary`: (No docstring)
 - `__init__`: (No docstring)
-- `complete`: Synchronous call — blocks. Use only from a worker thread.
-- `complete_async`: Non-blocking — fires a daemon thread.  Retries on 429 with back-off.
-- `__init__`: (No docstring)
-- `_client`: (No docstring)
-- `_call_member`: Call one council member.  Returns (model, result_or_None, error_str).
-- `_build_synthesis_messages`: Build the synthesis prompt incorporating all member responses.
-- `complete`: Synchronous council call — blocks until all members and synthesis finish.
+- `complete`: Send a chat completion request and return an LLMResult.
 
-Fan-out is parallel; synthesis is sequential after fan-out completes.
-Always run from a worker thread.
-- `complete_async`: Non-blocking council call — fires a single daemon thread.
+If `system` is provided it is prepended as a system message, replacing
+any existing system message at position 0.
+- `complete_async`: Fire-and-forget async wrapper around complete().
+- `__init__`: (No docstring)
+- `_run_pass`: Run one council pass. Returns (name, result_or_None, error_str).
+- `complete`: Run all passes in parallel, then synthesise. Returns CouncilResult.
+- `complete_async`: Fire-and-forget async wrapper around complete().
 - `_worker`: (No docstring)
 - `_worker`: (No docstring)
 
@@ -5903,8 +5928,7 @@ from src.ui.modules.dashboard_panel import DashboardPanel
 from src.ui.modules.finance_charts import FinanceChartsPanel
 from src.ui.modules.activity_panel import ActivityPanel
 from src.ui.modules.work_panel import WorkPanel
-from src.ui.modules.debug_panel import DebugPanel 
-from src.ui.modules.journey_panel import JourneyPanel
+from src.ui.modules.debug_panel import DebugPanel
 
 from src.data.todo_store import TodoStore
 from src.data.calendar_store import CalendarStore
@@ -6083,7 +6107,6 @@ class MainWindow(QMainWindow):
             ("Tasks", "\u2611", "Ctrl+6"),
             ("Activity", "\u23f1", "Ctrl+7"),
             ("Work",     "\U0001f4bc", "Ctrl+8"),
-            ("Journey",  "🧭",             "Ctrl+9"),
             ("Debug",    "\U0001f52c", "Ctrl+0"),
         ]
         for name, icon, shortcut_text in nav_items:
@@ -6164,13 +6187,7 @@ class MainWindow(QMainWindow):
         self.stack.addWidget(self.todo_panel)        # 5
         self.stack.addWidget(self.activity_panel)    # 6
         self.stack.addWidget(self.work_panel)        # 7
-        self.journey_panel = JourneyPanel(
-            todo_store=self.todo_store,
-            calendar_store=self.calendar_store,
-            activity_store=self.activity_store,
-        )
-        self.stack.addWidget(self.journey_panel)     # 8
-        self.stack.addWidget(self.debug_panel)       # 9
+        self.stack.addWidget(self.debug_panel)       # 8
         self.work_panel.llm_config_changed.connect(self._reload_llm_client)        
         main_layout.addWidget(self.stack, 1)
 
@@ -6269,7 +6286,7 @@ class MainWindow(QMainWindow):
         idx_map = {
             "Dashboard": 0, "Notes": 1, "Calendar": 2,
             "Earnings": 3, "Charts": 4, "Tasks": 5, "Activity": 6,
-            "Work": 7, "Journey": 8, "Debug": 9
+            "Work": 7, "Debug": 8
         }
         idx = idx_map.get(name, 0)
         self.stack.setCurrentIndex(idx)
@@ -6316,8 +6333,6 @@ class MainWindow(QMainWindow):
             self.activity_panel.set_palette(palette)
         if hasattr(self.notes_panel, 'set_palette'):
             self.notes_panel.set_palette(palette)
-        if hasattr(self.journey_panel, 'set_palette'):
-            self.journey_panel.set_palette(palette)
         if hasattr(self.debug_panel, 'set_palette'):
             self.debug_panel.set_palette(palette)
 
@@ -11102,7 +11117,7 @@ class DebugPanel(QWidget):
                 self._members_layout.count() - 1, card
             )
 
-        for failed_model in result.failed_models:
+        for failed_model in result.failed:
             card = _FailedCard(failed_model)
             self._members_layout.insertWidget(
                 self._members_layout.count() - 1, card
@@ -11110,9 +11125,7 @@ class DebugPanel(QWidget):
 
         # Show synthesis
         self._synth_box.setPlainText(result.final.text.strip())
-        self._synth_lbl.setText(
-            f"Synthesised Result  ·  {result.synthesis_mode}"
-        )
+        self._synth_lbl.setText("Synthesised Result  ·  Multi-Pass")
         self._copy_btn.setEnabled(True)
         self._set_status(result.summary())
 
@@ -13545,18 +13558,18 @@ class FinancePanel(QWidget):
 ```python
 """Journey Panel — goal-driven step tutoring with Council AI.
 
-Fixed in this revision
-──────────────────────
-  • create_journey SQL bug (backtick in string) — fixed in journey_store.py
-  • RoadmapFlowWidget snake arrow geometry bugs — replaced with simple horizontal
-    single-row RoadmapWidget (no snake, no row reversal, scrollable)
-  • Council synthesis not rendering — now shows member responses as fallback,
-    plus a visible error state rather than silently empty
-  • Auto-convene on journey/step creation removed — council is 100 % manual
-  • Roadmap nodes are selectable: clicking one updates the step-detail panel
-    and highlights the node with an accent ring
-  • "Update Roadmap" in Workspace sends notes+hints to LLM and re-writes the roadmap
-  • Off-roadmap steps are recorded as detours in roadmap_json
+v0.4.0 — Major overhaul
+───────────────────────
+  • Council retry guardrails: if council call fails, error is shown gracefully
+    and state is never left broken (running flag always cleared)
+  • Roadmap generation failure now reports to UI instead of silently failing
+  • Template steps used as fallback when LLM roadmap gen fails
+  • DDG search replaced with proper HTML scraping from lite.duckduckgo.com
+  • 20+ new journey templates (Space, WoW, Game Dev, Cybersecurity, etc.)
+  • Roadmap widget: wider nodes, gradient progress fill, better typography
+  • Council progress: animated spinner card instead of tiny italic label
+  • Overview tab: better visual hierarchy, informative empty states
+  • Robustness: guards against journey/step deletion mid-council-run
 
 Tabs
 ────
@@ -13569,8 +13582,10 @@ Dependencies: markdown (pip install markdown), stdlib urllib
 
 from __future__ import annotations
 
+import html as _html_mod
 import json
 import logging
+import re
 import threading
 import urllib.parse
 import urllib.request
@@ -13583,9 +13598,10 @@ try:
 except ImportError:
     _HAS_MARKDOWN = False
 
-from PyQt6.QtCore import Qt, QTimer, pyqtSignal
+from PyQt6.QtCore import Qt, QTimer, pyqtSignal, QRectF
 from PyQt6.QtGui import (
     QColor, QFont, QPainter, QPen, QBrush, QPainterPath,
+    QLinearGradient, QConicalGradient,
 )
 from PyQt6.QtWidgets import (
     QWidget, QVBoxLayout, QHBoxLayout, QLabel, QPushButton,
@@ -13623,6 +13639,7 @@ _TAB_WORKSPACE = 2
 # ── Journey templates ─────────────────────────────────────────────────────────
 
 JOURNEY_TEMPLATES: dict[str, dict | None] = {
+    # ─── Coding ───────────────────────────────────────────────────────────
     "── Coding ──": None,
     "Learn Python (Beginner → Intermediate)": {
         "domain": "Coding",
@@ -13678,6 +13695,207 @@ JOURNEY_TEMPLATES: dict[str, dict | None] = {
             "Documentation & Deployment",
         ],
     },
+    "Build a Desktop App with PyQt": {
+        "domain": "Coding",
+        "goal": (
+            "Learn to build polished desktop applications using Python and PyQt6. "
+            "Cover layouts, signals/slots, custom widgets, themes, database integration, "
+            "threading, and packaging for distribution."
+        ),
+        "steps": [
+            "PyQt6 Setup & First Window",
+            "Layouts, Widgets & Signals/Slots",
+            "Menus, Toolbars & Status Bars",
+            "Custom Widgets & QPainter Drawing",
+            "Stylesheets & Theming (QSS)",
+            "Database Integration (SQLite + Models)",
+            "Threading & Background Workers",
+            "Dialogs, Settings & User Preferences",
+            "Packaging & Distribution (PyInstaller)",
+        ],
+    },
+    "Game Dev with Python (Pygame → 2D Game)": {
+        "domain": "Coding",
+        "goal": (
+            "Build a complete 2D game using Python and Pygame. Learn game loops, "
+            "sprite handling, collision detection, audio, particle effects, level "
+            "design, and publishing to itch.io."
+        ),
+        "steps": [
+            "Pygame Setup & Game Loop Basics",
+            "Drawing, Surfaces & Coordinate Systems",
+            "Player Movement & Input Handling",
+            "Sprites, Animation & Sprite Groups",
+            "Collision Detection & Physics",
+            "Sound Effects & Music Integration",
+            "Tile Maps & Level Design",
+            "UI: Menus, HUD & Score Systems",
+            "Particle Effects & Polish",
+            "Packaging & Publishing to itch.io",
+        ],
+    },
+    "Cybersecurity Fundamentals": {
+        "domain": "Coding",
+        "goal": (
+            "Learn core cybersecurity concepts from networking and Linux fundamentals "
+            "through web vulnerabilities, penetration testing methodology, CTF challenges, "
+            "and responsible disclosure."
+        ),
+        "steps": [
+            "Networking Fundamentals (TCP/IP, DNS, HTTP)",
+            "Linux Command Line for Security",
+            "Cryptography Basics (Hashing, Encryption, TLS)",
+            "OWASP Top 10 Web Vulnerabilities",
+            "Reconnaissance & Information Gathering",
+            "Vulnerability Scanning (Nmap, Nikto)",
+            "Exploitation Basics (Metasploit, manual)",
+            "Privilege Escalation Techniques",
+            "CTF Challenges & Practice Labs",
+            "Report Writing & Responsible Disclosure",
+        ],
+    },
+    # ─── Space & Astronomy ────────────────────────────────────────────────
+    "── Space & Astronomy ──": None,
+    "Amateur Astronomy (Beginner Stargazer)": {
+        "domain": "Academic",
+        "goal": (
+            "Go from zero to confident amateur astronomer. Learn to navigate the night "
+            "sky, understand celestial mechanics, choose and use telescopes, photograph "
+            "the cosmos, and track satellites and deep-sky objects."
+        ),
+        "steps": [
+            "The Night Sky: Constellations & Star Maps",
+            "Celestial Mechanics: How the Sky Moves",
+            "Naked-Eye Astronomy: Planets, Meteors & the Moon",
+            "Binoculars & Your First Telescope",
+            "Understanding Magnification, Aperture & Mounts",
+            "Observing the Moon & Planets in Detail",
+            "Deep-Sky Objects: Nebulae, Galaxies & Star Clusters",
+            "Astrophotography Basics (Phone & DSLR)",
+            "Satellite Tracking & ISS Observation",
+            "Joining the Community: Star Parties & Citizen Science",
+        ],
+    },
+    "Space Exploration History & Future": {
+        "domain": "Academic",
+        "goal": (
+            "Deep-dive into humanity's journey to space — from the earliest rocket "
+            "pioneers through Apollo, the Shuttle era, ISS operations, and the current "
+            "commercial space revolution. Understand propulsion, orbital mechanics, "
+            "and the roadmap to Mars and beyond."
+        ),
+        "steps": [
+            "The Pioneers: Tsiolkovsky, Goddard & von Braun",
+            "The Space Race: Sputnik to Apollo 11",
+            "Apollo Deep Dive: Missions, Technology & Legacy",
+            "Space Shuttle Program & Space Station Mir",
+            "The International Space Station (ISS)",
+            "Rocket Science 101: Propulsion & Orbital Mechanics",
+            "The Commercial Era: SpaceX, Blue Origin & Beyond",
+            "Mars Exploration: Rovers, Plans & Challenges",
+            "Artemis & Return to the Moon",
+            "The Future: Starship, Space Habitats & Interstellar",
+        ],
+    },
+    "Astrophysics for Enthusiasts": {
+        "domain": "Academic",
+        "goal": (
+            "Understand the physics of the cosmos at an enthusiast level — stellar "
+            "evolution, black holes, dark matter, the Big Bang, exoplanets, and the "
+            "large-scale structure of the universe."
+        ),
+        "steps": [
+            "Light, Spectra & How We See the Universe",
+            "Stars: Birth, Life & Death",
+            "Neutron Stars, Pulsars & Magnetars",
+            "Black Holes: Theory, Observation & Hawking Radiation",
+            "Galaxies: Types, Collisions & Supermassive Black Holes",
+            "Cosmology: The Big Bang & Cosmic Microwave Background",
+            "Dark Matter & Dark Energy",
+            "Exoplanets & the Search for Life",
+            "Gravitational Waves & Multi-Messenger Astronomy",
+        ],
+    },
+    # ─── World of Warcraft ────────────────────────────────────────────────
+    "── World of Warcraft ──": None,
+    "WoW: Mythic+ Keystone Mastery": {
+        "domain": "General",
+        "goal": (
+            "Push Mythic+ keystones from beginner (+2) to high keys (+15 and beyond). "
+            "Master dungeon routes, affix strategies, class-specific tips, group "
+            "coordination, and the mental game of pushing keys."
+        ),
+        "steps": [
+            "M+ Fundamentals: Timers, Affixes & Loot",
+            "Understanding Your Role (Tank/Healer/DPS)",
+            "Dungeon Routes & MDT/Keystone.guru Planning",
+            "Interrupt & CC Rotations by Dungeon",
+            "Seasonal Affix Strategy & Adaptation",
+            "Consumables, Enchants & Gear Optimization",
+            "Communication & Group Coordination",
+            "Common Wipe Points & How to Prevent Them",
+            "Pushing Higher: +15 → +20 Strategies",
+            "The Mental Game: Tilt, Focus & Improvement",
+        ],
+    },
+    "WoW: Goldmaking & Auction House": {
+        "domain": "Business / Freelance",
+        "goal": (
+            "Build a sustainable WoW gold-making operation. Learn the auction house, "
+            "crafting profits, farming routes, TSM addon mastery, cross-realm arbitrage, "
+            "and long-term market strategy."
+        ),
+        "steps": [
+            "Goldmaking Mindset & Setting Goals",
+            "Understanding the Auction House Economy",
+            "TradeSkillMaster (TSM) Setup & Operations",
+            "Raw Material Farming Routes",
+            "Crafting for Profit: Identifying Margins",
+            "Flipping & Market Sniping",
+            "Transmog & Legacy Content Markets",
+            "Multi-Character Profession Setup",
+            "Long-Term Investment & Patch Speculation",
+        ],
+    },
+    "WoW Lore: Complete Story Guide": {
+        "domain": "General",
+        "goal": (
+            "Understand the full Warcraft story from the Titans and Old Gods through "
+            "every expansion's narrative. Explore character arcs, faction conflicts, "
+            "cosmic forces, and the evolving worldbuilding."
+        ),
+        "steps": [
+            "The Cosmic Forces & Titans' Ordering of Azeroth",
+            "Old Gods, Trolls & the Rise of the Night Elves",
+            "The Burning Legion & War of the Ancients",
+            "Warcraft I–III: Orcs, Humans & the Frozen Throne",
+            "Classic → Burning Crusade → Wrath of the Lich King",
+            "Cataclysm → Mists of Pandaria → Warlords of Draenor",
+            "Legion → Battle for Azeroth → Shadowlands",
+            "Dragonflight → The War Within & Beyond",
+            "Major Character Arcs: Arthas, Sylvanas, Thrall & More",
+        ],
+    },
+    "WoW: Raiding from Normal to Mythic": {
+        "domain": "General",
+        "goal": (
+            "Progress from Normal raiding to Mythic-ready performance. Learn boss "
+            "mechanics, raid awareness, log analysis, consumable optimization, and "
+            "what it takes to join a competitive raid team."
+        ),
+        "steps": [
+            "Raiding Basics: Roles, Ready Checks & Loot",
+            "Boss Mechanics Fundamentals (Soak, Spread, Stack)",
+            "UI & Addon Setup for Raiding (WeakAuras, DBM/BW)",
+            "Normal → Heroic Progression Strategy",
+            "Reading Combat Logs (Warcraft Logs & WipeFest)",
+            "Class Optimization: Sim, Gear & Rotation",
+            "Raid Awareness & Positioning Drills",
+            "Mythic Raiding: What Changes & How to Prepare",
+            "Joining & Trialing with a Mythic Guild",
+        ],
+    },
+    # ─── Language Learning ────────────────────────────────────────────────
     "── Language Learning ──": None,
     "Learn Japanese (N5 → N4)": {
         "domain": "Language Learning",
@@ -13697,6 +13915,26 @@ JOURNEY_TEMPLATES: dict[str, dict | None] = {
             "N4 Grammar Introduction",
         ],
     },
+    "Japanese Culture & Daily Life": {
+        "domain": "Language Learning",
+        "goal": (
+            "Go beyond textbook Japanese and understand daily life, work culture, "
+            "social norms, seasonal traditions, and how to navigate living in Japan "
+            "as a foreigner."
+        ),
+        "steps": [
+            "Social Norms: Keigo, Bowing & Business Cards",
+            "Navigating Trains, Buses & IC Cards",
+            "Combini Culture & Everyday Shopping",
+            "Japanese Work Culture & Office Etiquette",
+            "Seasonal Events: Hanami, Obon, New Year & Festivals",
+            "Food Culture: Izakaya, Ramen, Etiquette & Ordering",
+            "Healthcare, Banks & City Hall (役所) Basics",
+            "Apartment Living: Trash, Neighbors & Rules",
+            "Making Friends & Community Integration",
+        ],
+    },
+    # ─── Business / Freelance ─────────────────────────────────────────────
     "── Business / Freelance ──": None,
     "Build a Freelance Business from Zero": {
         "domain": "Business / Freelance",
@@ -13715,6 +13953,26 @@ JOURNEY_TEMPLATES: dict[str, dict | None] = {
             "Client Onboarding & Delivery System",
         ],
     },
+    "Personal Finance & Investing Basics": {
+        "domain": "Business / Freelance",
+        "goal": (
+            "Build a solid personal finance foundation — budgeting, emergency funds, "
+            "debt management, index fund investing, tax optimization, and long-term "
+            "wealth building strategies."
+        ),
+        "steps": [
+            "Net Worth Snapshot & Financial Goals",
+            "Budgeting Systems (50/30/20, Zero-Based, Envelope)",
+            "Emergency Fund: How Much & Where to Keep It",
+            "Debt Payoff Strategy (Avalanche vs. Snowball)",
+            "Investment Basics: Stocks, Bonds, ETFs & Index Funds",
+            "Tax-Advantaged Accounts (401k, IRA, NISA / iDeCo)",
+            "Asset Allocation & Portfolio Construction",
+            "Automation: Auto-Invest & Bill Pay",
+            "Annual Review & Rebalancing Strategy",
+        ],
+    },
+    # ─── Health & Fitness ─────────────────────────────────────────────────
     "── Health & Fitness ──": None,
     "Beginner Strength Training (12 Weeks)": {
         "domain": "Health & Fitness",
@@ -13732,6 +13990,65 @@ JOURNEY_TEMPLATES: dict[str, dict | None] = {
             "Recovery, Sleep & Deload Strategy",
             "Weeks 7-12: Strength Phase",
             "Progress Assessment & Next Cycle",
+        ],
+    },
+    # ─── Creative ─────────────────────────────────────────────────────────
+    "── Creative ──": None,
+    "Music Production (DAW to First Track)": {
+        "domain": "Creative",
+        "goal": (
+            "Go from zero music production knowledge to finishing your first complete "
+            "track. Learn your DAW, synthesis, sampling, mixing fundamentals, and "
+            "arrangement techniques."
+        ),
+        "steps": [
+            "Choose Your DAW & Learn the Interface",
+            "Audio Basics: Sample Rate, Bit Depth, MIDI",
+            "Beat Making: Drums, Rhythm & Groove",
+            "Synthesis 101: Oscillators, Filters & Envelopes",
+            "Sampling, Chopping & Creative Reuse",
+            "Chord Progressions & Melody Writing",
+            "Song Arrangement & Structure",
+            "Mixing Basics: Levels, EQ, Compression & Reverb",
+            "Finish & Export Your First Track",
+        ],
+    },
+    "Digital Art & Illustration": {
+        "domain": "Creative",
+        "goal": (
+            "Learn digital art from fundamentals through to polished illustration. "
+            "Cover drawing tablets, software, line art, color theory, shading, and "
+            "building a portfolio."
+        ),
+        "steps": [
+            "Hardware & Software Setup (Tablet + App)",
+            "Digital Brushes & Tool Fundamentals",
+            "Line Art: Clean Lines & Confident Strokes",
+            "Shape Language & Basic Forms",
+            "Color Theory & Digital Color Picking",
+            "Light, Shadow & Rendering",
+            "Composition & Visual Storytelling",
+            "Character Design Fundamentals",
+            "Building a Portfolio & Sharing Your Work",
+        ],
+    },
+    "Worldbuilding for Writers & Game Designers": {
+        "domain": "Creative",
+        "goal": (
+            "Create a rich, internally consistent fictional world. Cover geography, "
+            "cultures, magic/technology systems, history, politics, economics, and "
+            "how to make worldbuilding serve your story or game."
+        ),
+        "steps": [
+            "Scope & Purpose: What Is Your World For?",
+            "Geography, Climate & Maps",
+            "Cultures, Societies & Social Structures",
+            "Magic Systems or Technology Frameworks",
+            "History & Timeline Construction",
+            "Politics, Factions & Power Structures",
+            "Economics, Trade & Daily Life",
+            "Language, Naming Conventions & Flavor",
+            "Connecting Your World to Narrative or Gameplay",
         ],
     },
 }
@@ -13754,11 +14071,70 @@ _TUTOR_SYSTEM = (
 
 # ── Web search ────────────────────────────────────────────────────────────────
 
-def _ddg_search(query: str, timeout: int = 8) -> str:
-    url = ("https://api.duckduckgo.com/?q="
-           + urllib.parse.quote_plus(query)
-           + "&format=json&no_html=1&skip_disambig=1")
+def _ddg_search(query: str, timeout: int = 10) -> str:
+    """Search DuckDuckGo via the lite HTML interface for actual results.
+
+    The previous instant-answer API (?format=json) only returned results for
+    very specific factual queries and was essentially useless for tutorial and
+    learning content.  This scrapes lite.duckduckgo.com which returns real
+    search results even for broad queries.
+    """
+    # First try the lite HTML search for real results
     try:
+        encoded = urllib.parse.quote_plus(query)
+        url = f"https://lite.duckduckgo.com/lite/?q={encoded}"
+        req = urllib.request.Request(url, headers={
+            "User-Agent": "LocalSync/1.0 (Desktop App)",
+            "Accept": "text/html",
+        })
+        with urllib.request.urlopen(req, timeout=timeout) as resp:
+            html = resp.read().decode("utf-8", errors="replace")
+
+        # Extract result snippets from the lite HTML
+        # Lite page uses <td> elements with class "result-snippet" for descriptions
+        snippets: list[str] = []
+
+        # Method 1: Extract from result-snippet spans/tds
+        for pattern in [
+            r'class="result-snippet"[^>]*>(.*?)</(?:td|span)>',
+            r'<a class="result-link"[^>]*>([^<]+)</a>',
+        ]:
+            matches = re.findall(pattern, html, re.DOTALL | re.IGNORECASE)
+            for m in matches:
+                clean = re.sub(r'<[^>]+>', '', m).strip()
+                clean = _html_mod.unescape(clean)
+                if len(clean) > 30 and clean not in snippets:
+                    snippets.append(clean[:300])
+                if len(snippets) >= 4:
+                    break
+            if len(snippets) >= 4:
+                break
+
+        # Method 2: Fallback — grab text between <td> tags that look like snippets
+        if not snippets:
+            td_matches = re.findall(
+                r'<td[^>]*>\s*(.{40,400}?)\s*</td>', html, re.DOTALL)
+            for m in td_matches:
+                clean = re.sub(r'<[^>]+>', '', m).strip()
+                clean = _html_mod.unescape(clean)
+                # Filter out navigation / header text
+                if (len(clean) > 40
+                        and not clean.startswith("1.")
+                        and "DuckDuckGo" not in clean):
+                    snippets.append(clean[:300])
+                if len(snippets) >= 3:
+                    break
+
+        if snippets:
+            return "\n".join(snippets[:4])
+    except Exception as exc:
+        logger.debug("DDG lite search failed for %r: %s", query, exc)
+
+    # Fallback: try the instant answer API (occasionally works for factual queries)
+    try:
+        url = ("https://api.duckduckgo.com/?q="
+               + urllib.parse.quote_plus(query)
+               + "&format=json&no_html=1&skip_disambig=1")
         req = urllib.request.Request(url, headers={"User-Agent": "LocalSync/1.0"})
         with urllib.request.urlopen(req, timeout=timeout) as resp:
             data = json.loads(resp.read().decode("utf-8"))
@@ -13772,7 +14148,7 @@ def _ddg_search(query: str, timeout: int = 8) -> str:
                 parts.append(txt[:200])
         return "\n".join(parts) if parts else ""
     except Exception as exc:
-        logger.debug("DDG search failed for %r: %s", query, exc)
+        logger.debug("DDG instant answer failed for %r: %s", query, exc)
         return ""
 
 
@@ -14069,7 +14445,7 @@ def _run_council(
         web_queries = _generate_search_queries(
             llm_client, journey.title, current_step.title, journey.domain)
         if web_queries:
-            _prog(f"\U0001f50d Searching\u2026")
+            _prog(f"\U0001f50d Searching ({len(web_queries)} queries)\u2026")
             for q in web_queries:
                 snip = _ddg_search(q)
                 if snip:
@@ -14092,8 +14468,9 @@ def _run_council(
         {"role": "user",   "content": user_q},
     ]
 
-    # Fan-out via LLMCouncil
-    _prog(f"\u2694  Convening council ({len(council.council_models)} models)\u2026")
+    # Fan-out via LLMCouncil (now with built-in retry logic)
+    n_models = len(council.council_models)
+    _prog(f"\u2694  Convening council ({n_models} models, retries enabled)\u2026")
     synthesis_text  = ""
     synthesis_model = council.synthesis_model or (council.council_models[0] if council.council_models else "")
     member_records:  list[dict] = []
@@ -14118,11 +14495,16 @@ def _run_council(
             member_records.append({
                 "label":    failed_model.split("/")[-1],
                 "model":    failed_model,
-                "response": "[Model did not respond]",
+                "response": "[Model did not respond after retries]",
                 "ok":       False,
             })
 
-        _prog(f"  \u2713 {result.member_count} model(s) responded")
+        ok_count = result.member_count
+        fail_count = len(result.failed_models)
+        status_parts = [f"\u2713 {ok_count} model(s) responded"]
+        if fail_count:
+            status_parts.append(f"\u26a0 {fail_count} failed")
+        _prog("  " + ", ".join(status_parts))
 
         # If synthesis is empty, compose from individual members as fallback
         if not synthesis_text and result.members:
@@ -14199,8 +14581,7 @@ def _to_html(text: str, p: dict) -> str:
     if _HAS_MARKDOWN:
         body = _md_lib.markdown(text, extensions=["nl2br", "fenced_code", "tables"])
     else:
-        import html as _h
-        body = "<p>" + _h.escape(text).replace("\n\n", "</p><p>") + "</p>"
+        body = "<p>" + _html_mod.escape(text).replace("\n\n", "</p><p>") + "</p>"
     return (
         "<html><head><style>"
         f"body{{background:{bg};color:{fg};font-family:'Segoe UI','Meiryo UI',sans-serif;"
@@ -14249,22 +14630,22 @@ def _tab_style(p: dict) -> str:
 # ═══════════════════════════════════════════════════════════════════════════════
 
 class RoadmapWidget(QWidget):
-    """
-    Horizontal roadmap flow — simple single row, scrollable.
-    No snake / no row reversal — eliminates all previous arrow geometry bugs.
-    Each node is a rounded rect with a step-number badge, title, and status.
+    """Horizontal roadmap flow — single row, scrollable, polished nodes.
+
+    Each node is a rounded rect with gradient fill based on status,
+    step-number badge, title, and status label below.
     Clicking a node selects it (accent ring) and emits node_selected(index).
     """
     node_selected = pyqtSignal(int)   # 0-based index into roadmap.steps
 
-    _NW     = 158   # node width
-    _NH     = 62    # node height
-    _GAP    = 28    # gap between nodes (the arrow lives here)
-    _PAD_X  = 10
-    _PAD_Y  = 8
-    _LABEL_H = 16   # height for status text below nodes
-    _R      = 8     # corner radius
-    _BR     = 10    # badge radius
+    _NW     = 180   # node width (wider for readability)
+    _NH     = 68    # node height
+    _GAP    = 32    # gap between nodes (arrow space)
+    _PAD_X  = 14
+    _PAD_Y  = 10
+    _LABEL_H = 18   # height for status text below nodes
+    _R      = 10    # corner radius
+    _BR     = 11    # badge radius
 
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -14323,6 +14704,7 @@ class RoadmapWidget(QWidget):
         muted   = QColor(self._palette.get("muted",   "#7f849c"))
         acc_fg  = QColor(self._palette.get("accent_fg","#1e1e2e"))
         yellow  = QColor(self._palette.get("yellow",  "#f9e2af"))
+        bg_col  = QColor(self._palette.get("bg",      "#1e1e2e"))
 
         for i, rs in enumerate(self._roadmap.steps):
             nx       = self._node_x(i)
@@ -14333,68 +14715,81 @@ class RoadmapWidget(QWidget):
             hov      = (i == self._hovered_idx)
             detour   = rs.is_detour
 
-            # Colors
+            # ── Node fill with gradient ──
             if status == "completed":
-                fill, text_c, bord_c = green, QColor("#1e1e2e"), green.darker(130)
+                grad = QLinearGradient(nx, ny, nx + nw, ny + nh)
+                g1 = green.lighter(105) if hov else green
+                g2 = green.darker(115)
+                grad.setColorAt(0, g1); grad.setColorAt(1, g2)
+                text_c = QColor("#1e1e2e")
+                bord_c = green.darker(120)
             elif status == "active":
-                fill = accent.lighter(108) if hov else accent
+                grad = QLinearGradient(nx, ny, nx + nw, ny + nh)
+                a1 = accent.lighter(115) if hov else accent
+                a2 = accent.darker(110)
+                grad.setColorAt(0, a1); grad.setColorAt(1, a2)
                 text_c = acc_fg
-                bord_c = accent.lighter(160)
+                bord_c = accent.lighter(150)
             else:
-                fill   = surface.lighter(108) if hov else surface
+                grad = QLinearGradient(nx, ny, nx + nw, ny + nh)
+                s1 = surface.lighter(115) if hov else surface
+                s2 = surface.darker(105)
+                grad.setColorAt(0, s1); grad.setColorAt(1, s2)
                 text_c = fg if hov else muted
                 bord_c = (yellow if detour else
                           (accent if selected else
                            (border.lighter(130) if hov else border)))
 
-            # Selection ring (drawn before node body)
+            # Selection ring
             if selected:
-                sel = QColor(accent); sel.setAlpha(55)
+                sel = QColor(accent); sel.setAlpha(50)
                 p.setBrush(QBrush(sel)); p.setPen(Qt.PenStyle.NoPen)
-                p.drawRoundedRect(nx-5, ny-5, nw+10, nh+10, self._R+3, self._R+3)
+                p.drawRoundedRect(nx-6, ny-6, nw+12, nh+12, self._R+4, self._R+4)
 
             # Active glow
             if status == "active":
-                glow = QColor(accent); glow.setAlpha(28)
+                glow = QColor(accent); glow.setAlpha(25)
                 p.setBrush(QBrush(glow)); p.setPen(Qt.PenStyle.NoPen)
                 p.drawRoundedRect(nx-4, ny-4, nw+8, nh+8, self._R+2, self._R+2)
 
             # Node body
-            p.setBrush(QBrush(fill))
-            p.setPen(QPen(bord_c, 1.8 if selected else 1.2))
+            p.setBrush(QBrush(grad))
+            p.setPen(QPen(bord_c, 2.0 if selected else 1.2))
             p.drawRoundedRect(nx, ny, nw, nh, self._R, self._R)
 
-            # Detour stripe (top-left triangle in yellow)
+            # Detour stripe (top-left corner triangle)
             if detour:
                 tri = QPainterPath()
                 tri.moveTo(nx, ny)
-                tri.lineTo(nx + 18, ny)
-                tri.lineTo(nx, ny + 18)
+                tri.lineTo(nx + 20, ny)
+                tri.lineTo(nx, ny + 20)
                 tri.closeSubpath()
                 p.fillPath(tri, QBrush(yellow))
 
             # Badge circle with step number
             br = self._BR
-            bx = nx + 14 + br
-            p.setBrush(QBrush(bord_c)); p.setPen(Qt.PenStyle.NoPen)
+            bx = nx + 16 + br
+            badge_col = bord_c if status != "completed" else green.darker(130)
+            p.setBrush(QBrush(badge_col)); p.setPen(Qt.PenStyle.NoPen)
             p.drawEllipse(bx - br, cy - br, br*2, br*2)
 
             if status == "completed":
                 # Checkmark inside badge
-                p.setPen(QPen(QColor("#1e1e2e"), 1.8, Qt.PenStyle.SolidLine,
+                p.setPen(QPen(QColor("#1e1e2e"), 2.0, Qt.PenStyle.SolidLine,
                               Qt.PenCapStyle.RoundCap, Qt.PenJoinStyle.RoundJoin))
                 p.drawLine(bx - 4, cy,     bx - 1, cy + 3)
                 p.drawLine(bx - 1, cy + 3, bx + 4, cy - 3)
             else:
                 # Step number
-                p.setPen(QPen(QColor("#ffffff") if status != "unstarted" else muted))
+                num_col = QColor("#ffffff") if status != "unstarted" else muted
+                p.setPen(QPen(num_col))
                 p.setFont(QFont("Segoe UI", 8, QFont.Weight.Bold))
                 p.drawText(bx - br, cy - br, br*2, br*2,
                            Qt.AlignmentFlag.AlignCenter, str(rs.number))
 
-            # Title text
-            tx = bx + br + 6
-            tw = nw - (tx - nx) - 6
+            # Title text (right of badge)
+            tx = bx + br + 8
+            tw = nw - (tx - nx) - 8
             p.setPen(QPen(text_c))
             p.setFont(QFont("Segoe UI", 9,
                             QFont.Weight.Bold if status in ("active","completed")
@@ -14411,34 +14806,39 @@ class RoadmapWidget(QWidget):
 
             # Status label below node
             status_txt = {
-                "completed": "Done",
-                "active":    "In Progress",
+                "completed": "\u2713 Done",
+                "active":    "\u25b6 In Progress",
                 "unstarted": "Upcoming",
             }.get(status, "")
             if detour and status == "unstarted":
-                status_txt = "Detour"
+                status_txt = "\u2604 Detour"
             status_col = (green.darker(120) if status == "completed" else
                           (accent if status == "active" else
                            (yellow.darker(130) if detour else muted)))
             p.setPen(QPen(status_col))
-            p.setFont(QFont("Segoe UI", 7))
+            p.setFont(QFont("Segoe UI", 7, QFont.Weight.Bold
+                            if status == "active" else QFont.Weight.Normal))
             p.drawText(nx, ny + nh + 2, nw, self._LABEL_H,
                        Qt.AlignmentFlag.AlignHCenter, status_txt)
 
-            # Arrow to next node — simple horizontal line + arrowhead
+            # Arrow to next node
             if i < n - 1:
-                ax_start = nx + nw + 2
-                ax_end   = ax_start + self._GAP - 4
+                ax_start = nx + nw + 3
+                ax_end   = ax_start + self._GAP - 6
                 ay       = cy
-                p.setPen(QPen(border, 1.5))
-                p.drawLine(ax_start, ay, ax_end - 6, ay)
-                # Filled arrowhead triangle
+
+                # Arrow line
+                arrow_col = green if status == "completed" else border
+                p.setPen(QPen(arrow_col, 1.8))
+                p.drawLine(ax_start, ay, ax_end - 7, ay)
+
+                # Filled arrowhead
                 tri2 = QPainterPath()
                 tri2.moveTo(ax_end,     ay)
-                tri2.lineTo(ax_end - 7, ay - 4)
-                tri2.lineTo(ax_end - 7, ay + 4)
+                tri2.lineTo(ax_end - 8, ay - 5)
+                tri2.lineTo(ax_end - 8, ay + 5)
                 tri2.closeSubpath()
-                p.fillPath(tri2, QBrush(border))
+                p.fillPath(tri2, QBrush(arrow_col))
         p.end()
 
     def mouseMoveEvent(self, event):
@@ -14604,6 +15004,70 @@ class _MiniProgressBar(QWidget):
         fw = int(w * self._done / self._total)
         if fw > 0:
             p.setBrush(QBrush(self._color)); p.drawRoundedRect(0, 0, fw, 4, 2, 2)
+        p.end()
+
+
+class CouncilSpinner(QWidget):
+    """Animated arc spinner for council progress display."""
+
+    def __init__(self, palette: dict, parent=None):
+        super().__init__(parent)
+        self._palette = palette
+        self._angle = 0
+        self._message = "Starting\u2026"
+        self.setFixedHeight(52)
+        self._timer = QTimer(self)
+        self._timer.timeout.connect(self._tick)
+
+    def start(self):
+        self._angle = 0
+        self._timer.start(30)
+        self.show()
+
+    def stop(self):
+        self._timer.stop()
+        self.hide()
+
+    def set_message(self, msg: str):
+        self._message = msg
+        self.update()
+
+    def _tick(self):
+        self._angle = (self._angle + 6) % 360
+        self.update()
+
+    def paintEvent(self, _):
+        p = QPainter(self)
+        p.setRenderHint(QPainter.RenderHint.Antialiasing)
+        accent = QColor(self._palette.get("accent", "#89b4fa"))
+        muted  = QColor(self._palette.get("muted",  "#7f849c"))
+        surface = QColor(self._palette.get("surface", "#313244"))
+        border = QColor(self._palette.get("border", "#45475a"))
+
+        # Background card
+        p.setBrush(QBrush(surface))
+        p.setPen(QPen(border, 1))
+        p.drawRoundedRect(0, 0, self.width(), self.height(), 8, 8)
+
+        # Spinner arc
+        cx, cy = 28, self.height() // 2
+        r = 14
+        pen = QPen(accent, 3, Qt.PenStyle.SolidLine, Qt.PenCapStyle.RoundCap)
+        p.setPen(pen)
+        rect = QRectF(cx - r, cy - r, r * 2, r * 2)
+        p.drawArc(rect, int(self._angle * 16), int(90 * 16))
+
+        # Track ring
+        track_col = QColor(border); track_col.setAlpha(80)
+        p.setPen(QPen(track_col, 2))
+        p.drawEllipse(rect)
+
+        # Message text
+        p.setPen(QPen(muted))
+        p.setFont(QFont("Segoe UI", 11, QFont.Weight.Normal))
+        p.drawText(cx + r + 14, 0, self.width() - cx - r - 20, self.height(),
+                   Qt.AlignmentFlag.AlignVCenter | Qt.AlignmentFlag.AlignLeft,
+                   self._message)
         p.end()
 
 
@@ -15024,7 +15488,7 @@ class AddStepDialog(QDialog):
         layout.addWidget(QLabel("Context / Lesson Focus (optional)"))
         self.notes_edit = QTextEdit()
         self.notes_edit.setPlaceholderText(
-            "Describe what this step should cover. More detail → better tutoring.\u2026")
+            "Describe what this step should cover. More detail \u2192 better tutoring.\u2026")
         self.notes_edit.setFixedHeight(90)
         if self._pfn: self.notes_edit.setPlainText(self._pfn)
         layout.addWidget(self.notes_edit)
@@ -15128,7 +15592,15 @@ class JourneyPanel(QWidget):
         msg.setAlignment(Qt.AlignmentFlag.AlignCenter)
         msg.setStyleSheet(
             f"color:{self._palette.get('muted','#7f849c')};font-size:14px;")
-        layout.addWidget(icon); layout.addSpacing(12); layout.addWidget(msg)
+        hint = QLabel(
+            "Use a template to get started quickly,\n"
+            "or create a custom journey from scratch.")
+        hint.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        hint.setStyleSheet(
+            f"color:{self._palette.get('border','#45475a')};font-size:11px;")
+        layout.addWidget(icon); layout.addSpacing(12)
+        layout.addWidget(msg); layout.addSpacing(6)
+        layout.addWidget(hint)
         return w
 
     def _build_right_panel(self) -> QWidget:
@@ -15306,7 +15778,12 @@ class JourneyPanel(QWidget):
         aux_row.addWidget(self._update_rm_btn)
         sc.addLayout(aux_row)
 
-        # Progress/status line
+        # Council progress spinner (replaces the old tiny italic label)
+        self._council_spinner = CouncilSpinner(self._palette)
+        self._council_spinner.hide()
+        sc.addWidget(self._council_spinner)
+
+        # Progress/status line (kept for quick status flashes)
         self._council_status = QLabel("")
         self._council_status.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self._council_status.setStyleSheet(
@@ -15399,6 +15876,8 @@ class JourneyPanel(QWidget):
                 f"QPushButton:hover{{background:qlineargradient("
                 f"x1:0,y1:0,x2:1,y2:0,stop:0 {accent_h},stop:1 {green});}}"
                 f"QPushButton:disabled{{background:{border};color:{muted};}}")
+        if hasattr(self, "_council_spinner"):
+            self._council_spinner._palette = p
         for item in self._list_items:
             item.set_palette(p)
 
@@ -15546,12 +16025,21 @@ class JourneyPanel(QWidget):
                 self._build_selected_step_card(rs, p)
 
         elif not self._current_step:
-            ph = QLabel(
-                "\u2694  Create and begin a step, then convene the council\n"
-                "to generate your tutoring session, checklist, and roadmap.")
-            ph.setAlignment(Qt.AlignmentFlag.AlignCenter)
-            ph.setStyleSheet(f"color:{p.get('muted','#7f849c')};font-size:13px;padding:20px;")
-            self._overview_layout.addWidget(ph)
+            # Informative empty state
+            empty_card = SectionCard("Getting Started", "\U0001f680", p)
+            ebl = empty_card.body_layout()
+            msg = QLabel(
+                "Your journey has no roadmap yet.\n\n"
+                "1. Add your first step in the Workspace tab\n"
+                "2. Convene the Council to generate tutoring content\n"
+                "3. The AI will create a roadmap based on your journey goal\n\n"
+                "Or choose a template when creating a new journey for\n"
+                "a pre-built roadmap to get started immediately."
+            )
+            msg.setStyleSheet(f"color:{p.get('fg','#cdd6f4')};font-size:12px;line-height:1.6;")
+            msg.setWordWrap(True)
+            ebl.addWidget(msg)
+            self._overview_layout.addWidget(empty_card)
             self._overview_layout.addStretch()
             return
 
@@ -15561,20 +16049,25 @@ class JourneyPanel(QWidget):
 
         sessions = self._store.list_sessions_for_step(self._current_step.id)
         if not sessions:
-            no_sess = QLabel(
-                "\u270f  Go to the Workspace tab and click\n"
-                "\u2694 Convene Council to generate your tutoring session.")
-            no_sess.setAlignment(Qt.AlignmentFlag.AlignCenter)
-            no_sess.setStyleSheet(
-                f"color:{p.get('muted','#7f849c')};font-size:13px;padding:20px;")
-            self._overview_layout.addWidget(no_sess)
+            no_card = SectionCard("Awaiting Council", "\u2694", p)
+            nbl = no_card.body_layout()
+            msg = QLabel(
+                "No council sessions for this step yet.\n\n"
+                "Go to the Workspace tab and click\n"
+                "\u2694 Convene Council to generate your tutoring session,\n"
+                "checklist, and resource recommendations."
+            )
+            msg.setStyleSheet(f"color:{p.get('muted','#7f849c')};font-size:12px;")
+            msg.setWordWrap(True)
+            nbl.addWidget(msg)
+            self._overview_layout.addWidget(no_card)
             self._overview_layout.addStretch()
             return
 
         latest = sessions[-1]
         synth  = (latest.synthesis or "").strip()
 
-        # Synthesis card — always shown, even if empty (shows error message)
+        # Synthesis card
         syn_card = SectionCard("Council Tutoring Session", "\u2694", p)
         bl2 = syn_card.body_layout()
         display_text = synth if synth else (
@@ -15679,7 +16172,7 @@ class JourneyPanel(QWidget):
                 ol.setWordWrap(True); bl.addWidget(ol)
 
         if rs.is_detour:
-            det_lbl = QLabel("\U0001f7e8  This is a detour step — added outside the original plan.")
+            det_lbl = QLabel("\U0001f7e8  This is a detour step \u2014 added outside the original plan.")
             det_lbl.setStyleSheet(f"color:{p.get('yellow','#f9e2af')};font-size:11px;font-style:italic;")
             bl.addWidget(det_lbl)
 
@@ -15772,13 +16265,6 @@ class JourneyPanel(QWidget):
         """Node clicked in the flow widget — update selection and refresh detail."""
         self._selected_rm_idx = idx
         self._refresh_overview()
-        # Also sync step track if the clicked node corresponds to an actual step
-        if self._active_journey and 0 <= idx < len(self._active_journey.roadmap.steps):
-            rs = self._active_journey.roadmap.steps[idx]
-            for i, s in enumerate(self._steps):
-                if s.title.strip().lower() == rs.title.strip().lower():
-                    # Activate that step's council content if it exists
-                    break
 
     def _on_begin_roadmap_step(self, rs: RoadmapStep):
         """User clicked 'Begin Step N' in the selected-step detail card."""
@@ -15819,7 +16305,6 @@ class JourneyPanel(QWidget):
         self._active_journey = self._store.get_journey(self._active_journey.id)
         self._refresh_workspace(); self._refresh_sessions()
         self._refresh_overview(); self._refresh_journey_list()
-        # Switch to Workspace so user can review and manually convene when ready
         self._tabs.setCurrentIndex(_TAB_WORKSPACE)
 
     def _on_roadmap_step_clicked(self, rs: RoadmapStep):
@@ -15856,35 +16341,73 @@ class JourneyPanel(QWidget):
         self._on_journey_selected(journey.id)
 
         llm_client = load_llm_client()
-        if not llm_client:
-            # No LLM — create first step from dialog if given
-            if data["first_step"]:
-                self._store.create_step(journey.id, title=data["first_step"])
-                self._on_journey_selected(journey.id)
-            return
-
-        # Generate roadmap in background — no auto-convene, no auto step creation
         template_steps = data.get("template_steps", [])
         first_step_title = data["first_step"]
 
+        if not llm_client:
+            # No LLM — use template steps as roadmap if available
+            if template_steps:
+                roadmap = Roadmap(
+                    overview="Learning path based on template.",
+                    steps=[RoadmapStep(number=i+1, title=t, description="")
+                           for i, t in enumerate(template_steps)])
+                self._store.update_roadmap(journey.id, roadmap)
+            if first_step_title:
+                self._store.create_step(journey.id, title=first_step_title)
+            self._on_journey_selected(journey.id)
+            return
+
+        # Generate roadmap in background
+        self._council_status.setText("Generating roadmap\u2026")
+        self._council_status.show()
+        journey_id = journey.id
+
         def _gen_roadmap():
-            # Use fresh journey object for roadmap generation
-            fresh = self._store.get_journey(journey.id)
-            if not fresh: return
-            roadmap = _generate_roadmap(llm_client, fresh)
-            if not roadmap.steps:
-                # Fallback: build from template steps
-                if template_steps:
+            try:
+                fresh = self._store.get_journey(journey_id)
+                if not fresh:
+                    return
+                roadmap = _generate_roadmap(llm_client, fresh)
+                if not roadmap.steps and template_steps:
+                    # LLM failed — use template steps as fallback
                     roadmap = Roadmap(
                         overview="Learning path based on template.",
                         steps=[RoadmapStep(number=i+1, title=t, description="")
                                for i, t in enumerate(template_steps)])
-            if roadmap.steps:
-                self._store.update_roadmap(journey.id, roadmap)
-            # Reload in main thread — NO step creation, NO auto-convene
-            QTimer.singleShot(0, lambda: self._on_journey_selected(journey.id))
+                if roadmap.steps:
+                    self._store.update_roadmap(journey_id, roadmap)
+                QTimer.singleShot(0, lambda: self._on_roadmap_gen_done(journey_id))
+            except Exception as exc:
+                err = str(exc)
+                # Still try template fallback
+                if template_steps:
+                    try:
+                        roadmap = Roadmap(
+                            overview="Learning path based on template.",
+                            steps=[RoadmapStep(number=i+1, title=t, description="")
+                                   for i, t in enumerate(template_steps)])
+                        self._store.update_roadmap(journey_id, roadmap)
+                    except Exception:
+                        pass
+                QTimer.singleShot(0, lambda e=err: self._on_roadmap_gen_error(journey_id, e))
 
         threading.Thread(target=_gen_roadmap, daemon=True).start()
+
+    def _on_roadmap_gen_done(self, journey_id: str):
+        """Called on main thread after roadmap generation completes."""
+        self._council_status.hide()
+        # Only reload if we're still looking at this journey
+        if self._active_journey and self._active_journey.id == journey_id:
+            self._on_journey_selected(journey_id)
+
+    def _on_roadmap_gen_error(self, journey_id: str, error: str):
+        """Called on main thread if roadmap generation fails."""
+        self._council_status.hide()
+        if self._active_journey and self._active_journey.id == journey_id:
+            self._on_journey_selected(journey_id)
+        logger.warning("Roadmap generation failed for %s: %s", journey_id, error)
+        # Don't show a blocking dialog for this — the template fallback
+        # should have kicked in, and the user can always update the roadmap later
 
     def _on_add_step(self):
         if not self._active_journey: return
@@ -16011,7 +16534,6 @@ class JourneyPanel(QWidget):
         self._selected_rm_idx = idx_of_step(new_step, self._active_journey.roadmap)
         self._refresh_workspace(); self._refresh_sessions()
         self._refresh_overview(); self._refresh_history(); self._refresh_journey_list()
-        # Switch to Workspace — NO auto-convene, user decides when to convene
         self._tabs.setCurrentIndex(_TAB_WORKSPACE)
 
     def _on_convene_council(self):
@@ -16114,13 +16636,18 @@ class JourneyPanel(QWidget):
         self._council_running = True
         self._council_btn.setEnabled(False)
         self._council_btn.setText("\u23f3  Convening\u2026")
-        self._council_status.show()
-        self._council_status.setText("Starting council\u2026")
+        self._council_spinner.start()
+        self._council_spinner.set_message("Starting council\u2026")
 
-        journey = self._active_journey; steps = list(self._steps); step = self._current_step
+        # Capture IDs for safety check after completion
+        journey_id = self._active_journey.id
+        step_id    = self._current_step.id
+        journey    = self._active_journey
+        steps      = list(self._steps)
+        step       = self._current_step
 
         def _prog(msg: str):
-            QTimer.singleShot(0, lambda m=msg: self._council_status.setText(m))
+            QTimer.singleShot(0, lambda m=msg: self._council_spinner.set_message(m))
 
         def _worker():
             try:
@@ -16130,18 +16657,34 @@ class JourneyPanel(QWidget):
                     journey_store=self._store,
                     todo_store=self._todo_store, activity_store=self._activity_store,
                     calendar_store=self._calendar_store, on_progress=_prog)
-                QTimer.singleShot(0, lambda s=session: self._on_council_done(s))
+                QTimer.singleShot(0, lambda s=session, jid=journey_id, sid=step_id:
+                                  self._on_council_done(s, jid, sid))
             except Exception as exc:
                 err = str(exc)
                 QTimer.singleShot(0, lambda e=err: self._show_council_error(e))
 
         threading.Thread(target=_worker, daemon=True).start()
 
-    def _on_council_done(self, session: CouncilSession):
+    def _on_council_done(self, session: CouncilSession,
+                         orig_journey_id: str, orig_step_id: str):
+        """Handle council completion with safety checks."""
         self._council_running = False
         self._council_btn.setEnabled(True)
         self._council_btn.setText("\u2694  Convene Council")
-        self._council_status.hide()
+        self._council_spinner.stop()
+
+        # Safety: verify the journey/step still exist and are still active
+        if not self._active_journey:
+            return
+        if self._active_journey.id != orig_journey_id:
+            # User switched to a different journey while council was running
+            return
+        if not self._current_step or self._current_step.id != orig_step_id:
+            # Step changed during council run — still save was done, just
+            # don't try to refresh with stale references
+            self._refresh_journey_list()
+            return
+
         fresh = self._store.get_step(self._current_step.id)
         if fresh:
             self._current_step = fresh
@@ -16157,6 +16700,8 @@ class JourneyPanel(QWidget):
         if hasattr(self, "_council_btn"):
             self._council_btn.setEnabled(True)
             self._council_btn.setText("\u2694  Convene Council")
+        if hasattr(self, "_council_spinner"):
+            self._council_spinner.stop()
         if hasattr(self, "_council_status"):
             self._council_status.hide()
         QMessageBox.warning(self, "Council Error", msg)
@@ -19461,27 +20006,35 @@ class NavButton(QPushButton):
 ### `src\ui\widgets\network_dialog.py`
 
 ```python
-"""Network settings dialog — configure sync, view peers, manage connections, AI/LLM."""
+"""Network settings dialog — configure sync, view peers, manage connections, AI/LLM.
+
+Tabs
+────
+  ⚙  Settings  : Sync subnet/port/interval/timeout, peer table, force scan/sync, log
+  📓  Obsidian  : Vault path, sync toggle, REST API key/URL
+  🤖  AI / LLM  : llama.cpp server host, connection test, multi-pass council toggle
+"""
 
 import socket
 import threading
 
 from PyQt6.QtCore import Qt, QTimer, pyqtSignal
 from PyQt6.QtWidgets import (
-    QDialog, QVBoxLayout, QHBoxLayout, QGridLayout,
-    QLabel, QPushButton, QLineEdit, QSpinBox, QCheckBox,
-    QFrame, QTableWidget, QTableWidgetItem, QHeaderView,
-    QTextEdit, QTabWidget, QWidget, QMessageBox, QFileDialog,
-    QFormLayout, QListWidget, QComboBox, QScrollArea,
+    QAbstractItemView, QCheckBox, QDialog, QFileDialog, QFormLayout,
+    QFrame, QGridLayout, QHBoxLayout, QHeaderView, QLabel, QLineEdit,
+    QMessageBox, QPushButton, QScrollArea, QSpinBox, QTableWidget,
+    QTableWidgetItem, QTabWidget, QTextEdit, QVBoxLayout, QWidget,
 )
 
 from src.config import load_config, save_config
 from src.utils.llm import (
-    LLMClient, LLMResult, LLMSignals,
-    CouncilSignals, CouncilResult,
-    DEFAULT_MODEL, save_llm_config,
-    COUNCIL_SYNTHESIS_MODES, DEFAULT_SYNTHESIS_MODE,
-    load_council_config, save_council_config,
+    LLAMA_DEFAULT_HOST,
+    CouncilResult,
+    CouncilSignals,
+    LLMClient,
+    LLMResult,
+    LLMSignals,
+    LightCouncil,
 )
 
 
@@ -19491,212 +20044,244 @@ class NetworkDialog(QDialog):
     # Emitted after AI settings are saved so MainWindow can reload the client
     llm_settings_saved = pyqtSignal()
 
-    def __init__(self, sync_engine=None, parent=None):
+    def __init__(self, parent=None, sync_engine=None):
         super().__init__(parent)
+        self.cfg         = load_config()
         self.sync_engine = sync_engine
-        self.setWindowTitle("Network & Sync Settings")
-        self.setMinimumSize(650, 560)
-        self.cfg = load_config()
-        # Keep test signals alive — must be on self, not a local variable
-        self._test_signals: LLMSignals | None = None
-        self._council_test_signals: CouncilSignals | None = None
+        self.setWindowTitle("Network & AI Settings")
+        self.setMinimumSize(660, 580)
+        self.resize(740, 640)
         self._build_ui()
         self._load_values()
-
         if self.sync_engine:
-            self.sync_engine.peers_updated.connect(self._update_peer_table)
-            self.sync_engine.sync_log.connect(self._append_log)
+            self._refresh_peers()
 
-        self._refresh_timer = QTimer(self)
-        self._refresh_timer.timeout.connect(self._refresh_peers)
-        self._refresh_timer.start(5000)
-        self._refresh_peers()
+    # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    #  UI construction
+    # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
     def _build_ui(self):
-        layout = QVBoxLayout(self)
+        root = QVBoxLayout(self)
+        root.setContentsMargins(0, 0, 0, 0)
+        root.setSpacing(0)
+
         tabs = QTabWidget()
+        root.addWidget(tabs, 1)
 
-        # ── Tab 0: Network Settings ───────────────────
-        settings_tab = QWidget()
-        settings_layout = QVBoxLayout(settings_tab)
-        settings_layout.setSpacing(12)
+        tabs.addTab(self._build_settings_tab(), "⚙  Settings")
+        tabs.addTab(self._build_obsidian_tab(), "📓  Obsidian")
+        tabs.addTab(self._build_ai_tab(),       "🤖  AI / LLM")
 
-        info_label = QLabel("This Device")
-        info_label.setObjectName("sectionTitle")
-        settings_layout.addWidget(info_label)
+        # Close button
+        btn_row = QHBoxLayout()
+        btn_row.setContentsMargins(12, 8, 12, 12)
+        btn_row.addStretch()
+        close_btn = QPushButton("Close")
+        close_btn.clicked.connect(self.accept)
+        btn_row.addWidget(close_btn)
+        root.addLayout(btn_row)
+
+    # ── Tab: Settings ─────────────────────────────────
+
+    def _build_settings_tab(self) -> QWidget:
+        tab = QWidget()
+        layout = QVBoxLayout(tab)
+        layout.setContentsMargins(12, 12, 12, 12)
+        layout.setSpacing(10)
+
+        sync_title = QLabel("Sync Settings")
+        sync_title.setObjectName("sectionTitle")
+        layout.addWidget(sync_title)
 
         local_ip = self._get_local_ip()
-        hostname = socket.gethostname()
-        info_grid = QGridLayout()
-        info_grid.addWidget(QLabel("Hostname:"), 0, 0)
-        info_grid.addWidget(QLabel(f"<b>{hostname}</b>"), 0, 1)
-        info_grid.addWidget(QLabel("IP Address:"), 1, 0)
-        info_grid.addWidget(QLabel(f"<b>{local_ip}</b>"), 1, 1)
-        settings_layout.addLayout(info_grid)
-
-        sep = QFrame()
-        sep.setObjectName("separator")
-        sep.setFrameShape(QFrame.Shape.HLine)
-        settings_layout.addWidget(sep)
-
-        sync_label = QLabel("Sync Configuration")
-        sync_label.setObjectName("sectionTitle")
-        settings_layout.addWidget(sync_label)
+        ip_lbl = QLabel(f"Local IP: {local_ip}")
+        ip_lbl.setObjectName("subtitle")
+        layout.addWidget(ip_lbl)
 
         form = QGridLayout()
         form.setSpacing(8)
+        form.setColumnStretch(1, 1)
 
-        form.addWidget(QLabel("Sync enabled:"), 0, 0)
-        self.sync_enabled_check = QCheckBox()
-        form.addWidget(self.sync_enabled_check, 0, 1)
-
-        form.addWidget(QLabel("Subnet prefix:"), 1, 0)
+        form.addWidget(QLabel("Subnet:"), 0, 0)
         self.subnet_edit = QLineEdit()
-        self.subnet_edit.setPlaceholderText("e.g. 192.168.0")
+        self.subnet_edit.setPlaceholderText("192.168.0")
         self.subnet_edit.setMaximumWidth(200)
-        form.addWidget(self.subnet_edit, 1, 1)
+        form.addWidget(self.subnet_edit, 0, 1)
 
-        form.addWidget(QLabel("Sync port:"), 2, 0)
+        form.addWidget(QLabel("Sync port:"), 1, 0)
         self.port_spin = QSpinBox()
         self.port_spin.setRange(1024, 65535)
         self.port_spin.setMaximumWidth(120)
-        form.addWidget(self.port_spin, 2, 1)
+        form.addWidget(self.port_spin, 1, 1)
 
-        form.addWidget(QLabel("Interval (seconds):"), 3, 0)
+        form.addWidget(QLabel("Interval (seconds):"), 2, 0)
         self.interval_spin = QSpinBox()
         self.interval_spin.setRange(30, 3600)
         self.interval_spin.setSingleStep(30)
         self.interval_spin.setMaximumWidth(120)
-        form.addWidget(self.interval_spin, 3, 1)
+        form.addWidget(self.interval_spin, 2, 1)
 
-        form.addWidget(QLabel("Scan timeout (ms):"), 4, 0)
+        form.addWidget(QLabel("Scan timeout (ms):"), 3, 0)
         self.timeout_spin = QSpinBox()
         self.timeout_spin.setRange(50, 2000)
         self.timeout_spin.setSingleStep(50)
         self.timeout_spin.setMaximumWidth(120)
-        form.addWidget(self.timeout_spin, 4, 1)
+        form.addWidget(self.timeout_spin, 3, 1)
 
-        settings_layout.addLayout(form)
-        settings_layout.addStretch()
+        layout.addLayout(form)
 
         save_row = QHBoxLayout()
         save_row.addStretch()
-        save_btn = QPushButton("Save Settings")
+        save_btn = QPushButton("Save Sync Settings")
         save_btn.clicked.connect(self._save_settings)
         save_row.addWidget(save_btn)
-        settings_layout.addLayout(save_row)
+        layout.addLayout(save_row)
 
-        tabs.addTab(settings_tab, "Settings")
+        sep = QFrame()
+        sep.setFrameShape(QFrame.Shape.HLine)
+        sep.setObjectName("separator")
+        layout.addWidget(sep)
 
-        # ── Tab 1: Obsidian ───────────────────────────
-        obs_tab = QWidget()
-        obs_layout = QVBoxLayout(obs_tab)
-        obs_layout.setSpacing(10)
+        peers_title = QLabel("Peers")
+        peers_title.setObjectName("sectionTitle")
+        layout.addWidget(peers_title)
 
-        obs_title = QLabel("Obsidian Integration")
-        obs_title.setObjectName("sectionTitle")
-        obs_layout.addWidget(obs_title)
+        peer_btns = QHBoxLayout()
+        for label, slot in [
+            ("Refresh",      self._refresh_peers),
+            ("Add Peer…",    self._add_manual_peer),
+            ("Ping Selected",self._ping_selected),
+            ("Force Scan",   self._force_scan),
+            ("Force Sync",   self._force_sync),
+        ]:
+            btn = QPushButton(label)
+            btn.setObjectName("secondary")
+            btn.clicked.connect(slot)
+            peer_btns.addWidget(btn)
+        peer_btns.addStretch()
+        layout.addLayout(peer_btns)
 
-        obs_desc = QLabel(
+        self._peer_table = QTableWidget(0, 4)
+        self._peer_table.setHorizontalHeaderLabels(["IP", "Hostname", "Status", "Fails"])
+        hh = self._peer_table.horizontalHeader()
+        hh.setSectionResizeMode(0, QHeaderView.ResizeMode.Stretch)
+        hh.setSectionResizeMode(1, QHeaderView.ResizeMode.Stretch)
+        hh.setSectionResizeMode(2, QHeaderView.ResizeMode.ResizeToContents)
+        hh.setSectionResizeMode(3, QHeaderView.ResizeMode.ResizeToContents)
+        self._peer_table.setEditTriggers(QAbstractItemView.EditTrigger.NoEditTriggers)
+        self._peer_table.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectRows)
+        self._peer_table.setFixedHeight(120)
+        layout.addWidget(self._peer_table)
+
+        log_lbl = QLabel("Sync Log")
+        log_lbl.setObjectName("subtitle")
+        layout.addWidget(log_lbl)
+
+        self.log_view = QTextEdit()
+        self.log_view.setReadOnly(True)
+        self.log_view.setMaximumHeight(110)
+        layout.addWidget(self.log_view)
+
+        layout.addStretch()
+        return tab
+
+    # ── Tab: Obsidian ─────────────────────────────────
+
+    def _build_obsidian_tab(self) -> QWidget:
+        tab = QWidget()
+        layout = QVBoxLayout(tab)
+        layout.setContentsMargins(12, 12, 12, 12)
+        layout.setSpacing(10)
+
+        title = QLabel("Obsidian Integration")
+        title.setObjectName("sectionTitle")
+        layout.addWidget(title)
+
+        desc = QLabel(
             "Configure your Obsidian vault path and REST API settings.\n"
             "The vault path is used to sync markdown files between computers.\n"
             "The REST API connects to the Obsidian Local REST API plugin."
         )
-        obs_desc.setObjectName("subtitle")
-        obs_desc.setWordWrap(True)
-        obs_layout.addWidget(obs_desc)
+        desc.setObjectName("subtitle")
+        desc.setWordWrap(True)
+        layout.addWidget(desc)
 
-        obs_form = QGridLayout()
+        obs_form = QFormLayout()
         obs_form.setSpacing(8)
 
-        obs_form.addWidget(QLabel("Vault path:"), 0, 0)
+        vault_row = QHBoxLayout()
         self.vault_path_edit = QLineEdit()
-        self.vault_path_edit.setPlaceholderText("/path/to/your/obsidian/vault")
-        self.vault_path_edit.setText(self.cfg.get("obsidian_vault_path", ""))
-        obs_form.addWidget(self.vault_path_edit, 0, 1)
-        browse_btn = QPushButton("Browse")
+        self.vault_path_edit.setPlaceholderText("/path/to/your/vault")
+        vault_row.addWidget(self.vault_path_edit)
+        browse_btn = QPushButton("Browse…")
         browse_btn.setObjectName("secondary")
+        browse_btn.setFixedWidth(90)
         browse_btn.clicked.connect(self._browse_vault)
-        obs_form.addWidget(browse_btn, 0, 2)
+        vault_row.addWidget(browse_btn)
+        obs_form.addRow("Vault Path:", vault_row)
 
-        obs_form.addWidget(QLabel("Sync vault files:"), 1, 0)
-        self.vault_sync_check = QCheckBox()
-        self.vault_sync_check.setChecked(self.cfg.get("obsidian_sync_enabled", False))
-        obs_form.addWidget(self.vault_sync_check, 1, 1)
+        self.vault_sync_check = QCheckBox("Enable vault file sync")
+        obs_form.addRow("", self.vault_sync_check)
 
-        sep_obs = QFrame()
-        sep_obs.setObjectName("separator")
-        sep_obs.setFrameShape(QFrame.Shape.HLine)
-        obs_form.addWidget(sep_obs, 2, 0, 1, 3)
-
-        obs_form.addWidget(QLabel("REST API key:"), 3, 0)
         self.api_key_edit = QLineEdit()
-        self.api_key_edit.setPlaceholderText("From Obsidian Local REST API plugin")
+        self.api_key_edit.setPlaceholderText("Obsidian REST API key (optional)")
         self.api_key_edit.setEchoMode(QLineEdit.EchoMode.Password)
-        self.api_key_edit.setText(self.cfg.get("obsidian_api_key", ""))
-        obs_form.addWidget(self.api_key_edit, 3, 1, 1, 2)
+        obs_form.addRow("REST API Key:", self.api_key_edit)
 
-        obs_form.addWidget(QLabel("REST API URL:"), 4, 0)
         self.api_url_edit = QLineEdit()
-        self.api_url_edit.setText(self.cfg.get("obsidian_api_url", "http://127.0.0.1:27123"))
-        obs_form.addWidget(self.api_url_edit, 4, 1, 1, 2)
+        self.api_url_edit.setPlaceholderText("http://127.0.0.1:27123")
+        obs_form.addRow("REST API URL:", self.api_url_edit)
 
-        obs_layout.addLayout(obs_form)
-        obs_layout.addStretch()
+        layout.addLayout(obs_form)
+        layout.addStretch()
 
-        obs_save_row = QHBoxLayout()
-        obs_save_row.addStretch()
-        obs_save_btn = QPushButton("Save Obsidian Settings")
-        obs_save_btn.clicked.connect(self._save_obsidian_settings)
-        obs_save_row.addWidget(obs_save_btn)
-        obs_layout.addLayout(obs_save_row)
+        save_row = QHBoxLayout()
+        save_row.addStretch()
+        save_btn = QPushButton("Save Obsidian Settings")
+        save_btn.clicked.connect(self._save_obsidian_settings)
+        save_row.addWidget(save_btn)
+        layout.addLayout(save_row)
 
-        tabs.addTab(obs_tab, "Obsidian")
+        return tab
 
-        # ── Tab 2: AI / LLM ──────────────────────────
-        ai_outer = QWidget()
-        ai_scroll = QScrollArea()
-        ai_scroll.setWidgetResizable(True)
-        ai_scroll.setFrameShape(QFrame.Shape.NoFrame)
-        ai_scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+    # ── Tab: AI / LLM ────────────────────────────────
 
-        ai_tab = QWidget()
-        ai_layout = QVBoxLayout(ai_tab)
-        ai_layout.setSpacing(12)
+    def _build_ai_tab(self) -> QWidget:
+        # Wrap in a scroll area so it survives small windows
+        outer = QWidget()
+        outer_layout = QVBoxLayout(outer)
+        outer_layout.setContentsMargins(0, 0, 0, 0)
 
-        # ── Primary model ──────────────────────────────
-        ai_title = QLabel("AI Assistant — OpenRouter")
-        ai_title.setObjectName("sectionTitle")
-        ai_layout.addWidget(ai_title)
+        scroll = QScrollArea()
+        scroll.setWidgetResizable(True)
+        scroll.setFrameShape(QFrame.Shape.NoFrame)
+        outer_layout.addWidget(scroll)
 
-        ai_desc = QLabel(
-            "LocalSync uses OpenRouter to access free LLMs for features like the "
-            "Work Panel Japanese write-up generator. "
-            "Get a free API key at openrouter.ai/keys and paste any model ID from "
-            "openrouter.ai/models below. Free-tier models end in :free."
+        inner = QWidget()
+        layout = QVBoxLayout(inner)
+        layout.setContentsMargins(12, 12, 12, 12)
+        layout.setSpacing(14)
+
+        # ── Server connection ──────────────────────────
+        title = QLabel("llama.cpp Server")
+        title.setObjectName("sectionTitle")
+        layout.addWidget(title)
+
+        desc = QLabel(
+            "LocalSync connects to your llama.cpp server for all AI features. "
+            "The model is selected server-side — no model name is needed here."
         )
-        ai_desc.setObjectName("subtitle")
-        ai_desc.setWordWrap(True)
-        ai_layout.addWidget(ai_desc)
+        desc.setObjectName("subtitle")
+        desc.setWordWrap(True)
+        layout.addWidget(desc)
 
-        ai_form = QFormLayout()
-        ai_form.setSpacing(10)
+        conn_form = QFormLayout()
+        conn_form.setSpacing(10)
+        self.llama_host_edit = QLineEdit()
+        self.llama_host_edit.setPlaceholderText(LLAMA_DEFAULT_HOST)
+        conn_form.addRow("Server Host:", self.llama_host_edit)
+        layout.addLayout(conn_form)
 
-        self.llm_key_edit = QLineEdit()
-        self.llm_key_edit.setPlaceholderText("sk-or-v1-…")
-        self.llm_key_edit.setEchoMode(QLineEdit.EchoMode.Password)
-        self.llm_key_edit.setText(self.cfg.get("openrouter_api_key", ""))
-        ai_form.addRow("API Key:", self.llm_key_edit)
-
-        self.llm_model_edit = QLineEdit()
-        self.llm_model_edit.setPlaceholderText("e.g. qwen/qwen3-6b-plus:free")
-        self.llm_model_edit.setText(
-            self.cfg.get("openrouter_model", DEFAULT_MODEL))
-        ai_form.addRow("Primary Model ID:", self.llm_model_edit)
-
-        ai_layout.addLayout(ai_form)
-
-        # Test row
         test_row = QHBoxLayout()
         self._ai_test_btn = QPushButton("Test Connection")
         self._ai_test_btn.setObjectName("secondary")
@@ -19705,113 +20290,31 @@ class NetworkDialog(QDialog):
         self._ai_test_lbl = QLabel("")
         self._ai_test_lbl.setWordWrap(True)
         test_row.addWidget(self._ai_test_lbl, 1)
-        ai_layout.addLayout(test_row)
+        layout.addLayout(test_row)
 
-        # Current model status
-        key_set = bool(self.cfg.get("openrouter_api_key", "").strip())
-        model   = self.cfg.get("openrouter_model", DEFAULT_MODEL)
-        status_lbl = QLabel(
-            f"Status: {'API key configured' if key_set else 'No API key set'}  "
-            f"|  Model: {model}"
-        )
-        status_lbl.setObjectName("subtitle")
-        status_lbl.setWordWrap(True)
-        ai_layout.addWidget(status_lbl)
-        self._ai_status_lbl = status_lbl
+        # ── Multi-pass council ─────────────────────────
+        sep = QFrame()
+        sep.setObjectName("separator")
+        sep.setFrameShape(QFrame.Shape.HLine)
+        layout.addWidget(sep)
 
-        ai_layout.addSpacing(4)
-
-        # ── Council section ────────────────────────────
-        council_sep = QFrame()
-        council_sep.setObjectName("separator")
-        council_sep.setFrameShape(QFrame.Shape.HLine)
-        ai_layout.addWidget(council_sep)
-
-        council_title = QLabel("LLM Council")
+        council_title = QLabel("Multi-Pass Council")
         council_title.setObjectName("sectionTitle")
-        ai_layout.addWidget(council_title)
+        layout.addWidget(council_title)
 
         council_desc = QLabel(
-            "Fan out a single prompt to 3–6 models in parallel, then synthesise "
-            "their responses into one final answer. Uses the same API key as above. "
-            "Configure via the Debug panel (Ctrl+0)."
+            "When enabled, AI responses are generated in three parallel passes at "
+            "different temperature settings — Precise (0.2), Balanced (0.6), and "
+            "Creative (1.0) — then synthesised into a single answer. "
+            "Produces richer results but uses more tokens and takes longer."
         )
         council_desc.setObjectName("subtitle")
         council_desc.setWordWrap(True)
-        ai_layout.addWidget(council_desc)
+        layout.addWidget(council_desc)
 
-        # Enable toggle
-        enable_row = QHBoxLayout()
-        enable_row.addWidget(QLabel("Enable Council:"))
-        self._council_enabled_check = QCheckBox()
-        self._council_enabled_check.setChecked(self.cfg.get("council_enabled", False))
-        self._council_enabled_check.toggled.connect(self._on_council_toggled)
-        enable_row.addWidget(self._council_enabled_check)
-        enable_row.addStretch()
-        ai_layout.addLayout(enable_row)
+        self._council_check = QCheckBox("Enable multi-pass council")
+        layout.addWidget(self._council_check)
 
-        # Council body (hidden when disabled)
-        self._council_body = QWidget()
-        council_body_layout = QVBoxLayout(self._council_body)
-        council_body_layout.setContentsMargins(0, 0, 0, 0)
-        council_body_layout.setSpacing(8)
-
-        # Synthesis model + mode
-        synth_form = QFormLayout()
-        synth_form.setSpacing(8)
-
-        self._synth_model_edit = QLineEdit()
-        self._synth_model_edit.setPlaceholderText(
-            "Synthesis model (leave blank to use first council model)")
-        self._synth_model_edit.setText(
-            self.cfg.get("council_synthesis_model", ""))
-        synth_form.addRow("Synthesis Model:", self._synth_model_edit)
-
-        self._synth_mode_combo = QComboBox()
-        self._synth_mode_combo.addItems(COUNCIL_SYNTHESIS_MODES)
-        saved_mode = self.cfg.get("council_synthesis_mode", DEFAULT_SYNTHESIS_MODE)
-        idx = self._synth_mode_combo.findText(saved_mode)
-        if idx >= 0:
-            self._synth_mode_combo.setCurrentIndex(idx)
-        synth_form.addRow("Synthesis Mode:", self._synth_mode_combo)
-
-        council_body_layout.addLayout(synth_form)
-
-        # Model list
-        models_lbl = QLabel("Council Models (3–6)")
-        models_lbl.setObjectName("subtitle")
-        council_body_layout.addWidget(models_lbl)
-
-        self._council_model_list = QListWidget()
-        self._council_model_list.setMaximumHeight(130)
-        self._council_model_list.setToolTip(
-            "Double-click a model to edit it")
-        self._council_model_list.itemDoubleClicked.connect(self._edit_council_model)
-        for m in self.cfg.get("council_models", []):
-            self._council_model_list.addItem(m)
-        council_body_layout.addWidget(self._council_model_list)
-
-        # Add / Remove row
-        list_btn_row = QHBoxLayout()
-        add_model_btn = QPushButton("+ Add Model")
-        add_model_btn.setObjectName("secondary")
-        add_model_btn.clicked.connect(self._add_council_model)
-        list_btn_row.addWidget(add_model_btn)
-
-        remove_model_btn = QPushButton("Remove Selected")
-        remove_model_btn.setObjectName("secondary")
-        remove_model_btn.clicked.connect(self._remove_council_model)
-        list_btn_row.addWidget(remove_model_btn)
-
-        list_btn_row.addStretch()
-
-        self._council_count_lbl = QLabel("")
-        self._council_count_lbl.setObjectName("subtitle")
-        list_btn_row.addWidget(self._council_count_lbl)
-        council_body_layout.addLayout(list_btn_row)
-        self._update_council_count()
-
-        # Test council button
         council_test_row = QHBoxLayout()
         self._council_test_btn = QPushButton("Test Council")
         self._council_test_btn.setObjectName("secondary")
@@ -19820,347 +20323,57 @@ class NetworkDialog(QDialog):
         self._council_test_lbl = QLabel("")
         self._council_test_lbl.setWordWrap(True)
         council_test_row.addWidget(self._council_test_lbl, 1)
-        council_body_layout.addLayout(council_test_row)
+        layout.addLayout(council_test_row)
 
-        ai_layout.addWidget(self._council_body)
-        self._council_body.setVisible(self._council_enabled_check.isChecked())
+        layout.addStretch()
 
-        ai_layout.addStretch()
+        save_row = QHBoxLayout()
+        save_row.addStretch()
+        save_btn = QPushButton("Save AI Settings")
+        save_btn.clicked.connect(self._save_ai_settings)
+        save_row.addWidget(save_btn)
+        layout.addLayout(save_row)
 
-        # Save button
-        ai_save_row = QHBoxLayout()
-        ai_save_row.addStretch()
-        ai_save_btn = QPushButton("Save AI Settings")
-        ai_save_btn.clicked.connect(self._save_ai_settings)
-        ai_save_row.addWidget(ai_save_btn)
-        ai_layout.addLayout(ai_save_row)
+        scroll.setWidget(inner)
+        return outer
 
-        ai_scroll.setWidget(ai_tab)
-
-        ai_outer_layout = QVBoxLayout(ai_outer)
-        ai_outer_layout.setContentsMargins(0, 0, 0, 0)
-        ai_outer_layout.addWidget(ai_scroll)
-
-        tabs.addTab(ai_outer, "AI")
-
-        # ── Tab 3: Peers ──────────────────────────────
-        peers_tab = QWidget()
-        peers_layout = QVBoxLayout(peers_tab)
-
-        peers_header = QHBoxLayout()
-        peers_title = QLabel("Discovered Peers")
-        peers_title.setObjectName("sectionTitle")
-        peers_header.addWidget(peers_title)
-        peers_header.addStretch()
-
-        scan_btn = QPushButton("Scan Now")
-        scan_btn.setToolTip("Force a subnet scan")
-        scan_btn.clicked.connect(self._force_scan)
-        peers_header.addWidget(scan_btn)
-
-        sync_btn = QPushButton("Sync Now")
-        sync_btn.setToolTip("Force an immediate sync with all peers")
-        sync_btn.clicked.connect(self._force_sync)
-        peers_header.addWidget(sync_btn)
-
-        peers_layout.addLayout(peers_header)
-
-        self.peer_table = QTableWidget()
-        self.peer_table.setColumnCount(4)
-        self.peer_table.setHorizontalHeaderLabels(["IP Address", "Hostname", "Status", "Failures"])
-        self.peer_table.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
-        self.peer_table.setSelectionBehavior(QTableWidget.SelectionBehavior.SelectRows)
-        self.peer_table.setEditTriggers(QTableWidget.EditTrigger.NoEditTriggers)
-        peers_layout.addWidget(self.peer_table)
-
-        add_row = QHBoxLayout()
-        add_row.addWidget(QLabel("Add peer:"))
-        self.manual_ip_edit = QLineEdit()
-        self.manual_ip_edit.setPlaceholderText("e.g. 192.168.0.28")
-        self.manual_ip_edit.setMaximumWidth(200)
-        self.manual_ip_edit.returnPressed.connect(self._add_manual_peer)
-        add_row.addWidget(self.manual_ip_edit)
-
-        add_btn = QPushButton("Add")
-        add_btn.setObjectName("secondary")
-        add_btn.clicked.connect(self._add_manual_peer)
-        add_row.addWidget(add_btn)
-
-        ping_btn = QPushButton("Ping")
-        ping_btn.setObjectName("secondary")
-        ping_btn.clicked.connect(self._ping_selected)
-        add_row.addWidget(ping_btn)
-
-        add_row.addStretch()
-        peers_layout.addLayout(add_row)
-
-        tabs.addTab(peers_tab, "Peers")
-
-        # ── Tab 4: Log ────────────────────────────────
-        log_tab = QWidget()
-        log_layout = QVBoxLayout(log_tab)
-
-        log_header = QHBoxLayout()
-        log_title = QLabel("Sync Log")
-        log_title.setObjectName("sectionTitle")
-        log_header.addWidget(log_title)
-        log_header.addStretch()
-        clear_btn = QPushButton("Clear")
-        clear_btn.setObjectName("secondary")
-        clear_btn.clicked.connect(lambda: self.log_view.clear())
-        log_header.addWidget(clear_btn)
-        log_layout.addLayout(log_header)
-
-        self.log_view = QTextEdit()
-        self.log_view.setReadOnly(True)
-        self.log_view.setStyleSheet("font-family: monospace; font-size: 12px;")
-        log_layout.addWidget(self.log_view)
-
-        tabs.addTab(log_tab, "Log")
-
-        layout.addWidget(tabs)
-
-    # ── Load / save ──────────────────────────────────
+    # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    #  Load / Save
+    # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
     def _load_values(self):
-        self.sync_enabled_check.setChecked(self.cfg.get("sync_enabled", True))
-        self.subnet_edit.setText(self.cfg.get("subnet", "192.168.0"))
-        self.port_spin.setValue(self.cfg.get("sync_port", 42069))
-        self.interval_spin.setValue(self.cfg.get("sync_interval_seconds", 300))
-        self.timeout_spin.setValue(self.cfg.get("scan_timeout_ms", 150))
+        # Sync
+        self.subnet_edit.setText(self.cfg.get("sync_subnet", "192.168.0"))
+        self.port_spin.setValue(self.cfg.get("sync_port", 47678))
+        self.interval_spin.setValue(self.cfg.get("sync_interval", 60))
+        self.timeout_spin.setValue(self.cfg.get("scan_timeout_ms", 300))
+        # Obsidian
+        self.vault_path_edit.setText(self.cfg.get("obsidian_vault_path", ""))
+        self.vault_sync_check.setChecked(self.cfg.get("obsidian_sync_enabled", False))
+        self.api_key_edit.setText(self.cfg.get("obsidian_api_key", ""))
+        self.api_url_edit.setText(
+            self.cfg.get("obsidian_api_url", "http://127.0.0.1:27123"))
+        # AI
+        self.llama_host_edit.setText(
+            self.cfg.get("llama_host", LLAMA_DEFAULT_HOST))
+        self._council_check.setChecked(self.cfg.get("council_enabled", False))
 
     def _save_settings(self):
-        self.cfg["sync_enabled"] = self.sync_enabled_check.isChecked()
-        self.cfg["subnet"] = self.subnet_edit.text().strip()
-        self.cfg["sync_port"] = self.port_spin.value()
-        self.cfg["sync_interval_seconds"] = self.interval_spin.value()
+        self.cfg["sync_subnet"]     = self.subnet_edit.text().strip() or "192.168.0"
+        self.cfg["sync_port"]       = self.port_spin.value()
+        self.cfg["sync_interval"]   = self.interval_spin.value()
         self.cfg["scan_timeout_ms"] = self.timeout_spin.value()
         save_config(self.cfg)
         if self.sync_engine:
             self.sync_engine.reload_config()
-        QMessageBox.information(self, "Saved", "Network settings saved.")
+        QMessageBox.information(self, "Saved", "Sync settings saved.")
 
     def _save_ai_settings(self):
-        key   = self.llm_key_edit.text().strip()
-        model = self.llm_model_edit.text().strip() or DEFAULT_MODEL
-        save_llm_config(key, model)
-        self._ai_status_lbl.setText(
-            f"Status: {'API key configured' if key else 'No API key set'}"
-            f"  |  Model: {model}"
-        )
-
-        # Save council settings
-        models = [
-            self._council_model_list.item(i).text().strip()
-            for i in range(self._council_model_list.count())
-        ]
-        save_council_config(
-            enabled         = self._council_enabled_check.isChecked(),
-            models          = models,
-            synthesis_model = self._synth_model_edit.text().strip(),
-            synthesis_mode  = self._synth_mode_combo.currentText(),
-        )
-
+        self.cfg["llama_host"]      = self.llama_host_edit.text().strip() or LLAMA_DEFAULT_HOST
+        self.cfg["council_enabled"] = self._council_check.isChecked()
+        save_config(self.cfg)
         self.llm_settings_saved.emit()
-        QMessageBox.information(self, "Saved",
-            "AI settings saved.\nThe LLM client has been updated.")
-
-    # ── AI test ─────────────────────────────────────
-
-    def _test_ai(self):
-        key   = self.llm_key_edit.text().strip()
-        model = self.llm_model_edit.text().strip() or DEFAULT_MODEL
-        if not key:
-            self._ai_test_lbl.setText("Enter an API key first.")
-            return
-        self._ai_test_btn.setEnabled(False)
-        self._ai_test_lbl.setText("Testing…")
-
-        # Must be stored on self — local var would be GC'd before thread fires
-        self._test_signals = LLMSignals()
-
-        def _on_ok(result: LLMResult):
-            self._ai_test_lbl.setText(f"Connected — {result.timing_summary()}")
-            self._ai_test_btn.setEnabled(True)
-
-        def _on_err(err: str):
-            self._ai_test_lbl.setText(f"Error: {err}")
-            self._ai_test_btn.setEnabled(True)
-
-        self._test_signals.result.connect(_on_ok)
-        self._test_signals.error.connect(_on_err)
-
-        LLMClient(api_key=key, model=model).complete_async(
-            [{"role": "user", "content": "Say hello in one word."}],
-            on_result=self._test_signals.result.emit,
-            on_error=self._test_signals.error.emit,
-            max_tokens=16,
-        )
-
-    # ── Council helpers ──────────────────────────────
-
-    def _on_council_toggled(self, enabled: bool):
-        self._council_body.setVisible(enabled)
-
-    def _update_council_count(self):
-        n = self._council_model_list.count()
-        color = "green" if 3 <= n <= 6 else "red"
-        self._council_count_lbl.setText(
-            f"<span style='color:{color}'>{n} model{'s' if n != 1 else ''}</span>"
-        )
-
-    def _add_council_model(self):
-        if self._council_model_list.count() >= 6:
-            QMessageBox.warning(self, "Council Full",
-                "A council can have at most 6 models.")
-            return
-        from PyQt6.QtWidgets import QInputDialog
-        text, ok = QInputDialog.getText(
-            self, "Add Council Model",
-            "Model ID (e.g. mistralai/mistral-7b-instruct:free):"
-        )
-        if ok and text.strip():
-            self._council_model_list.addItem(text.strip())
-            self._update_council_count()
-
-    def _remove_council_model(self):
-        row = self._council_model_list.currentRow()
-        if row >= 0:
-            self._council_model_list.takeItem(row)
-            self._update_council_count()
-
-    def _edit_council_model(self, item):
-        from PyQt6.QtWidgets import QInputDialog
-        text, ok = QInputDialog.getText(
-            self, "Edit Council Model", "Model ID:", text=item.text()
-        )
-        if ok and text.strip():
-            item.setText(text.strip())
-
-    def _test_council(self):
-        key = self.llm_key_edit.text().strip()
-        if not key:
-            self._council_test_lbl.setText("Enter an API key first.")
-            return
-        models = [
-            self._council_model_list.item(i).text().strip()
-            for i in range(self._council_model_list.count())
-        ]
-        if len(models) < 1:
-            self._council_test_lbl.setText("Add at least one model first.")
-            return
-
-        self._council_test_btn.setEnabled(False)
-        self._council_test_lbl.setText(f"Testing {len(models)} model(s)…")
-
-        from src.utils.llm import LLMCouncil
-        council = LLMCouncil(
-            api_key         = key,
-            council_models  = models,
-            synthesis_model = self._synth_model_edit.text().strip(),
-            synthesis_mode  = self._synth_mode_combo.currentText(),
-        )
-
-        self._council_test_signals = CouncilSignals()
-
-        def _on_ok(result: CouncilResult):
-            ok_count  = result.member_count
-            fail_count = len(result.failed_models)
-            parts = [f"{ok_count} responded"]
-            if fail_count:
-                parts.append(f"{fail_count} failed")
-            parts.append(result.final.timing_summary())
-            self._council_test_lbl.setText("Council OK — " + " · ".join(parts))
-            self._council_test_btn.setEnabled(True)
-
-        def _on_err(err: str):
-            self._council_test_lbl.setText(f"Error: {err}")
-            self._council_test_btn.setEnabled(True)
-
-        self._council_test_signals.result.connect(_on_ok)
-        self._council_test_signals.error.connect(_on_err)
-
-        council.complete_async(
-            [{"role": "user", "content": "Say hello in one word."}],
-            on_result=self._council_test_signals.result.emit,
-            on_error=self._council_test_signals.error.emit,
-            max_tokens=16,
-        )
-
-    # ── Peer management ──────────────────────────────
-
-    def _refresh_peers(self):
-        if self.sync_engine:
-            peers = self.sync_engine.get_peer_list()
-            self._update_peer_table(peers)
-
-    def _update_peer_table(self, peers: list):
-        self.peer_table.setRowCount(len(peers))
-        for row, p in enumerate(peers):
-            self.peer_table.setItem(row, 0, QTableWidgetItem(p["ip"]))
-            self.peer_table.setItem(row, 1, QTableWidgetItem(p.get("hostname", "")))
-            status = p.get("status", "unknown")
-            status_item = QTableWidgetItem(status)
-            if status == "online":
-                status_item.setForeground(Qt.GlobalColor.green)
-            elif status == "stale":
-                status_item.setForeground(Qt.GlobalColor.darkYellow)
-            else:
-                status_item.setForeground(Qt.GlobalColor.red)
-            self.peer_table.setItem(row, 2, status_item)
-            self.peer_table.setItem(row, 3, QTableWidgetItem(str(p.get("fail_count", 0))))
-
-    def _add_manual_peer(self):
-        ip = self.manual_ip_edit.text().strip()
-        if ip and self.sync_engine:
-            self.sync_engine.add_manual_peer(ip)
-            known = self.cfg.get("known_peers", [])
-            if ip not in known:
-                known.append(ip)
-                self.cfg["known_peers"] = known
-                save_config(self.cfg)
-            self.manual_ip_edit.clear()
-            self._refresh_peers()
-
-    def _ping_selected(self):
-        rows = self.peer_table.selectionModel().selectedRows()
-        if rows and self.sync_engine:
-            ip_item = self.peer_table.item(rows[0].row(), 0)
-            if ip_item:
-                ip = ip_item.text()
-                self._append_log(f"Pinging {ip}...")
-                def do_ping():
-                    ok, info = self.sync_engine.ping_peer(ip)
-                    self._append_log(
-                        f"Ping {ip}: OK ({info})" if ok
-                        else f"Ping {ip}: FAILED ({info})")
-                threading.Thread(target=do_ping, daemon=True).start()
-        elif not rows:
-            ip = self.manual_ip_edit.text().strip()
-            if ip and self.sync_engine:
-                self._append_log(f"Pinging {ip}...")
-                def do_ping():
-                    ok, info = self.sync_engine.ping_peer(ip)
-                    self._append_log(
-                        f"Ping {ip}: OK ({info})" if ok
-                        else f"Ping {ip}: FAILED ({info})")
-                threading.Thread(target=do_ping, daemon=True).start()
-
-    def _force_scan(self):
-        if self.sync_engine:
-            self._append_log("Forcing subnet scan...")
-            self.sync_engine.force_scan()
-
-    def _force_sync(self):
-        if self.sync_engine:
-            self._append_log("Forcing immediate sync...")
-            self.sync_engine.force_sync()
-
-    def _browse_vault(self):
-        path = QFileDialog.getExistingDirectory(
-            self, "Select Obsidian Vault", self.vault_path_edit.text())
-        if path:
-            self.vault_path_edit.setText(path)
+        QMessageBox.information(self, "Saved", "AI settings saved.")
 
     def _save_obsidian_settings(self):
         self.cfg["obsidian_vault_path"]   = self.vault_path_edit.text().strip()
@@ -20169,13 +20382,134 @@ class NetworkDialog(QDialog):
         self.cfg["obsidian_api_url"]      = (
             self.api_url_edit.text().strip() or "http://127.0.0.1:27123")
         save_config(self.cfg)
-        QMessageBox.information(self, "Saved",
-            "Obsidian settings saved.\nRestart the app for vault changes to take effect.")
+        QMessageBox.information(
+            self, "Saved",
+            "Obsidian settings saved.\n"
+            "Restart the app for vault path changes to take effect.")
+
+    # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    #  AI tests
+    # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+    def _test_ai(self):
+        host = self.llama_host_edit.text().strip() or LLAMA_DEFAULT_HOST
+        self._ai_test_btn.setEnabled(False)
+        self._ai_test_lbl.setText("Testing…")
+        # Stored on self to prevent GC before thread fires
+        self._ai_test_signals = LLMSignals()
+
+        def _on_ok(result: LLMResult):
+            self._ai_test_lbl.setText(f"✓ Connected — {result.elapsed_ms} ms")
+            self._ai_test_btn.setEnabled(True)
+
+        def _on_err(err: str):
+            self._ai_test_lbl.setText(f"✗ {err}")
+            self._ai_test_btn.setEnabled(True)
+
+        self._ai_test_signals.result.connect(_on_ok)
+        self._ai_test_signals.error.connect(_on_err)
+
+        LLMClient(host=host).complete_async(
+            [{"role": "user", "content": "Reply with only the word OK."}],
+            max_tokens = 8,
+            on_result  = self._ai_test_signals.result.emit,
+            on_error   = self._ai_test_signals.error.emit,
+        )
+
+    def _test_council(self):
+        host = self.llama_host_edit.text().strip() or LLAMA_DEFAULT_HOST
+        self._council_test_btn.setEnabled(False)
+        self._council_test_lbl.setText("Running 3 passes… (may take a moment)")
+        # Stored on self to prevent GC before thread fires
+        self._council_test_signals = CouncilSignals()
+
+        def _on_ok(result: CouncilResult):
+            self._council_test_lbl.setText(f"✓ Council OK — {result.summary()}")
+            self._council_test_btn.setEnabled(True)
+
+        def _on_err(err: str):
+            self._council_test_lbl.setText(f"✗ {err}")
+            self._council_test_btn.setEnabled(True)
+
+        self._council_test_signals.result.connect(_on_ok)
+        self._council_test_signals.error.connect(_on_err)
+
+        LightCouncil(host=host).complete_async(
+            [{"role": "user", "content": "In one sentence, what is 2 + 2?"}],
+            max_tokens = 64,
+            on_result  = self._council_test_signals.result.emit,
+            on_error   = self._council_test_signals.error.emit,
+        )
+
+    # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    #  Peers
+    # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+    def _refresh_peers(self):
+        if not self.sync_engine:
+            return
+        peers = self.sync_engine.get_peer_list()
+        self._update_peer_table(peers)
+
+    def _update_peer_table(self, peers: list[dict]):
+        self._peer_table.setRowCount(len(peers))
+        for row, peer in enumerate(peers):
+            self._peer_table.setItem(row, 0, QTableWidgetItem(peer.get("ip", "")))
+            self._peer_table.setItem(row, 1, QTableWidgetItem(peer.get("hostname", "")))
+            self._peer_table.setItem(row, 2, QTableWidgetItem(peer.get("status", "")))
+            self._peer_table.setItem(row, 3, QTableWidgetItem(str(peer.get("fail_count", 0))))
+
+    def _add_manual_peer(self):
+        text, ok = _input_dialog(self, "Add Peer", "Enter peer IP address:")
+        if ok and text.strip() and self.sync_engine:
+            self.sync_engine.add_manual_peer(text.strip())
+            self._append_log(f"Added manual peer: {text.strip()}")
+            QTimer.singleShot(500, self._refresh_peers)
+
+    def _ping_selected(self):
+        rows = self._peer_table.selectedItems()
+        if not rows:
+            return
+        row      = rows[0].row()
+        ip_item  = self._peer_table.item(row, 0)
+        if not ip_item or not self.sync_engine:
+            return
+        ip = ip_item.text()
+
+        def do_ping():
+            ok, info = self.sync_engine.ping_peer(ip)
+            self._append_log(
+                f"Ping {ip}: OK ({info})" if ok else f"Ping {ip}: FAILED ({info})")
+        threading.Thread(target=do_ping, daemon=True).start()
+
+    def _force_scan(self):
+        if self.sync_engine:
+            self._append_log("Forcing subnet scan…")
+            self.sync_engine.force_scan()
+
+    def _force_sync(self):
+        if self.sync_engine:
+            self._append_log("Forcing immediate sync…")
+            self.sync_engine.force_sync()
+
+    # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    #  Obsidian helpers
+    # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+    def _browse_vault(self):
+        path = QFileDialog.getExistingDirectory(
+            self, "Select Obsidian Vault", self.vault_path_edit.text())
+        if path:
+            self.vault_path_edit.setText(path)
+
+    # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    #  Utilities
+    # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
     def _append_log(self, msg: str):
         self.log_view.append(msg)
-        self.log_view.verticalScrollBar().setValue(
-            self.log_view.verticalScrollBar().maximum())
+        sb = self.log_view.verticalScrollBar()
+        sb.setValue(sb.maximum())
 
     @staticmethod
     def _get_local_ip() -> str:
@@ -20187,6 +20521,30 @@ class NetworkDialog(QDialog):
             return ip
         except Exception:
             return "unknown"
+
+
+# ── Minimal input dialog helper ───────────────────────────────────────────────
+
+def _input_dialog(parent, title: str, label: str, default: str = "") -> tuple[str, bool]:
+    dlg = QDialog(parent)
+    dlg.setWindowTitle(title)
+    dlg.setMinimumWidth(360)
+    layout = QVBoxLayout(dlg)
+    layout.addWidget(QLabel(label))
+    edit = QLineEdit(default)
+    layout.addWidget(edit)
+    btn_row = QHBoxLayout()
+    ok_btn     = QPushButton("OK")
+    cancel_btn = QPushButton("Cancel")
+    cancel_btn.setObjectName("secondary")
+    ok_btn.clicked.connect(dlg.accept)
+    cancel_btn.clicked.connect(dlg.reject)
+    btn_row.addStretch()
+    btn_row.addWidget(cancel_btn)
+    btn_row.addWidget(ok_btn)
+    layout.addLayout(btn_row)
+    accepted = dlg.exec() == QDialog.DialogCode.Accepted
+    return edit.text(), accepted
 ```
 
 ### `src\utils\__init__.py`
@@ -20198,37 +20556,57 @@ from src.utils.timestamps import now_utc, parse_ts
 from src.utils.paths import normalize_path, ensure_parent
 from src.utils.llm import (
     LLMClient, LLMSignals, LLMResult,
-    LLMCouncil, CouncilSignals, CouncilResult,
+    LightCouncil, LLMCouncil, CouncilSignals, CouncilResult,
     load_llm_client, save_llm_config,
     load_council_config, save_council_config,
+    LLAMA_DEFAULT_HOST, OLLAMA_DEFAULT_HOST,
 )
 
 __all__ = [
     "now_utc", "parse_ts", "normalize_path", "ensure_parent",
     "LLMClient", "LLMSignals", "LLMResult",
-    "LLMCouncil", "CouncilSignals", "CouncilResult",
+    "LightCouncil", "LLMCouncil", "CouncilSignals", "CouncilResult",
     "load_llm_client", "save_llm_config",
     "load_council_config", "save_council_config",
+    "LLAMA_DEFAULT_HOST", "OLLAMA_DEFAULT_HOST",
 ]
 ```
 
 ### `src\utils\llm.py`
 
 ```python
-"""LLM client — thin wrapper around the OpenRouter chat completions API.
+"""LLM client — llama.cpp server backend with lightweight multi-pass council.
 
-Uses only stdlib (urllib + json + threading + time) — no extra dependencies.
+Uses only stdlib (urllib + json + threading) — no extra dependencies.
+
+The llama.cpp server exposes an OpenAI-compatible /v1/chat/completions endpoint.
+No model selection is needed — the model is locked server-side.
 
 Exports
 -------
-LLMResult      : dataclass returned by every successful call
-LLMSignals     : QObject subclass with result/error pyqtSignals (thread-safe bridge)
-LLMClient      : the actual HTTP client
-CouncilResult  : dataclass returned by a council run
-LLMCouncil     : fan-out client that queries multiple models and synthesises
-load_llm_client / save_llm_config          : single-model config helpers
-load_council_config / save_council_config  : council config helpers
-DEFAULT_MODEL  : fallback model string
+LLMResult       : dataclass returned by every successful call
+LLMSignals      : QObject with result/error pyqtSignals (thread-safe bridge)
+LLMClient       : thin /v1/chat/completions client
+CouncilResult   : dataclass returned by a multi-pass council run
+CouncilSignals  : QObject with result/error pyqtSignals for council
+LightCouncil    : 3-pass council (Precise / Balanced / Creative) + synthesis
+LLMCouncil      : alias for LightCouncil (backwards compat)
+load_llm_client       : config helper → LLMClient
+load_council_config   : config helper → LightCouncil | None
+save_llm_config       : persist host to config
+save_council_config   : persist council enabled flag to config
+LLAMA_DEFAULT_HOST    : default server URL
+COUNCIL_SYNTHESIS_MODES : kept for UI compat
+
+v0.6.0 — llama.cpp backend + LightCouncil
+──────────────────────────────────────────
+  • Switched from Ollama /api/chat to OpenAI-compat /v1/chat/completions
+  • No model name needed — locked server-side
+  • Removed ToolRunner and 5-role named council
+  • Replaced with LightCouncil: 3 parallel passes at different temperatures
+    (Precise 0.2 / Balanced 0.6 / Creative 1.0) then a synthesis pass
+  • LLMCouncil kept as alias so existing call sites continue to work
+  • Config key: llama_host (was ollama_host)
 """
 
 from __future__ import annotations
@@ -20247,417 +20625,359 @@ from PyQt6.QtCore import QObject, pyqtSignal
 
 logger = logging.getLogger(__name__)
 
-OPENROUTER_BASE = "https://openrouter.ai/api/v1"
-DEFAULT_MODEL   = "qwen/qwen3-6b-plus:free"
+# ── Server defaults ────────────────────────────────────────────────────────────
+LLAMA_DEFAULT_HOST  = "http://192.168.0.30:8080"
+# Legacy alias — any code that still references OLLAMA_DEFAULT_HOST will not break
+OLLAMA_DEFAULT_HOST = LLAMA_DEFAULT_HOST
+DEFAULT_MODEL       = ""   # model is server-side; kept for legacy compat only
 
-COUNCIL_SYNTHESIS_MODES = ["Consensus", "Best Pick", "Debate"]
-DEFAULT_SYNTHESIS_MODE  = "Consensus"
+# ── Council pass definitions: (name, temperature, system_prompt) ──────────────
+COUNCIL_PASSES: list[tuple[str, float, str]] = [
+    (
+        "Precise",
+        0.2,
+        "You are a precise, analytical assistant. "
+        "Respond with factual, well-structured, and concise information. "
+        "Prioritise accuracy over creativity.",
+    ),
+    (
+        "Balanced",
+        0.6,
+        "You are a balanced, thorough assistant. "
+        "Provide well-reasoned, comprehensive responses that cover multiple angles.",
+    ),
+    (
+        "Creative",
+        1.0,
+        "You are a creative, lateral-thinking assistant. "
+        "Explore unconventional angles, fresh perspectives, and novel approaches.",
+    ),
+]
+SYNTHESIS_TEMPERATURE   = 0.4
+COUNCIL_SYNTHESIS_MODES = ["Auto"]   # kept for UI compat; only one mode now
 
 
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-#  Result dataclasses
+#  Dataclasses
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 @dataclass
 class LLMResult:
     """Returned by every successful LLM call."""
-    text:              str
-    elapsed_ms:        int
-    model:             str
-    prompt_tokens:     int = 0
-    completion_tokens: int = 0
-
-    @property
-    def total_tokens(self) -> int:
-        return self.prompt_tokens + self.completion_tokens
-
-    @property
-    def elapsed_s(self) -> float:
-        return self.elapsed_ms / 1000
+    text:       str
+    model:      str = ""
+    elapsed_ms: int = 0
+    tokens_in:  int = 0
+    tokens_out: int = 0
 
     def timing_summary(self) -> str:
-        parts = [f"{self.elapsed_s:.1f}s"]
-        if self.total_tokens:
-            parts.append(
-                f"{self.total_tokens} tokens"
-                f" ({self.prompt_tokens}↑ {self.completion_tokens}↓)"
-            )
+        parts = [f"{self.elapsed_ms / 1000:.1f}s"]
+        total = self.tokens_in + self.tokens_out
+        if total:
+            parts.append(f"{total} tok ({self.tokens_in}↑ {self.tokens_out}↓)")
         if self.model:
-            short = self.model.split("/")[-1].replace(":free", "").replace(":nitro", "")
-            parts.append(short)
+            parts.append(self.model.split("/")[-1])
         return " · ".join(parts)
-
-    def __str__(self) -> str:
-        return self.text
 
 
 @dataclass
 class CouncilResult:
-    """Returned by a successful LLMCouncil run.
-
-    Attributes
-    ----------
-    final           : The synthesised LLMResult produced by the synthesis pass.
-    members         : One LLMResult per council model that responded successfully.
-    failed_models   : Model IDs that errored out during the fan-out phase.
-    synthesis_model : The model used for the final synthesis pass.
-    synthesis_mode  : One of 'Consensus', 'Best Pick', 'Debate'.
-    """
-    final:           LLMResult
-    members:         list[LLMResult]          = field(default_factory=list)
-    failed_models:   list[str]                = field(default_factory=list)
-    synthesis_model: str                      = ""
-    synthesis_mode:  str                      = DEFAULT_SYNTHESIS_MODE
-
-    @property
-    def member_count(self) -> int:
-        return len(self.members)
+    """Returned by a successful LightCouncil run."""
+    members: list[LLMResult] = field(default_factory=list)
+    final:   LLMResult       = field(default_factory=lambda: LLMResult(text=""))
+    failed:  list[str]       = field(default_factory=list)
 
     def summary(self) -> str:
-        ok  = self.member_count
-        err = len(self.failed_models)
-        parts = [f"{ok} member{'s' if ok != 1 else ''} responded"]
-        if err:
-            parts.append(f"{err} failed")
-        parts.append(self.final.timing_summary())
-        return " · ".join(parts)
+        ok  = len(self.members)
+        bad = len(self.failed)
+        return f"{ok} passes OK" + (f", {bad} failed" if bad else "")
 
 
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-#  Thread-safe signal bridge  (shared by all UI components)
+#  Qt signal bridges
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 class LLMSignals(QObject):
     """QObject whose signals marshal LLM callbacks onto the Qt main thread.
 
     Always store an instance on *self* (not a local variable) so the
-    underlying C++ object is not garbage-collected before the worker
-    thread fires.
+    underlying C++ object is not garbage-collected before the worker thread fires.
     """
-    result = pyqtSignal(object)   # carries LLMResult
+    result = pyqtSignal(LLMResult)
     error  = pyqtSignal(str)
 
 
 class CouncilSignals(QObject):
     """Same pattern as LLMSignals but for CouncilResult."""
-    result = pyqtSignal(object)   # carries CouncilResult
+    result = pyqtSignal(CouncilResult)
     error  = pyqtSignal(str)
 
 
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-#  Client
+#  LLMClient
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 class LLMClient:
-    """Thin OpenRouter chat-completions client."""
+    """Thin OpenAI-compatible /v1/chat/completions client for a llama.cpp server.
 
-    def __init__(self, api_key: str,
-                 model:   str = DEFAULT_MODEL,
-                 timeout: int = 60):
-        self.api_key = api_key.strip()
-        self.model   = model.strip()
+    The model is locked server-side; the `model` parameter is optional and
+    only sent if explicitly set (some server configs require it, most ignore it).
+    """
+
+    def __init__(
+        self,
+        host:    str = LLAMA_DEFAULT_HOST,
+        timeout: int = 120,
+        # Legacy params — accepted but not required
+        model:   str = "",
+        api_key: str = "",
+    ):
+        self.host    = host.rstrip("/")
         self.timeout = timeout
+        self.model   = model   # stored for display / legacy compat only
 
-    def complete(self, messages: list[dict],
-                 max_tokens:   int   = 1200,
-                 temperature:  float = 0.4) -> LLMResult:
-        """Synchronous call — blocks. Use only from a worker thread."""
-        payload = json.dumps({
-            "model":       self.model,
-            "messages":    messages,
+    def complete(
+        self,
+        messages:    list[dict],
+        max_tokens:  int   = 1024,
+        temperature: float = 0.7,
+        system:      str   = "",
+    ) -> LLMResult:
+        """Send a chat completion request and return an LLMResult.
+
+        If `system` is provided it is prepended as a system message, replacing
+        any existing system message at position 0.
+        """
+        msgs = list(messages)
+        if system:
+            # Prepend (or replace) the system message
+            if msgs and msgs[0].get("role") == "system":
+                msgs[0] = {"role": "system", "content": system}
+            else:
+                msgs.insert(0, {"role": "system", "content": system})
+
+        url     = f"{self.host}/v1/chat/completions"
+        payload: dict = {
+            "messages":    msgs,
             "max_tokens":  max_tokens,
             "temperature": temperature,
-        }).encode("utf-8")
+            "stream":      False,
+        }
+        if self.model:
+            payload["model"] = self.model
 
-        req = urllib.request.Request(
-            f"{OPENROUTER_BASE}/chat/completions",
-            data=payload,
-            headers={
-                "Authorization": f"Bearer {self.api_key}",
-                "Content-Type":  "application/json",
-                "HTTP-Referer":  "https://localsync.app",
-                "X-Title":       "LocalSync",
-            },
+        body = json.dumps(payload).encode()
+        req  = urllib.request.Request(
+            url,
+            data=body,
+            headers={"Content-Type": "application/json"},
             method="POST",
         )
 
         t0 = time.perf_counter()
         try:
             with urllib.request.urlopen(req, timeout=self.timeout) as resp:
-                raw = resp.read().decode("utf-8")
+                data = json.loads(resp.read().decode())
         except urllib.error.HTTPError as exc:
-            body = exc.read().decode("utf-8", errors="replace")
-            try:
-                msg = json.loads(body).get("error", {}).get("message", body)
-            except Exception:
-                msg = body
-            raise RuntimeError(f"OpenRouter API error {exc.code}: {msg}") from exc
+            raise RuntimeError(f"HTTP {exc.code}: {exc.reason}") from exc
         except urllib.error.URLError as exc:
-            raise RuntimeError(f"Network error: {exc.reason}") from exc
-        elapsed_ms = int((time.perf_counter() - t0) * 1000)
+            raise RuntimeError(f"Connection failed: {exc.reason}") from exc
 
-        try:
-            data = json.loads(raw)
-        except json.JSONDecodeError as exc:
-            raise RuntimeError(f"Invalid JSON response: {raw[:120]}") from exc
+        elapsed = int((time.perf_counter() - t0) * 1000)
 
-        try:
-            text = data["choices"][0]["message"]["content"]
-        except (KeyError, IndexError) as exc:
-            raise RuntimeError(
-                f"Unexpected response schema: {json.dumps(data)[:200]}"
-            ) from exc
+        choices = data.get("choices") or []
+        if not choices:
+            raise RuntimeError("Empty response from llama.cpp server")
 
-        if text is None:
-            # Some models (e.g. reasoning/thinking models) return null content.
-            # Treat as an error so the council marks this member as failed
-            # rather than creating a malformed result that crashes synthesis.
-            raise RuntimeError(
-                f"Model returned null content — response: {json.dumps(data)[:200]}"
-            )
+        content = ((choices[0].get("message") or {}).get("content") or "").strip()
+        usage   = data.get("usage") or {}
 
-        usage = data.get("usage") or {}
-
-        usage = data.get("usage") or {}
-        model = data.get("model") or self.model
         return LLMResult(
-            text              = text,
-            elapsed_ms        = elapsed_ms,
-            model             = model,
-            prompt_tokens     = usage.get("prompt_tokens",     0),
-            completion_tokens = usage.get("completion_tokens", 0),
+            text       = content,
+            model      = data.get("model", ""),
+            elapsed_ms = elapsed,
+            tokens_in  = usage.get("prompt_tokens", 0),
+            tokens_out = usage.get("completion_tokens", 0),
         )
 
     def complete_async(
         self,
         messages:    list[dict],
-        on_result:   Callable[[LLMResult], None],
-        on_error:    Callable[[str],       None],
-        max_tokens:  int   = 1200,
-        temperature: float = 0.4,
-        retries:     int   = 3,
+        max_tokens:  int   = 1024,
+        temperature: float = 0.7,
+        system:      str   = "",
+        on_result:   "Callable[[LLMResult], None] | None" = None,
+        on_error:    "Callable[[str], None] | None"       = None,
     ) -> None:
-        """Non-blocking — fires a daemon thread.  Retries on 429 with back-off."""
+        """Fire-and-forget async wrapper around complete()."""
         def _worker():
-            last_err = ""
-            for attempt in range(max(retries, 1)):
-                try:
-                    result = self.complete(messages, max_tokens, temperature)
-                    on_result(result)
-                    return
-                except RuntimeError as exc:
-                    last_err = str(exc)
-                    if "429" in last_err and attempt < retries - 1:
-                        wait = 4 * (attempt + 1)
-                        logger.info("LLM 429 — retrying in %ss (%d/%d)",
-                                    wait, attempt + 1, retries)
-                        time.sleep(wait)
-                    else:
-                        break
-                except Exception as exc:
-                    last_err = str(exc)
-                    break
-            logger.warning("LLM call failed after %d attempt(s): %s", retries, last_err)
-            on_error(last_err)
+            try:
+                r = self.complete(messages, max_tokens, temperature, system)
+                if on_result:
+                    on_result(r)
+            except Exception as exc:
+                logger.warning("LLMClient async failed: %s", exc)
+                if on_error:
+                    on_error(str(exc))
 
         threading.Thread(target=_worker, daemon=True).start()
 
 
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-#  Council
+#  LightCouncil  (3 temperature passes + synthesis)
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-_SYNTHESIS_PROMPTS: dict[str, str] = {
-    "Consensus": (
-        "You are a synthesis engine. Below are responses from {n} different AI models "
-        "to the same question. Your task is to identify the common ground, reconcile "
-        "any differences, and produce a single coherent answer that represents the "
-        "best consensus. Do not mention the individual models or that this is a synthesis.\n\n"
-        "{responses}\n\nProvide the synthesised answer:"
-    ),
-    "Best Pick": (
-        "You are a quality judge. Below are responses from {n} different AI models "
-        "to the same question. Select the single most accurate, well-reasoned, and "
-        "complete response. You may lightly polish it, but preserve its core content. "
-        "Do not mention the selection process.\n\n"
-        "{responses}\n\nProvide the best response:"
-    ),
-    "Debate": (
-        "You are a deliberation moderator. Below are responses from {n} different AI "
-        "models that may agree or disagree with each other. Analyse the strongest "
-        "arguments from each side and produce a final, balanced conclusion that "
-        "acknowledges key tensions where they exist.\n\n"
-        "{responses}\n\nProvide the final conclusion:"
-    ),
-}
+class LightCouncil:
+    """Three parallel passes at different temperatures, followed by a synthesis call.
 
+    All calls hit the same llama.cpp server; the model is server-side locked.
 
-class LLMCouncil:
-    """Queries multiple OpenRouter models in parallel and synthesises their responses.
+    Passes
+    ------
+    Precise  (temp 0.2) — analytical, structured, accurate
+    Balanced (temp 0.6) — well-rounded, thorough
+    Creative (temp 1.0) — lateral, divergent, exploratory
 
-    Parameters
-    ----------
-    api_key         : OpenRouter API key (shared across all members).
-    council_models  : List of 3–6 model ID strings.
-    synthesis_model : Model used for the synthesis pass (defaults to council_models[0]).
-    synthesis_mode  : One of 'Consensus', 'Best Pick', 'Debate'.
-    timeout         : Per-request timeout in seconds.
+    The synthesis pass (temp 0.4) sees all three responses and produces the
+    final consolidated answer.
     """
-
-    MAX_MEMBERS = 6
-    MIN_MEMBERS = 3
 
     def __init__(
         self,
-        api_key:         str,
-        council_models:  list[str],
-        synthesis_model: str  = "",
-        synthesis_mode:  str  = DEFAULT_SYNTHESIS_MODE,
-        timeout:         int  = 90,
+        host:    str = LLAMA_DEFAULT_HOST,
+        timeout: int = 120,
+        # Legacy params — accepted but silently ignored
+        council_models:    "list[str] | None" = None,
+        deliberator_model: str                = "",
+        synthesis_mode:    str                = "Auto",
+        synthesis_model:   str                = "",
+        tool_runner:       None               = None,
+        role_overrides:    None               = None,
+        api_key:           str                = "",
     ):
-        if not council_models:
-            raise ValueError("council_models must contain at least one model ID.")
-        self.api_key         = api_key.strip()
-        self.council_models  = council_models[: self.MAX_MEMBERS]
-        self.synthesis_model = (synthesis_model.strip() or self.council_models[0])
-        self.synthesis_mode  = synthesis_mode if synthesis_mode in COUNCIL_SYNTHESIS_MODES \
-                               else DEFAULT_SYNTHESIS_MODE
-        self.timeout         = timeout
+        self.host    = host.rstrip("/")
+        self.timeout = timeout
+        self._client = LLMClient(host=self.host, timeout=self.timeout)
 
-    # ── Internal helpers ────────────────────────────────────────────────────
+        # Legacy compat attributes used by some call sites
+        self.council_models  = []
+        self.synthesis_model = ""
+        self.synthesis_mode  = synthesis_mode
 
-    def _client(self, model: str) -> LLMClient:
-        return LLMClient(api_key=self.api_key, model=model, timeout=self.timeout)
+    # ── Internal ──────────────────────────────────────────────────────────────
 
-    def _call_member(
+    def _run_pass(
         self,
-        model:       str,
+        name:        str,
+        temperature: float,
+        system:      str,
         messages:    list[dict],
         max_tokens:  int,
-        temperature: float,
-    ) -> tuple[str, LLMResult | None, str]:
-        """Call one council member.  Returns (model, result_or_None, error_str)."""
+    ) -> tuple[str, "LLMResult | None", str]:
+        """Run one council pass. Returns (name, result_or_None, error_str)."""
         try:
-            result = self._client(model).complete(messages, max_tokens, temperature)
-            return model, result, ""
+            r = self._client.complete(
+                messages,
+                max_tokens  = max_tokens,
+                temperature = temperature,
+                system      = system,
+            )
+            return name, r, ""
         except Exception as exc:
-            logger.warning("Council member %s failed: %s", model, exc)
-            return model, None, str(exc)
+            return name, None, str(exc)
 
-    def _build_synthesis_messages(
-        self,
-        original_messages: list[dict],
-        member_results:    list[LLMResult],
-    ) -> list[dict]:
-        """Build the synthesis prompt incorporating all member responses."""
-        # Re-state the original user question
-        user_question = ""
-        for m in original_messages:
-            if m.get("role") == "user":
-                user_question = m.get("content", "")
-                break
-
-        response_blocks = "\n\n".join(
-            f"--- Model {i + 1} ({r.model.split('/')[-1].replace(':free','').replace(':nitro','')}) ---\n{(r.text or '').strip()}"
-            for i, r in enumerate(member_results)
-        )
-
-        template = _SYNTHESIS_PROMPTS.get(self.synthesis_mode,
-                                          _SYNTHESIS_PROMPTS[DEFAULT_SYNTHESIS_MODE])
-        synthesis_prompt = template.format(
-            n=len(member_results),
-            responses=response_blocks,
-        )
-
-        messages = []
-        if user_question:
-            messages.append({
-                "role": "user",
-                "content": f"Original question: {user_question}",
-            })
-            messages.append({
-                "role": "assistant",
-                "content": "I have received the individual responses and will now synthesise them.",
-            })
-        messages.append({"role": "user", "content": synthesis_prompt})
-        return messages
-
-    # ── Public API ──────────────────────────────────────────────────────────
+    # ── Public API ────────────────────────────────────────────────────────────
 
     def complete(
         self,
         messages:    list[dict],
-        max_tokens:  int   = 1200,
-        temperature: float = 0.4,
+        max_tokens:  int   = 1024,
+        temperature: float = 0.6,   # ignored — each pass uses its own temperature
     ) -> CouncilResult:
-        """Synchronous council call — blocks until all members and synthesis finish.
+        """Run all passes in parallel, then synthesise. Returns CouncilResult."""
+        members: list[LLMResult] = []
+        failed:  list[str]       = []
 
-        Fan-out is parallel; synthesis is sequential after fan-out completes.
-        Always run from a worker thread.
-        """
-        member_results: list[LLMResult] = []
-        failed_models:  list[str]       = []
-
-        # ── Fan-out phase ──────────────────────────────────────────────────
-        with ThreadPoolExecutor(max_workers=len(self.council_models)) as pool:
+        with ThreadPoolExecutor(max_workers=len(COUNCIL_PASSES)) as pool:
             futures = {
-                pool.submit(self._call_member, model, messages, max_tokens, temperature): model
-                for model in self.council_models
+                pool.submit(
+                    self._run_pass, name, temp, system, messages, max_tokens
+                ): name
+                for name, temp, system in COUNCIL_PASSES
             }
-            for future in as_completed(futures):
-                model, result, err = future.result()
-                if result is not None:
-                    member_results.append(result)
+            for fut in as_completed(futures):
+                name, result, err = fut.result()
+                if result:
+                    result.model = name   # use pass name as the "model" label
+                    members.append(result)
                 else:
-                    failed_models.append(model)
+                    failed.append(f"{name}: {err}")
+                    logger.warning("Council pass %s failed: %s", name, err)
 
-        if not member_results:
+        if not members:
             raise RuntimeError(
-                f"All {len(self.council_models)} council members failed. "
-                f"Last errors: {', '.join(failed_models)}"
+                "All council passes failed:\n" + "\n".join(failed)
             )
 
-        # Sort member results to match original council_models order for stable display
-        order = {m: i for i, m in enumerate(self.council_models)}
-        member_results.sort(key=lambda r: order.get(r.model, 999))
+        # Sort by defined pass order
+        order = {name: i for i, (name, _, _) in enumerate(COUNCIL_PASSES)}
+        members.sort(key=lambda r: order.get(r.model, 99))
 
-        # ── Synthesis phase ────────────────────────────────────────────────
-        if len(member_results) == 1:
-            # Only one member responded — skip synthesis, return it directly
-            final = member_results[0]
-        else:
-            synth_messages = self._build_synthesis_messages(messages, member_results)
-            synth_max      = min(max_tokens, 1200)
-            final = self._client(self.synthesis_model).complete(
-                synth_messages, synth_max, temperature
-            )
-
-        return CouncilResult(
-            final           = final,
-            members         = member_results,
-            failed_models   = failed_models,
-            synthesis_model = self.synthesis_model,
-            synthesis_mode  = self.synthesis_mode,
+        # Build synthesis system prompt from the pass results
+        synth_lines = [
+            "You are a synthesiser. Below are responses from three reasoning passes "
+            "with different styles. Combine their insights into a single, well-structured "
+            "answer. Resolve any conflicts by favouring accuracy. Be concise and clear.\n"
+        ]
+        for r in members:
+            synth_lines.append(f"### {r.model} pass\n{r.text}\n")
+        synth_lines.append(
+            "\nNow write the final consolidated answer in clear, well-structured prose."
         )
+
+        try:
+            final = self._client.complete(
+                messages,
+                max_tokens  = max_tokens,
+                temperature = SYNTHESIS_TEMPERATURE,
+                system      = "\n".join(synth_lines),
+            )
+            final.model = "Synthesis"
+        except Exception as exc:
+            logger.warning("Synthesis pass failed, falling back to best member: %s", exc)
+            best  = max(members, key=lambda r: len(r.text))
+            final = LLMResult(
+                text       = best.text,
+                model      = f"{best.model} (synthesis failed)",
+                elapsed_ms = best.elapsed_ms,
+            )
+
+        return CouncilResult(members=members, final=final, failed=failed)
 
     def complete_async(
         self,
         messages:    list[dict],
-        on_result:   Callable[[CouncilResult], None],
-        on_error:    Callable[[str],           None],
-        max_tokens:  int   = 1200,
-        temperature: float = 0.4,
+        max_tokens:  int   = 1024,
+        temperature: float = 0.6,
+        on_result:   "Callable[[CouncilResult], None] | None" = None,
+        on_error:    "Callable[[str], None] | None"           = None,
     ) -> None:
-        """Non-blocking council call — fires a single daemon thread."""
+        """Fire-and-forget async wrapper around complete()."""
         def _worker():
             try:
-                result = self.complete(messages, max_tokens, temperature)
-                on_result(result)
+                r = self.complete(messages, max_tokens, temperature)
+                if on_result:
+                    on_result(r)
             except Exception as exc:
-                logger.warning("LLMCouncil async failed: %s", exc)
-                on_error(str(exc))
+                logger.warning("LightCouncil async failed: %s", exc)
+                if on_error:
+                    on_error(str(exc))
 
         threading.Thread(target=_worker, daemon=True).start()
+
+
+# Legacy alias — keeps any remaining LLMCouncil references working unchanged
+LLMCouncil = LightCouncil
 
 
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -20665,54 +20985,49 @@ class LLMCouncil:
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 def load_llm_client() -> "LLMClient | None":
-    """Return a configured LLMClient, or None if no key is saved."""
+    """Return a configured LLMClient pointed at the llama.cpp server."""
     from src.config import load_config
-    cfg   = load_config()
-    key   = cfg.get("openrouter_api_key", "").strip()
-    model = cfg.get("openrouter_model",   DEFAULT_MODEL).strip() or DEFAULT_MODEL
-    return LLMClient(api_key=key, model=model) if key else None
+    cfg  = load_config()
+    host = cfg.get("llama_host", LLAMA_DEFAULT_HOST).strip() or LLAMA_DEFAULT_HOST
+    return LLMClient(host=host)
 
 
-def save_llm_config(api_key: str, model: str) -> None:
-    """Persist API key and model choice to config."""
+def save_llm_config(
+    host:    str = LLAMA_DEFAULT_HOST,
+    # Legacy params — silently ignored
+    model:   str = "",
+    api_key: str = "",
+) -> None:
+    """Persist llama.cpp host to config."""
     from src.config import load_config, save_config
     cfg = load_config()
-    cfg["openrouter_api_key"] = api_key.strip()
-    cfg["openrouter_model"]   = model.strip() or DEFAULT_MODEL
+    cfg["llama_host"] = host.strip() or LLAMA_DEFAULT_HOST
     save_config(cfg)
 
 
-def load_council_config() -> "LLMCouncil | None":
-    """Return a configured LLMCouncil, or None if council is disabled / unconfigured."""
+def load_council_config() -> "LightCouncil | None":
+    """Return a configured LightCouncil, or None if council is disabled."""
     from src.config import load_config
     cfg = load_config()
     if not cfg.get("council_enabled", False):
         return None
-    key    = cfg.get("openrouter_api_key", "").strip()
-    models = cfg.get("council_models", [])
-    if not key or not models:
-        return None
-    return LLMCouncil(
-        api_key         = key,
-        council_models  = models,
-        synthesis_model = cfg.get("council_synthesis_model", "").strip(),
-        synthesis_mode  = cfg.get("council_synthesis_mode",  DEFAULT_SYNTHESIS_MODE),
-    )
+    host = cfg.get("llama_host", LLAMA_DEFAULT_HOST).strip() or LLAMA_DEFAULT_HOST
+    return LightCouncil(host=host)
 
 
 def save_council_config(
-    enabled:          bool,
-    models:           list[str],
-    synthesis_model:  str,
-    synthesis_mode:   str,
+    enabled: bool,
+    # Legacy params — silently ignored
+    models:          "list[str] | None" = None,
+    synthesis_model: str                = "",
+    synthesis_mode:  str                = "Auto",
+    tools_enabled:   bool               = False,
+    role_overrides:  "dict | None"      = None,
 ) -> None:
-    """Persist council settings to config."""
+    """Persist council enabled flag to config."""
     from src.config import load_config, save_config
     cfg = load_config()
-    cfg["council_enabled"]          = enabled
-    cfg["council_models"]           = [m.strip() for m in models if m.strip()]
-    cfg["council_synthesis_model"]  = synthesis_model.strip()
-    cfg["council_synthesis_mode"]   = synthesis_mode
+    cfg["council_enabled"] = enabled
     save_config(cfg)
 ```
 

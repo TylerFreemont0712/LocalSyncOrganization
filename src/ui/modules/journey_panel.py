@@ -910,40 +910,47 @@ def _run_council(
         {"role": "user",   "content": user_q},
     ]
 
-    # Fan-out via LLMCouncil (now with built-in retry logic)
-    n_models = len(council.council_models)
-    _prog(f"\u2694  Convening council ({n_models} models, retries enabled)\u2026")
+    # Fan-out via LightCouncil. The model is server-locked so we use the
+    # configured pass count (3) and the council's default mode (Deliberate
+    # or Quick, set in Network → AI tab).
+    mode_label = getattr(council, "default_mode", "Deliberate")
+    n_passes   = 3
+    _prog(f"\u2694  Convening council ({n_passes} passes · {mode_label})\u2026")
+
     synthesis_text  = ""
-    synthesis_model = council.synthesis_model or (council.council_models[0] if council.council_models else "")
+    synthesis_model = ""
     member_records:  list[dict] = []
 
     try:
         result: CouncilResult = council.complete(
             messages, max_tokens=1400, temperature=0.6)
 
-        # Extract synthesis
+        # Extract synthesis (or quick-pick winner — both live on result.final)
         synthesis_text  = (result.final.text or "").strip()
-        synthesis_model = result.final.model or synthesis_model
+        synthesis_model = result.final.model or mode_label
 
         # Build member records
         for r in result.members:
+            label = (r.model or "").split("/")[-1].replace(":free", "").replace(":nitro", "")
             member_records.append({
-                "label":    r.model.split("/")[-1].replace(":free","").replace(":nitro",""),
+                "label":    label,
                 "model":    r.model,
                 "response": r.text or "",
                 "ok":       True,
             })
-        for failed_model in result.failed_models:
+        # `failed` items are strings like "Precise: Connection failed"
+        for failed_entry in result.failed:
+            failed_label = failed_entry.split(":", 1)[0].strip() or "unknown"
             member_records.append({
-                "label":    failed_model.split("/")[-1],
-                "model":    failed_model,
-                "response": "[Model did not respond after retries]",
+                "label":    failed_label,
+                "model":    failed_label,
+                "response": f"[Pass did not respond: {failed_entry}]",
                 "ok":       False,
             })
 
-        ok_count = result.member_count
-        fail_count = len(result.failed_models)
-        status_parts = [f"\u2713 {ok_count} model(s) responded"]
+        ok_count   = len(result.members)
+        fail_count = len(result.failed)
+        status_parts = [f"\u2713 {ok_count} pass(es) responded"]
         if fail_count:
             status_parts.append(f"\u26a0 {fail_count} failed")
         _prog("  " + ", ".join(status_parts))
@@ -953,25 +960,25 @@ def _run_council(
             parts = []
             for r in result.members:
                 if r.text and r.text.strip():
-                    short_name = r.model.split("/")[-1].replace(":free","").replace(":nitro","")
+                    short_name = (r.model or "").split("/")[-1]
                     parts.append(f"## {short_name}\n\n{r.text.strip()}")
             if parts:
                 synthesis_text = "\n\n---\n\n".join(parts)
                 synthesis_text = (
-                    "_Note: Synthesis model returned empty — showing individual model "
+                    "_Note: Synthesis returned empty — showing individual pass "
                     "responses below._\n\n" + synthesis_text
                 )
 
     except Exception as exc:
         logger.warning("council.complete() failed: %s", exc)
-        # Fallback: try a single direct call
-        _prog(f"  \u26a0 Council error, trying single model\u2026")
+        # Fallback: try a single direct call against the configured llama.cpp host
+        _prog("  \u26a0 Council error, trying single pass\u2026")
         try:
             r = llm_client.complete(messages, max_tokens=1400, temperature=0.6)
             synthesis_text  = r.text or ""
-            synthesis_model = r.model or synthesis_model
+            synthesis_model = r.model or "single"
             member_records.append({
-                "label":    synthesis_model.split("/")[-1],
+                "label":    "single",
                 "model":    synthesis_model,
                 "response": synthesis_text,
                 "ok":       True,
@@ -979,7 +986,7 @@ def _run_council(
         except Exception as exc2:
             synthesis_text = (
                 f"## Council Unavailable\n\n"
-                f"All models failed to respond.\n\n"
+                f"All passes failed to respond.\n\n"
                 f"Council error: {exc}\n\nFallback error: {exc2}"
             )
 
@@ -987,22 +994,23 @@ def _run_council(
         synthesis_text = (
             "## No Response\n\n"
             "The council returned an empty response. "
-            "This can happen with certain free models — try convening again, "
-            "or check your council model configuration."
+            "Try convening again, or check the llama.cpp server status in "
+            "Network \u2192 AI."
         )
 
-    # Structured content call
+    # Structured content call — use the same llama.cpp host as the council.
+    # The previous implementation tried to instantiate a per-call LLMClient
+    # with `api_key=` and `model=` arguments that no longer exist on
+    # LightCouncil after the llama.cpp refactor.
     _prog("\U0001f4cb Building action plan\u2026")
-    struct_client = LLMClient(api_key=council.api_key,
-                               model=synthesis_model or council.council_models[0],
-                               timeout=council.timeout)
     checklist, resources, roadmap_text = _run_structured_call(
-        struct_client, synthesis_text, journey, current_step)
+        llm_client, synthesis_text, journey, current_step)
 
     _prog("\U0001f4be Saving\u2026")
     session = journey_store.save_council_session(
         step_id=current_step.id, synthesis=synthesis_text,
-        synthesis_model=synthesis_model, synthesis_mode=council.synthesis_mode,
+        synthesis_model=synthesis_model,
+        synthesis_mode=getattr(council, "default_mode", "Deliberate"),
         web_search_used=bool(web_snippets), web_search_queries=web_queries,
         member_records=member_records,
         step_checklist=checklist, step_resources=resources, roadmap_text=roadmap_text,

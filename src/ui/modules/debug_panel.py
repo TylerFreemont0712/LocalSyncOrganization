@@ -315,15 +315,20 @@ class DebugPanel(QWidget):
         self._copy_btn.setEnabled(False)
 
         if council:
-            n = len(council.council_models)
+            # The mode dropdown is bound to COUNCIL_SYNTHESIS_MODES; only
+            # pass it through if it's a real council mode (the dropdown also
+            # contains the "Single Model" sentinel which is handled above).
+            from src.utils.llm import COUNCIL_SYNTHESIS_MODES as _MODES
+            chosen_mode = mode if mode in _MODES else council.default_mode
             self._set_status(
-                f"Running council ({n} models · {council.synthesis_mode})…"
+                f"Running council (3 passes · {chosen_mode})…"
             )
             self._council_signals = CouncilSignals()
             self._council_signals.result.connect(self._on_council_result)
             self._council_signals.error.connect(self._on_error)
             council.complete_async(
                 messages,
+                mode=chosen_mode,
                 on_result=self._council_signals.result.emit,
                 on_error=self._council_signals.error.emit,
                 max_tokens=1200,
@@ -355,17 +360,18 @@ class DebugPanel(QWidget):
                 self._members_layout.count() - 1, card
             )
 
-        for failed_model in result.failed_models:
+        for failed_model in result.failed:
             card = _FailedCard(failed_model)
             self._members_layout.insertWidget(
                 self._members_layout.count() - 1, card
             )
 
-        # Show synthesis
+        # Show synthesis (or quick-pick winner — both live on result.final)
         self._synth_box.setPlainText(result.final.text.strip())
-        self._synth_lbl.setText(
-            f"Synthesised Result  ·  {result.synthesis_mode}"
-        )
+        if result.mode == "Quick":
+            self._synth_lbl.setText("Quick-Picked Result  ·  Multi-Pass")
+        else:
+            self._synth_lbl.setText("Synthesised Result  ·  Multi-Pass")
         self._copy_btn.setEnabled(True)
         self._set_status(result.summary())
 

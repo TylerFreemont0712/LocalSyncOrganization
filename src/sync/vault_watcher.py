@@ -94,6 +94,11 @@ class VaultWatcher(QThread):
         # rel_posix -> (mtime, size)
         self._snapshot: dict[str, tuple[float, int]] = {}
 
+        # rel_posix -> md5 hex digest, refreshed lazily when a file is new
+        # or has changed.  Persists across polls so that move-detection can
+        # still match a file's hash after it disappears.
+        self._hash_cache: dict[str, str] = {}
+
         self._vault_path: Path | None = None
 
         # Deletion debounce: rel_posix -> number of polls the file has been absent
@@ -123,6 +128,7 @@ class VaultWatcher(QThread):
         """Reload vault path from config (called after settings change)."""
         self._load_vault_path()
         self._snapshot.clear()
+        self._hash_cache.clear()
         self._pending_deletions.clear()
         self._pending_deletion_sizes.clear()
         self._pending_deletion_hashes.clear()
@@ -130,6 +136,7 @@ class VaultWatcher(QThread):
         self._quiet_polls = 0
         if self._vault_path:
             self._snapshot = self._scan_vault()
+            self._refresh_hash_cache(self._snapshot)
 
     # ── Vault scanning ───────────────────────────────────────────────────────
 
@@ -153,6 +160,35 @@ class VaultWatcher(QThread):
         except OSError as e:
             logger.warning(f"Vault scan error: {e}")
         return result
+
+    def _refresh_hash_cache(
+        self,
+        current: dict[str, tuple[float, int]],
+    ) -> None:
+        """Keep ``self._hash_cache`` in sync with ``current``.
+
+        Hashes are computed lazily — only for files that are new in this poll
+        or whose mtime/size has changed since the last poll.  Files that
+        disappear keep their hash in the cache so that move-detection can
+        match them against newly appeared files in the *same* poll cycle.
+        """
+        if not self._vault_path:
+            return
+        for path, (mtime, size) in current.items():
+            prev_meta = self._snapshot.get(path)
+            if prev_meta is not None and prev_meta == (mtime, size):
+                # Unchanged since last poll — re-use cached hash if we have one
+                continue
+            full = self._vault_path / Path(path)
+            h    = _md5_file(full)
+            if h is not None:
+                self._hash_cache[path] = h
+        # Drop hashes for files that have been gone long enough that we no
+        # longer have a pending-deletion entry tracking them
+        live_or_pending = set(current.keys()) | set(self._pending_deletions.keys())
+        for stale in list(self._hash_cache.keys()):
+            if stale not in live_or_pending:
+                self._hash_cache.pop(stale, None)
 
     # ── Main thread loop ─────────────────────────────────────────────────────
 
@@ -193,6 +229,11 @@ class VaultWatcher(QThread):
         current  = self._scan_vault()
         skip_set = _pop_sync_written()   # paths the engine just wrote — ignore
 
+        # Refresh the hash cache *first* — cheap for unchanged files, and
+        # ensures we have a hash for every live path before we start
+        # processing disappearances.
+        self._refresh_hash_cache(current)
+
         new_activity_this_poll = False   # did we find anything new *this* poll?
 
         # ── 1. New / modified files ─────────────────────────────────────────
@@ -209,12 +250,9 @@ class VaultWatcher(QThread):
             if prev is None:
                 # File is brand-new (or re-appeared after a move)
                 new_file_sizes.add(size)
-                # Compute hash for move detection
-                if self._vault_path:
-                    full_path = self._vault_path / Path(path)
-                    h = _md5_file(full_path)
-                    if h:
-                        new_file_hashes.add(h)
+                h = self._hash_cache.get(path)
+                if h:
+                    new_file_hashes.add(h)
                 new_activity_this_poll = True
                 logger.debug(f"New file detected: {path}")
             elif mtime > prev[0]:
@@ -249,16 +287,17 @@ class VaultWatcher(QThread):
             count = self._pending_deletions.get(path, 0) + 1
             self._pending_deletions[path] = count
 
-            # Cache the file's last known size and content hash for move detection
+            # Cache the file's last known size for the move-detection fallback
             if path not in self._pending_deletion_sizes and path in self._snapshot:
                 self._pending_deletion_sizes[path] = self._snapshot[path][1]
 
-            # Compute content hash at disappearance time if possible
-            if path not in self._pending_deletion_hashes and self._vault_path:
-                full_path = self._vault_path / Path(path)
-                h = _md5_file(full_path)
-                if h:
-                    self._pending_deletion_hashes[path] = h
+            # Pull the *previously* computed hash from the cache.  The old code
+            # tried to re-hash the file here, but at this point it is already
+            # gone from disk so the hash always came back None.
+            if path not in self._pending_deletion_hashes:
+                cached = self._hash_cache.get(path)
+                if cached:
+                    self._pending_deletion_hashes[path] = cached
 
             logger.debug(f"'{path}' absent for {count} poll(s) (confirm at {DELETION_CONFIRM_POLLS})")
 

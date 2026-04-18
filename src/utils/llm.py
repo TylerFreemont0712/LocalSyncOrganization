@@ -1,24 +1,46 @@
-"""LLM client — thin wrapper around the OpenRouter chat completions API.
+"""LLM client — llama.cpp server backend with lightweight multi-pass council.
 
-Uses only stdlib (urllib + json + threading + time) — no extra dependencies.
+Uses only stdlib (urllib + json + threading) — no extra dependencies.
+
+The llama.cpp server exposes an OpenAI-compatible /v1/chat/completions endpoint.
+No model selection is needed — the model is locked server-side.
 
 Exports
 -------
-LLMResult      : dataclass returned by every successful call
-LLMSignals     : QObject subclass with result/error pyqtSignals (thread-safe bridge)
-LLMClient      : the actual HTTP client
-CouncilResult  : dataclass returned by a council run
-LLMCouncil     : fan-out client that queries multiple models and synthesises
-load_llm_client / save_llm_config          : single-model config helpers
-load_council_config / save_council_config  : council config helpers
-DEFAULT_MODEL  : fallback model string
+LLMResult       : dataclass returned by every successful call
+LLMSignals      : QObject with result/error pyqtSignals (thread-safe bridge)
+LLMClient       : thin /v1/chat/completions client
+CouncilResult   : dataclass returned by a multi-pass council run
+CouncilSignals  : QObject with result/error pyqtSignals for council
+LightCouncil    : 3-pass council (Precise / Balanced / Creative) + synthesis
+LLMCouncil      : alias for LightCouncil (backwards compat)
+load_llm_client       : config helper → LLMClient
+load_council_config   : config helper → LightCouncil | None
+save_llm_config       : persist host to config
+save_council_config   : persist council enabled flag + mode to config
+LLAMA_DEFAULT_HOST    : default server URL
+COUNCIL_SYNTHESIS_MODES : list of available council modes for the UI
+COUNCIL_MODE_DELIBERATE : 3 parallel passes + synthesis call (richer, slower)
+COUNCIL_MODE_QUICK      : 3 parallel passes, longest non-empty wins (faster, no extra call)
 
-v0.4.0 — Council retry & synthesis fallback
-────────────────────────────────────────────
-  • _call_member now retries up to 3 times per model with exponential backoff
-  • Synthesis phase falls back through successful member models if primary fails
-  • Rate-limit (429) detection triggers longer waits
-  • Null-content responses are retried rather than immediately fatal
+v0.7.0 — Council modes
+──────────────────────
+  • Added COUNCIL_MODE_QUICK: parallel passes without the synthesis round-trip.
+    Wall-clock ≈ slowest pass; ~halves time vs Deliberate at the cost of polish.
+  • COUNCIL_MODE_DELIBERATE keeps the previous synthesis behaviour as default.
+  • LightCouncil now stores a default_mode read from config (council_mode key).
+    Existing call sites that don't pass `mode` will use the configured default.
+  • save/load_council_config persist the mode alongside the enabled flag.
+
+v0.6.0 — llama.cpp backend + LightCouncil
+──────────────────────────────────────────
+  • Switched from Ollama /api/chat to OpenAI-compat /v1/chat/completions
+  • No model name needed — locked server-side
+  • Removed ToolRunner and 5-role named council
+  • Replaced with LightCouncil: 3 parallel passes at different temperatures
+    (Precise 0.2 / Balanced 0.6 / Creative 1.0) then a synthesis pass
+  • LLMCouncil kept as alias so existing call sites continue to work
+  • Config key: llama_host (was ollama_host)
 """
 
 from __future__ import annotations
@@ -37,526 +59,422 @@ from PyQt6.QtCore import QObject, pyqtSignal
 
 logger = logging.getLogger(__name__)
 
-OPENROUTER_BASE = "https://openrouter.ai/api/v1"
-DEFAULT_MODEL   = "qwen/qwen3-6b-plus:free"
+# ── Server defaults ────────────────────────────────────────────────────────────
+LLAMA_DEFAULT_HOST  = "http://192.168.0.30:8080"
+# Legacy alias — any code that still references OLLAMA_DEFAULT_HOST will not break
+OLLAMA_DEFAULT_HOST = LLAMA_DEFAULT_HOST
+DEFAULT_MODEL       = ""   # model is server-side; kept for legacy compat only
 
-COUNCIL_SYNTHESIS_MODES = ["Consensus", "Best Pick", "Debate"]
-DEFAULT_SYNTHESIS_MODE  = "Consensus"
+# ── Council modes ─────────────────────────────────────────────────────────────
+COUNCIL_MODE_DELIBERATE = "Deliberate"
+COUNCIL_MODE_QUICK      = "Quick"
+COUNCIL_SYNTHESIS_MODES = [COUNCIL_MODE_DELIBERATE, COUNCIL_MODE_QUICK]
+COUNCIL_DEFAULT_MODE    = COUNCIL_MODE_DELIBERATE
 
-# Retry configuration
-_MEMBER_MAX_RETRIES     = 3    # per council member
-_MEMBER_RETRY_BASE_WAIT = 3    # seconds, doubles each attempt
-_SYNTH_MAX_RETRIES      = 2    # for synthesis fallback chain
-_RATE_LIMIT_WAIT        = 8    # extra wait on 429
+# ── Council pass definitions: (name, temperature, system_prompt) ──────────────
+COUNCIL_PASSES: list[tuple[str, float, str]] = [
+    (
+        "Precise",
+        0.2,
+        "You are a precise, analytical assistant. "
+        "Respond with factual, well-structured, and concise information. "
+        "Prioritise accuracy over creativity.",
+    ),
+    (
+        "Balanced",
+        0.6,
+        "You are a balanced, thorough assistant. "
+        "Provide well-reasoned, comprehensive responses that cover multiple angles.",
+    ),
+    (
+        "Creative",
+        1.0,
+        "You are a creative, lateral-thinking assistant. "
+        "Explore unconventional angles, fresh perspectives, and novel approaches.",
+    ),
+]
+SYNTHESIS_TEMPERATURE = 0.4
 
 
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-#  Result dataclasses
+#  Dataclasses
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 @dataclass
 class LLMResult:
     """Returned by every successful LLM call."""
-    text:              str
-    elapsed_ms:        int
-    model:             str
-    prompt_tokens:     int = 0
-    completion_tokens: int = 0
-
-    @property
-    def total_tokens(self) -> int:
-        return self.prompt_tokens + self.completion_tokens
-
-    @property
-    def elapsed_s(self) -> float:
-        return self.elapsed_ms / 1000
+    text:       str
+    model:      str = ""
+    elapsed_ms: int = 0
+    tokens_in:  int = 0
+    tokens_out: int = 0
 
     def timing_summary(self) -> str:
-        parts = [f"{self.elapsed_s:.1f}s"]
-        if self.total_tokens:
-            parts.append(
-                f"{self.total_tokens} tokens"
-                f" ({self.prompt_tokens}↑ {self.completion_tokens}↓)"
-            )
+        parts = [f"{self.elapsed_ms / 1000:.1f}s"]
+        total = self.tokens_in + self.tokens_out
+        if total:
+            parts.append(f"{total} tok ({self.tokens_in}↑ {self.tokens_out}↓)")
         if self.model:
-            short = self.model.split("/")[-1].replace(":free", "").replace(":nitro", "")
-            parts.append(short)
+            parts.append(self.model.split("/")[-1])
         return " · ".join(parts)
-
-    def __str__(self) -> str:
-        return self.text
 
 
 @dataclass
 class CouncilResult:
-    """Returned by a successful LLMCouncil run.
-
-    Attributes
-    ----------
-    final           : The synthesised LLMResult produced by the synthesis pass.
-    members         : One LLMResult per council model that responded successfully.
-    failed_models   : Model IDs that errored out during the fan-out phase.
-    synthesis_model : The model used for the final synthesis pass.
-    synthesis_mode  : One of 'Consensus', 'Best Pick', 'Debate'.
-    """
-    final:           LLMResult
-    members:         list[LLMResult]          = field(default_factory=list)
-    failed_models:   list[str]                = field(default_factory=list)
-    synthesis_model: str                      = ""
-    synthesis_mode:  str                      = DEFAULT_SYNTHESIS_MODE
-
-    @property
-    def member_count(self) -> int:
-        return len(self.members)
+    """Returned by a successful LightCouncil run."""
+    members: list[LLMResult] = field(default_factory=list)
+    final:   LLMResult       = field(default_factory=lambda: LLMResult(text=""))
+    failed:  list[str]       = field(default_factory=list)
+    mode:    str             = COUNCIL_DEFAULT_MODE
 
     def summary(self) -> str:
-        ok  = self.member_count
-        err = len(self.failed_models)
-        parts = [f"{ok} member{'s' if ok != 1 else ''} responded"]
-        if err:
-            parts.append(f"{err} failed")
-        parts.append(self.final.timing_summary())
-        return " · ".join(parts)
+        ok  = len(self.members)
+        bad = len(self.failed)
+        base = f"{ok} passes OK" + (f", {bad} failed" if bad else "")
+        return f"{base} · {self.mode}"
 
 
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-#  Thread-safe signal bridge  (shared by all UI components)
+#  Qt signal bridges
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 class LLMSignals(QObject):
     """QObject whose signals marshal LLM callbacks onto the Qt main thread.
 
     Always store an instance on *self* (not a local variable) so the
-    underlying C++ object is not garbage-collected before the worker
-    thread fires.
+    underlying C++ object is not garbage-collected before the worker thread fires.
     """
-    result = pyqtSignal(object)   # carries LLMResult
+    result = pyqtSignal(LLMResult)
     error  = pyqtSignal(str)
 
 
 class CouncilSignals(QObject):
     """Same pattern as LLMSignals but for CouncilResult."""
-    result = pyqtSignal(object)   # carries CouncilResult
+    result = pyqtSignal(CouncilResult)
     error  = pyqtSignal(str)
 
 
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-#  Client
+#  LLMClient
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 class LLMClient:
-    """Thin OpenRouter chat-completions client."""
+    """Thin OpenAI-compatible /v1/chat/completions client for a llama.cpp server.
 
-    def __init__(self, api_key: str,
-                 model:   str = DEFAULT_MODEL,
-                 timeout: int = 60):
-        self.api_key = api_key.strip()
-        self.model   = model.strip()
+    The model is locked server-side; the `model` parameter is optional and
+    only sent if explicitly set (some server configs require it, most ignore it).
+    """
+
+    def __init__(
+        self,
+        host:    str = LLAMA_DEFAULT_HOST,
+        timeout: int = 120,
+        # Legacy params — accepted but not required
+        model:   str = "",
+        api_key: str = "",
+    ):
+        self.host    = host.rstrip("/")
         self.timeout = timeout
+        self.model   = model    # stored for display / legacy compat only
+        self.api_key = api_key  # stored for legacy compat; not sent
 
-    def complete(self, messages: list[dict],
-                 max_tokens:   int   = 1200,
-                 temperature:  float = 0.4) -> LLMResult:
-        """Synchronous call — blocks. Use only from a worker thread."""
-        payload = json.dumps({
-            "model":       self.model,
-            "messages":    messages,
+    def complete(
+        self,
+        messages:    list[dict],
+        max_tokens:  int   = 1024,
+        temperature: float = 0.7,
+        system:      str   = "",
+    ) -> LLMResult:
+        """Send a chat completion request and return an LLMResult.
+
+        If `system` is provided it is prepended as a system message, replacing
+        any existing system message at position 0.
+        """
+        msgs = list(messages)
+        if system:
+            # Prepend (or replace) the system message
+            if msgs and msgs[0].get("role") == "system":
+                msgs[0] = {"role": "system", "content": system}
+            else:
+                msgs.insert(0, {"role": "system", "content": system})
+
+        url     = f"{self.host}/v1/chat/completions"
+        payload: dict = {
+            "messages":    msgs,
             "max_tokens":  max_tokens,
             "temperature": temperature,
-        }).encode("utf-8")
+            "stream":      False,
+        }
+        if self.model:
+            payload["model"] = self.model
 
-        req = urllib.request.Request(
-            f"{OPENROUTER_BASE}/chat/completions",
-            data=payload,
-            headers={
-                "Authorization": f"Bearer {self.api_key}",
-                "Content-Type":  "application/json",
-                "HTTP-Referer":  "https://localsync.app",
-                "X-Title":       "LocalSync",
-            },
+        body = json.dumps(payload).encode()
+        req  = urllib.request.Request(
+            url,
+            data=body,
+            headers={"Content-Type": "application/json"},
             method="POST",
         )
 
         t0 = time.perf_counter()
         try:
             with urllib.request.urlopen(req, timeout=self.timeout) as resp:
-                raw = resp.read().decode("utf-8")
+                data = json.loads(resp.read().decode())
         except urllib.error.HTTPError as exc:
-            body = exc.read().decode("utf-8", errors="replace")
-            try:
-                msg = json.loads(body).get("error", {}).get("message", body)
-            except Exception:
-                msg = body
-            raise RuntimeError(f"OpenRouter API error {exc.code}: {msg}") from exc
+            raise RuntimeError(f"HTTP {exc.code}: {exc.reason}") from exc
         except urllib.error.URLError as exc:
-            raise RuntimeError(f"Network error: {exc.reason}") from exc
-        elapsed_ms = int((time.perf_counter() - t0) * 1000)
+            raise RuntimeError(f"Connection failed: {exc.reason}") from exc
 
-        try:
-            data = json.loads(raw)
-        except json.JSONDecodeError as exc:
-            raise RuntimeError(f"Invalid JSON response: {raw[:120]}") from exc
+        elapsed = int((time.perf_counter() - t0) * 1000)
 
-        try:
-            text = data["choices"][0]["message"]["content"]
-        except (KeyError, IndexError) as exc:
-            raise RuntimeError(
-                f"Unexpected response schema: {json.dumps(data)[:200]}"
-            ) from exc
+        choices = data.get("choices") or []
+        if not choices:
+            raise RuntimeError("Empty response from llama.cpp server")
 
-        if text is None:
-            # Some models (e.g. reasoning/thinking models) return null content.
-            # Treat as an error so the council marks this member as failed
-            # rather than creating a malformed result that crashes synthesis.
-            raise RuntimeError(
-                f"Model returned null content — response: {json.dumps(data)[:200]}"
-            )
+        content = ((choices[0].get("message") or {}).get("content") or "").strip()
+        usage   = data.get("usage") or {}
 
-        usage = data.get("usage") or {}
-        model = data.get("model") or self.model
         return LLMResult(
-            text              = text,
-            elapsed_ms        = elapsed_ms,
-            model             = model,
-            prompt_tokens     = usage.get("prompt_tokens",     0),
-            completion_tokens = usage.get("completion_tokens", 0),
+            text       = content,
+            model      = data.get("model", ""),
+            elapsed_ms = elapsed,
+            tokens_in  = usage.get("prompt_tokens", 0),
+            tokens_out = usage.get("completion_tokens", 0),
         )
 
     def complete_async(
         self,
         messages:    list[dict],
-        on_result:   Callable[[LLMResult], None],
-        on_error:    Callable[[str],       None],
-        max_tokens:  int   = 1200,
-        temperature: float = 0.4,
-        retries:     int   = 3,
+        max_tokens:  int   = 1024,
+        temperature: float = 0.7,
+        system:      str   = "",
+        on_result:   "Callable[[LLMResult], None] | None" = None,
+        on_error:    "Callable[[str], None] | None"       = None,
     ) -> None:
-        """Non-blocking — fires a daemon thread.  Retries on 429 with back-off."""
+        """Fire-and-forget async wrapper around complete()."""
         def _worker():
-            last_err = ""
-            for attempt in range(max(retries, 1)):
-                try:
-                    result = self.complete(messages, max_tokens, temperature)
-                    on_result(result)
-                    return
-                except RuntimeError as exc:
-                    last_err = str(exc)
-                    if "429" in last_err and attempt < retries - 1:
-                        wait = 4 * (attempt + 1)
-                        logger.info("LLM 429 — retrying in %ss (%d/%d)",
-                                    wait, attempt + 1, retries)
-                        time.sleep(wait)
-                    else:
-                        break
-                except Exception as exc:
-                    last_err = str(exc)
-                    break
-            logger.warning("LLM call failed after %d attempt(s): %s", retries, last_err)
-            on_error(last_err)
+            try:
+                r = self.complete(messages, max_tokens, temperature, system)
+                if on_result:
+                    on_result(r)
+            except Exception as exc:
+                logger.warning("LLMClient async failed: %s", exc)
+                if on_error:
+                    on_error(str(exc))
 
         threading.Thread(target=_worker, daemon=True).start()
 
 
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-#  Council
+#  LightCouncil  (3 temperature passes + optional synthesis)
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-_SYNTHESIS_PROMPTS: dict[str, str] = {
-    "Consensus": (
-        "You are a synthesis engine. Below are responses from {n} different AI models "
-        "to the same question. Your task is to identify the common ground, reconcile "
-        "any differences, and produce a single coherent answer that represents the "
-        "best consensus. Do not mention the individual models or that this is a synthesis.\n\n"
-        "{responses}\n\nProvide the synthesised answer:"
-    ),
-    "Best Pick": (
-        "You are a quality judge. Below are responses from {n} different AI models "
-        "to the same question. Select the single most accurate, well-reasoned, and "
-        "complete response. You may lightly polish it, but preserve its core content. "
-        "Do not mention the selection process.\n\n"
-        "{responses}\n\nProvide the best response:"
-    ),
-    "Debate": (
-        "You are a deliberation moderator. Below are responses from {n} different AI "
-        "models that may agree or disagree with each other. Analyse the strongest "
-        "arguments from each side and produce a final, balanced conclusion that "
-        "acknowledges key tensions where they exist.\n\n"
-        "{responses}\n\nProvide the final conclusion:"
-    ),
-}
+class LightCouncil:
+    """Three parallel passes at different temperatures.
 
+    All calls hit the same llama.cpp server; the model is server-side locked.
 
-def _is_retryable_error(error_str: str) -> bool:
-    """Determine if an error is worth retrying (transient failures)."""
-    retryable_codes = ("429", "502", "503", "504", "520", "521", "522", "524")
-    retryable_phrases = (
-        "timed out", "timeout", "connection reset", "connection refused",
-        "temporarily unavailable", "null content", "network error",
-        "remote end closed", "eof occurred", "bad gateway",
-    )
-    lower = error_str.lower()
-    for code in retryable_codes:
-        if code in error_str:
-            return True
-    for phrase in retryable_phrases:
-        if phrase in lower:
-            return True
-    return False
+    Passes
+    ------
+    Precise  (temp 0.2) — analytical, structured, accurate
+    Balanced (temp 0.6) — well-rounded, thorough
+    Creative (temp 1.0) — lateral, divergent, exploratory
 
+    Modes
+    -----
+    Deliberate (default)
+        After the 3 parallel passes complete, a synthesis pass (temp 0.4)
+        sees all three responses and produces the final consolidated answer.
+        Wall-clock ≈ slowest pass + synthesis pass.
 
-class LLMCouncil:
-    """Queries multiple OpenRouter models in parallel and synthesises their responses.
-
-    Parameters
-    ----------
-    api_key         : OpenRouter API key (shared across all members).
-    council_models  : List of 3–6 model ID strings.
-    synthesis_model : Model used for the synthesis pass (defaults to council_models[0]).
-    synthesis_mode  : One of 'Consensus', 'Best Pick', 'Debate'.
-    timeout         : Per-request timeout in seconds.
+    Quick
+        After the 3 parallel passes complete, the longest non-empty response
+        is returned as the final answer. No second LLM round-trip.
+        Wall-clock ≈ slowest pass.
     """
-
-    MAX_MEMBERS = 6
-    MIN_MEMBERS = 3
 
     def __init__(
         self,
-        api_key:         str,
-        council_models:  list[str],
-        synthesis_model: str  = "",
-        synthesis_mode:  str  = DEFAULT_SYNTHESIS_MODE,
-        timeout:         int  = 90,
+        host:         str = LLAMA_DEFAULT_HOST,
+        timeout:      int = 120,
+        default_mode: str = COUNCIL_DEFAULT_MODE,
+        # Legacy params — accepted but silently ignored
+        council_models:    "list[str] | None" = None,
+        deliberator_model: str                = "",
+        synthesis_mode:    str                = "",
+        synthesis_model:   str                = "",
+        tool_runner:       None               = None,
+        role_overrides:    None               = None,
+        api_key:           str                = "",
     ):
-        if not council_models:
-            raise ValueError("council_models must contain at least one model ID.")
-        self.api_key         = api_key.strip()
-        self.council_models  = council_models[: self.MAX_MEMBERS]
-        self.synthesis_model = (synthesis_model.strip() or self.council_models[0])
-        self.synthesis_mode  = synthesis_mode if synthesis_mode in COUNCIL_SYNTHESIS_MODES \
-                               else DEFAULT_SYNTHESIS_MODE
-        self.timeout         = timeout
+        self.host    = host.rstrip("/")
+        self.timeout = timeout
+        self._client = LLMClient(host=self.host, timeout=self.timeout)
 
-    # ── Internal helpers ────────────────────────────────────────────────────
+        # Default mode used when complete() is called without an explicit mode
+        self.default_mode = (
+            default_mode if default_mode in COUNCIL_SYNTHESIS_MODES
+            else COUNCIL_DEFAULT_MODE
+        )
 
-    def _client(self, model: str) -> LLMClient:
-        return LLMClient(api_key=self.api_key, model=model, timeout=self.timeout)
+        # Legacy compat attributes used by some call sites
+        self.council_models  = []
+        self.synthesis_model = ""
+        self.synthesis_mode  = synthesis_mode or self.default_mode
+        self.api_key         = ""
 
-    def _call_member(
+    # ── Internal ──────────────────────────────────────────────────────────────
+
+    def _run_pass(
         self,
-        model:       str,
+        name:        str,
+        temperature: float,
+        system:      str,
         messages:    list[dict],
         max_tokens:  int,
-        temperature: float,
-    ) -> tuple[str, LLMResult | None, str]:
-        """Call one council member with retry logic.
+    ) -> tuple[str, "LLMResult | None", str]:
+        """Run one council pass. Returns (name, result_or_None, error_str)."""
+        try:
+            r = self._client.complete(
+                messages,
+                max_tokens  = max_tokens,
+                temperature = temperature,
+                system      = system,
+            )
+            return name, r, ""
+        except Exception as exc:
+            return name, None, str(exc)
 
-        Retries up to _MEMBER_MAX_RETRIES times on transient errors
-        (429, 502, 503, timeouts, null content, connection resets).
-        Uses exponential backoff with extra delay on rate limits.
-
-        Returns (model, result_or_None, error_str).
-        """
-        last_err = ""
-        for attempt in range(_MEMBER_MAX_RETRIES):
-            try:
-                result = self._client(model).complete(
-                    messages, max_tokens, temperature)
-                return model, result, ""
-            except Exception as exc:
-                last_err = str(exc)
-                is_last = (attempt >= _MEMBER_MAX_RETRIES - 1)
-
-                if is_last or not _is_retryable_error(last_err):
-                    # Non-retryable or exhausted retries
-                    logger.warning(
-                        "Council member %s failed (attempt %d/%d): %s",
-                        model, attempt + 1, _MEMBER_MAX_RETRIES, last_err)
-                    return model, None, last_err
-
-                # Calculate wait with exponential backoff
-                wait = _MEMBER_RETRY_BASE_WAIT * (2 ** attempt)
-                if "429" in last_err:
-                    wait = max(wait, _RATE_LIMIT_WAIT * (attempt + 1))
-
-                logger.info(
-                    "Council member %s transient error (attempt %d/%d), "
-                    "retrying in %ds: %s",
-                    model, attempt + 1, _MEMBER_MAX_RETRIES, wait, last_err)
-                time.sleep(wait)
-
-        return model, None, last_err
-
-    def _build_synthesis_messages(
+    def _run_parallel_passes(
         self,
-        original_messages: list[dict],
-        member_results:    list[LLMResult],
-    ) -> list[dict]:
-        """Build the synthesis prompt incorporating all member responses."""
-        # Re-state the original user question
-        user_question = ""
-        for m in original_messages:
-            if m.get("role") == "user":
-                user_question = m.get("content", "")
-                break
-
-        response_blocks = "\n\n".join(
-            f"--- Model {i + 1} ({r.model.split('/')[-1].replace(':free','').replace(':nitro','')}) ---\n{(r.text or '').strip()}"
-            for i, r in enumerate(member_results)
-        )
-
-        template = _SYNTHESIS_PROMPTS.get(self.synthesis_mode,
-                                          _SYNTHESIS_PROMPTS[DEFAULT_SYNTHESIS_MODE])
-        synthesis_prompt = template.format(
-            n=len(member_results),
-            responses=response_blocks,
-        )
-
-        messages = []
-        if user_question:
-            messages.append({
-                "role": "user",
-                "content": f"Original question: {user_question}",
-            })
-            messages.append({
-                "role": "assistant",
-                "content": "I have received the individual responses and will now synthesise them.",
-            })
-        messages.append({"role": "user", "content": synthesis_prompt})
-        return messages
-
-    def _try_synthesis(
-        self,
-        model:     str,
-        messages:  list[dict],
+        messages:   list[dict],
         max_tokens: int,
-        temperature: float,
-    ) -> LLMResult | None:
-        """Attempt synthesis with a single model, with retry on transient errors."""
-        for attempt in range(_SYNTH_MAX_RETRIES):
-            try:
-                return self._client(model).complete(
-                    messages, max_tokens, temperature)
-            except Exception as exc:
-                err = str(exc)
-                is_last = (attempt >= _SYNTH_MAX_RETRIES - 1)
-                if is_last or not _is_retryable_error(err):
-                    logger.warning("Synthesis with %s failed (attempt %d): %s",
-                                   model, attempt + 1, err)
-                    return None
-                wait = _MEMBER_RETRY_BASE_WAIT * (2 ** attempt)
-                if "429" in err:
-                    wait = max(wait, _RATE_LIMIT_WAIT)
-                logger.info("Synthesis retry %s in %ds: %s", model, wait, err)
-                time.sleep(wait)
-        return None
+    ) -> tuple[list[LLMResult], list[str]]:
+        """Run all configured passes in parallel. Returns (members, failures)."""
+        members: list[LLMResult] = []
+        failed:  list[str]       = []
 
-    # ── Public API ──────────────────────────────────────────────────────────
+        with ThreadPoolExecutor(max_workers=len(COUNCIL_PASSES)) as pool:
+            futures = {
+                pool.submit(
+                    self._run_pass, name, temp, system, messages, max_tokens
+                ): name
+                for name, temp, system in COUNCIL_PASSES
+            }
+            for fut in as_completed(futures):
+                name, result, err = fut.result()
+                if result:
+                    result.model = name   # use pass name as the "model" label
+                    members.append(result)
+                else:
+                    failed.append(f"{name}: {err}")
+                    logger.warning("Council pass %s failed: %s", name, err)
+
+        # Sort by defined pass order so callers see consistent ordering
+        order = {name: i for i, (name, _, _) in enumerate(COUNCIL_PASSES)}
+        members.sort(key=lambda r: order.get(r.model, 99))
+        return members, failed
+
+    # ── Public API ────────────────────────────────────────────────────────────
 
     def complete(
         self,
         messages:    list[dict],
-        max_tokens:  int   = 1200,
-        temperature: float = 0.4,
+        max_tokens:  int    = 1024,
+        temperature: float  = 0.6,   # ignored — each pass uses its own temperature
+        mode:        "str | None" = None,
     ) -> CouncilResult:
-        """Synchronous council call — blocks until all members and synthesis finish.
+        """Run all passes in parallel, then either synthesise or pick longest.
 
-        Fan-out is parallel; synthesis is sequential after fan-out completes.
-        Always run from a worker thread.
-
-        Retry behaviour:
-          • Each council member is retried up to 3 times on transient errors
-          • Synthesis tries the primary synthesis_model first, then falls back
-            through each successful member model before giving up
+        Parameters
+        ----------
+        mode
+            Override the council's default mode for this call. One of
+            COUNCIL_MODE_DELIBERATE or COUNCIL_MODE_QUICK. If None, uses
+            self.default_mode.
         """
-        member_results: list[LLMResult] = []
-        failed_models:  list[str]       = []
+        active_mode = mode or self.default_mode
+        if active_mode not in COUNCIL_SYNTHESIS_MODES:
+            active_mode = COUNCIL_DEFAULT_MODE
 
-        # ── Fan-out phase ──────────────────────────────────────────────────
-        with ThreadPoolExecutor(max_workers=len(self.council_models)) as pool:
-            futures = {
-                pool.submit(self._call_member, model, messages, max_tokens, temperature): model
-                for model in self.council_models
-            }
-            for future in as_completed(futures):
-                model, result, err = future.result()
-                if result is not None:
-                    member_results.append(result)
-                else:
-                    failed_models.append(model)
+        members, failed = self._run_parallel_passes(messages, max_tokens)
 
-        if not member_results:
+        if not members:
             raise RuntimeError(
-                f"All {len(self.council_models)} council members failed after "
-                f"{_MEMBER_MAX_RETRIES} retries each. "
-                f"Models: {', '.join(self.council_models)}"
+                "All council passes failed:\n" + "\n".join(failed)
             )
 
-        # Sort member results to match original council_models order for stable display
-        order = {m: i for i, m in enumerate(self.council_models)}
-        member_results.sort(key=lambda r: order.get(r.model, 999))
+        # ── QUICK mode: skip synthesis, pick longest non-empty ──────────────
+        if active_mode == COUNCIL_MODE_QUICK:
+            non_empty = [m for m in members if (m.text or "").strip()]
+            picked    = max(non_empty, key=lambda r: len(r.text)) if non_empty else members[0]
+            final     = LLMResult(
+                text       = picked.text,
+                model      = f"{picked.model} (quick)",
+                elapsed_ms = picked.elapsed_ms,
+                tokens_in  = sum(m.tokens_in  for m in members),
+                tokens_out = sum(m.tokens_out for m in members),
+            )
+            return CouncilResult(members=members, final=final,
+                                 failed=failed, mode=active_mode)
 
-        # ── Synthesis phase with fallback chain ────────────────────────────
-        if len(member_results) == 1:
-            # Only one member responded — skip synthesis, return it directly
-            final = member_results[0]
-        else:
-            synth_messages = self._build_synthesis_messages(messages, member_results)
-            synth_max      = min(max_tokens, 1200)
-
-            # Build fallback chain: primary synthesis model → each member model
-            synth_candidates = [self.synthesis_model]
-            for r in member_results:
-                if r.model not in synth_candidates:
-                    synth_candidates.append(r.model)
-
-            final = None
-            for synth_model in synth_candidates:
-                final = self._try_synthesis(
-                    synth_model, synth_messages, synth_max, temperature)
-                if final is not None:
-                    break
-
-            if final is None:
-                # Absolute last resort: use the longest member response as-is
-                logger.warning(
-                    "All synthesis models failed — using best member response "
-                    "as synthesis output")
-                best = max(member_results, key=lambda r: len(r.text or ""))
-                final = LLMResult(
-                    text=best.text,
-                    elapsed_ms=best.elapsed_ms,
-                    model=best.model,
-                    prompt_tokens=best.prompt_tokens,
-                    completion_tokens=best.completion_tokens,
-                )
-
-        actual_synth_model = final.model if final else self.synthesis_model
-        return CouncilResult(
-            final           = final,
-            members         = member_results,
-            failed_models   = failed_models,
-            synthesis_model = actual_synth_model,
-            synthesis_mode  = self.synthesis_mode,
+        # ── DELIBERATE mode: build synthesis prompt and run a 4th pass ──────
+        synth_lines = [
+            "You are a synthesiser. Below are responses from three reasoning passes "
+            "with different styles. Combine their insights into a single, well-structured "
+            "answer. Resolve any conflicts by favouring accuracy. Be concise and clear.\n"
+        ]
+        for r in members:
+            synth_lines.append(f"### {r.model} pass\n{r.text}\n")
+        synth_lines.append(
+            "\nNow write the final consolidated answer in clear, well-structured prose."
         )
+
+        try:
+            final = self._client.complete(
+                messages,
+                max_tokens  = max_tokens,
+                temperature = SYNTHESIS_TEMPERATURE,
+                system      = "\n".join(synth_lines),
+            )
+            final.model = "Synthesis"
+        except Exception as exc:
+            logger.warning("Synthesis pass failed, falling back to best member: %s", exc)
+            best  = max(members, key=lambda r: len(r.text or ""))
+            final = LLMResult(
+                text       = best.text,
+                model      = f"{best.model} (synthesis failed)",
+                elapsed_ms = best.elapsed_ms,
+            )
+
+        return CouncilResult(members=members, final=final,
+                             failed=failed, mode=active_mode)
 
     def complete_async(
         self,
         messages:    list[dict],
-        on_result:   Callable[[CouncilResult], None],
-        on_error:    Callable[[str],           None],
-        max_tokens:  int   = 1200,
-        temperature: float = 0.4,
+        max_tokens:  int   = 1024,
+        temperature: float = 0.6,
+        mode:        "str | None"                          = None,
+        on_result:   "Callable[[CouncilResult], None] | None" = None,
+        on_error:    "Callable[[str], None] | None"           = None,
     ) -> None:
-        """Non-blocking council call — fires a single daemon thread."""
+        """Fire-and-forget async wrapper around complete()."""
         def _worker():
             try:
-                result = self.complete(messages, max_tokens, temperature)
-                on_result(result)
+                r = self.complete(messages, max_tokens, temperature, mode=mode)
+                if on_result:
+                    on_result(r)
             except Exception as exc:
-                logger.warning("LLMCouncil async failed: %s", exc)
-                on_error(str(exc))
+                logger.warning("LightCouncil async failed: %s", exc)
+                if on_error:
+                    on_error(str(exc))
 
         threading.Thread(target=_worker, daemon=True).start()
+
+
+# Legacy alias — keeps any remaining LLMCouncil references working unchanged
+LLMCouncil = LightCouncil
 
 
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -564,52 +482,50 @@ class LLMCouncil:
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 def load_llm_client() -> "LLMClient | None":
-    """Return a configured LLMClient, or None if no key is saved."""
+    """Return a configured LLMClient pointed at the llama.cpp server."""
     from src.config import load_config
-    cfg   = load_config()
-    key   = cfg.get("openrouter_api_key", "").strip()
-    model = cfg.get("openrouter_model",   DEFAULT_MODEL).strip() or DEFAULT_MODEL
-    return LLMClient(api_key=key, model=model) if key else None
+    cfg  = load_config()
+    host = cfg.get("llama_host", LLAMA_DEFAULT_HOST).strip() or LLAMA_DEFAULT_HOST
+    return LLMClient(host=host)
 
 
-def save_llm_config(api_key: str, model: str) -> None:
-    """Persist API key and model choice to config."""
+def save_llm_config(
+    host:    str = LLAMA_DEFAULT_HOST,
+    # Legacy params — silently ignored
+    model:   str = "",
+    api_key: str = "",
+) -> None:
+    """Persist llama.cpp host to config."""
     from src.config import load_config, save_config
     cfg = load_config()
-    cfg["openrouter_api_key"] = api_key.strip()
-    cfg["openrouter_model"]   = model.strip() or DEFAULT_MODEL
+    cfg["llama_host"] = host.strip() or LLAMA_DEFAULT_HOST
     save_config(cfg)
 
 
-def load_council_config() -> "LLMCouncil | None":
-    """Return a configured LLMCouncil, or None if council is disabled / unconfigured."""
+def load_council_config() -> "LightCouncil | None":
+    """Return a configured LightCouncil, or None if council is disabled."""
     from src.config import load_config
     cfg = load_config()
     if not cfg.get("council_enabled", False):
         return None
-    key    = cfg.get("openrouter_api_key", "").strip()
-    models = cfg.get("council_models", [])
-    if not key or not models:
-        return None
-    return LLMCouncil(
-        api_key         = key,
-        council_models  = models,
-        synthesis_model = cfg.get("council_synthesis_model", "").strip(),
-        synthesis_mode  = cfg.get("council_synthesis_mode",  DEFAULT_SYNTHESIS_MODE),
-    )
+    host = cfg.get("llama_host", LLAMA_DEFAULT_HOST).strip() or LLAMA_DEFAULT_HOST
+    mode = cfg.get("council_mode", COUNCIL_DEFAULT_MODE)
+    return LightCouncil(host=host, default_mode=mode)
 
 
 def save_council_config(
-    enabled:          bool,
-    models:           list[str],
-    synthesis_model:  str,
-    synthesis_mode:   str,
+    enabled: bool,
+    mode:    str = COUNCIL_DEFAULT_MODE,
+    # Legacy params — silently ignored
+    models:          "list[str] | None" = None,
+    synthesis_model: str                = "",
+    synthesis_mode:  str                = "",
+    tools_enabled:   bool               = False,
+    role_overrides:  "dict | None"      = None,
 ) -> None:
-    """Persist council settings to config."""
+    """Persist council enabled flag and mode to config."""
     from src.config import load_config, save_config
     cfg = load_config()
-    cfg["council_enabled"]          = enabled
-    cfg["council_models"]           = [m.strip() for m in models if m.strip()]
-    cfg["council_synthesis_model"]  = synthesis_model.strip()
-    cfg["council_synthesis_mode"]   = synthesis_mode
+    cfg["council_enabled"] = enabled
+    cfg["council_mode"]    = mode if mode in COUNCIL_SYNTHESIS_MODES else COUNCIL_DEFAULT_MODE
     save_config(cfg)
