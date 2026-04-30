@@ -31,8 +31,16 @@ from PyQt6.QtWidgets import (
 from src.config import load_config, save_config
 from src.data.finance_store import (
     FinanceStore, Transaction, JobPreset,
-    INCOME_CATEGORIES, EXPENSE_CATEGORIES,
+    INCOME_CATEGORIES, EXPENSE_CATEGORIES, PAY_UNITS,
 )
+
+# UI labels for pay_unit values
+_PAY_UNIT_LABELS = {
+    "flat":   "Flat (per log)",
+    "hour":   "Per hour",
+    "minute": "Per minute",
+}
+_PAY_UNIT_BY_LABEL = {v: k for k, v in _PAY_UNIT_LABELS.items()}
 
 _FALLBACK_RATE = 150.0
 
@@ -53,48 +61,10 @@ _DEFAULT_MONTHLY_PRESETS: list[dict] = [
     {"name": "Gas",                "amount": 0, "currency": "JPY", "category": "Utilities"},
 ]
 
-# ── Dropdown / DateEdit QSS ───────────────────────────────────────────────────
-_COMBO_QSS = """
-QComboBox {
-    border: 1px solid palette(mid);
-    border-radius: 4px;
-    padding: 3px 6px;
-    background-color: palette(base);
-    color: palette(text);
-    min-height: 24px;
-}
-QComboBox:focus { border-color: palette(highlight); }
-QComboBox::drop-down {
-    subcontrol-origin: padding;
-    subcontrol-position: top right;
-    width: 22px;
-    border-left: 1px solid palette(mid);
-    border-top-right-radius: 4px;
-    border-bottom-right-radius: 4px;
-}
-QComboBox QAbstractItemView {
-    background-color: palette(base);
-    color: palette(text);
-    selection-background-color: palette(highlight);
-    selection-color: palette(highlighted-text);
-    border: 1px solid palette(mid);
-    outline: none;
-}
-QDateEdit {
-    border: 1px solid palette(mid);
-    border-radius: 4px;
-    padding: 3px 6px;
-    background-color: palette(base);
-    color: palette(text);
-    min-height: 24px;
-}
-QDateEdit::drop-down {
-    subcontrol-origin: padding;
-    subcontrol-position: top right;
-    width: 22px;
-    border-left: 1px solid palette(mid);
-}
-"""
+# Dropdown / DateEdit styling lives in the global theme stylesheet
+# (src/ui/themes/styles.py). Local overrides here used to strip the SVG
+# arrow images and leave blank drop-down buttons; relying on the theme
+# keeps arrows visible and lets palette switches re-skin every widget.
 
 
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -223,7 +193,6 @@ class PresetManagerDialog(QDialog):
         self.store = store
         self.setWindowTitle("Manage Job Presets")
         self.setMinimumSize(480, 380)
-        self.setStyleSheet(_COMBO_QSS)
         self._preset_ids: list[str] = []
         self._build_ui(); self._refresh()
 
@@ -231,8 +200,9 @@ class PresetManagerDialog(QDialog):
         layout = QVBoxLayout(self); layout.setSpacing(10)
 
         self.table = QTableWidget()
-        self.table.setColumnCount(3)
-        self.table.setHorizontalHeaderLabels(["Name", "Amount (USD)", "Category"])
+        self.table.setColumnCount(4)
+        self.table.setHorizontalHeaderLabels(
+            ["Name", "Amount (USD)", "Category", "Unit"])
         self.table.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
         self.table.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectRows)
         self.table.setEditTriggers(QAbstractItemView.EditTrigger.NoEditTriggers)
@@ -252,11 +222,23 @@ class PresetManagerDialog(QDialog):
         self.amount_spin.setRange(0.01, 999_999.99)
         self.amount_spin.setDecimals(2); self.amount_spin.setPrefix("$ ")
         self.amount_spin.setValue(300.00)
-        form.addRow("Amount (USD):", self.amount_spin)
+        self._amount_label = QLabel("Amount (USD):")
+        form.addRow(self._amount_label, self.amount_spin)
 
         self.cat_combo = QComboBox()
         self.cat_combo.addItems(INCOME_CATEGORIES)  # Main Job / Side Job
         form.addRow("Category:", self.cat_combo)
+
+        self.unit_combo = QComboBox()
+        for u in PAY_UNITS:
+            self.unit_combo.addItem(_PAY_UNIT_LABELS[u])
+        self.unit_combo.setToolTip(
+            "Flat: a fixed payment (e.g. per project / submission).\n"
+            "Per hour: rate is per hour worked (e.g. transcription, hourly side job).\n"
+            "Per minute: rate is per minute worked (e.g. audio-minute work)."
+        )
+        self.unit_combo.currentTextChanged.connect(self._on_unit_changed)
+        form.addRow("Pay Unit:", self.unit_combo)
 
         layout.addLayout(form)
 
@@ -272,14 +254,26 @@ class PresetManagerDialog(QDialog):
         close_btn.clicked.connect(self.accept); btn_row.addWidget(close_btn)
         layout.addLayout(btn_row)
 
+    def _on_unit_changed(self, label: str):
+        unit = _PAY_UNIT_BY_LABEL.get(label, "flat")
+        if unit == "hour":
+            self._amount_label.setText("Rate (USD / hour):")
+        elif unit == "minute":
+            self._amount_label.setText("Rate (USD / minute):")
+        else:
+            self._amount_label.setText("Amount (USD):")
+
     def _refresh(self):
         presets = self.store.get_presets()
         self._preset_ids = [p.id for p in presets]
         self.table.setRowCount(len(presets))
         for i, p in enumerate(presets):
+            unit = (p.pay_unit or "flat").lower()
+            suffix = {"hour": " / hr", "minute": " / min"}.get(unit, "")
             self.table.setItem(i, 0, QTableWidgetItem(p.name))
-            self.table.setItem(i, 1, QTableWidgetItem(f"${p.amount_usd:,.2f}"))
+            self.table.setItem(i, 1, QTableWidgetItem(f"${p.amount_usd:,.2f}{suffix}"))
             self.table.setItem(i, 2, QTableWidgetItem(p.category))
+            self.table.setItem(i, 3, QTableWidgetItem(_PAY_UNIT_LABELS.get(unit, unit)))
 
     def _add_preset(self):
         name = self.name_edit.text().strip()
@@ -290,6 +284,7 @@ class PresetManagerDialog(QDialog):
             name=name,
             amount_usd=self.amount_spin.value(),
             category=self.cat_combo.currentText(),
+            pay_unit=_PAY_UNIT_BY_LABEL.get(self.unit_combo.currentText(), "flat"),
         )
         self.name_edit.clear(); self._refresh()
 
@@ -304,6 +299,8 @@ class PresetManagerDialog(QDialog):
         self.name_edit.setText(preset.name)
         self.amount_spin.setValue(preset.amount_usd)
         self.cat_combo.setCurrentText(preset.category)
+        self.unit_combo.setCurrentText(_PAY_UNIT_LABELS.get(preset.pay_unit or "flat",
+                                                            _PAY_UNIT_LABELS["flat"]))
         self.store.delete_preset(preset.id); self._refresh()
 
     def _delete_selected(self):
@@ -330,7 +327,6 @@ class MonthlyExpenseTemplatesDialog(QDialog):
         super().__init__(parent)
         self.setWindowTitle("Manage Monthly Expense Templates")
         self.setMinimumSize(560, 420)
-        self.setStyleSheet(_COMBO_QSS)
         self._build_ui(); self._refresh()
 
     @staticmethod
@@ -492,7 +488,6 @@ class MonthlyExpensesDialog(QDialog):
         self._palette = palette or {}
         self.setWindowTitle("Monthly Expenses")
         self.setMinimumSize(600, 500)
-        self.setStyleSheet(_COMBO_QSS)
         self._year  = date.today().year
         self._month = date.today().month
         self._rows: list[dict] = []   # {check, amount_spin, preset_dict}
@@ -732,7 +727,6 @@ class GoalSettingsDialog(QDialog):
     def __init__(self, base: float, extra: float, parent=None):
         super().__init__(parent)
         self.setWindowTitle("Set Monthly Goals"); self.setMinimumWidth(360)
-        self.setStyleSheet(_COMBO_QSS)
         self._rate = _rate_mgr.rate
         layout = QVBoxLayout(self); layout.setSpacing(10)
 
@@ -853,7 +847,6 @@ class TransactionDialog(QDialog):
         self.setWindowTitle("Edit Entry" if txn else "New Entry")
         self.setMinimumWidth(420)
         self.txn = txn
-        self.setStyleSheet(_COMBO_QSS)
         self._build_ui(initial_type)
 
     @staticmethod
@@ -984,9 +977,10 @@ class TransactionDialog(QDialog):
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 class PresetButton(QWidget):
-    clicked = pyqtSignal(object)
+    clicked = pyqtSignal(object, float)   # (preset, units)
 
-    def __init__(self, preset: JobPreset, rate: float, parent=None):
+    def __init__(self, preset: JobPreset, rate: float, palette: dict | None = None,
+                 parent=None):
         super().__init__(parent)
         self.preset = preset
         layout = QVBoxLayout(self)
@@ -995,22 +989,52 @@ class PresetButton(QWidget):
         name_lbl.setAlignment(Qt.AlignmentFlag.AlignCenter)
         name_lbl.setStyleSheet("font-weight:bold;font-size:12px;")
         layout.addWidget(name_lbl)
+
+        unit  = (preset.pay_unit or "flat").lower()
+        unit_suffix = {"hour": " / hr", "minute": " / min"}.get(unit, "")
         jpy = int(preset.amount_usd * rate)
-        amt_lbl = QLabel(f"${preset.amount_usd:,.0f}  \u00a5{jpy:,}")
+        amt_lbl = QLabel(f"${preset.amount_usd:,.2f}{unit_suffix}  \u00a5{jpy:,}")
         amt_lbl.setAlignment(Qt.AlignmentFlag.AlignCenter)
         amt_lbl.setObjectName("subtitle"); layout.addWidget(amt_lbl)
         cat_lbl = QLabel(preset.category)
         cat_lbl.setAlignment(Qt.AlignmentFlag.AlignCenter)
         cat_lbl.setStyleSheet("font-size:9px;")
         cat_lbl.setObjectName("subtitle"); layout.addWidget(cat_lbl)
+
+        # Time entry shown only for hour/minute presets
+        self._units_spin: QDoubleSpinBox | None = None
+        if unit in ("hour", "minute"):
+            time_row = QHBoxLayout(); time_row.setContentsMargins(0, 0, 0, 0)
+            time_row.setSpacing(4)
+            self._units_spin = QDoubleSpinBox()
+            self._units_spin.setDecimals(2)
+            self._units_spin.setRange(0.0, 99_999.0)
+            if unit == "hour":
+                self._units_spin.setSingleStep(0.25); self._units_spin.setValue(1.0)
+                self._units_spin.setSuffix(" h")
+            else:
+                self._units_spin.setSingleStep(5); self._units_spin.setValue(60.0)
+                self._units_spin.setSuffix(" m")
+            time_row.addWidget(self._units_spin, 1)
+            layout.addLayout(time_row)
+
         log_btn = QPushButton("+ Log"); log_btn.setFixedHeight(24)
-        log_btn.clicked.connect(lambda: self.clicked.emit(self.preset))
+        log_btn.clicked.connect(self._emit_clicked)
         layout.addWidget(log_btn)
+
+        p = palette or {}
+        bg     = p.get("surface",   "#1e1e2e")
+        hover  = p.get("hover",     "#313244")
+        border = p.get("border",    "#45475a")
         self.setStyleSheet(
-            "PresetButton{border:1px solid #45475a;border-radius:6px;"
-            "background-color:#1e1e2e;}"
-            "PresetButton:hover{background-color:#313244;}")
-        self.setFixedWidth(150)
+            f"PresetButton{{border:1px solid {border};border-radius:6px;"
+            f"background-color:{bg};}}"
+            f"PresetButton:hover{{background-color:{hover};}}")
+        self.setFixedWidth(160)
+
+    def _emit_clicked(self):
+        units = self._units_spin.value() if self._units_spin else 1.0
+        self.clicked.emit(self.preset, float(units))
 
 """Task 8 Fix C — TaxExportDialog.
 
@@ -1154,7 +1178,18 @@ class FinancePanel(QWidget):
         _rate_mgr.refresh()
 
     def set_palette(self, palette: dict):
-        self._palette = palette; self._refresh()
+        self._palette = palette
+        if hasattr(self, "_goal_container"):
+            self._apply_goal_section_style()
+        self._refresh()
+
+    def _apply_goal_section_style(self):
+        bg     = self._palette.get("header_bg", "#1e1e2e")
+        border = self._palette.get("border",    "#45475a")
+        self._goal_container.setStyleSheet(
+            f"QFrame#goalSectionFrame{{background-color:{bg};"
+            f"border:1px solid {border};border-radius:8px;padding:4px;}}"
+        )
 
     def showEvent(self, event):
         super().showEvent(event)
@@ -1264,18 +1299,15 @@ class FinancePanel(QWidget):
         row.addSpacing(12); row.addWidget(QLabel("Show:"))
         self.filter_type = QComboBox()
         self.filter_type.addItems(["All", "income", "expense"])
-        self.filter_type.setStyleSheet(_COMBO_QSS)
         self.filter_type.currentTextChanged.connect(self._refresh)
         row.addWidget(self.filter_type)
         row.addSpacing(8); row.addWidget(QLabel("From:"))
         self.filter_start = QDateEdit(); self.filter_start.setCalendarPopup(True)
-        self.filter_start.setStyleSheet(_COMBO_QSS)
         today = date.today()
         self.filter_start.setDate(QDate(today.year, today.month, 1))
         self.filter_start.dateChanged.connect(self._refresh); row.addWidget(self.filter_start)
         row.addWidget(QLabel("To:"))
         self.filter_end = QDateEdit(); self.filter_end.setCalendarPopup(True)
-        self.filter_end.setStyleSheet(_COMBO_QSS)
         self.filter_end.setDate(QDate(today.year, today.month, today.day))
         self.filter_end.dateChanged.connect(self._refresh); row.addWidget(self.filter_end)
         row.addStretch()
@@ -1283,7 +1315,9 @@ class FinancePanel(QWidget):
 
     def _build_goal_section(self) -> QWidget:
         container = QFrame(); container.setFrameShape(QFrame.Shape.NoFrame)
-        container.setStyleSheet("background-color:#1e1e2e;border-radius:8px;padding:4px;")
+        container.setObjectName("goalSectionFrame")
+        self._goal_container = container
+        self._apply_goal_section_style()
         vbox = QVBoxLayout(container)
         vbox.setContentsMargins(12, 8, 12, 8); vbox.setSpacing(6)
         title_row = QHBoxLayout()
@@ -1411,7 +1445,8 @@ class FinancePanel(QWidget):
             if item.widget(): item.widget().deleteLater()
         presets = self.store.get_presets(); rate = _rate_mgr.rate
         for preset in presets:
-            btn = PresetButton(preset, rate); btn.clicked.connect(self._log_preset)
+            btn = PresetButton(preset, rate, self._palette)
+            btn.clicked.connect(self._log_preset)
             self._preset_row_layout.insertWidget(
                 self._preset_row_layout.count() - 1, btn)
         if not presets:
@@ -1437,8 +1472,10 @@ class FinancePanel(QWidget):
             "" if is_current else "Switch to the current month to log income"
         )
 
-    def _log_preset(self, preset: JobPreset):
-        self.store.log_preset(preset, count=1, on_date=date.today().isoformat())
+    def _log_preset(self, preset: JobPreset, units: float = 1.0):
+        self.store.log_preset(
+            preset, units=units, on_date=date.today().isoformat()
+        )
         self._refresh()
 
     def _open_preset_manager(self):

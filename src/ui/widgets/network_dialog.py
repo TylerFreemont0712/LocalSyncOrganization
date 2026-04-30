@@ -27,6 +27,8 @@ from src.utils.llm import (
     LLMResult,
     LLMSignals,
     LightCouncil,
+    COUNCIL_DEFAULT_CONCURRENCY,
+    set_request_concurrency,
 )
 
 
@@ -327,6 +329,28 @@ class NetworkDialog(QDialog):
         mode_row.addWidget(mode_hint, 1)
         layout.addLayout(mode_row)
 
+        # Concurrent request slot count — should match the llama.cpp
+        # `--parallel` flag. The whole app respects this via a global
+        # semaphore, so a council burst from one panel won't starve another.
+        slots_row = QHBoxLayout()
+        slots_row.setContentsMargins(20, 0, 0, 0)
+        slots_row.addWidget(QLabel("Server slots:"))
+        self._council_slots_spin = QSpinBox()
+        self._council_slots_spin.setRange(1, 16)
+        self._council_slots_spin.setValue(COUNCIL_DEFAULT_CONCURRENCY)
+        self._council_slots_spin.setToolTip(
+            "Maximum simultaneous requests to the llama.cpp server.\n"
+            "Match this to the server's --parallel flag (typically 2-3)."
+        )
+        slots_row.addWidget(self._council_slots_spin)
+        slots_hint = QLabel(
+            "Match this to your llama.cpp server's --parallel flag."
+        )
+        slots_hint.setObjectName("subtitle")
+        slots_hint.setWordWrap(True)
+        slots_row.addWidget(slots_hint, 1)
+        layout.addLayout(slots_row)
+
         council_test_row = QHBoxLayout()
         self._council_test_btn = QPushButton("Test Council")
         self._council_test_btn.setObjectName("secondary")
@@ -374,6 +398,8 @@ class NetworkDialog(QDialog):
         if saved_mode not in COUNCIL_SYNTHESIS_MODES:
             saved_mode = COUNCIL_DEFAULT_MODE
         self._council_mode_combo.setCurrentText(saved_mode)
+        self._council_slots_spin.setValue(int(self.cfg.get(
+            "council_concurrency", COUNCIL_DEFAULT_CONCURRENCY)))
 
     def _save_settings(self):
         self.cfg["sync_subnet"]     = self.subnet_edit.text().strip() or "192.168.0"
@@ -386,10 +412,14 @@ class NetworkDialog(QDialog):
         QMessageBox.information(self, "Saved", "Sync settings saved.")
 
     def _save_ai_settings(self):
-        self.cfg["llama_host"]      = self.llama_host_edit.text().strip() or LLAMA_DEFAULT_HOST
-        self.cfg["council_enabled"] = self._council_check.isChecked()
-        self.cfg["council_mode"]    = self._council_mode_combo.currentText()
+        self.cfg["llama_host"]         = self.llama_host_edit.text().strip() or LLAMA_DEFAULT_HOST
+        self.cfg["council_enabled"]    = self._council_check.isChecked()
+        self.cfg["council_mode"]       = self._council_mode_combo.currentText()
+        self.cfg["council_concurrency"]= int(self._council_slots_spin.value())
         save_config(self.cfg)
+        # Apply concurrency live so the next request hits the new cap
+        # without requiring a restart.
+        set_request_concurrency(self.cfg["council_concurrency"])
         self.llm_settings_saved.emit()
         QMessageBox.information(self, "Saved", "AI settings saved.")
 

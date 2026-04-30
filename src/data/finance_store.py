@@ -51,6 +51,11 @@ class JobPreset:
     category: str = "Main Job"
     updated_at: str = ""
     deleted: bool = False
+    # pay_unit: "flat" (single payment), "hour" (rate × hours), "minute" (rate × minutes)
+    pay_unit: str = "flat"
+
+
+PAY_UNITS = ("flat", "hour", "minute")
 
 
 @dataclass
@@ -228,10 +233,12 @@ class FinanceStore:
             conn.close()
 
     def add_preset(self, name: str, amount_usd: float,
-                   category: str = "Main Job") -> JobPreset:
+                   category: str = "Main Job",
+                   pay_unit: str = "flat") -> JobPreset:
         preset = JobPreset(id=str(uuid.uuid4()), name=name,
                            amount_usd=amount_usd, category=category,
-                           updated_at=now_utc())
+                           updated_at=now_utc(),
+                           pay_unit=pay_unit if pay_unit in PAY_UNITS else "flat")
         self._upsert_preset(preset)
         return preset
 
@@ -252,18 +259,39 @@ class FinanceStore:
             conn.close()
 
     def log_preset(self, preset: JobPreset, count: int = 1,
+                   units: float = 1.0,
                    on_date: str | None = None) -> list[Transaction]:
-        """Log a preset as income. is_job_pay follows the preset's category."""
+        """Log a preset as income.
+
+        For "flat" presets the amount is preset.amount_usd × count.
+        For "hour"/"minute" presets it is preset.amount_usd × units (count
+        is treated as 1 to avoid double-multiplication).
+        """
         day = on_date or _date.today().isoformat()
         is_job_pay = (preset.category == "Main Job")
+        unit = (preset.pay_unit or "flat").lower()
+
+        if unit == "hour":
+            amount = preset.amount_usd * float(units)
+            desc   = f"[Job] {preset.name} ({units:g}h @ ${preset.amount_usd:,.2f}/hr)"
+            n_logs = 1
+        elif unit == "minute":
+            amount = preset.amount_usd * float(units)
+            desc   = f"[Job] {preset.name} ({units:g}m @ ${preset.amount_usd:,.2f}/min)"
+            n_logs = 1
+        else:
+            amount = preset.amount_usd
+            desc   = f"[Job] {preset.name}"
+            n_logs = max(int(count), 1)
+
         txns = []
-        for _ in range(count):
+        for _ in range(n_logs):
             txns.append(self.add_transaction(
                 date=day,
-                amount=preset.amount_usd,
+                amount=amount,
                 txn_type="income",
                 category=preset.category,
-                description=f"[Job] {preset.name}",
+                description=desc,
                 currency="USD",
                 is_job_pay=is_job_pay,
             ))
@@ -274,14 +302,15 @@ class FinanceStore:
         try:
             conn.execute(
                 """INSERT INTO job_presets
-                   (id, name, amount_usd, category, updated_at, deleted)
-                   VALUES (?, ?, ?, ?, ?, ?)
+                   (id, name, amount_usd, category, updated_at, deleted, pay_unit)
+                   VALUES (?, ?, ?, ?, ?, ?, ?)
                    ON CONFLICT(id) DO UPDATE SET
                    name=excluded.name, amount_usd=excluded.amount_usd,
                    category=excluded.category, updated_at=excluded.updated_at,
-                   deleted=excluded.deleted""",
+                   deleted=excluded.deleted, pay_unit=excluded.pay_unit""",
                 (preset.id, preset.name, preset.amount_usd,
-                 preset.category, preset.updated_at, int(preset.deleted)),
+                 preset.category, preset.updated_at, int(preset.deleted),
+                 preset.pay_unit or "flat"),
             )
             conn.commit()
         finally:
@@ -289,10 +318,16 @@ class FinanceStore:
 
     @staticmethod
     def _row_to_preset(row) -> JobPreset:
+        # pay_unit may be missing from rows on databases predating the migration
+        try:
+            unit = row["pay_unit"] or "flat"
+        except (IndexError, KeyError):
+            unit = "flat"
         return JobPreset(
             id=row["id"], name=row["name"], amount_usd=row["amount_usd"],
             category=row["category"], updated_at=row["updated_at"],
             deleted=bool(row["deleted"]),
+            pay_unit=unit if unit in PAY_UNITS else "flat",
         )
 
     # ── Side Income Goals ─────────────────────────────────────────────────────

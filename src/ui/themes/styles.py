@@ -17,9 +17,6 @@ Arrow rendering:
 #  SVG arrow helper
 # ─────────────────────────────────────────────────────────
 
-from matplotlib import image
-
-
 def _svg_arrow(direction: str, color: str) -> str:
     """Return a QSS url() value for an inline SVG triangle arrow.
 
@@ -84,7 +81,7 @@ def _build_theme(c: dict) -> str:
 QMainWindow, QWidget {{
     background-color: {_bg};
     color: {c['fg']};
-    font-family: "Segoe UI", "Segoe UI Emoji", "Segoe UI Symbol", "Meiryo UI", "Ubuntu", "Noto Sans", sans-serif;
+    font-family: "Segoe UI", "Meiryo UI", "Ubuntu", "Noto Sans", "DejaVu Sans", "Liberation Sans", sans-serif, "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji", "Noto Sans Symbols2";
     font-size: 12px;
 }}
 
@@ -424,8 +421,11 @@ QDateEdit::down-arrow:hover, QTimeEdit::down-arrow:hover {{
     image: {_adn_h};
 }}
 
-/* Spinbox increment buttons */
-QSpinBox::up-button, QDoubleSpinBox::up-button {{
+/* Spinbox increment buttons — applied to every QAbstractSpinBox subclass.
+   QSS does not inherit selectors across subclasses, so each one is named
+   explicitly to keep arrows visible on time/date editors too. */
+QSpinBox::up-button, QDoubleSpinBox::up-button,
+QDateEdit::up-button, QTimeEdit::up-button, QDateTimeEdit::up-button {{
     subcontrol-origin: border;
     subcontrol-position: top right;
     width: 20px;
@@ -434,21 +434,26 @@ QSpinBox::up-button, QDoubleSpinBox::up-button {{
     border-bottom: 1px solid {c['border']};
     border-top-right-radius: 4px;
 }}
-QSpinBox::up-button:hover, QDoubleSpinBox::up-button:hover {{
+QSpinBox::up-button:hover, QDoubleSpinBox::up-button:hover,
+QDateEdit::up-button:hover, QTimeEdit::up-button:hover, QDateTimeEdit::up-button:hover {{
     background-color: {c['accent']};
 }}
-QSpinBox::up-button:pressed, QDoubleSpinBox::up-button:pressed {{
+QSpinBox::up-button:pressed, QDoubleSpinBox::up-button:pressed,
+QDateEdit::up-button:pressed, QTimeEdit::up-button:pressed, QDateTimeEdit::up-button:pressed {{
     background-color: {c['accent_pressed']};
 }}
-QSpinBox::up-arrow, QDoubleSpinBox::up-arrow {{
+QSpinBox::up-arrow, QDoubleSpinBox::up-arrow,
+QDateEdit::up-arrow, QTimeEdit::up-arrow, QDateTimeEdit::up-arrow {{
     image: {_aup};
     width: 8px;
     height: 5px;
 }}
-QSpinBox::up-arrow:hover, QDoubleSpinBox::up-arrow:hover {{
+QSpinBox::up-arrow:hover, QDoubleSpinBox::up-arrow:hover,
+QDateEdit::up-arrow:hover, QTimeEdit::up-arrow:hover, QDateTimeEdit::up-arrow:hover {{
     image: {_aup_h};
 }}
-QSpinBox::down-button, QDoubleSpinBox::down-button {{
+QSpinBox::down-button, QDoubleSpinBox::down-button,
+QDateEdit::down-button, QTimeEdit::down-button, QDateTimeEdit::down-button {{
     subcontrol-origin: border;
     subcontrol-position: bottom right;
     width: 20px;
@@ -456,18 +461,22 @@ QSpinBox::down-button, QDoubleSpinBox::down-button {{
     border-left: 1px solid {c['border']};
     border-bottom-right-radius: 4px;
 }}
-QSpinBox::down-button:hover, QDoubleSpinBox::down-button:hover {{
+QSpinBox::down-button:hover, QDoubleSpinBox::down-button:hover,
+QDateEdit::down-button:hover, QTimeEdit::down-button:hover, QDateTimeEdit::down-button:hover {{
     background-color: {c['accent']};
 }}
-QSpinBox::down-button:pressed, QDoubleSpinBox::down-button:pressed {{
+QSpinBox::down-button:pressed, QDoubleSpinBox::down-button:pressed,
+QDateEdit::down-button:pressed, QTimeEdit::down-button:pressed, QDateTimeEdit::down-button:pressed {{
     background-color: {c['accent_pressed']};
 }}
-QSpinBox::down-arrow, QDoubleSpinBox::down-arrow {{
+QSpinBox::down-arrow, QDoubleSpinBox::down-arrow,
+QDateEdit::down-arrow, QTimeEdit::down-arrow, QDateTimeEdit::down-arrow {{
     image: {_adn2};
     width: 8px;
     height: 5px;
 }}
-QSpinBox::down-arrow:hover, QDoubleSpinBox::down-arrow:hover {{
+QSpinBox::down-arrow:hover, QDoubleSpinBox::down-arrow:hover,
+QDateEdit::down-arrow:hover, QTimeEdit::down-arrow:hover, QDateTimeEdit::down-arrow:hover {{
     image: {_adn2_h};
 }}
 

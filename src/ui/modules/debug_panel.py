@@ -24,7 +24,7 @@ from src.utils.llm import (
     LLMResult, CouncilResult,
     LLMSignals, CouncilSignals,
     load_llm_client, load_council_config,
-    COUNCIL_SYNTHESIS_MODES,
+    COUNCIL_SYNTHESIS_MODES, get_request_concurrency,
 )
 
 # ── Module-level palette (updated by set_palette) ─────────────────────────────
@@ -118,6 +118,28 @@ class _FailedCard(QFrame):
         self.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred)
 
 
+class _PendingCard(QFrame):
+    """Placeholder card shown while a council member is in flight."""
+
+    def __init__(self, name: str, parent=None):
+        super().__init__(parent)
+        self.setObjectName("PendingCard")
+        self.setStyleSheet(
+            f"PendingCard{{border:1px dashed {_p('border','#45475a')};"
+            f"border-radius:6px;"
+            f"background-color:{_p('surface','#313244')};}}"
+        )
+        layout = QVBoxLayout(self)
+        layout.setContentsMargins(10, 8, 10, 8)
+        lbl = QLabel(f"●  {name}  —  thinking…")
+        lbl.setStyleSheet(
+            f"font-size:11px;font-style:italic;color:{_p('muted','#7f849c')};"
+        )
+        layout.addWidget(lbl)
+        self.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred)
+        self._name = name
+
+
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 #  Debug Panel
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -130,6 +152,10 @@ class DebugPanel(QWidget):
         self._busy           = False
         self._llm_signals:     LLMSignals    | None = None
         self._council_signals: CouncilSignals| None = None
+        # Progressive-result tracking (populated as council runs)
+        self._member_cards:  dict[str, QWidget] = {}
+        self._member_order:  list[str]          = []
+        self._member_index:  int                = 0
         self._build_ui()
 
     # ── Palette ─────────────────────────────────────────────────────────────
@@ -314,23 +340,39 @@ class DebugPanel(QWidget):
         self._synth_box.clear()
         self._copy_btn.setEnabled(False)
 
+        # Per-name widget tracking so we can swap pending → final in place
+        self._member_cards: dict[str, QWidget] = {}
+        self._member_order: list[str] = []
+        self._member_index: int = 0
+
         if council:
             # The mode dropdown is bound to COUNCIL_SYNTHESIS_MODES; only
             # pass it through if it's a real council mode (the dropdown also
             # contains the "Single Model" sentinel which is handled above).
             from src.utils.llm import COUNCIL_SYNTHESIS_MODES as _MODES
             chosen_mode = mode if mode in _MODES else council.default_mode
+            slots = get_request_concurrency()
             self._set_status(
-                f"Running council (3 passes · {chosen_mode})…"
+                f"Running council (3 passes · {chosen_mode} · {slots} slots)…"
             )
+            # Track per-member status: name -> "started" | "ok" | "failed"
+            self._member_status: dict[str, str] = {}
             self._council_signals = CouncilSignals()
             self._council_signals.result.connect(self._on_council_result)
             self._council_signals.error.connect(self._on_error)
+            self._council_signals.member_started.connect(self._on_member_started)
+            self._council_signals.member_completed.connect(self._on_member_completed)
+            self._council_signals.member_failed.connect(self._on_member_failed)
+            self._council_signals.synthesis_started.connect(self._on_synthesis_started)
             council.complete_async(
                 messages,
                 mode=chosen_mode,
                 on_result=self._council_signals.result.emit,
                 on_error=self._council_signals.error.emit,
+                on_member_started=self._council_signals.member_started.emit,
+                on_member_completed=self._council_signals.member_completed.emit,
+                on_member_failed=self._council_signals.member_failed.emit,
+                on_synthesis_started=self._council_signals.synthesis_started.emit,
                 max_tokens=1200,
                 temperature=0.45,
             )
@@ -347,24 +389,70 @@ class DebugPanel(QWidget):
                 temperature=0.45,
             )
 
+    # ── Progressive handlers ─────────────────────────────────────────────────
+
+    def _swap_card(self, name: str, new_card: QWidget):
+        """Replace the current card for `name` with `new_card`, preserving order."""
+        old = self._member_cards.get(name)
+        if old is not None:
+            idx = self._members_layout.indexOf(old)
+            if idx >= 0:
+                self._members_layout.removeWidget(old)
+                old.deleteLater()
+                self._members_layout.insertWidget(idx, new_card)
+                self._member_cards[name] = new_card
+                return
+        # First time we're seeing this name — append before the trailing stretch
+        self._members_layout.insertWidget(
+            self._members_layout.count() - 1, new_card
+        )
+        self._member_cards[name] = new_card
+        self._member_order.append(name)
+
+    def _on_member_started(self, name: str):
+        if not self._busy:
+            return
+        if name not in self._member_cards:
+            self._swap_card(name, _PendingCard(name))
+        self._set_status(f"{name}: thinking…")
+
+    def _on_member_completed(self, name: str, result: LLMResult):
+        if not self._busy:
+            return
+        # Use a sequential index that grows as completions arrive
+        idx = self._member_index
+        self._member_index += 1
+        self._swap_card(name, _MemberCard(idx, result))
+        self._set_status(f"{name}: ✓ ({result.timing_summary()})")
+
+    def _on_member_failed(self, name: str, err: str):
+        if not self._busy:
+            return
+        self._swap_card(name, _FailedCard(f"{name}: {err}"))
+        self._set_status(f"{name}: ✗ {err[:60]}")
+
+    def _on_synthesis_started(self):
+        if not self._busy:
+            return
+        self._set_status("Synthesising…")
+
     # ── Result handlers ──────────────────────────────────────────────────────
 
     def _on_council_result(self, result: CouncilResult):
         self._busy = False
         self._run_btn.setEnabled(True)
 
-        # Render member cards
+        # Backfill any cards we may have missed (e.g. signals dropped or
+        # caller didn't wire the per-member callbacks). This keeps the panel
+        # correct even when the progressive path is bypassed.
         for i, member in enumerate(result.members):
-            card = _MemberCard(i, member)
-            self._members_layout.insertWidget(
-                self._members_layout.count() - 1, card
-            )
+            if member.model not in self._member_cards:
+                self._swap_card(member.model, _MemberCard(i, member))
 
-        for failed_model in result.failed:
-            card = _FailedCard(failed_model)
-            self._members_layout.insertWidget(
-                self._members_layout.count() - 1, card
-            )
+        for failed_entry in result.failed:
+            label = failed_entry.split(":", 1)[0].strip() or "?"
+            if label not in self._member_cards:
+                self._swap_card(label, _FailedCard(failed_entry))
 
         # Show synthesis (or quick-pick winner — both live on result.final)
         self._synth_box.setPlainText(result.final.text.strip())
@@ -404,6 +492,9 @@ class DebugPanel(QWidget):
             item = self._members_layout.takeAt(0)
             if item.widget():
                 item.widget().deleteLater()
+        self._member_cards = {}
+        self._member_order = []
+        self._member_index = 0
 
     def _clear(self):
         self._prompt_edit.clear()

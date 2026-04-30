@@ -56,6 +56,11 @@ def _migrate(conn: sqlite3.Connection):
     if "is_job_pay" not in txn_cols:
         conn.execute("ALTER TABLE transactions ADD COLUMN is_job_pay INTEGER DEFAULT 0")
 
+    # ── job_presets ───────────────────────────────────────────────────────────
+    jp_cols = {r["name"] for r in conn.execute("PRAGMA table_info(job_presets)").fetchall()}
+    if "pay_unit" not in jp_cols:
+        conn.execute("ALTER TABLE job_presets ADD COLUMN pay_unit TEXT DEFAULT 'flat'")
+
     # ── Discover all existing tables once ─────────────────────────────────────
     tables = {r["name"] for r in conn.execute(
         "SELECT name FROM sqlite_master WHERE type='table'"
@@ -212,7 +217,8 @@ CREATE TABLE IF NOT EXISTS job_presets (
     amount_usd  REAL NOT NULL,
     category    TEXT DEFAULT 'Contract',
     updated_at  TEXT NOT NULL,
-    deleted     INTEGER DEFAULT 0
+    deleted     INTEGER DEFAULT 0,
+    pay_unit    TEXT DEFAULT 'flat'
 );
 
 CREATE TABLE IF NOT EXISTS todos (
