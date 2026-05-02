@@ -22,6 +22,7 @@ from src.ui.themes.styles import THEMES, PALETTES, get_theme_names
 from src.ui.modules.notes_panel import NotesPanel
 from src.ui.modules.calendar_panel import CalendarPanel
 from src.ui.modules.finance_panel import FinancePanel
+from src.ui.modules.expenses_panel import ExpensesPanel
 from src.ui.modules.todo_panel import TodoPanel
 from src.ui.modules.dashboard_panel import DashboardPanel
 from src.ui.modules.finance_charts import FinanceChartsPanel
@@ -127,13 +128,14 @@ class MainWindow(QMainWindow):
         file_menu = menubar.addMenu("&File")
 
         file_menu.addAction(self._action("&Dashboard", "Ctrl+1", lambda: self._navigate("Dashboard")))
-        file_menu.addAction(self._action("&Notes", "Ctrl+2", lambda: self._navigate("Notes")))
-        file_menu.addAction(self._action("&Calendar", "Ctrl+3", lambda: self._navigate("Calendar")))
-        file_menu.addAction(self._action("&Earnings", "Ctrl+4", lambda: self._navigate("Earnings")))
-        file_menu.addAction(self._action("&Charts", "Ctrl+5", lambda: self._navigate("Charts")))
-        file_menu.addAction(self._action("&Tasks", "Ctrl+6", lambda: self._navigate("Tasks")))
-        file_menu.addAction(self._action("&Activity", "Ctrl+7", lambda: self._navigate("Activity")))
-        file_menu.addAction(self._action("&Work",     "Ctrl+8", lambda: self._navigate("Work")))
+        file_menu.addAction(self._action("&Notes",     "Ctrl+2", lambda: self._navigate("Notes")))
+        file_menu.addAction(self._action("&Calendar",  "Ctrl+3", lambda: self._navigate("Calendar")))
+        file_menu.addAction(self._action("&Earnings",  "Ctrl+4", lambda: self._navigate("Earnings")))
+        file_menu.addAction(self._action("E&xpenses",  "Ctrl+5", lambda: self._navigate("Expenses")))
+        file_menu.addAction(self._action("C&harts",    "Ctrl+6", lambda: self._navigate("Charts")))
+        file_menu.addAction(self._action("&Tasks",     "Ctrl+7", lambda: self._navigate("Tasks")))
+        file_menu.addAction(self._action("&Activity",  "Ctrl+8", lambda: self._navigate("Activity")))
+        file_menu.addAction(self._action("&Work",      "Ctrl+9", lambda: self._navigate("Work")))
         file_menu.addSeparator()
         file_menu.addAction(self._action("E&xit", "Ctrl+Q", self.close))
 
@@ -199,14 +201,15 @@ class MainWindow(QMainWindow):
         self.nav_buttons: list[SidebarButton] = []
         nav_items = [
             ("Dashboard", "\U0001f4ca", "Ctrl+1"),
-            ("Notes", "\U0001f4dd", "Ctrl+2"),
-            ("Calendar", "\U0001f4c5", "Ctrl+3"),
-            ("Earnings", "\U0001f4b0", "Ctrl+4"),
-            ("Charts", "\U0001f4c8", "Ctrl+5"),
-            ("Tasks", "\u2611", "Ctrl+6"),
-            ("Activity", "\u23f1", "Ctrl+7"),
-            ("Work",     "\U0001f4bc", "Ctrl+8"),
-            ("Debug",    "\U0001f52c", "Ctrl+0"),
+            ("Notes",     "\U0001f4dd", "Ctrl+2"),
+            ("Calendar",  "\U0001f4c5", "Ctrl+3"),
+            ("Earnings",  "\U0001f4b0", "Ctrl+4"),
+            ("Expenses",  "\U0001f4b3", "Ctrl+5"),
+            ("Charts",    "\U0001f4c8", "Ctrl+6"),
+            ("Tasks",     "\u2611",     "Ctrl+7"),
+            ("Activity",  "\u23f1",     "Ctrl+8"),
+            ("Work",      "\U0001f4bc", "Ctrl+9"),
+            ("Debug",     "\U0001f52c", "Ctrl+0"),
         ]
         for name, icon, shortcut_text in nav_items:
             btn = SidebarButton(name, icon, shortcut_text)
@@ -272,6 +275,7 @@ class MainWindow(QMainWindow):
             soft_events_store=self.soft_events_store,
         )
         self.finance_panel = FinancePanel()
+        self.expenses_panel = ExpensesPanel(finance_store=self.finance_store)
         self.charts_panel = FinanceChartsPanel()
         self.todo_panel = TodoPanel(todo_store=self.todo_store)
         self.activity_panel = ActivityPanel()
@@ -282,11 +286,12 @@ class MainWindow(QMainWindow):
         self.stack.addWidget(self.notes_panel)       # 1
         self.stack.addWidget(self.calendar_panel)    # 2
         self.stack.addWidget(self.finance_panel)     # 3
-        self.stack.addWidget(self.charts_panel)      # 4
-        self.stack.addWidget(self.todo_panel)        # 5
-        self.stack.addWidget(self.activity_panel)    # 6
-        self.stack.addWidget(self.work_panel)        # 7
-        self.stack.addWidget(self.debug_panel)       # 8
+        self.stack.addWidget(self.expenses_panel)    # 4
+        self.stack.addWidget(self.charts_panel)      # 5
+        self.stack.addWidget(self.todo_panel)        # 6
+        self.stack.addWidget(self.activity_panel)    # 7
+        self.stack.addWidget(self.work_panel)        # 8
+        self.stack.addWidget(self.debug_panel)       # 9
         self.work_panel.llm_config_changed.connect(self._reload_llm_client)        
         main_layout.addWidget(self.stack, 1)
 
@@ -384,8 +389,8 @@ class MainWindow(QMainWindow):
     def _navigate(self, name: str):
         idx_map = {
             "Dashboard": 0, "Notes": 1, "Calendar": 2,
-            "Earnings": 3, "Charts": 4, "Tasks": 5, "Activity": 6,
-            "Work": 7, "Debug": 8
+            "Earnings": 3, "Expenses": 4, "Charts": 5, "Tasks": 6,
+            "Activity": 7, "Work": 8, "Debug": 9,
         }
         idx = idx_map.get(name, 0)
         self.stack.setCurrentIndex(idx)
@@ -418,6 +423,8 @@ class MainWindow(QMainWindow):
             btn.apply_colors(palette["accent"], palette["accent_fg"], palette["hover"])
         if hasattr(self.finance_panel, 'set_palette'):
             self.finance_panel.set_palette(palette)
+        if hasattr(self.expenses_panel, 'set_palette'):
+            self.expenses_panel.set_palette(palette)
         if hasattr(self.calendar_panel, 'set_palette'):
             self.calendar_panel.set_palette(palette)
         if hasattr(self.todo_panel, 'set_palette'):
@@ -465,6 +472,8 @@ class MainWindow(QMainWindow):
             self.calendar_panel._refresh()
         if hasattr(self.finance_panel, '_refresh'):
             self.finance_panel._refresh()
+        if hasattr(self.expenses_panel, '_refresh'):
+            self.expenses_panel._refresh()
         if hasattr(self.todo_panel, '_refresh'):
             self.todo_panel._refresh()
         if hasattr(self.dashboard_panel, '_refresh'):

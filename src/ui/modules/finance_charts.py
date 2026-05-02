@@ -739,9 +739,7 @@ class _FinanceChartsContent(QWidget):
         self.line_chart._title = "Monthly Earnings"
         self.line_chart.set_data(line_data, green)
 
-        summary = self.store.get_summary(start, end)
-        by_cat = summary["by_category"]
-
+        # Earnings-by-source bar (income only)
         income_by_cat: dict[str, float] = {}
         for t in txns:
             if t.type == "income":
@@ -753,6 +751,12 @@ class _FinanceChartsContent(QWidget):
             title="Earnings by Source",
         )
 
-        pie_data = sorted(by_cat.items(), key=lambda x: -x[1])[:8]
-        self.pie_chart.set_data(pie_data, title="Spending Distribution")
+        # Spending-distribution pie (expense only — used to silently mix
+        # income+expense categories which made the breakdown meaningless).
+        expense_by_cat: dict[str, float] = {}
+        for t in txns:
+            if t.type == "expense":
+                expense_by_cat[t.category] = expense_by_cat.get(t.category, 0) + t.amount
+        pie_data = sorted(expense_by_cat.items(), key=lambda x: -x[1])[:8]
+        self.pie_chart.set_data(pie_data, title="Spending by Category")
         self.update()

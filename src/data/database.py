@@ -61,6 +61,17 @@ def _migrate(conn: sqlite3.Connection):
     if "pay_unit" not in jp_cols:
         conn.execute("ALTER TABLE job_presets ADD COLUMN pay_unit TEXT DEFAULT 'flat'")
 
+    # ── Receipts / item catalogue ─────────────────────────────────────────────
+    tables_now = {r["name"] for r in conn.execute(
+        "SELECT name FROM sqlite_master WHERE type='table'"
+    ).fetchall()}
+    if "receipts" not in tables_now:
+        conn.executescript(_RECEIPT_SCHEMA)
+
+    txn_cols = {r["name"] for r in conn.execute("PRAGMA table_info(transactions)").fetchall()}
+    if "receipt_id" not in txn_cols:
+        conn.execute("ALTER TABLE transactions ADD COLUMN receipt_id TEXT DEFAULT ''")
+
     # ── Discover all existing tables once ─────────────────────────────────────
     tables = {r["name"] for r in conn.execute(
         "SELECT name FROM sqlite_master WHERE type='table'"
@@ -208,7 +219,8 @@ CREATE TABLE IF NOT EXISTS transactions (
     updated_at  TEXT NOT NULL,
     deleted     INTEGER DEFAULT 0,
     currency    TEXT DEFAULT 'USD',
-    is_job_pay  INTEGER DEFAULT 0
+    is_job_pay  INTEGER DEFAULT 0,
+    receipt_id  TEXT DEFAULT ''
 );
 
 CREATE TABLE IF NOT EXISTS job_presets (
@@ -329,4 +341,60 @@ CREATE TABLE IF NOT EXISTS journey_council_members (
     raw_response      TEXT DEFAULT '',
     created_at        TEXT NOT NULL
 );
+"""
+
+
+# Schema for the receipt / item-catalogue tables, applied on first run by
+# init_db() when the `receipts` table is missing. Receipts + receipt_items
+# capture the structured detail (line items, qty, unit price); each receipt
+# also writes a single row into the `transactions` table so existing
+# ledger / chart aggregates stay correct without per-call special cases.
+_RECEIPT_SCHEMA = """
+CREATE TABLE IF NOT EXISTS receipts (
+    id              TEXT PRIMARY KEY,
+    transaction_id  TEXT DEFAULT '',
+    date            TEXT NOT NULL,
+    vendor          TEXT NOT NULL DEFAULT '',
+    category        TEXT NOT NULL DEFAULT 'Uncategorized',
+    currency        TEXT NOT NULL DEFAULT 'JPY',
+    subtotal        REAL NOT NULL DEFAULT 0,
+    tax             REAL NOT NULL DEFAULT 0,
+    total           REAL NOT NULL,
+    payment_method  TEXT DEFAULT 'cash',
+    notes           TEXT DEFAULT '',
+    updated_at      TEXT NOT NULL,
+    deleted         INTEGER DEFAULT 0
+);
+
+CREATE TABLE IF NOT EXISTS receipt_items (
+    id              TEXT PRIMARY KEY,
+    receipt_id      TEXT NOT NULL,
+    item_id         TEXT DEFAULT '',
+    name            TEXT NOT NULL,
+    qty             REAL NOT NULL DEFAULT 1,
+    unit_price      REAL NOT NULL DEFAULT 0,
+    line_total      REAL NOT NULL DEFAULT 0,
+    notes           TEXT DEFAULT '',
+    sort_order      INTEGER DEFAULT 0
+);
+CREATE INDEX IF NOT EXISTS idx_receipt_items_receipt
+    ON receipt_items(receipt_id);
+
+CREATE TABLE IF NOT EXISTS expense_items (
+    id                TEXT PRIMARY KEY,
+    name              TEXT NOT NULL,
+    normalized_name   TEXT NOT NULL,
+    category          TEXT DEFAULT '',
+    last_price        REAL DEFAULT 0,
+    last_currency     TEXT DEFAULT 'JPY',
+    last_seen_date    TEXT DEFAULT '',
+    times_seen        INTEGER DEFAULT 0,
+    avg_price         REAL DEFAULT 0,
+    min_price         REAL DEFAULT 0,
+    max_price         REAL DEFAULT 0,
+    updated_at        TEXT NOT NULL,
+    deleted           INTEGER DEFAULT 0
+);
+CREATE INDEX IF NOT EXISTS idx_expense_items_norm
+    ON expense_items(normalized_name);
 """
