@@ -1,13 +1,12 @@
-"""Earnings Tracker module UI.
+"""Earnings Tracker module UI — income side only.
 
-Changes in this version:
-  • Income categories simplified to "Main Job" / "Side Job"
-  • Preset manager: category picker (Main Job / Side Job) per preset
-  • log_preset respects preset.category for is_job_pay
-  • Monthly Expenses dialog: recurring expense templates with one-click monthly logging
-    — tagged [Monthly] for easy 確定申告 filtering
-  • GoalEditDialog: JPY/USD currency toggle for goal entry
-  • Dropdown QSS fix applied everywhere
+This panel covers Main Job pay, Side Job income, presets, the
+monthly side-income goal, the period summary (income only), and the
+USD↔JPY exchange-rate badge. Anything expense-related now lives in
+the dedicated Expenses panel (`src/ui/modules/expenses_panel.py`).
+
+The TaxExportDialog stays here because it spans both income and
+expenses for 確定申告 export.
 """
 
 import threading
@@ -31,7 +30,7 @@ from PyQt6.QtWidgets import (
 from src.config import load_config, save_config
 from src.data.finance_store import (
     FinanceStore, Transaction, JobPreset,
-    INCOME_CATEGORIES, EXPENSE_CATEGORIES, PAY_UNITS,
+    INCOME_CATEGORIES, PAY_UNITS,
 )
 
 # UI labels for pay_unit values
@@ -44,22 +43,8 @@ _PAY_UNIT_BY_LABEL = {v: k for k, v in _PAY_UNIT_LABELS.items()}
 
 _FALLBACK_RATE = 150.0
 
-_MONTH_NAMES = ["", "January", "February", "March", "April", "May", "June",
-                "July", "August", "September", "October", "November", "December"]
-
-# ── Default monthly expense templates ─────────────────────────────────────────
-# Stored in config key "monthly_expense_presets".  amount=0 means the user
-# fills in the actual amount each month (bills vary slightly).
-_DEFAULT_MONTHLY_PRESETS: list[dict] = [
-    {"name": "Rent",               "amount": 0, "currency": "JPY", "category": "Rent / Housing"},
-    {"name": "Kids Extracurriculars","amount": 0, "currency": "JPY", "category": "Education"},
-    {"name": "Schooling",          "amount": 0, "currency": "JPY", "category": "Education"},
-    {"name": "Power",              "amount": 0, "currency": "JPY", "category": "Utilities"},
-    {"name": "Water",              "amount": 0, "currency": "JPY", "category": "Utilities"},
-    {"name": "Internet",           "amount": 0, "currency": "JPY", "category": "Subscriptions"},
-    {"name": "Phone",              "amount": 0, "currency": "JPY", "category": "Subscriptions"},
-    {"name": "Gas",                "amount": 0, "currency": "JPY", "category": "Utilities"},
-]
+# Monthly expense template defaults and the bulk-log dialog now live in
+# src/ui/modules/expenses_panel.py.
 
 # Dropdown / DateEdit styling lives in the global theme stylesheet
 # (src/ui/themes/styles.py). Local overrides here used to strip the SVG
@@ -317,407 +302,6 @@ class PresetManagerDialog(QDialog):
 
 
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-#  MonthlyExpenseTemplatesDialog — manage the template list
-# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-class MonthlyExpenseTemplatesDialog(QDialog):
-    """Add / edit / delete recurring expense templates."""
-
-    def __init__(self, parent=None):
-        super().__init__(parent)
-        self.setWindowTitle("Manage Monthly Expense Templates")
-        self.setMinimumSize(560, 420)
-        self._build_ui(); self._refresh()
-
-    @staticmethod
-    def _load() -> list[dict]:
-        presets = load_config().get("monthly_expense_presets", [])
-        return presets if presets else list(_DEFAULT_MONTHLY_PRESETS)
-
-    @staticmethod
-    def _save(presets: list[dict]):
-        cfg = load_config()
-        cfg["monthly_expense_presets"] = presets
-        save_config(cfg)
-
-    @staticmethod
-    def _load_expense_cats() -> list[str]:
-        cats = load_config().get("expense_categories", [])
-        return cats if cats else list(EXPENSE_CATEGORIES)
-
-    def _build_ui(self):
-        layout = QVBoxLayout(self); layout.setSpacing(10)
-
-        info = QLabel(
-            "These templates are used in the Monthly Expenses log dialog.\n"
-            "Set your typical amounts here — you can adjust them per month when logging.")
-        info.setObjectName("subtitle"); info.setWordWrap(True)
-        layout.addWidget(info)
-
-        self.table = QTableWidget()
-        self.table.setColumnCount(4)
-        self.table.setHorizontalHeaderLabels(["Name", "Default Amount", "Currency", "Category"])
-        hh = self.table.horizontalHeader()
-        hh.setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
-        hh.setSectionResizeMode(2, QHeaderView.ResizeMode.ResizeToContents)
-        self.table.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectRows)
-        self.table.setEditTriggers(QAbstractItemView.EditTrigger.NoEditTriggers)
-        self.table.setAlternatingRowColors(True)
-        layout.addWidget(self.table)
-
-        sep = QFrame(); sep.setFrameShape(QFrame.Shape.HLine)
-        sep.setObjectName("separator"); layout.addWidget(sep)
-
-        form = QFormLayout(); form.setSpacing(6)
-
-        self._name_edit = QLineEdit()
-        self._name_edit.setPlaceholderText("e.g. Gym Membership")
-        form.addRow("Name:", self._name_edit)
-
-        amt_row = QHBoxLayout(); amt_row.setSpacing(6)
-        self._amount_spin = QDoubleSpinBox()
-        self._amount_spin.setRange(0, 9_999_999); self._amount_spin.setDecimals(0)
-        self._amount_spin.setSingleStep(1000); self._amount_spin.setValue(0)
-        amt_row.addWidget(self._amount_spin, 1)
-        self._currency_combo = QComboBox()
-        self._currency_combo.addItems(["JPY", "USD"])
-        self._currency_combo.currentTextChanged.connect(self._on_currency_changed)
-        amt_row.addWidget(self._currency_combo)
-        form.addRow("Default Amount:", amt_row)
-
-        self._cat_combo = QComboBox()
-        self._cat_combo.addItems(self._load_expense_cats())
-        form.addRow("Category:", self._cat_combo)
-
-        layout.addLayout(form)
-
-        btn_row = QHBoxLayout()
-        add_btn = QPushButton("Add Template"); add_btn.clicked.connect(self._add)
-        btn_row.addWidget(add_btn)
-        edit_btn = QPushButton("Edit Selected"); edit_btn.setObjectName("secondary")
-        edit_btn.clicked.connect(self._edit_selected); btn_row.addWidget(edit_btn)
-        del_btn = QPushButton("Delete Selected"); del_btn.setObjectName("destructive")
-        del_btn.clicked.connect(self._delete_selected); btn_row.addWidget(del_btn)
-        btn_row.addStretch()
-        reset_btn = QPushButton("Reset Defaults"); reset_btn.setObjectName("secondary")
-        reset_btn.clicked.connect(self._reset_defaults); btn_row.addWidget(reset_btn)
-        close_btn = QPushButton("Done"); close_btn.clicked.connect(self.accept)
-        btn_row.addWidget(close_btn)
-        layout.addLayout(btn_row)
-
-    def _on_currency_changed(self, cur: str):
-        if cur == "JPY":
-            self._amount_spin.setDecimals(0); self._amount_spin.setSingleStep(1000)
-        else:
-            self._amount_spin.setDecimals(2); self._amount_spin.setSingleStep(10)
-
-    def _refresh(self):
-        presets = self._load()
-        self.table.setRowCount(len(presets))
-        for i, p in enumerate(presets):
-            self.table.setItem(i, 0, QTableWidgetItem(p["name"]))
-            sym = "\u00a5" if p["currency"] == "JPY" else "$"
-            amt = int(p["amount"]) if p["currency"] == "JPY" else p["amount"]
-            self.table.setItem(i, 1, QTableWidgetItem(f"{sym}{amt:,}"))
-            self.table.setItem(i, 2, QTableWidgetItem(p["currency"]))
-            self.table.setItem(i, 3, QTableWidgetItem(p["category"]))
-
-    def _add(self):
-        name = self._name_edit.text().strip()
-        if not name:
-            QMessageBox.warning(self, "Missing Name", "Please enter a template name.")
-            return
-        presets = self._load()
-        presets.append({
-            "name":     name,
-            "amount":   self._amount_spin.value(),
-            "currency": self._currency_combo.currentText(),
-            "category": self._cat_combo.currentText(),
-        })
-        self._save(presets)
-        self._name_edit.clear(); self._refresh()
-
-    def _edit_selected(self):
-        rows = self.table.selectionModel().selectedRows()
-        if not rows: return
-        idx = rows[0].row()
-        presets = self._load()
-        if idx >= len(presets): return
-        p = presets[idx]
-        self._name_edit.setText(p["name"])
-        self._amount_spin.setValue(p["amount"])
-        self._currency_combo.setCurrentText(p["currency"])
-        self._cat_combo.setCurrentText(p["category"])
-        presets.pop(idx); self._save(presets); self._refresh()
-
-    def _delete_selected(self):
-        rows = self.table.selectionModel().selectedRows()
-        if not rows: return
-        if QMessageBox.question(
-                self, "Delete", "Delete selected template(s)?",
-                QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No
-                ) == QMessageBox.StandardButton.Yes:
-            presets = self._load()
-            for r in sorted(rows, key=lambda x: -x.row()):
-                if r.row() < len(presets):
-                    presets.pop(r.row())
-            self._save(presets); self._refresh()
-
-    def _reset_defaults(self):
-        if QMessageBox.question(
-                self, "Reset", "Reset templates to defaults? This will remove custom entries.",
-                QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No
-                ) == QMessageBox.StandardButton.Yes:
-            self._save(list(_DEFAULT_MONTHLY_PRESETS)); self._refresh()
-
-
-# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-#  MonthlyExpensesDialog — log a month's expenses in one go
-# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-class MonthlyExpensesDialog(QDialog):
-    """One-click monthly expense logger for recurring bills.
-
-    Transactions are tagged [Monthly] <name> in the description field,
-    making them easy to filter for 確定申告 year-end reporting.
-    """
-
-    def __init__(self, store: FinanceStore, palette: dict = None, parent=None):
-        super().__init__(parent)
-        self.store = store
-        self._palette = palette or {}
-        self.setWindowTitle("Monthly Expenses")
-        self.setMinimumSize(600, 500)
-        self._year  = date.today().year
-        self._month = date.today().month
-        self._rows: list[dict] = []   # {check, amount_spin, preset_dict}
-        self._build_ui()
-        self._reload()
-
-    @staticmethod
-    def _load_presets() -> list[dict]:
-        presets = load_config().get("monthly_expense_presets", [])
-        return presets if presets else list(_DEFAULT_MONTHLY_PRESETS)
-
-    def _build_ui(self):
-        layout = QVBoxLayout(self); layout.setSpacing(10)
-
-        # ── Month navigation ──
-        nav = QHBoxLayout()
-        prev_btn = QPushButton("\u2190"); prev_btn.setObjectName("secondary")
-        prev_btn.setFixedSize(28, 28)
-        prev_btn.setStyleSheet("QPushButton{font-size:14px;font-weight:bold;}")
-        prev_btn.clicked.connect(self._prev_month)
-        nav.addWidget(prev_btn)
-        self._month_lbl = QLabel()
-        self._month_lbl.setStyleSheet("font-size:14px;font-weight:bold;")
-        self._month_lbl.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        nav.addWidget(self._month_lbl, 1)
-        next_btn = QPushButton("\u2192"); next_btn.setObjectName("secondary")
-        next_btn.setFixedSize(28, 28)
-        next_btn.setStyleSheet("QPushButton{font-size:14px;font-weight:bold;}")
-        next_btn.clicked.connect(self._next_month)
-        nav.addWidget(next_btn)
-        layout.addLayout(nav)
-
-        # ── Duplicate warning ──
-        self._warn_lbl = QLabel("")
-        _warn_color = self._palette.get("yellow", "#f9e2af")
-        self._warn_lbl.setStyleSheet(f"color:{_warn_color};font-size:11px;")
-        self._warn_lbl.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        self._warn_lbl.setWordWrap(True)
-        layout.addWidget(self._warn_lbl)
-
-        # ── Expense rows (scrollable) ──
-        scroll = QScrollArea(); scroll.setWidgetResizable(True)
-        scroll.setFrameShape(QFrame.Shape.NoFrame)
-        scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
-        self._rows_widget = QWidget()
-        self._rows_layout = QVBoxLayout(self._rows_widget)
-        self._rows_layout.setContentsMargins(4, 4, 4, 4); self._rows_layout.setSpacing(6)
-        scroll.setWidget(self._rows_widget)
-        layout.addWidget(scroll, 1)
-
-        sep = QFrame(); sep.setObjectName("separator")
-        sep.setFrameShape(QFrame.Shape.HLine); layout.addWidget(sep)
-
-        # ── Column header labels ──
-        hdr = QHBoxLayout(); hdr.setSpacing(0)
-        hdr.addWidget(_hdr_lbl("", 24))
-        hdr.addWidget(_hdr_lbl("Expense", 0), 1)
-        hdr.addWidget(_hdr_lbl("Amount", 120))
-        hdr.addWidget(_hdr_lbl("Currency", 60))
-        hdr.addWidget(_hdr_lbl("Category", 140))
-        layout.insertLayout(2, hdr)   # insert after nav and warn_lbl
-
-        # ── Totals row ──
-        totals_row = QHBoxLayout()
-        totals_row.addStretch()
-        self._total_lbl = QLabel("Total: \u00a50  /  $0.00")
-        self._total_lbl.setStyleSheet("font-size:12px;font-weight:bold;")
-        totals_row.addWidget(self._total_lbl)
-        layout.addLayout(totals_row)
-
-        # ── Action buttons ──
-        btn_row = QHBoxLayout()
-        manage_btn = QPushButton("\u2699 Manage Templates")
-        manage_btn.setObjectName("secondary")
-        manage_btn.clicked.connect(self._manage_templates)
-        btn_row.addWidget(manage_btn)
-        check_all_btn = QPushButton("Check All"); check_all_btn.setObjectName("secondary")
-        check_all_btn.clicked.connect(lambda: self._set_all_checked(True))
-        btn_row.addWidget(check_all_btn)
-        uncheck_btn = QPushButton("Uncheck All"); uncheck_btn.setObjectName("secondary")
-        uncheck_btn.clicked.connect(lambda: self._set_all_checked(False))
-        btn_row.addWidget(uncheck_btn)
-        btn_row.addStretch()
-        cancel_btn = QPushButton("Cancel"); cancel_btn.setObjectName("secondary")
-        cancel_btn.clicked.connect(self.reject); btn_row.addWidget(cancel_btn)
-        self._log_btn = QPushButton("\u2714 Log Selected")
-        self._log_btn.clicked.connect(self._log_selected)
-        btn_row.addWidget(self._log_btn)
-        layout.addLayout(btn_row)
-
-    def _reload(self):
-        """Rebuild the expense rows from the current template list."""
-        # Clear existing rows
-        while self._rows_layout.count():
-            child = self._rows_layout.takeAt(0)
-            if child.widget(): child.widget().deleteLater()
-        self._rows = []
-
-        presets = self._load_presets()
-        for p in presets:
-            row_widget = QWidget()
-            row_l = QHBoxLayout(row_widget)
-            row_l.setContentsMargins(0, 2, 0, 2); row_l.setSpacing(8)
-
-            chk = QCheckBox(); chk.setChecked(True); chk.setFixedWidth(24)
-            row_l.addWidget(chk)
-
-            name_lbl = QLabel(p["name"]); name_lbl.setStyleSheet("font-size:12px;")
-            row_l.addWidget(name_lbl, 1)
-
-            amount_spin = QDoubleSpinBox()
-            amount_spin.setFixedWidth(120)
-            if p["currency"] == "JPY":
-                amount_spin.setRange(0, 9_999_999); amount_spin.setDecimals(0)
-                amount_spin.setSingleStep(1000); amount_spin.setPrefix("\u00a5 ")
-            else:
-                amount_spin.setRange(0, 99_999); amount_spin.setDecimals(2)
-                amount_spin.setSingleStep(10); amount_spin.setPrefix("$ ")
-            amount_spin.setValue(p["amount"])
-            amount_spin.valueChanged.connect(self._update_total)
-            chk.toggled.connect(self._update_total)
-            row_l.addWidget(amount_spin)
-
-            cur_lbl = QLabel(p["currency"]); cur_lbl.setFixedWidth(60)
-            cur_lbl.setObjectName("subtitle"); cur_lbl.setAlignment(Qt.AlignmentFlag.AlignCenter)
-            row_l.addWidget(cur_lbl)
-
-            cat_lbl = QLabel(p["category"]); cat_lbl.setFixedWidth(140)
-            cat_lbl.setObjectName("subtitle")
-            cat_lbl.setStyleSheet("font-size:10px;")
-            row_l.addWidget(cat_lbl)
-
-            self._rows_layout.addWidget(row_widget)
-            self._rows.append({
-                "check":       chk,
-                "amount_spin": amount_spin,
-                "preset":      p,
-            })
-
-        self._rows_layout.addStretch()
-        self._update_month_label()
-        self._update_total()
-
-    def _update_month_label(self):
-        self._month_lbl.setText(f"{_MONTH_NAMES[self._month]} {self._year}")
-        already = self.store.has_monthly_tag(self._year, self._month)
-        if already:
-            self._warn_lbl.setText(
-                "\u26a0\ufe0f  Monthly expenses have already been logged for this month. "
-                "Logging again will create duplicate entries.")
-        else:
-            self._warn_lbl.setText("")
-
-    def _update_total(self):
-        rate = _rate_mgr.rate
-        total_jpy = 0.0
-        for r in self._rows:
-            if not r["check"].isChecked(): continue
-            amt = r["amount_spin"].value()
-            if r["preset"]["currency"] == "JPY":
-                total_jpy += amt
-            else:
-                total_jpy += amt * rate
-        total_usd = total_jpy / rate if rate > 0 else 0
-        self._total_lbl.setText(
-            f"Total: \u00a5{int(total_jpy):,}  /  ${total_usd:,.2f}")
-
-    def _set_all_checked(self, state: bool):
-        for r in self._rows:
-            r["check"].setChecked(state)
-
-    def _prev_month(self):
-        if self._month == 1: self._month = 12; self._year -= 1
-        else: self._month -= 1
-        self._update_month_label()
-
-    def _next_month(self):
-        if self._month == 12: self._month = 1; self._year += 1
-        else: self._month += 1
-        self._update_month_label()
-
-    def _manage_templates(self):
-        dlg = MonthlyExpenseTemplatesDialog(self)
-        dlg.exec()
-        self._reload()
-
-    def _log_selected(self):
-        import calendar as _cal
-        selected = [r for r in self._rows if r["check"].isChecked()]
-        if not selected:
-            QMessageBox.warning(self, "Nothing Selected",
-                "Please check at least one expense to log."); return
-
-        # Use the last day of the selected month as the transaction date
-        last_day = _cal.monthrange(self._year, self._month)[1]
-        log_date = date(self._year, self._month, last_day).isoformat()
-
-        count = 0
-        for r in selected:
-            p = r["preset"]
-            amt = r["amount_spin"].value()
-            if amt <= 0: continue
-            self.store.add_transaction(
-                date=log_date,
-                amount=amt,
-                txn_type="expense",
-                category=p["category"],
-                description=f"[Monthly] {p['name']}",
-                currency=p["currency"],
-                is_job_pay=False,
-            )
-            count += 1
-
-        QMessageBox.information(self, "Logged",
-            f"Logged {count} expense(s) for "
-            f"{_MONTH_NAMES[self._month]} {self._year}.\n\n"
-            f"These are tagged [Monthly] and will appear in the transaction list. "
-            f"Filter by description to export for 確定申告.")
-        self.accept()
-
-
-def _hdr_lbl(text: str, width: int) -> QLabel:
-    lbl = QLabel(text)
-    lbl.setStyleSheet("font-size:10px;font-weight:bold;color:palette(mid);")
-    lbl.setAlignment(Qt.AlignmentFlag.AlignCenter)
-    if width > 0: lbl.setFixedWidth(width)
-    return lbl
-
-
-# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 #  GoalSettingsDialog — USD or JPY input
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
@@ -837,36 +421,27 @@ class GoalSettingsDialog(QDialog):
 
 
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-#  TransactionDialog
+#  IncomeDialog
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-class TransactionDialog(QDialog):
-    def __init__(self, parent=None, txn: Transaction | None = None,
-                 initial_type: str = "income"):
+class IncomeDialog(QDialog):
+    """New / edit dialog scoped to income transactions only.
+
+    The full income+expense dialog moved to expenses_panel.QuickExpenseDialog
+    (for expenses) and ReceiptEditorDialog (for receipts). Earnings now only
+    creates / edits Main Job and Side Job rows.
+    """
+
+    def __init__(self, parent=None, txn: Transaction | None = None):
         super().__init__(parent)
-        self.setWindowTitle("Edit Entry" if txn else "New Entry")
+        self.setWindowTitle("Edit Earning" if txn else "New Earning")
         self.setMinimumWidth(420)
         self.txn = txn
-        self._build_ui(initial_type)
+        self._build_ui()
 
-    @staticmethod
-    def _load_expense_cats() -> list[str]:
-        cats = load_config().get("expense_categories", [])
-        return cats if cats else list(EXPENSE_CATEGORIES)
-
-    @staticmethod
-    def _save_expense_cats(cats: list[str]):
-        cfg = load_config(); cfg["expense_categories"] = cats; save_config(cfg)
-
-    def _build_ui(self, initial_type: str):
+    def _build_ui(self):
         layout = QVBoxLayout(self); layout.setSpacing(10)
         form = QFormLayout(); form.setSpacing(8)
-
-        self.type_combo = QComboBox()
-        self.type_combo.addItems(["income", "expense"])
-        self.type_combo.setCurrentText(self.txn.type if self.txn else initial_type)
-        self.type_combo.currentTextChanged.connect(self._on_type_changed)
-        form.addRow("Type:", self.type_combo)
 
         self.currency_combo = QComboBox()
         self.currency_combo.addItems(["USD", "JPY"])
@@ -880,6 +455,7 @@ class TransactionDialog(QDialog):
         form.addRow("Amount:", self.amount_spin)
 
         self.date_edit = QDateEdit(); self.date_edit.setCalendarPopup(True)
+        self.date_edit.setDisplayFormat("yyyy-MM-dd")
         if self.txn:
             y, mo, d = (int(x) for x in self.txn.date.split("-"))
             self.date_edit.setDate(QDate(y, mo, d))
@@ -888,18 +464,16 @@ class TransactionDialog(QDialog):
             self.date_edit.setDate(QDate(t.year, t.month, t.day))
         form.addRow("Date:", self.date_edit)
 
-        self.cat_label = QLabel("Category")
-        cat_row = QHBoxLayout(); cat_row.setSpacing(4)
-        self.cat_combo = QComboBox(); self.cat_combo.setEditable(False)
-        cat_row.addWidget(self.cat_combo, 1)
-        self._add_cat_btn = QPushButton("+")
-        self._add_cat_btn.setFixedSize(26, 26)
-        self._add_cat_btn.setToolTip("Add a new expense category")
-        self._add_cat_btn.setObjectName("secondary")
-        self._add_cat_btn.clicked.connect(self._add_expense_cat)
-        cat_row.addWidget(self._add_cat_btn)
-        cat_container = QWidget(); cat_container.setLayout(cat_row)
-        form.addRow(self.cat_label, cat_container)
+        self.cat_combo = QComboBox()
+        self.cat_combo.addItems(INCOME_CATEGORIES)   # Main Job / Side Job
+        if self.txn:
+            idx = self.cat_combo.findText(self.txn.category)
+            if idx >= 0:
+                self.cat_combo.setCurrentIndex(idx)
+            else:
+                self.cat_combo.addItem(self.txn.category)
+                self.cat_combo.setCurrentText(self.txn.category)
+        form.addRow("Source:", self.cat_combo)
 
         self.desc_edit = QLineEdit()
         self.desc_edit.setPlaceholderText("Client, project, invoice #\u2026")
@@ -918,23 +492,7 @@ class TransactionDialog(QDialog):
         btn_box.accepted.connect(self.accept); btn_box.rejected.connect(self.reject)
         layout.addWidget(btn_box)
 
-        self._on_type_changed(self.type_combo.currentText())
         self._on_currency_changed(self.currency_combo.currentText())
-
-        if self.txn:
-            idx = self.cat_combo.findText(self.txn.category)
-            if idx >= 0: self.cat_combo.setCurrentIndex(idx)
-            else:
-                self.cat_combo.addItem(self.txn.category)
-                self.cat_combo.setCurrentText(self.txn.category)
-
-    def _on_type_changed(self, txn_type: str):
-        self.cat_label.setText("Source" if txn_type == "income" else "Category")
-        self.cat_combo.clear()
-        if txn_type == "income":
-            self.cat_combo.addItems(INCOME_CATEGORIES); self._add_cat_btn.setVisible(False)
-        else:
-            self.cat_combo.addItems(self._load_expense_cats()); self._add_cat_btn.setVisible(True)
 
     def _on_currency_changed(self, currency: str):
         rate = _rate_mgr.rate
@@ -947,28 +505,17 @@ class TransactionDialog(QDialog):
             self.amount_spin.setSingleStep(10)
             self.rate_hint.setText(f"Rate: \u00a5{rate:,.0f} = 1 USD")
 
-    def _add_expense_cat(self):
-        name, ok = QInputDialog.getText(self, "New Expense Category", "Category name:")
-        if not ok or not name.strip(): return
-        name = name.strip()
-        cats = self._load_expense_cats()
-        if name not in cats: cats.append(name); self._save_expense_cats(cats)
-        self.cat_combo.clear(); self.cat_combo.addItems(cats)
-        idx = self.cat_combo.findText(name)
-        if idx >= 0: self.cat_combo.setCurrentIndex(idx)
-
     def get_data(self) -> dict:
         qd = self.date_edit.date()
-        txn_type = self.type_combo.currentText()
         category = self.cat_combo.currentText()
         return {
             "date":        f"{qd.year():04d}-{qd.month():02d}-{qd.day():02d}",
             "amount":      self.amount_spin.value(),
-            "txn_type":    txn_type,
+            "txn_type":    "income",
             "category":    category,
-            "description": self.desc_edit.text(),
+            "description": self.desc_edit.text().strip(),
             "currency":    self.currency_combo.currentText(),
-            "is_job_pay":  (txn_type == "income" and category == "Main Job"),
+            "is_job_pay":  (category == "Main Job"),
         }
 
 
@@ -1236,15 +783,12 @@ class FinancePanel(QWidget):
 
         btn_earn = QPushButton("+ Earning"); btn_earn.setToolTip("Log a new earning")
         btn_earn.clicked.connect(self._add_earning); header.addWidget(btn_earn)
-        btn_exp = QPushButton("+ Expense"); btn_exp.setObjectName("secondary")
-        btn_exp.setToolTip("Log a new expense")
-        btn_exp.clicked.connect(self._add_expense); header.addWidget(btn_exp)
         btn_del = QPushButton("Delete"); btn_del.setObjectName("destructive")
         btn_del.setToolTip("Delete selected row(s)")
         btn_del.clicked.connect(self._delete_transaction); header.addWidget(btn_del)
         export_btn = QPushButton("Export for 確定申告 \U0001f4ca")
         export_btn.setObjectName("secondary")
-        export_btn.setToolTip("Export transactions for tax filing")
+        export_btn.setToolTip("Export transactions for tax filing (covers income + expenses)")
         export_btn.clicked.connect(self._open_tax_export)
         header.addWidget(export_btn)
         return header
@@ -1263,13 +807,6 @@ class FinancePanel(QWidget):
         manage_btn.setObjectName("secondary"); manage_btn.setFixedHeight(22)
         manage_btn.clicked.connect(self._open_preset_manager)
         title_row.addWidget(manage_btn)
-
-        self._monthly_expenses_btn = QPushButton("\U0001f4cb Monthly Expenses")
-        monthly_btn = self._monthly_expenses_btn
-        monthly_btn.setObjectName("secondary"); monthly_btn.setFixedHeight(22)
-        monthly_btn.setToolTip("Log recurring monthly bills in one go")
-        monthly_btn.clicked.connect(self._open_monthly_expenses)
-        title_row.addWidget(monthly_btn)
 
         outer.addLayout(title_row)
 
@@ -1296,18 +833,20 @@ class FinancePanel(QWidget):
                            ("All Time",    self._filter_all_time)]:
             btn = QPushButton(label); btn.setObjectName("secondary")
             btn.setFixedHeight(26); btn.clicked.connect(fn); row.addWidget(btn)
-        row.addSpacing(12); row.addWidget(QLabel("Show:"))
-        self.filter_type = QComboBox()
-        self.filter_type.addItems(["All", "income", "expense"])
-        self.filter_type.currentTextChanged.connect(self._refresh)
-        row.addWidget(self.filter_type)
+        row.addSpacing(12); row.addWidget(QLabel("Source:"))
+        self.filter_source = QComboBox()
+        self.filter_source.addItems(["All", "Main Job", "Side Job"])
+        self.filter_source.currentTextChanged.connect(self._refresh)
+        row.addWidget(self.filter_source)
         row.addSpacing(8); row.addWidget(QLabel("From:"))
         self.filter_start = QDateEdit(); self.filter_start.setCalendarPopup(True)
+        self.filter_start.setDisplayFormat("yyyy-MM-dd")
         today = date.today()
         self.filter_start.setDate(QDate(today.year, today.month, 1))
         self.filter_start.dateChanged.connect(self._refresh); row.addWidget(self.filter_start)
         row.addWidget(QLabel("To:"))
         self.filter_end = QDateEdit(); self.filter_end.setCalendarPopup(True)
+        self.filter_end.setDisplayFormat("yyyy-MM-dd")
         self.filter_end.setDate(QDate(today.year, today.month, today.day))
         self.filter_end.dateChanged.connect(self._refresh); row.addWidget(self.filter_end)
         row.addStretch()
@@ -1368,21 +907,11 @@ class FinancePanel(QWidget):
         self.earned_jpy_label = QLabel("\u00a50"); self.earned_jpy_label.setObjectName("subtitle")
         self.earned_jpy_label.setStyleSheet("font-size:13px;padding-left:2px;")
         self.summary_layout.addWidget(self.earned_jpy_label)
-        self.spent_label = QLabel("Spent: $0")
-        self.spent_label.setStyleSheet("font-size:15px;font-weight:bold;")
-        self.summary_layout.addWidget(self.spent_label)
-        sep = QFrame(); sep.setObjectName("separator")
-        sep.setFrameShape(QFrame.Shape.HLine); self.summary_layout.addWidget(sep)
-        self.net_label = QLabel("Net: $0")
-        self.net_label.setStyleSheet("font-size:20px;font-weight:bold;")
-        self.summary_layout.addWidget(self.net_label)
-        self.net_jpy_label = QLabel("\u00a50"); self.net_jpy_label.setObjectName("subtitle")
-        self.summary_layout.addWidget(self.net_jpy_label)
-        self.txn_count_label = QLabel("0 transactions"); self.txn_count_label.setObjectName("subtitle")
+        self.txn_count_label = QLabel("0 earnings"); self.txn_count_label.setObjectName("subtitle")
         self.summary_layout.addWidget(self.txn_count_label)
         sep2 = QFrame(); sep2.setObjectName("separator")
         sep2.setFrameShape(QFrame.Shape.HLine); self.summary_layout.addWidget(sep2)
-        cat_title = QLabel("By Category"); cat_title.setStyleSheet("font-weight:bold;font-size:13px;")
+        cat_title = QLabel("By Source"); cat_title.setStyleSheet("font-weight:bold;font-size:13px;")
         self.summary_layout.addWidget(cat_title)
         self.cat_bars_container = QWidget()
         self.cat_bars_layout = QVBoxLayout(self.cat_bars_container)
@@ -1454,23 +983,16 @@ class FinancePanel(QWidget):
             ph.setObjectName("subtitle"); self._preset_row_layout.insertWidget(0, ph)
 
     def _update_month_gate(self):
-        """Disable Quick Log and Monthly Expenses buttons when viewing a non-current month."""
+        """Disable Quick Log preset buttons when viewing a non-current month."""
         qs = self.filter_start.date()
         today = date.today()
         is_current = (qs.year() == today.year and qs.month() == today.month)
 
-        # Gate preset buttons
         for i in range(self._preset_row_layout.count()):
             w = self._preset_row_layout.itemAt(i).widget()
             if w and isinstance(w, PresetButton):
                 w.setEnabled(is_current)
                 w.setToolTip("" if is_current else "Switch to the current month to log income")
-
-        # Gate monthly expenses button
-        self._monthly_expenses_btn.setEnabled(is_current)
-        self._monthly_expenses_btn.setToolTip(
-            "" if is_current else "Switch to the current month to log income"
-        )
 
     def _log_preset(self, preset: JobPreset, units: float = 1.0):
         self.store.log_preset(
@@ -1481,11 +1003,6 @@ class FinancePanel(QWidget):
     def _open_preset_manager(self):
         PresetManagerDialog(self.store, self).exec()
         self._rebuild_preset_buttons(); self._refresh()
-
-    def _open_monthly_expenses(self):
-        dlg = MonthlyExpensesDialog(self.store, self._palette, self)
-        if dlg.exec() == QDialog.DialogCode.Accepted:
-            self._refresh()
 
     # ── Goals ─────────────────────────────────────────────────────────────────
 
@@ -1527,17 +1044,23 @@ class FinancePanel(QWidget):
 
     # ── Refresh ───────────────────────────────────────────────────────────────
 
-    def _get_filters(self) -> tuple[str, str, str | None]:
+    def _get_filters(self) -> tuple[str, str]:
         qs = self.filter_start.date(); qe = self.filter_end.date()
         start = f"{qs.year():04d}-{qs.month():02d}-{qs.day():02d}"
         end   = f"{qe.year():04d}-{qe.month():02d}-{qe.day():02d}"
-        t = self.filter_type.currentText()
-        return start, end, (None if t == "All" else t)
+        return start, end
 
     def _refresh(self):
         self._cfg = load_config(); rate = _rate_mgr.rate
-        start, end, txn_type = self._get_filters()
-        txns = self.store.get_transactions(start, end, txn_type)
+        start, end = self._get_filters()
+        # Income-only — expenses live in the Expenses tab now.
+        txns = self.store.get_transactions(start, end, "income")
+        source = self.filter_source.currentText() if hasattr(self, "filter_source") else "All"
+        if source == "Main Job":
+            txns = [t for t in txns if t.is_job_pay]
+        elif source == "Side Job":
+            txns = [t for t in txns if not t.is_job_pay]
+
         green  = self._palette.get("green",  "#a6e3a1")
         red    = self._palette.get("red",    "#f38ba8")
         gold   = "#f9e2af"
@@ -1554,44 +1077,38 @@ class FinancePanel(QWidget):
             self.table.setItem(ri, 0, QTableWidgetItem(txn.date))
             if txn.is_job_pay:
                 type_text, clr = "Main Job", QColor(gold)
-            elif txn.type == "income":
-                type_text, clr = "Side Job", QColor(green)
             else:
-                type_text, clr = "Expense",  QColor(red)
+                type_text, clr = "Side Job", QColor(green)
             ti = QTableWidgetItem(type_text); ti.setForeground(QBrush(clr))
             self.table.setItem(ri, 1, ti)
             self.table.setItem(ri, 2, QTableWidgetItem(txn.category))
-            pfx = "+" if txn.type == "income" else "-"
             sym = "\u00a5" if txn.currency == "JPY" else "$"
-            amt_str = (f"{pfx}{sym}{int(txn.amount):,}" if txn.currency == "JPY"
-                       else f"{pfx}{sym}{txn.amount:,.2f}")
+            amt_str = (f"+{sym}{int(txn.amount):,}" if txn.currency == "JPY"
+                       else f"+{sym}{txn.amount:,.2f}")
             ai = QTableWidgetItem(amt_str); ai.setForeground(QBrush(clr))
             ai.setTextAlignment(Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter)
             self.table.setItem(ri, 3, ai)
             jpy_v = int(txn.amount) if txn.currency == "JPY" else int(txn.amount * rate)
-            ji = QTableWidgetItem(f"{pfx}\u00a5{jpy_v:,}"); ji.setForeground(QBrush(clr))
+            ji = QTableWidgetItem(f"+\u00a5{jpy_v:,}"); ji.setForeground(QBrush(clr))
             ji.setTextAlignment(Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter)
             self.table.setItem(ri, 4, ji)
             self.table.setItem(ri, 5, QTableWidgetItem(txn.description))
 
-        summary = self.store.get_summary(start, end)
-        earned_usd = summary["earned"]; spent_usd = summary["spent"]; net_usd = summary["net"]
+        # Income-only summary
+        earned_usd = sum(t.amount / rate if t.currency == "JPY" else t.amount
+                         for t in txns)
         self.earned_usd_label.setText(f"Earned: ${earned_usd:,.2f}")
         self.earned_usd_label.setStyleSheet(f"color:{green};font-size:18px;font-weight:bold;")
         self.earned_jpy_label.setText(f"\u00a5{int(earned_usd * rate):,}")
-        self.spent_label.setText(f"Spent: ${spent_usd:,.2f}")
-        self.spent_label.setStyleSheet(f"color:{red};font-size:15px;font-weight:bold;")
-        nc = green if net_usd >= 0 else red; sign = "+" if net_usd >= 0 else ""
-        self.net_label.setText(f"Net: {sign}${net_usd:,.2f}")
-        self.net_label.setStyleSheet(f"color:{nc};font-size:20px;font-weight:bold;")
-        nj = int(net_usd * rate); njs = "+" if nj >= 0 else ""
-        self.net_jpy_label.setText(f"{njs}\u00a5{nj:,}")
-        self.txn_count_label.setText(f"{summary['count']} transaction(s) in period")
+        self.txn_count_label.setText(f"{len(txns)} earning(s) in period")
 
         while self.cat_bars_layout.count():
             child = self.cat_bars_layout.takeAt(0)
             if child.widget(): child.widget().deleteLater()
-        by_cat = summary["by_category"]
+        by_cat: dict[str, float] = {}
+        for t in txns:
+            usd = t.amount / rate if t.currency == "JPY" else t.amount
+            by_cat[t.category] = by_cat.get(t.category, 0.0) + usd
         if by_cat:
             mx = max(by_cat.values())
             bar_colors = [self._palette.get("accent","#4a9eff"), green,
@@ -1600,21 +1117,17 @@ class FinancePanel(QWidget):
                 self.cat_bars_layout.addWidget(
                     CategoryBar(cat, amt, mx, rate, bar_colors[i % len(bar_colors)]))
         else:
-            nd = QLabel("No transactions in this period"); nd.setObjectName("subtitle")
+            nd = QLabel("No earnings in this period"); nd.setObjectName("subtitle")
             self.cat_bars_layout.addWidget(nd)
 
         self._update_goal_section()
         self._rebuild_preset_buttons()
         self._update_month_gate()
 
-    # ── CRUD ─────────────────────────────────────────────────────────────────
+    # ── CRUD ───────────────────────────────────────────────────────────────────
 
     def _add_earning(self):
-        dlg = TransactionDialog(self, initial_type="income")
-        if dlg.exec(): self.store.add_transaction(**dlg.get_data()); self._refresh()
-
-    def _add_expense(self):
-        dlg = TransactionDialog(self, initial_type="expense")
+        dlg = IncomeDialog(self)
         if dlg.exec(): self.store.add_transaction(**dlg.get_data()); self._refresh()
 
     def _edit_transaction(self, index):
@@ -1623,7 +1136,7 @@ class FinancePanel(QWidget):
         txn = next((t for t in self.store.get_transactions()
                     if t.id == self._txn_ids[row]), None)
         if not txn: return
-        dlg = TransactionDialog(self, txn)
+        dlg = IncomeDialog(self, txn=txn)
         if dlg.exec():
             d = dlg.get_data()
             txn.date = d["date"]; txn.amount = d["amount"]; txn.type = d["txn_type"]
