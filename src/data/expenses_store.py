@@ -492,7 +492,7 @@ class ExpensesStore:
                           MAX(r.date) AS last_date
                    FROM receipt_items ri
                    JOIN receipts r ON ri.receipt_id = r.id
-                   WHERE ri.deleted = 0 AND r.deleted = 0
+                   WHERE r.deleted = 0
                      AND lower(ri.name) LIKE ?
                    GROUP BY r.vendor, ri.currency
                    ORDER BY times_seen DESC""",

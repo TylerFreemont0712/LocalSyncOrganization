@@ -531,10 +531,10 @@ class PresetButton(QWidget):
         super().__init__(parent)
         self.preset = preset
         layout = QVBoxLayout(self)
-        layout.setContentsMargins(6, 4, 6, 4); layout.setSpacing(1)
+        layout.setContentsMargins(5, 3, 5, 3); layout.setSpacing(1)
         name_lbl = QLabel(preset.name)
         name_lbl.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        name_lbl.setStyleSheet("font-weight:bold;font-size:12px;")
+        name_lbl.setStyleSheet("font-weight:bold;font-size:11px;")
         layout.addWidget(name_lbl)
 
         unit  = (preset.pay_unit or "flat").lower()
@@ -565,7 +565,7 @@ class PresetButton(QWidget):
             time_row.addWidget(self._units_spin, 1)
             layout.addLayout(time_row)
 
-        log_btn = QPushButton("+ Log"); log_btn.setFixedHeight(24)
+        log_btn = QPushButton("+ Log"); log_btn.setFixedHeight(22)
         log_btn.clicked.connect(self._emit_clicked)
         layout.addWidget(log_btn)
 
@@ -799,7 +799,7 @@ class FinancePanel(QWidget):
     def _build_quick_log_bar(self) -> QWidget:
         container = QWidget()
         outer = QVBoxLayout(container)
-        outer.setContentsMargins(0, 2, 0, 2); outer.setSpacing(2)
+        outer.setContentsMargins(0, 2, 0, 2); outer.setSpacing(3)
 
         title_row = QHBoxLayout()
         lbl = QLabel("Quick Log \u2014 Job Pay")
@@ -807,14 +807,14 @@ class FinancePanel(QWidget):
         title_row.addWidget(lbl); title_row.addStretch()
 
         manage_btn = QPushButton("\u2699 Manage Presets")
-        manage_btn.setObjectName("secondary"); manage_btn.setFixedHeight(20)
+        manage_btn.setObjectName("secondary")
         manage_btn.clicked.connect(self._open_preset_manager)
         title_row.addWidget(manage_btn)
 
         outer.addLayout(title_row)
 
         self._preset_scroll = QScrollArea()
-        self._preset_scroll.setWidgetResizable(True); self._preset_scroll.setFixedHeight(90)
+        self._preset_scroll.setWidgetResizable(True); self._preset_scroll.setFixedHeight(108)
         self._preset_scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAsNeeded)
         self._preset_scroll.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
         self._preset_row_widget = QWidget()
@@ -953,7 +953,10 @@ class FinancePanel(QWidget):
         self._refresh()
 
     def _filter_this_month(self):
-        today = date.today(); self._set_date_range(today.replace(day=1), today)
+        import calendar as _cal
+        today = date.today()
+        last_day = _cal.monthrange(today.year, today.month)[1]
+        self._set_date_range(today.replace(day=1), today.replace(day=last_day))
 
     def _filter_last_month(self):
         today = date.today(); fp = today.replace(day=1); lp = fp - timedelta(days=1)
