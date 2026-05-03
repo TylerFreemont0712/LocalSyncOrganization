@@ -1355,7 +1355,6 @@ class ExpensesPanel(QWidget):
 
         self.cat_tree.blockSignals(True)
         self.cat_tree.clear()
-        self._catalog_item_map: dict[QTreeWidgetItem, str] = {}  # tree node → item id
 
         for it in items:
             fp = self._fmt_price
@@ -1376,7 +1375,6 @@ class ExpensesPanel(QWidget):
                 placeholder = QTreeWidgetItem(["Loading…"])
                 node.addChild(placeholder)
             self.cat_tree.addTopLevelItem(node)
-            self._catalog_item_map[node] = it.id
 
         self.cat_tree.blockSignals(False)
 
