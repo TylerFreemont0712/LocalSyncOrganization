@@ -418,7 +418,12 @@ class ExpensesStore:
 
     def _upsert_item_stats(self, name: str, price: float, currency: str,
                            seen_date: str, category: str = "") -> None:
-        """Insert or roll the price stats for `name` after a receipt write."""
+        """Insert or recompute stats for `name` after a receipt write.
+
+        All aggregate stats (times_seen, avg, min, max) are derived from the
+        actual receipt_items rows rather than incremented so that editing a
+        receipt cannot inflate the counter.
+        """
         norm = _normalize(name)
         if not norm:
             return
@@ -435,26 +440,52 @@ class ExpensesStore:
                        (id, name, normalized_name, category, last_price,
                         last_currency, last_seen_date, times_seen,
                         avg_price, min_price, max_price, updated_at, deleted)
-                       VALUES (?, ?, ?, ?, ?, ?, ?, 1, ?, ?, ?, ?, 0)""",
+                       VALUES (?, ?, ?, ?, ?, ?, ?, 0, ?, ?, ?, ?, 0)""",
                     (str(uuid.uuid4()), name.strip(), norm, category,
                      price, currency, seen_date, price, price, price, now),
                 )
-            else:
-                seen     = (row["times_seen"] or 0) + 1
-                avg      = ((row["avg_price"] or 0.0) * (seen - 1) + price) / seen
-                min_p    = min(row["min_price"] or price, price)
-                max_p    = max(row["max_price"] or price, price)
-                # Prefer the more specific name we already have
-                conn.execute(
-                    """UPDATE expense_items SET
-                         last_price=?, last_currency=?, last_seen_date=?,
-                         times_seen=?, avg_price=?, min_price=?, max_price=?,
-                         category=COALESCE(NULLIF(category,''), ?),
-                         updated_at=?
-                       WHERE id=?""",
-                    (price, currency, seen_date, seen, avg, min_p, max_p,
-                     category, now, row["id"]),
-                )
+
+            # Recompute all price stats from ground-truth receipt_items so the
+            # numbers stay accurate after edits (which delete + re-insert rows).
+            agg = conn.execute(
+                """SELECT COUNT(*)        AS cnt,
+                          AVG(ri.unit_price) AS avg_p,
+                          MIN(ri.unit_price) AS min_p,
+                          MAX(ri.unit_price) AS max_p
+                   FROM receipt_items ri
+                   JOIN receipts r ON ri.receipt_id = r.id
+                   WHERE r.deleted = 0 AND lower(ri.name) LIKE ?""",
+                (f"%{norm}%",),
+            ).fetchone()
+
+            # Find the most-recent purchase to set last_price / last_seen_date.
+            latest = conn.execute(
+                """SELECT ri.unit_price, r.currency, r.date
+                   FROM receipt_items ri
+                   JOIN receipts r ON ri.receipt_id = r.id
+                   WHERE r.deleted = 0 AND lower(ri.name) LIKE ?
+                   ORDER BY r.date DESC, r.updated_at DESC LIMIT 1""",
+                (f"%{norm}%",),
+            ).fetchone()
+
+            cnt   = agg["cnt"]   if agg   and agg["cnt"]   else 1
+            avg_p = agg["avg_p"] if agg   and agg["avg_p"] else price
+            min_p = agg["min_p"] if agg   and agg["min_p"] else price
+            max_p = agg["max_p"] if agg   and agg["max_p"] else price
+            l_price = latest["unit_price"] if latest else price
+            l_cur   = latest["currency"]   if latest else currency
+            l_date  = latest["date"]       if latest else seen_date
+
+            conn.execute(
+                """UPDATE expense_items SET
+                     last_price=?, last_currency=?, last_seen_date=?,
+                     times_seen=?, avg_price=?, min_price=?, max_price=?,
+                     category=COALESCE(NULLIF(category,''), ?),
+                     updated_at=?
+                   WHERE normalized_name=? AND deleted=0""",
+                (l_price, l_cur, l_date, cnt, avg_p, min_p, max_p,
+                 category, now, norm),
+            )
             conn.commit()
         finally:
             conn.close()
@@ -512,6 +543,60 @@ class ExpensesStore:
             ]
         finally:
             conn.close()
+
+    def get_item_all_prices(self, item_name: str) -> list[dict]:
+        """All individual purchase records for an item, grouped by vendor.
+
+        Returns a list of dicts with keys: vendor, currency, prices (list of
+        floats), dates (list of str), min_price, max_price, avg_price, times_seen,
+        last_date.  Suitable for populating the expandable tree rows in the
+        catalogue UI.
+        """
+        norm = _normalize(item_name)
+        if not norm:
+            return []
+        conn = get_connection()
+        try:
+            rows = conn.execute(
+                """SELECT r.vendor, r.currency, ri.unit_price, r.date
+                   FROM receipt_items ri
+                   JOIN receipts r ON ri.receipt_id = r.id
+                   WHERE r.deleted = 0 AND lower(ri.name) LIKE ?
+                   ORDER BY r.vendor, r.date""",
+                (f"%{norm}%",),
+            ).fetchall()
+        finally:
+            conn.close()
+
+        # Group by (vendor, currency)
+        groups: dict[tuple, dict] = {}
+        for r in rows:
+            key = (r["vendor"] or "Unknown", r["currency"] or "JPY")
+            if key not in groups:
+                groups[key] = {
+                    "vendor":   key[0],
+                    "currency": key[1],
+                    "prices":   [],
+                    "dates":    [],
+                }
+            groups[key]["prices"].append(r["unit_price"] or 0.0)
+            groups[key]["dates"].append(r["date"] or "")
+
+        result = []
+        for g in sorted(groups.values(), key=lambda x: (-len(x["prices"]), x["vendor"])):
+            prices = g["prices"]
+            result.append({
+                "vendor":     g["vendor"],
+                "currency":   g["currency"],
+                "prices":     prices,
+                "dates":      g["dates"],
+                "times_seen": len(prices),
+                "min_price":  min(prices) if prices else 0.0,
+                "max_price":  max(prices) if prices else 0.0,
+                "avg_price":  sum(prices) / len(prices) if prices else 0.0,
+                "last_date":  max(g["dates"]) if g["dates"] else "",
+            })
+        return result
 
     # ── Aggregates ────────────────────────────────────────────────────────────
 

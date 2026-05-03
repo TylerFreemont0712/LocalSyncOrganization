@@ -34,8 +34,8 @@ from PyQt6.QtWidgets import (
     QDialogButtonBox, QDoubleSpinBox, QFormLayout, QFrame, QGridLayout,
     QHBoxLayout, QHeaderView, QInputDialog, QLabel, QLineEdit, QMessageBox,
     QPlainTextEdit, QPushButton, QScrollArea, QSizePolicy, QSpinBox,
-    QSplitter, QTabWidget, QTableWidget, QTableWidgetItem, QVBoxLayout,
-    QWidget,
+    QSplitter, QTabWidget, QTableWidget, QTableWidgetItem, QTreeWidget,
+    QTreeWidgetItem, QVBoxLayout, QWidget,
 )
 
 from src.config import load_config, save_config
@@ -115,22 +115,37 @@ class ItemNameEdit(QLineEdit):
         self._refresh_suggestions("")
 
     def _refresh_suggestions(self, text: str):
+        # When the completer inserts a full label (e.g. "Eggs  ·  ¥298") into
+        # the field, textEdited fires with that label string.  Refreshing with
+        # it would clobber _label_map before _on_completer_activated can use it,
+        # leaving the price text stuck in the field.  The "  ·  " separator only
+        # ever appears in labels we build, never in a user-typed query.
+        if "  ·  " in text:
+            return
         self._items = self._store.search_items(text or "", limit=20)
+        self._label_map: dict[str, ExpenseItem] = {}
         labels = []
         for it in self._items:
             sym = "¥" if it.last_currency == "JPY" else "$"
-            labels.append(f"{it.name}  ·  {sym}{it.last_price:,.0f}")
+            lbl = f"{it.name}  ·  {sym}{it.last_price:,.0f}"
+            labels.append(lbl)
+            self._label_map[lbl] = it
         self._model.setStringList(labels)
 
     def _on_completer_activated(self, label: str):
-        for it in self._items:
-            sym = "¥" if it.last_currency == "JPY" else "$"
-            if label.startswith(it.name + "  ·  "):
-                self.setText(it.name)
-                if self.price_target:
-                    self.price_target.setValue(float(it.last_price))
-                self.item_picked.emit(it)
-                return
+        it = getattr(self, "_label_map", {}).get(label)
+        if it is None:
+            # Fallback: linear scan in case the map is stale
+            for candidate in self._items:
+                if label.startswith(candidate.name + "  ·  "):
+                    it = candidate
+                    break
+        if it is None:
+            return
+        self.setText(it.name)
+        if self.price_target:
+            self.price_target.setValue(float(it.last_price))
+        self.item_picked.emit(it)
 
 
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -1149,52 +1164,23 @@ class ExpensesPanel(QWidget):
         bar.addWidget(self.cat_sort)
         v.addLayout(bar)
 
-        self.cat_table = QTableWidget()
-        self.cat_table.setColumnCount(7)
-        self.cat_table.setHorizontalHeaderLabels(
+        # Tree widget: top-level rows are items; child rows are per-vendor
+        # price breakdowns, loaded lazily on first expand.
+        self.cat_tree = QTreeWidget()
+        self.cat_tree.setColumnCount(7)
+        self.cat_tree.setHeaderLabels(
             ["Item", "Last Price", "Avg", "Min", "Max", "Times Seen", "Last Date"]
         )
-        hh = self.cat_table.horizontalHeader()
+        hh = self.cat_tree.header()
         hh.setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
         for col in (1, 2, 3, 4, 5, 6):
             hh.setSectionResizeMode(col, QHeaderView.ResizeMode.ResizeToContents)
-        self.cat_table.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectRows)
-        self.cat_table.setEditTriggers(QAbstractItemView.EditTrigger.NoEditTriggers)
-        self.cat_table.setAlternatingRowColors(True)
-        self.cat_table.itemSelectionChanged.connect(self._on_catalog_selection)
-        v.addWidget(self.cat_table, 2)
-
-        # Vendor price breakdown panel — shown when an item is selected
-        self._vendor_frame = QFrame()
-        self._vendor_frame.setObjectName("separator")
-        self._vendor_frame.setFrameShape(QFrame.Shape.StyledPanel)
-        vf_layout = QVBoxLayout(self._vendor_frame)
-        vf_layout.setContentsMargins(8, 6, 8, 6); vf_layout.setSpacing(4)
-
-        vf_header = QHBoxLayout()
-        self._vendor_title = QLabel("Select an item to see store price breakdown")
-        self._vendor_title.setObjectName("subtitle")
-        self._vendor_title.setStyleSheet("font-weight:bold;font-size:11px;")
-        vf_header.addWidget(self._vendor_title)
-        vf_header.addStretch()
-        vf_layout.addLayout(vf_header)
-
-        self._vendor_table = QTableWidget()
-        self._vendor_table.setColumnCount(6)
-        self._vendor_table.setHorizontalHeaderLabels(
-            ["Store / Vendor", "Avg Price", "Min", "Max", "Times", "Last Seen"]
-        )
-        vh = self._vendor_table.horizontalHeader()
-        vh.setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
-        for col in (1, 2, 3, 4, 5):
-            vh.setSectionResizeMode(col, QHeaderView.ResizeMode.ResizeToContents)
-        self._vendor_table.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectRows)
-        self._vendor_table.setEditTriggers(QAbstractItemView.EditTrigger.NoEditTriggers)
-        self._vendor_table.setAlternatingRowColors(True)
-        self._vendor_table.setMaximumHeight(130)
-        vf_layout.addWidget(self._vendor_table)
-
-        v.addWidget(self._vendor_frame, 1)
+        self.cat_tree.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectRows)
+        self.cat_tree.setEditTriggers(QAbstractItemView.EditTrigger.NoEditTriggers)
+        self.cat_tree.setAlternatingRowColors(True)
+        self.cat_tree.setRootIsDecorated(True)
+        self.cat_tree.itemExpanded.connect(self._on_catalog_item_expanded)
+        v.addWidget(self.cat_tree, 1)
 
         bot = QHBoxLayout()
         del_btn = QPushButton("Remove Selected"); del_btn.setObjectName("destructive")
@@ -1349,8 +1335,15 @@ class ExpensesPanel(QWidget):
             self.rcpt_table.setItem(i, 4, ti)
             self.rcpt_table.setItem(i, 5, QTableWidgetItem(r.currency))
 
+    # ── Catalogue helpers ──────────────────────────────────────────────────────
+
+    @staticmethod
+    def _fmt_price(val: float, currency: str) -> str:
+        sym = "¥" if currency == "JPY" else "$"
+        return f"{sym}{val:,.0f}" if currency == "JPY" else f"{sym}{val:,.2f}"
+
     def _refresh_catalog(self):
-        if not hasattr(self, "cat_table"):
+        if not hasattr(self, "cat_tree"):
             return
         q = self.cat_search.text().strip() if hasattr(self, "cat_search") else ""
         sort_label = self.cat_sort.currentText() if hasattr(self, "cat_sort") else "Name"
@@ -1358,55 +1351,72 @@ class ExpensesPanel(QWidget):
             "Name": "name", "Most Seen": "seen",
             "Most Recent": "recent", "Highest Price": "price",
         }.get(sort_label, "name")
-        if q:
-            items = self.store.search_items(q, limit=500)
-        else:
-            items = self.store.get_all_items(sort_by=sort_key)
-        self.cat_table.setRowCount(len(items))
-        self._catalog_ids: list[str] = []
-        self._catalog_names: list[str] = []
-        for i, it in enumerate(items):
-            self._catalog_ids.append(it.id)
-            self._catalog_names.append(it.name)
-            sym = "¥" if it.last_currency == "JPY" else "$"
-            self.cat_table.setItem(i, 0, QTableWidgetItem(it.name))
-            self.cat_table.setItem(i, 1, QTableWidgetItem(f"{sym}{it.last_price:,.0f}"))
-            self.cat_table.setItem(i, 2, QTableWidgetItem(f"{sym}{it.avg_price:,.0f}"))
-            self.cat_table.setItem(i, 3, QTableWidgetItem(f"{sym}{it.min_price:,.0f}"))
-            self.cat_table.setItem(i, 4, QTableWidgetItem(f"{sym}{it.max_price:,.0f}"))
-            self.cat_table.setItem(i, 5, QTableWidgetItem(str(it.times_seen)))
-            self.cat_table.setItem(i, 6, QTableWidgetItem(it.last_seen_date))
+        items = self.store.search_items(q, limit=500) if q else self.store.get_all_items(sort_by=sort_key)
 
-    def _on_catalog_selection(self):
-        if not hasattr(self, "_catalog_names"):
+        self.cat_tree.blockSignals(True)
+        self.cat_tree.clear()
+        self._catalog_item_map: dict[QTreeWidgetItem, str] = {}  # tree node → item id
+
+        for it in items:
+            fp = self._fmt_price
+            node = QTreeWidgetItem([
+                it.name,
+                fp(it.last_price, it.last_currency),
+                fp(it.avg_price,  it.last_currency),
+                fp(it.min_price,  it.last_currency),
+                fp(it.max_price,  it.last_currency),
+                str(it.times_seen),
+                it.last_seen_date,
+            ])
+            node.setData(0, Qt.ItemDataRole.UserRole, it.id)
+            node.setData(0, Qt.ItemDataRole.UserRole + 1, it.name)
+            # Placeholder child so Qt shows the expand arrow; populated lazily.
+            node.setData(0, Qt.ItemDataRole.UserRole + 2, False)  # expanded flag
+            if it.times_seen > 0:
+                placeholder = QTreeWidgetItem(["Loading…"])
+                node.addChild(placeholder)
+            self.cat_tree.addTopLevelItem(node)
+            self._catalog_item_map[node] = it.id
+
+        self.cat_tree.blockSignals(False)
+
+    def _on_catalog_item_expanded(self, node: QTreeWidgetItem):
+        already_loaded = node.data(0, Qt.ItemDataRole.UserRole + 2)
+        if already_loaded:
             return
-        rows = self.cat_table.selectionModel().selectedRows()
-        if not rows:
-            self._vendor_title.setText("Select an item to see store price breakdown")
-            self._vendor_table.setRowCount(0)
+        node.setData(0, Qt.ItemDataRole.UserRole + 2, True)
+        item_name = node.data(0, Qt.ItemDataRole.UserRole + 1)
+        if not item_name:
             return
-        row = rows[0].row()
-        if row >= len(self._catalog_names):
+
+        vendors = self.store.get_item_all_prices(item_name)
+
+        # Remove placeholder
+        while node.childCount():
+            node.removeChild(node.child(0))
+
+        if not vendors:
+            empty = QTreeWidgetItem(["  (no receipt data found)"])
+            node.addChild(empty)
             return
-        item_name = self._catalog_names[row]
-        stats = self.store.get_item_vendor_stats(item_name)
-        self._vendor_title.setText(
-            f"Store breakdown for: {item_name}" if stats
-            else f"{item_name} — no receipt data found for this item"
-        )
-        self._vendor_table.setRowCount(len(stats))
-        for i, s in enumerate(stats):
-            sym = "¥" if s["currency"] == "JPY" else "$"
-            fmt = "{:,.0f}" if s["currency"] == "JPY" else "{:,.2f}"
-            self._vendor_table.setItem(i, 0, QTableWidgetItem(s["vendor"]))
-            self._vendor_table.setItem(i, 1, QTableWidgetItem(
-                f"{sym}{fmt.format(s['avg_price'])}"))
-            self._vendor_table.setItem(i, 2, QTableWidgetItem(
-                f"{sym}{fmt.format(s['min_price'])}"))
-            self._vendor_table.setItem(i, 3, QTableWidgetItem(
-                f"{sym}{fmt.format(s['max_price'])}"))
-            self._vendor_table.setItem(i, 4, QTableWidgetItem(str(s["times_seen"])))
-            self._vendor_table.setItem(i, 5, QTableWidgetItem(s["last_date"]))
+
+        for v in vendors:
+            sym = "¥" if v["currency"] == "JPY" else "$"
+            fmt_p = lambda x: f"{x:,.0f}" if v["currency"] == "JPY" else f"{x:,.2f}"
+
+            # Individual prices as a compact space-separated list in the "Last Price" column
+            price_list = "  ".join(f"{sym}{fmt_p(p)}" for p in v["prices"])
+
+            child = QTreeWidgetItem([
+                f"  ▸ {v['vendor']}",
+                price_list,
+                f"{sym}{fmt_p(v['avg_price'])}",
+                f"{sym}{fmt_p(v['min_price'])}",
+                f"{sym}{fmt_p(v['max_price'])}",
+                str(v["times_seen"]),
+                v["last_date"],
+            ])
+            node.addChild(child)
 
     # ── Actions ────────────────────────────────────────────────────────────────
 
@@ -1502,17 +1512,21 @@ class ExpensesPanel(QWidget):
         self._refresh()
 
     def _delete_catalog_item(self):
-        rows = self.cat_table.selectionModel().selectedRows()
-        if not rows: return
+        selected = [
+            node for node in self.cat_tree.selectedItems()
+            if node.parent() is None  # top-level items only
+        ]
+        if not selected:
+            return
         if QMessageBox.question(
             self, "Remove",
-            f"Remove {len(rows)} item(s) from the catalogue?\n"
+            f"Remove {len(selected)} item(s) from the catalogue?\n"
             "Past receipts won't be affected, but the price history is dropped.",
             QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
         ) != QMessageBox.StandardButton.Yes:
             return
-        for idx in rows:
-            r = idx.row()
-            if r < len(self._catalog_ids):
-                self.store.delete_item(self._catalog_ids[r])
+        for node in selected:
+            item_id = node.data(0, Qt.ItemDataRole.UserRole)
+            if item_id:
+                self.store.delete_item(item_id)
         self._refresh_catalog()
