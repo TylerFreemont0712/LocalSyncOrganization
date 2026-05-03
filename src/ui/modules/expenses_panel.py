@@ -996,39 +996,57 @@ class ExpensesPanel(QWidget):
         w = QWidget(); v = QVBoxLayout(w)
         v.setContentsMargins(0, 8, 0, 0); v.setSpacing(6)
 
-        # Filters
+        # Filters — search first (far left), then period pills, then date range
         f = QHBoxLayout(); f.setSpacing(6)
-        for label, fn in [("This Month", self._filter_this_month),
-                           ("Last Month", self._filter_last_month),
-                           ("This Year",  self._filter_this_year),
-                           ("All Time",   self._filter_all_time)]:
+
+        self.search_edit = QLineEdit()
+        self.search_edit.setPlaceholderText("Search vendor / description…")
+        self.search_edit.setMinimumWidth(180)
+        self.search_edit.setMaximumWidth(240)
+        self.search_edit.textChanged.connect(self._refresh)
+        f.addWidget(self.search_edit)
+
+        f.addSpacing(4)
+
+        # Compact acronym period pills
+        _pill_style = (
+            "QPushButton{border-radius:10px;padding:0 8px;"
+            "font-size:11px;font-weight:bold;min-width:32px;max-width:42px;}"
+        )
+        for label, tip, fn in [
+            ("TM", "This Month", self._filter_this_month),
+            ("LM", "Last Month", self._filter_last_month),
+            ("TY", "This Year",  self._filter_this_year),
+            ("AT", "All Time",   self._filter_all_time),
+        ]:
             b = QPushButton(label); b.setObjectName("secondary")
-            b.setFixedHeight(26); b.clicked.connect(fn); f.addWidget(b)
-        f.addSpacing(8); f.addWidget(QLabel("Category:"))
+            b.setFixedHeight(24); b.setToolTip(tip)
+            b.setStyleSheet(_pill_style)
+            b.clicked.connect(fn); f.addWidget(b)
+
+        f.addSpacing(6); f.addWidget(QLabel("Cat:"))
         self.cat_filter = QComboBox()
         self.cat_filter.addItem("All")
         self.cat_filter.addItems(_load_categories())
         self.cat_filter.currentTextChanged.connect(self._refresh)
         f.addWidget(self.cat_filter)
-        f.addSpacing(8); f.addWidget(QLabel("From:"))
+
+        f.addSpacing(6); f.addWidget(QLabel("From:"))
+        today = date.today()
         self.from_edit = QDateEdit(); self.from_edit.setCalendarPopup(True)
         self.from_edit.setDisplayFormat("yyyy-MM-dd")
-        today = date.today()
+        self.from_edit.setMinimumWidth(108)
         self.from_edit.setDate(QDate(today.year, today.month, 1))
         self.from_edit.dateChanged.connect(self._refresh)
         f.addWidget(self.from_edit)
         f.addWidget(QLabel("To:"))
         self.to_edit = QDateEdit(); self.to_edit.setCalendarPopup(True)
         self.to_edit.setDisplayFormat("yyyy-MM-dd")
+        self.to_edit.setMinimumWidth(108)
         self.to_edit.setDate(QDate(today.year, today.month, today.day))
         self.to_edit.dateChanged.connect(self._refresh)
         f.addWidget(self.to_edit)
         f.addStretch()
-        self.search_edit = QLineEdit()
-        self.search_edit.setPlaceholderText("Search vendor / description…")
-        self.search_edit.setMaximumWidth(220)
-        self.search_edit.textChanged.connect(self._refresh)
-        f.addWidget(self.search_edit)
         v.addLayout(f)
 
         # Splitter: table | summary panel
@@ -1143,7 +1161,40 @@ class ExpensesPanel(QWidget):
         self.cat_table.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectRows)
         self.cat_table.setEditTriggers(QAbstractItemView.EditTrigger.NoEditTriggers)
         self.cat_table.setAlternatingRowColors(True)
-        v.addWidget(self.cat_table, 1)
+        self.cat_table.itemSelectionChanged.connect(self._on_catalog_selection)
+        v.addWidget(self.cat_table, 2)
+
+        # Vendor price breakdown panel — shown when an item is selected
+        self._vendor_frame = QFrame()
+        self._vendor_frame.setObjectName("separator")
+        self._vendor_frame.setFrameShape(QFrame.Shape.StyledPanel)
+        vf_layout = QVBoxLayout(self._vendor_frame)
+        vf_layout.setContentsMargins(8, 6, 8, 6); vf_layout.setSpacing(4)
+
+        vf_header = QHBoxLayout()
+        self._vendor_title = QLabel("Select an item to see store price breakdown")
+        self._vendor_title.setObjectName("subtitle")
+        self._vendor_title.setStyleSheet("font-weight:bold;font-size:11px;")
+        vf_header.addWidget(self._vendor_title)
+        vf_header.addStretch()
+        vf_layout.addLayout(vf_header)
+
+        self._vendor_table = QTableWidget()
+        self._vendor_table.setColumnCount(6)
+        self._vendor_table.setHorizontalHeaderLabels(
+            ["Store / Vendor", "Avg Price", "Min", "Max", "Times", "Last Seen"]
+        )
+        vh = self._vendor_table.horizontalHeader()
+        vh.setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
+        for col in (1, 2, 3, 4, 5):
+            vh.setSectionResizeMode(col, QHeaderView.ResizeMode.ResizeToContents)
+        self._vendor_table.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectRows)
+        self._vendor_table.setEditTriggers(QAbstractItemView.EditTrigger.NoEditTriggers)
+        self._vendor_table.setAlternatingRowColors(True)
+        self._vendor_table.setMaximumHeight(130)
+        vf_layout.addWidget(self._vendor_table)
+
+        v.addWidget(self._vendor_frame, 1)
 
         bot = QHBoxLayout()
         del_btn = QPushButton("Remove Selected"); del_btn.setObjectName("destructive")
@@ -1313,8 +1364,10 @@ class ExpensesPanel(QWidget):
             items = self.store.get_all_items(sort_by=sort_key)
         self.cat_table.setRowCount(len(items))
         self._catalog_ids: list[str] = []
+        self._catalog_names: list[str] = []
         for i, it in enumerate(items):
             self._catalog_ids.append(it.id)
+            self._catalog_names.append(it.name)
             sym = "¥" if it.last_currency == "JPY" else "$"
             self.cat_table.setItem(i, 0, QTableWidgetItem(it.name))
             self.cat_table.setItem(i, 1, QTableWidgetItem(f"{sym}{it.last_price:,.0f}"))
@@ -1323,6 +1376,37 @@ class ExpensesPanel(QWidget):
             self.cat_table.setItem(i, 4, QTableWidgetItem(f"{sym}{it.max_price:,.0f}"))
             self.cat_table.setItem(i, 5, QTableWidgetItem(str(it.times_seen)))
             self.cat_table.setItem(i, 6, QTableWidgetItem(it.last_seen_date))
+
+    def _on_catalog_selection(self):
+        if not hasattr(self, "_catalog_names"):
+            return
+        rows = self.cat_table.selectionModel().selectedRows()
+        if not rows:
+            self._vendor_title.setText("Select an item to see store price breakdown")
+            self._vendor_table.setRowCount(0)
+            return
+        row = rows[0].row()
+        if row >= len(self._catalog_names):
+            return
+        item_name = self._catalog_names[row]
+        stats = self.store.get_item_vendor_stats(item_name)
+        self._vendor_title.setText(
+            f"Store breakdown for: {item_name}" if stats
+            else f"{item_name} — no receipt data found for this item"
+        )
+        self._vendor_table.setRowCount(len(stats))
+        for i, s in enumerate(stats):
+            sym = "¥" if s["currency"] == "JPY" else "$"
+            fmt = "{:,.0f}" if s["currency"] == "JPY" else "{:,.2f}"
+            self._vendor_table.setItem(i, 0, QTableWidgetItem(s["vendor"]))
+            self._vendor_table.setItem(i, 1, QTableWidgetItem(
+                f"{sym}{fmt.format(s['avg_price'])}"))
+            self._vendor_table.setItem(i, 2, QTableWidgetItem(
+                f"{sym}{fmt.format(s['min_price'])}"))
+            self._vendor_table.setItem(i, 3, QTableWidgetItem(
+                f"{sym}{fmt.format(s['max_price'])}"))
+            self._vendor_table.setItem(i, 4, QTableWidgetItem(str(s["times_seen"])))
+            self._vendor_table.setItem(i, 5, QTableWidgetItem(s["last_date"]))
 
     # ── Actions ────────────────────────────────────────────────────────────────
 

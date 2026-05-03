@@ -531,7 +531,7 @@ class PresetButton(QWidget):
         super().__init__(parent)
         self.preset = preset
         layout = QVBoxLayout(self)
-        layout.setContentsMargins(8, 6, 8, 6); layout.setSpacing(2)
+        layout.setContentsMargins(6, 4, 6, 4); layout.setSpacing(1)
         name_lbl = QLabel(preset.name)
         name_lbl.setAlignment(Qt.AlignmentFlag.AlignCenter)
         name_lbl.setStyleSheet("font-weight:bold;font-size:12px;")
@@ -577,7 +577,7 @@ class PresetButton(QWidget):
             f"PresetButton{{border:1px solid {border};border-radius:6px;"
             f"background-color:{bg};}}"
             f"PresetButton:hover{{background-color:{hover};}}")
-        self.setFixedWidth(160)
+        self.setFixedWidth(140)
 
     def _emit_clicked(self):
         units = self._units_spin.value() if self._units_spin else 1.0
@@ -746,7 +746,7 @@ class FinancePanel(QWidget):
 
     def _build_ui(self):
         layout = QVBoxLayout(self)
-        layout.setContentsMargins(16, 12, 16, 12); layout.setSpacing(8)
+        layout.setContentsMargins(12, 8, 12, 8); layout.setSpacing(5)
         layout.addLayout(self._build_header())
         layout.addWidget(self._build_quick_log_bar())
         layout.addLayout(self._build_filter_row())
@@ -754,70 +754,73 @@ class FinancePanel(QWidget):
         content = QSplitter(Qt.Orientation.Horizontal)
         content.addWidget(self._build_table())
         content.addWidget(self._build_summary_panel())
-        content.setSizes([560, 300])
+        content.setSizes([560, 280])
         layout.addWidget(content, 1)
         layout.addWidget(self._build_rate_bar())
 
     def _build_header(self) -> QHBoxLayout:
         header = QHBoxLayout()
-        title_col = QVBoxLayout()
+        title_col = QVBoxLayout(); title_col.setSpacing(1)
         title = QLabel("Earnings Tracker"); title.setObjectName("sectionTitle")
         title_col.addWidget(title)
-        sub = QLabel("Freelance income & expenses"); sub.setObjectName("subtitle")
+        sub = QLabel("Income — Main Job & Side Jobs"); sub.setObjectName("subtitle")
         title_col.addWidget(sub)
         header.addLayout(title_col); header.addStretch()
 
         badge_col = QVBoxLayout(); badge_col.setSpacing(0)
         self.all_time_usd_label = QLabel("$0")
         self.all_time_usd_label.setStyleSheet(
-            "font-size:26px;font-weight:bold;padding:2px 12px 0 12px;")
+            "font-size:22px;font-weight:bold;padding:1px 10px 0 10px;")
         badge_col.addWidget(self.all_time_usd_label)
-        self.all_time_jpy_label = QLabel("\u00a50")
-        self.all_time_jpy_label.setStyleSheet("font-size:13px;padding:0 12px 2px 12px;")
+        self.all_time_jpy_label = QLabel("¥0")
+        self.all_time_jpy_label.setStyleSheet("font-size:11px;padding:0 10px 1px 10px;")
         self.all_time_jpy_label.setObjectName("subtitle")
         badge_col.addWidget(self.all_time_jpy_label)
         header.addLayout(badge_col)
         caption = QLabel("earned\nall-time"); caption.setObjectName("subtitle")
+        caption.setStyleSheet("font-size:10px;")
         caption.setAlignment(Qt.AlignmentFlag.AlignVCenter)
-        header.addWidget(caption); header.addSpacing(16)
+        header.addWidget(caption); header.addSpacing(10)
 
         btn_earn = QPushButton("+ Earning"); btn_earn.setToolTip("Log a new earning")
+        btn_earn.setFixedHeight(26)
         btn_earn.clicked.connect(self._add_earning); header.addWidget(btn_earn)
         btn_del = QPushButton("Delete"); btn_del.setObjectName("destructive")
         btn_del.setToolTip("Delete selected row(s)")
+        btn_del.setFixedHeight(26)
         btn_del.clicked.connect(self._delete_transaction); header.addWidget(btn_del)
-        export_btn = QPushButton("Export for 確定申告 \U0001f4ca")
+        export_btn = QPushButton("Export 確定申告 📊")
         export_btn.setObjectName("secondary")
+        export_btn.setFixedHeight(26)
         export_btn.setToolTip("Export transactions for tax filing (covers income + expenses)")
         export_btn.clicked.connect(self._open_tax_export)
         header.addWidget(export_btn)
         return header
-
     def _build_quick_log_bar(self) -> QWidget:
         container = QWidget()
         outer = QVBoxLayout(container)
-        outer.setContentsMargins(0, 4, 0, 4); outer.setSpacing(4)
+        outer.setContentsMargins(0, 2, 0, 2); outer.setSpacing(2)
 
         title_row = QHBoxLayout()
         lbl = QLabel("Quick Log \u2014 Job Pay")
-        lbl.setStyleSheet("font-weight:bold;font-size:12px;")
+        lbl.setStyleSheet("font-weight:bold;font-size:11px;")
         title_row.addWidget(lbl); title_row.addStretch()
 
         manage_btn = QPushButton("\u2699 Manage Presets")
-        manage_btn.setObjectName("secondary"); manage_btn.setFixedHeight(22)
+        manage_btn.setObjectName("secondary"); manage_btn.setFixedHeight(20)
         manage_btn.clicked.connect(self._open_preset_manager)
         title_row.addWidget(manage_btn)
 
         outer.addLayout(title_row)
 
         self._preset_scroll = QScrollArea()
-        self._preset_scroll.setWidgetResizable(True); self._preset_scroll.setFixedHeight(110)
+        self._preset_scroll.setWidgetResizable(True); self._preset_scroll.setFixedHeight(90)
         self._preset_scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAsNeeded)
         self._preset_scroll.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
         self._preset_row_widget = QWidget()
         self._preset_row_layout = QHBoxLayout(self._preset_row_widget)
-        self._preset_row_layout.setContentsMargins(4, 4, 4, 4)
-        self._preset_row_layout.setSpacing(8); self._preset_row_layout.addStretch()
+        self._preset_row_layout.setContentsMargins(2, 2, 2, 2)
+        self._preset_row_layout.setSpacing(6); self._preset_row_layout.addStretch()
         self._preset_scroll.setWidget(self._preset_row_widget)
         outer.addWidget(self._preset_scroll)
 
@@ -826,27 +829,37 @@ class FinancePanel(QWidget):
         return container
 
     def _build_filter_row(self) -> QHBoxLayout:
-        row = QHBoxLayout(); row.setSpacing(6)
-        for label, fn in [("This Month", self._filter_this_month),
-                           ("Last Month",  self._filter_last_month),
-                           ("This Year",   self._filter_this_year),
-                           ("All Time",    self._filter_all_time)]:
+        row = QHBoxLayout(); row.setSpacing(5)
+        _pill_style = (
+            "QPushButton{border-radius:10px;padding:0 7px;"
+            "font-size:11px;font-weight:bold;min-width:30px;max-width:40px;}"
+        )
+        for label, tip, fn in [
+            ("TM", "This Month", self._filter_this_month),
+            ("LM", "Last Month",  self._filter_last_month),
+            ("TY", "This Year",   self._filter_this_year),
+            ("AT", "All Time",    self._filter_all_time),
+        ]:
             btn = QPushButton(label); btn.setObjectName("secondary")
-            btn.setFixedHeight(26); btn.clicked.connect(fn); row.addWidget(btn)
-        row.addSpacing(12); row.addWidget(QLabel("Source:"))
+            btn.setFixedHeight(24); btn.setToolTip(tip)
+            btn.setStyleSheet(_pill_style)
+            btn.clicked.connect(fn); row.addWidget(btn)
+        row.addSpacing(8); row.addWidget(QLabel("Source:"))
         self.filter_source = QComboBox()
         self.filter_source.addItems(["All", "Main Job", "Side Job"])
         self.filter_source.currentTextChanged.connect(self._refresh)
         row.addWidget(self.filter_source)
-        row.addSpacing(8); row.addWidget(QLabel("From:"))
+        row.addSpacing(6); row.addWidget(QLabel("From:"))
+        today = date.today()
         self.filter_start = QDateEdit(); self.filter_start.setCalendarPopup(True)
         self.filter_start.setDisplayFormat("yyyy-MM-dd")
-        today = date.today()
+        self.filter_start.setMinimumWidth(115)
         self.filter_start.setDate(QDate(today.year, today.month, 1))
         self.filter_start.dateChanged.connect(self._refresh); row.addWidget(self.filter_start)
         row.addWidget(QLabel("To:"))
         self.filter_end = QDateEdit(); self.filter_end.setCalendarPopup(True)
         self.filter_end.setDisplayFormat("yyyy-MM-dd")
+        self.filter_end.setMinimumWidth(115)
         self.filter_end.setDate(QDate(today.year, today.month, today.day))
         self.filter_end.dateChanged.connect(self._refresh); row.addWidget(self.filter_end)
         row.addStretch()
@@ -858,7 +871,7 @@ class FinancePanel(QWidget):
         self._goal_container = container
         self._apply_goal_section_style()
         vbox = QVBoxLayout(container)
-        vbox.setContentsMargins(12, 8, 12, 8); vbox.setSpacing(6)
+        vbox.setContentsMargins(8, 4, 8, 4); vbox.setSpacing(3)
         title_row = QHBoxLayout()
         goal_title = QLabel("Month\u2019s Goal \u2014 Side Income")
         goal_title.setStyleSheet("font-weight:bold;font-size:13px;")
@@ -898,11 +911,11 @@ class FinancePanel(QWidget):
 
     def _build_summary_panel(self) -> QWidget:
         w = QWidget(); self.summary_layout = QVBoxLayout(w)
-        self.summary_layout.setContentsMargins(16, 12, 16, 12); self.summary_layout.setSpacing(8)
+        self.summary_layout.setContentsMargins(10, 8, 10, 8); self.summary_layout.setSpacing(5)
         period_title = QLabel("Period Summary"); period_title.setObjectName("sectionTitle")
         self.summary_layout.addWidget(period_title)
         self.earned_usd_label = QLabel("Earned: $0")
-        self.earned_usd_label.setStyleSheet("font-size:18px;font-weight:bold;")
+        self.earned_usd_label.setStyleSheet("font-size:15px;font-weight:bold;")
         self.summary_layout.addWidget(self.earned_usd_label)
         self.earned_jpy_label = QLabel("\u00a50"); self.earned_jpy_label.setObjectName("subtitle")
         self.earned_jpy_label.setStyleSheet("font-size:13px;padding-left:2px;")
@@ -1056,10 +1069,12 @@ class FinancePanel(QWidget):
         # Income-only — expenses live in the Expenses tab now.
         txns = self.store.get_transactions(start, end, "income")
         source = self.filter_source.currentText() if hasattr(self, "filter_source") else "All"
+        def _is_main_job(t):
+            return bool(t.is_job_pay) or t.category == "Main Job"
         if source == "Main Job":
-            txns = [t for t in txns if t.is_job_pay]
+            txns = [t for t in txns if _is_main_job(t)]
         elif source == "Side Job":
-            txns = [t for t in txns if not t.is_job_pay]
+            txns = [t for t in txns if not _is_main_job(t)]
 
         green  = self._palette.get("green",  "#a6e3a1")
         red    = self._palette.get("red",    "#f38ba8")
@@ -1068,14 +1083,14 @@ class FinancePanel(QWidget):
         atUSD = self.store.get_all_time_earned_usd(rate)
         self.all_time_usd_label.setText(f"${atUSD:,.0f}")
         self.all_time_usd_label.setStyleSheet(
-            f"color:{green};font-size:26px;font-weight:bold;padding:2px 12px 0 12px;")
+            f"color:{green};font-size:22px;font-weight:bold;padding:1px 10px 0 10px;")
         self.all_time_jpy_label.setText(f"\u00a5{int(atUSD * rate):,}")
 
         self.table.setRowCount(len(txns)); self._txn_ids = []
         for ri, txn in enumerate(txns):
             self._txn_ids.append(txn.id)
             self.table.setItem(ri, 0, QTableWidgetItem(txn.date))
-            if txn.is_job_pay:
+            if bool(txn.is_job_pay) or txn.category == "Main Job":
                 type_text, clr = "Main Job", QColor(gold)
             else:
                 type_text, clr = "Side Job", QColor(green)
@@ -1098,7 +1113,7 @@ class FinancePanel(QWidget):
         earned_usd = sum(t.amount / rate if t.currency == "JPY" else t.amount
                          for t in txns)
         self.earned_usd_label.setText(f"Earned: ${earned_usd:,.2f}")
-        self.earned_usd_label.setStyleSheet(f"color:{green};font-size:18px;font-weight:bold;")
+        self.earned_usd_label.setStyleSheet(f"color:{green};font-size:15px;font-weight:bold;")
         self.earned_jpy_label.setText(f"\u00a5{int(earned_usd * rate):,}")
         self.txn_count_label.setText(f"{len(txns)} earning(s) in period")
 

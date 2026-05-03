@@ -476,6 +476,43 @@ class ExpensesStore:
             deleted=bool(row["deleted"]),
         )
 
+    def get_item_vendor_stats(self, item_name: str) -> list[dict]:
+        """Per-vendor price stats for an item, derived from receipt line items."""
+        norm = _normalize(item_name)
+        if not norm:
+            return []
+        conn = get_connection()
+        try:
+            rows = conn.execute(
+                """SELECT r.vendor, ri.currency,
+                          COUNT(*) AS times_seen,
+                          MIN(ri.unit_price) AS min_price,
+                          MAX(ri.unit_price) AS max_price,
+                          AVG(ri.unit_price) AS avg_price,
+                          MAX(r.date) AS last_date
+                   FROM receipt_items ri
+                   JOIN receipts r ON ri.receipt_id = r.id
+                   WHERE ri.deleted = 0 AND r.deleted = 0
+                     AND lower(ri.name) LIKE ?
+                   GROUP BY r.vendor, ri.currency
+                   ORDER BY times_seen DESC""",
+                (f"%{norm}%",),
+            ).fetchall()
+            return [
+                {
+                    "vendor":     r["vendor"] or "Unknown",
+                    "currency":   r["currency"] or "JPY",
+                    "times_seen": r["times_seen"],
+                    "min_price":  r["min_price"] or 0.0,
+                    "max_price":  r["max_price"] or 0.0,
+                    "avg_price":  r["avg_price"] or 0.0,
+                    "last_date":  r["last_date"] or "",
+                }
+                for r in rows
+            ]
+        finally:
+            conn.close()
+
     # ── Aggregates ────────────────────────────────────────────────────────────
 
     def summary(self, start: str, end: str,
