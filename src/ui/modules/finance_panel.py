@@ -556,6 +556,7 @@ class PresetButton(QWidget):
             self._units_spin = QDoubleSpinBox()
             self._units_spin.setDecimals(2)
             self._units_spin.setRange(0.0, 99_999.0)
+            self._units_spin.setFixedHeight(20)
             if unit == "hour":
                 self._units_spin.setSingleStep(0.25); self._units_spin.setValue(1.0)
                 self._units_spin.setSuffix(" h")
@@ -736,6 +737,8 @@ class FinancePanel(QWidget):
         self._goal_container.setStyleSheet(
             f"QFrame#goalSectionFrame{{background-color:{bg};"
             f"border:1px solid {border};border-radius:8px;padding:4px;}}"
+            f"QFrame#goalSectionFrame QLabel{{background-color:transparent;}}"
+            f"QFrame#goalSectionFrame QCheckBox{{background-color:transparent;}}"
         )
 
     def showEvent(self, event):
@@ -814,7 +817,7 @@ class FinancePanel(QWidget):
         outer.addLayout(title_row)
 
         self._preset_scroll = QScrollArea()
-        self._preset_scroll.setWidgetResizable(True); self._preset_scroll.setFixedHeight(108)
+        self._preset_scroll.setWidgetResizable(True); self._preset_scroll.setFixedHeight(124)
         self._preset_scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAsNeeded)
         self._preset_scroll.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
         self._preset_row_widget = QWidget()
@@ -873,10 +876,17 @@ class FinancePanel(QWidget):
         vbox = QVBoxLayout(container)
         vbox.setContentsMargins(8, 4, 8, 4); vbox.setSpacing(3)
         title_row = QHBoxLayout()
-        goal_title = QLabel("Month\u2019s Goal \u2014 Side Income")
-        goal_title.setStyleSheet("font-weight:bold;font-size:13px;")
-        title_row.addWidget(goal_title); title_row.addStretch()
+        self._goal_title_label = QLabel("Month\u2019s Goal \u2014 Side Income")
+        self._goal_title_label.setStyleSheet("font-weight:bold;font-size:13px;background-color:transparent;")
+        title_row.addWidget(self._goal_title_label); title_row.addStretch()
+        self._goal_include_main = QCheckBox("+ Main Job")
+        self._goal_include_main.setStyleSheet("font-size:10px;background-color:transparent;")
+        self._goal_include_main.setToolTip("Include Main Job income in goal progress")
+        self._goal_include_main.stateChanged.connect(self._on_goal_mode_changed)
+        title_row.addWidget(self._goal_include_main)
+        title_row.addSpacing(6)
         self.goal_status_label = QLabel(""); self.goal_status_label.setObjectName("subtitle")
+        self.goal_status_label.setStyleSheet("background-color:transparent;")
         title_row.addWidget(self.goal_status_label)
         set_btn = QPushButton("\u2699 Set Goals"); set_btn.setObjectName("secondary")
         set_btn.setFixedHeight(24); set_btn.clicked.connect(self._open_goal_settings)
@@ -886,6 +896,8 @@ class FinancePanel(QWidget):
         self.goal_base_label    = QLabel("Base: $0");    self.goal_base_label.setObjectName("subtitle")
         self.goal_extra_label   = QLabel("Extra: $0");   self.goal_extra_label.setObjectName("subtitle")
         self.goal_current_label = QLabel("Progress: $0"); self.goal_current_label.setObjectName("subtitle")
+        for lbl in (self.goal_base_label, self.goal_extra_label, self.goal_current_label):
+            lbl.setStyleSheet("background-color:transparent;")
         legend_row.addWidget(self.goal_base_label)
         legend_row.addSpacing(16); legend_row.addWidget(self.goal_extra_label)
         legend_row.addStretch(); legend_row.addWidget(self.goal_current_label)
@@ -1031,6 +1043,14 @@ class FinancePanel(QWidget):
             self._cfg["monthly_base_goal"] = nb; self._cfg["monthly_extra_goal"] = ne
             save_config(self._cfg); self._refresh()
 
+    def _on_goal_mode_changed(self):
+        include_main = self._goal_include_main.isChecked()
+        self._goal_title_label.setText(
+            "Month’s Goal — All Income" if include_main
+            else "Month’s Goal — Side Income"
+        )
+        self._update_goal_section()
+
     def _update_goal_section(self):
         base  = float(self._cfg.get("monthly_base_goal",  500.0))
         extra = float(self._cfg.get("monthly_extra_goal", 1000.0))
@@ -1039,8 +1059,13 @@ class FinancePanel(QWidget):
         gold   = "#f9e2af"
         accent = self._palette.get("accent", "#4a9eff")
         today = date.today()
-        current = self.store.get_goal_income(
-            today.replace(day=1).isoformat(), today.isoformat(), rate)
+        include_main = getattr(self, "_goal_include_main", None) and self._goal_include_main.isChecked()
+        start = today.replace(day=1).isoformat()
+        end   = today.isoformat()
+        if include_main:
+            current = self.store.get_period_income_usd(start, end, rate)
+        else:
+            current = self.store.get_goal_income(start, end, rate)
         self.goal_bar.set_values(current, base, extra, green, gold, accent)
         jpy_b = int(base * rate); jpy_e = int(extra * rate); jpy_c = int(current * rate)
         self.goal_base_label.setText(f"\u25cf Base: ${base:,.0f}  \u00a5{jpy_b:,}")
