@@ -4,8 +4,9 @@ Uses QPainter for zero-dependency chart rendering: line chart, bar chart,
 pie chart, and activity stacked bar chart.
 
 Tabs:
-  Finance  — monthly line chart, earnings by source bar, category pie
-  Activity — stacked daily bar chart of time spent per quick category
+  Finance          — monthly line chart, earnings by source bar, category pie
+  Expense Breakdown — monthly expense trend + category bar chart
+  Activity         — stacked daily bar chart of time spent per quick category
 """
 
 import calendar
@@ -13,7 +14,9 @@ from datetime import date, timedelta
 from math import cos, sin, pi
 
 from PyQt6.QtCore import Qt, QRectF, QPointF
-from PyQt6.QtGui import QPainter, QPen, QColor, QBrush, QFont, QPainterPath
+from PyQt6.QtGui import (
+    QPainter, QPen, QColor, QBrush, QFont, QPainterPath, QLinearGradient,
+)
 from PyQt6.QtWidgets import (
     QWidget, QVBoxLayout, QHBoxLayout,
     QLabel, QComboBox, QFrame, QSizePolicy, QTabWidget,
@@ -34,7 +37,7 @@ CHART_COLORS = [
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 class LineChart(QWidget):
-    """Monthly earnings line chart with area fill."""
+    """Monthly earnings line chart with gradient area fill."""
 
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -124,9 +127,15 @@ class LineChart(QWidget):
         area_path.lineTo(points[-1].x(), margin_top + chart_h)
         area_path.closeSubpath()
 
-        fill_color = QColor(self._color)
-        fill_color.setAlpha(40)
-        painter.fillPath(area_path, QBrush(fill_color))
+        # Gradient fill: opaque at the line, transparent at the baseline
+        gradient = QLinearGradient(0, margin_top, 0, margin_top + chart_h)
+        top_color = QColor(self._color)
+        top_color.setAlpha(90)
+        bot_color = QColor(self._color)
+        bot_color.setAlpha(8)
+        gradient.setColorAt(0.0, top_color)
+        gradient.setColorAt(1.0, bot_color)
+        painter.fillPath(area_path, QBrush(gradient))
 
         line_pen = QPen(self._color, 2)
         painter.setPen(line_pen)
@@ -134,6 +143,7 @@ class LineChart(QWidget):
             painter.drawLine(points[i], points[i + 1])
 
         painter.setBrush(QBrush(self._color))
+        painter.setPen(Qt.PenStyle.NoPen)
         for pt in points:
             painter.drawEllipse(pt, 4, 4)
 
@@ -145,7 +155,7 @@ class LineChart(QWidget):
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 class BarChart(QWidget):
-    """Vertical bar chart for category or monthly comparisons."""
+    """Vertical bar chart with gradient fill per bar."""
 
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -226,8 +236,16 @@ class BarChart(QWidget):
             bar_h = (val / max_val) * chart_h
             y = margin_top + chart_h - bar_h
             color = QColor(self._colors[i % len(self._colors)])
+
+            # Gradient: lighter shade at top, base color at bottom
+            gradient = QLinearGradient(x, y, x, y + bar_h)
+            top_color = color.lighter(140)
+            top_color.setAlpha(220)
+            gradient.setColorAt(0.0, top_color)
+            gradient.setColorAt(1.0, color)
+
             painter.setPen(Qt.PenStyle.NoPen)
-            painter.setBrush(QBrush(color))
+            painter.setBrush(QBrush(gradient))
             painter.drawRoundedRect(QRectF(x, y, bar_w, bar_h), 3, 3)
             painter.setPen(label_pen)
             display_label = label if len(label) <= 8 else label[:7] + ".."
@@ -364,7 +382,6 @@ class StackedActivityChart(QWidget):
         super().__init__(parent)
         self.setMinimumHeight(260)
         self.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
-        # List of (day_label, {category: minutes})
         self._days: list[tuple[str, dict[str, float]]] = []
         self._categories: list[str] = []
         self._title = "Daily Activity Breakdown"
@@ -390,7 +407,7 @@ class StackedActivityChart(QWidget):
         margin_left   = 52
         margin_right  = 16
         margin_top    = 30
-        margin_bottom = 54   # room for day labels + legend
+        margin_bottom = 54
         chart_w = w - margin_left - margin_right
         chart_h = h - margin_top - margin_bottom
 
@@ -402,7 +419,6 @@ class StackedActivityChart(QWidget):
             painter.end()
             return
 
-        # Title
         font = QFont(); font.setBold(True); font.setPixelSize(13)
         painter.setFont(font)
         painter.setPen(QPen(fg_color))
@@ -418,18 +434,15 @@ class StackedActivityChart(QWidget):
             painter.end()
             return
 
-        # Max total minutes across all days
         max_mins = max(
             sum(cats.values()) for _, cats in self._days
         ) if self._days else 1
         if max_mins == 0:
-            max_mins = 60  # default 1h axis
+            max_mins = 60
 
-        # Round up to nearest hour for nicer grid
         max_hours = (int(max_mins // 60) + 1)
         max_mins_axis = max_hours * 60
 
-        # Y grid lines (hours)
         font.setBold(False); font.setPixelSize(9); painter.setFont(font)
         grid_pen = QPen(grid_c, 1, Qt.PenStyle.DotLine)
 
@@ -444,14 +457,13 @@ class StackedActivityChart(QWidget):
                 f"{hh}h",
             )
 
-        # Bars
         n = len(self._days)
         bar_gap = 8
         bar_w = max((chart_w - bar_gap * (n + 1)) / n, 10)
 
         for i, (day_label, cat_mins) in enumerate(self._days):
             x = margin_left + bar_gap + i * (bar_w + bar_gap)
-            y_cursor = margin_top + chart_h  # start from bottom
+            y_cursor = margin_top + chart_h
 
             for cat in self._categories:
                 mins = cat_mins.get(cat, 0.0)
@@ -459,12 +471,18 @@ class StackedActivityChart(QWidget):
                     continue
                 seg_h = (mins / max_mins_axis) * chart_h
                 color = QColor(ACTIVITY_COLORS.get(cat, DEFAULT_COLOR))
+
+                # Subtle gradient on each segment
+                gradient = QLinearGradient(x, y_cursor - seg_h, x, y_cursor)
+                top_c = color.lighter(130); top_c.setAlpha(230)
+                gradient.setColorAt(0.0, top_c)
+                gradient.setColorAt(1.0, color)
+
                 painter.setPen(Qt.PenStyle.NoPen)
-                painter.setBrush(QBrush(color))
+                painter.setBrush(QBrush(gradient))
                 painter.drawRoundedRect(
                     QRectF(x, y_cursor - seg_h, bar_w, seg_h), 2, 2
                 )
-                # Label inside segment if tall enough
                 if seg_h >= 16:
                     lbl_font = QFont(); lbl_font.setPixelSize(9)
                     painter.setFont(lbl_font)
@@ -477,7 +495,6 @@ class StackedActivityChart(QWidget):
                     )
                 y_cursor -= seg_h
 
-            # Day label below
             font.setBold(False); font.setPixelSize(10); painter.setFont(font)
             painter.setPen(QPen(muted_c))
             painter.drawText(
@@ -486,7 +503,6 @@ class StackedActivityChart(QWidget):
                 day_label,
             )
 
-        # Legend row at very bottom
         legend_y = h - 18
         legend_x = margin_left
         font.setPixelSize(9); painter.setFont(font)
@@ -548,7 +564,6 @@ class ActivityChartsPanel(QWidget):
         self._chart = StackedActivityChart()
         layout.addWidget(self._chart, 1)
 
-        # Summary label
         self._summary_lbl = QLabel("")
         self._summary_lbl.setStyleSheet("font-size:11px;")
         self._summary_lbl.setAlignment(Qt.AlignmentFlag.AlignCenter)
@@ -566,11 +581,10 @@ class ActivityChartsPanel(QWidget):
         elif period == "Last Week":
             week_start = today - timedelta(days=today.weekday() + 7)
             days_range = [(week_start + timedelta(days=i)) for i in range(7)]
-        else:  # Last 4 Weeks
+        else:
             start = today - timedelta(days=27)
             days_range = [(start + timedelta(days=i)) for i in range(28)]
 
-        # Build data: one entry per day
         day_data: list[tuple[str, dict[str, float]]] = []
         total_by_cat: dict[str, float] = {c: 0.0 for c in quick_cats}
 
@@ -591,7 +605,6 @@ class ActivityChartsPanel(QWidget):
         self._chart.set_data(day_data, quick_cats)
         self._chart.set_palette(self._palette)
 
-        # Summary text
         total_mins = sum(total_by_cat.values())
         h, m = divmod(int(total_mins), 60)
         parts = [f"{c}: {int(v)//60}h{int(v)%60:02d}m"
@@ -601,11 +614,136 @@ class ActivityChartsPanel(QWidget):
 
 
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+#  _ExpenseBreakdownContent — monthly expense trend + category bars
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+class _ExpenseBreakdownContent(QWidget):
+    """Expense charts: monthly trend line + category breakdown bar."""
+
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.store = FinanceStore()
+        self._palette: dict = {}
+        self._build_ui()
+        self._refresh()
+
+    def set_palette(self, palette: dict):
+        self._palette = palette
+        self._refresh()
+
+    def _build_ui(self):
+        layout = QVBoxLayout(self)
+        layout.setContentsMargins(16, 12, 16, 12)
+        layout.setSpacing(10)
+
+        header = QHBoxLayout()
+        title = QLabel("Expense Breakdown")
+        title.setObjectName("sectionTitle")
+        header.addWidget(title)
+        header.addStretch()
+
+        header.addWidget(QLabel("Period:"))
+        self.period_combo = QComboBox()
+        self.period_combo.addItems([
+            "Last 6 Months", "Last 12 Months", "This Year", "All Time"
+        ])
+        self.period_combo.currentTextChanged.connect(self._refresh)
+        header.addWidget(self.period_combo)
+        layout.addLayout(header)
+
+        self.line_chart = LineChart()
+        self.line_chart.setMinimumHeight(200)
+        layout.addWidget(self.line_chart, 2)
+
+        self.bar_chart = BarChart()
+        self.bar_chart.setMinimumHeight(200)
+        layout.addWidget(self.bar_chart, 2)
+
+        self._summary_lbl = QLabel("")
+        self._summary_lbl.setObjectName("subtitle")
+        self._summary_lbl.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        layout.addWidget(self._summary_lbl)
+
+    def _get_date_range(self) -> tuple[str, str]:
+        today = date.today()
+        period = self.period_combo.currentText()
+        if period == "Last 6 Months":
+            start = today - timedelta(days=180)
+        elif period == "Last 12 Months":
+            start = today - timedelta(days=365)
+        elif period == "This Year":
+            start = today.replace(month=1, day=1)
+        else:
+            start = date(2020, 1, 1)
+        return start.isoformat(), today.isoformat()
+
+    def _refresh(self):
+        red = self._palette.get("red", "#f38ba8")
+        start, end = self._get_date_range()
+        txns = self.store.get_transactions(start, end)
+
+        # Monthly expense totals for line chart
+        monthly: dict[str, float] = {}
+        for t in txns:
+            if t.type == "expense":
+                key = t.date[:7]
+                monthly[key] = monthly.get(key, 0) + (
+                    t.amount if t.currency == "USD" else t.amount / 150.0
+                )
+
+        all_months = sorted(monthly.keys())
+        if not all_months:
+            today = date.today()
+            for i in range(5, -1, -1):
+                m = today - timedelta(days=30 * i)
+                all_months.append(m.strftime("%Y-%m"))
+
+        line_data = []
+        for m in all_months:
+            short_label = m[5:]
+            try:
+                month_num = int(short_label)
+                short_label = calendar.month_abbr[month_num]
+            except (ValueError, IndexError):
+                pass
+            line_data.append((short_label, monthly.get(m, 0)))
+
+        self.line_chart._title = "Monthly Expenses"
+        self.line_chart.set_data(line_data, red)
+
+        # Expense-by-category bar chart
+        expense_by_cat: dict[str, float] = {}
+        for t in txns:
+            if t.type == "expense":
+                usd = t.amount if t.currency == "USD" else t.amount / 150.0
+                expense_by_cat[t.category] = expense_by_cat.get(t.category, 0) + usd
+
+        bar_data = sorted(expense_by_cat.items(), key=lambda x: -x[1])[:10]
+        # Use warm colors to distinguish expense charts from income charts
+        expense_colors = [
+            "#f38ba8", "#fab387", "#f9e2af", "#cba6f7", "#eba0ac",
+            "#f5c2e7", "#94e2d5", "#a6e3a1", "#89b4fa", "#74c7ec",
+        ]
+        self.bar_chart.set_data(
+            [(cat, amt) for cat, amt in bar_data],
+            title="Expenses by Category",
+            colors=expense_colors,
+        )
+
+        total = sum(v for v in expense_by_cat.values())
+        self._summary_lbl.setText(
+            f"Total expenses: ${total:,.2f}  across {len(expense_by_cat)} categories"
+            if expense_by_cat else "No expense data for this period"
+        )
+        self.update()
+
+
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 #  FinanceChartsPanel — tabbed container
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 class FinanceChartsPanel(QWidget):
-    """Tabbed charts panel: Finance tab + Activity tab."""
+    """Tabbed charts panel: Finance, Expense Breakdown, and Activity tabs."""
 
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -615,7 +753,12 @@ class FinanceChartsPanel(QWidget):
     def set_palette(self, palette: dict):
         self._palette = palette
         self._finance_tab.set_palette(palette)
+        self._expense_tab.set_palette(palette)
         self._activity_tab.set_palette(palette)
+
+    def showEvent(self, event):
+        super().showEvent(event)
+        self.refresh()
 
     def _build_ui(self):
         layout = QVBoxLayout(self)
@@ -624,11 +767,12 @@ class FinanceChartsPanel(QWidget):
         self._tabs = QTabWidget()
         self._tabs.setDocumentMode(True)
 
-        # Finance tab (original content)
         self._finance_tab = _FinanceChartsContent()
         self._tabs.addTab(self._finance_tab, "Finance")
 
-        # Activity tab (new)
+        self._expense_tab = _ExpenseBreakdownContent()
+        self._tabs.addTab(self._expense_tab, "Expense Breakdown")
+
         self._activity_tab = ActivityChartsPanel()
         self._tabs.addTab(self._activity_tab, "Activity")
 
@@ -636,15 +780,17 @@ class FinanceChartsPanel(QWidget):
 
     def refresh(self):
         self._finance_tab._refresh()
+        self._expense_tab._refresh()
         self._activity_tab._refresh()
 
 
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-#  _FinanceChartsContent — original finance charts
+#  _FinanceChartsContent — income + expense overview charts
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 class _FinanceChartsContent(QWidget):
-    """Original finance charts: line chart, bar chart, pie chart."""
+    """Finance overview: monthly income line chart, income-by-source bar,
+    and spending-distribution pie — all reading the full transactions table."""
 
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -711,13 +857,18 @@ class _FinanceChartsContent(QWidget):
         green = self._palette.get("green", "#a6e3a1")
 
         start, end = self._get_date_range()
+        # Fetch ALL transactions (income + expense) so we correctly aggregate
+        # data from both the Earnings tab and the Expenses tab.
         txns = self.store.get_transactions(start, end)
 
+        # Monthly income totals (all sources: Main Job + Side Job)
         monthly: dict[str, float] = {}
         for t in txns:
             month_key = t.date[:7]
             if t.type == "income":
-                monthly[month_key] = monthly.get(month_key, 0) + t.amount
+                # Normalize to USD for consistent charting
+                usd = t.amount if t.currency == "USD" else t.amount / 150.0
+                monthly[month_key] = monthly.get(month_key, 0) + usd
 
         all_months = sorted(monthly.keys())
         if not all_months:
@@ -736,27 +887,28 @@ class _FinanceChartsContent(QWidget):
                 pass
             line_data.append((short_label, monthly.get(m, 0)))
 
-        self.line_chart._title = "Monthly Earnings"
+        self.line_chart._title = "Monthly Income (All Sources)"
         self.line_chart.set_data(line_data, green)
 
-        # Earnings-by-source bar (income only)
+        # Income-by-source bar — includes both Main Job and Side Job
         income_by_cat: dict[str, float] = {}
         for t in txns:
             if t.type == "income":
-                income_by_cat[t.category] = income_by_cat.get(t.category, 0) + t.amount
+                usd = t.amount if t.currency == "USD" else t.amount / 150.0
+                income_by_cat[t.category] = income_by_cat.get(t.category, 0) + usd
 
         bar_data = sorted(income_by_cat.items(), key=lambda x: -x[1])[:8]
         self.bar_chart.set_data(
             [(cat, amt) for cat, amt in bar_data],
-            title="Earnings by Source",
+            title="Income by Source",
         )
 
-        # Spending-distribution pie (expense only — used to silently mix
-        # income+expense categories which made the breakdown meaningless).
+        # Spending-distribution pie (expense only)
         expense_by_cat: dict[str, float] = {}
         for t in txns:
             if t.type == "expense":
-                expense_by_cat[t.category] = expense_by_cat.get(t.category, 0) + t.amount
+                usd = t.amount if t.currency == "USD" else t.amount / 150.0
+                expense_by_cat[t.category] = expense_by_cat.get(t.category, 0) + usd
         pie_data = sorted(expense_by_cat.items(), key=lambda x: -x[1])[:8]
         self.pie_chart.set_data(pie_data, title="Spending by Category")
         self.update()
