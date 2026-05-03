@@ -166,6 +166,24 @@ class FinanceStore:
             total += r["amount"] / usd_jpy_rate if r["currency"] == "JPY" else r["amount"]
         return total
 
+    def get_period_income_usd(self, start_date: str, end_date: str,
+                              usd_jpy_rate: float = 150.0) -> float:
+        """All income (side + main job) for a date range, normalized to USD."""
+        conn = get_connection()
+        try:
+            rows = conn.execute(
+                "SELECT amount, currency FROM transactions "
+                "WHERE deleted=0 AND type='income' "
+                "AND date >= ? AND date <= ?",
+                (start_date, end_date),
+            ).fetchall()
+        finally:
+            conn.close()
+        total = 0.0
+        for r in rows:
+            total += r["amount"] / usd_jpy_rate if r["currency"] == "JPY" else r["amount"]
+        return total
+
     def get_side_income(self, year: int, month: int,
                         usd_jpy_rate: float = 150.0) -> float:
         last_day = _calendar.monthrange(year, month)[1]

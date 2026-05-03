@@ -484,7 +484,7 @@ class ExpensesStore:
         conn = get_connection()
         try:
             rows = conn.execute(
-                """SELECT r.vendor, ri.currency,
+                """SELECT r.vendor, r.currency,
                           COUNT(*) AS times_seen,
                           MIN(ri.unit_price) AS min_price,
                           MAX(ri.unit_price) AS max_price,
@@ -494,7 +494,7 @@ class ExpensesStore:
                    JOIN receipts r ON ri.receipt_id = r.id
                    WHERE r.deleted = 0
                      AND lower(ri.name) LIKE ?
-                   GROUP BY r.vendor, ri.currency
+                   GROUP BY r.vendor, r.currency
                    ORDER BY times_seen DESC""",
                 (f"%{norm}%",),
             ).fetchall()
