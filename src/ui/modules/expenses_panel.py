@@ -27,7 +27,7 @@ from __future__ import annotations
 import calendar as _cal
 from datetime import date, timedelta
 
-from PyQt6.QtCore import Qt, QDate, QStringListModel, pyqtSignal
+from PyQt6.QtCore import Qt, QDate, QStringListModel, QTimer, pyqtSignal
 from PyQt6.QtGui import QColor, QBrush
 from PyQt6.QtWidgets import (
     QAbstractItemView, QCheckBox, QComboBox, QCompleter, QDateEdit, QDialog,
@@ -89,14 +89,52 @@ def _vendor_history(store: ExpensesStore, limit: int = 200) -> list[str]:
 
 
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+#  Smart spinbox: select-all on focus + trim trailing zeros
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+class SmartDoubleSpinBox(QDoubleSpinBox):
+    """A QDoubleSpinBox that:
+
+    - Selects all text on focus-in (so tabbing through the form lets the
+      user start typing immediately and overwrite the leading 0).
+    - Drops trailing ".00" / ".0" so whole-number values display as
+      integers (e.g. 1 instead of 1.00).
+    """
+
+    def focusInEvent(self, event):
+        super().focusInEvent(event)
+        # Defer until the spinbox is fully focused so the line-edit's own
+        # focus handling doesn't immediately collapse the selection.
+        QTimer.singleShot(0, self._select_all)
+
+    def _select_all(self):
+        le = self.lineEdit()
+        if le is not None:
+            le.selectAll()
+
+    def textFromValue(self, value: float) -> str:
+        text = super().textFromValue(value)
+        if "." in text:
+            text = text.rstrip("0").rstrip(".")
+        return text
+
+
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 #  Item-name field with catalog autocomplete + price autofill
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+# Separator used in autocomplete labels — picked so it can't appear in a
+# legitimate item name. Keep this unique so we can defensively strip any
+# accidental price-suffix the completer left behind.
+_AC_SEP = "  ·  "
+
 
 class ItemNameEdit(QLineEdit):
     """Line edit that autocompletes against the expense-item catalogue.
 
     When the user picks a known item from the dropdown, the configured
     `price_target` spinbox autofills with that item's last-seen price.
+    Pressing Tab on a visible suggestion accepts it (and moves focus on).
     """
     item_picked = pyqtSignal(object)   # emits ExpenseItem on selection
 
@@ -108,6 +146,7 @@ class ItemNameEdit(QLineEdit):
         completer = QCompleter(self._model, self)
         completer.setCaseSensitivity(Qt.CaseSensitivity.CaseInsensitive)
         completer.setFilterMode(Qt.MatchFlag.MatchContains)
+        completer.setCompletionMode(QCompleter.CompletionMode.PopupCompletion)
         self.setCompleter(completer)
         completer.activated.connect(self._on_completer_activated)
         self.textEdited.connect(self._refresh_suggestions)
@@ -118,16 +157,15 @@ class ItemNameEdit(QLineEdit):
         # When the completer inserts a full label (e.g. "Eggs  ·  ¥298") into
         # the field, textEdited fires with that label string.  Refreshing with
         # it would clobber _label_map before _on_completer_activated can use it,
-        # leaving the price text stuck in the field.  The "  ·  " separator only
-        # ever appears in labels we build, never in a user-typed query.
-        if "  ·  " in text:
+        # leaving the price text stuck in the field.
+        if _AC_SEP in text:
             return
         self._items = self._store.search_items(text or "", limit=20)
         self._label_map: dict[str, ExpenseItem] = {}
         labels = []
         for it in self._items:
             sym = "¥" if it.last_currency == "JPY" else "$"
-            lbl = f"{it.name}  ·  {sym}{it.last_price:,.0f}"
+            lbl = f"{it.name}{_AC_SEP}{sym}{it.last_price:,.0f}"
             labels.append(lbl)
             self._label_map[lbl] = it
         self._model.setStringList(labels)
@@ -135,9 +173,8 @@ class ItemNameEdit(QLineEdit):
     def _on_completer_activated(self, label: str):
         it = getattr(self, "_label_map", {}).get(label)
         if it is None:
-            # Fallback: linear scan in case the map is stale
             for candidate in self._items:
-                if label.startswith(candidate.name + "  ·  "):
+                if label.startswith(candidate.name + _AC_SEP):
                     it = candidate
                     break
         if it is None:
@@ -146,6 +183,35 @@ class ItemNameEdit(QLineEdit):
         if self.price_target:
             self.price_target.setValue(float(it.last_price))
         self.item_picked.emit(it)
+
+    def keyPressEvent(self, event):
+        # Tab while the completion popup is visible should accept the
+        # currently-highlighted (or first) suggestion before moving focus
+        # on. Without this Tab just shifts focus and the suggestion is lost.
+        completer = self.completer()
+        if (event.key() in (Qt.Key.Key_Tab, Qt.Key.Key_Backtab)
+                and completer is not None
+                and completer.popup() is not None
+                and completer.popup().isVisible()):
+            popup = completer.popup()
+            idx = popup.currentIndex()
+            if not idx.isValid() and completer.completionCount() > 0:
+                idx = completer.completionModel().index(0, 0)
+            if idx.isValid():
+                label = idx.data() or ""
+                popup.hide()
+                self._on_completer_activated(label)
+                # Fall through so Tab/Backtab still moves focus
+        super().keyPressEvent(event)
+
+    def cleaned_text(self) -> str:
+        """Return the field text with any stray autocomplete price suffix
+        stripped. A defensive last line of defence in case the completer
+        left a label like "Yakisoba  ·  ¥299" behind."""
+        t = self.text()
+        if _AC_SEP in t:
+            t = t.split(_AC_SEP, 1)[0]
+        return t.strip()
 
 
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -217,7 +283,7 @@ class ReceiptEditorDialog(QDialog):
         hdr.addWidget(QLabel("Paid by:"),  2, 0)
         hdr.addWidget(self.pay_combo,      2, 1)
 
-        self.tax_spin = QDoubleSpinBox()
+        self.tax_spin = SmartDoubleSpinBox()
         self.tax_spin.setRange(0.0, 9_999_999.0)
         self.tax_spin.setDecimals(0)
         self.tax_spin.setPrefix("¥ ")
@@ -232,16 +298,14 @@ class ReceiptEditorDialog(QDialog):
         root.addWidget(itm_lbl)
 
         self.items_table = QTableWidget()
-        self.items_table.setColumnCount(5)
+        self.items_table.setColumnCount(6)
         self.items_table.setHorizontalHeaderLabels(
-            ["Item", "Qty", "Unit Price", "Line Total", ""]
+            ["Item", "Qty", "Unit Price", "Per 100g", "Line Total", ""]
         )
         hh = self.items_table.horizontalHeader()
         hh.setSectionResizeMode(0, QHeaderView.ResizeMode.Stretch)
-        hh.setSectionResizeMode(1, QHeaderView.ResizeMode.ResizeToContents)
-        hh.setSectionResizeMode(2, QHeaderView.ResizeMode.ResizeToContents)
-        hh.setSectionResizeMode(3, QHeaderView.ResizeMode.ResizeToContents)
-        hh.setSectionResizeMode(4, QHeaderView.ResizeMode.ResizeToContents)
+        for col in (1, 2, 3, 4, 5):
+            hh.setSectionResizeMode(col, QHeaderView.ResizeMode.ResizeToContents)
         self.items_table.verticalHeader().setVisible(False)
         self.items_table.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectRows)
         # Cells host inline widgets, so disable inline editing (we provide
@@ -341,11 +405,12 @@ class ReceiptEditorDialog(QDialog):
         self.tax_spin.setDecimals(decimals)
         self.tax_spin.setSingleStep(step)
         for r in range(self.items_table.rowCount()):
-            up_spin = self.items_table.cellWidget(r, 2)
-            if isinstance(up_spin, QDoubleSpinBox):
-                up_spin.setPrefix(prefix)
-                up_spin.setDecimals(decimals)
-                up_spin.setSingleStep(step)
+            for col in (2, 3):
+                w = self.items_table.cellWidget(r, col)
+                if isinstance(w, QDoubleSpinBox):
+                    w.setPrefix(prefix)
+                    w.setDecimals(decimals)
+                    w.setSingleStep(step)
         self._recompute_totals()
 
     def _append_row(self, item: ReceiptItem):
@@ -361,13 +426,13 @@ class ReceiptEditorDialog(QDialog):
         name_edit.setText(item.name)
         self.items_table.setCellWidget(row, 0, name_edit)
 
-        qty_spin = QDoubleSpinBox()
+        qty_spin = SmartDoubleSpinBox()
         qty_spin.setRange(0.0, 9_999.0); qty_spin.setDecimals(2)
         qty_spin.setSingleStep(1.0); qty_spin.setValue(float(item.qty or 1.0))
         qty_spin.setMinimumWidth(70)
         self.items_table.setCellWidget(row, 1, qty_spin)
 
-        up_spin = QDoubleSpinBox()
+        up_spin = SmartDoubleSpinBox()
         up_spin.setRange(0.0, 9_999_999.0)
         up_spin.setDecimals(decimals); up_spin.setSingleStep(step)
         up_spin.setPrefix(prefix); up_spin.setValue(float(item.unit_price or 0.0))
@@ -376,17 +441,43 @@ class ReceiptEditorDialog(QDialog):
         # Wire item-name picker to autofill price
         name_edit.price_target = up_spin
 
-        line_lbl = QLabel("0")
-        line_lbl.setAlignment(Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter)
-        line_lbl.setMinimumWidth(80)
-        self.items_table.setCellWidget(row, 3, line_lbl)
+        # Optional "per 100g" helper. When the user enters a value here it
+        # auto-fills unit_price as per_100g / 100 and qty becomes the weight
+        # in grams; not persisted (it's a calculator helper, the underlying
+        # storage is still qty × unit_price).
+        per100_spin = SmartDoubleSpinBox()
+        per100_spin.setRange(0.0, 9_999_999.0)
+        per100_spin.setDecimals(decimals); per100_spin.setSingleStep(step)
+        per100_spin.setPrefix(prefix); per100_spin.setValue(0.0)
+        per100_spin.setMinimumWidth(110)
+        per100_spin.setToolTip(
+            "Optional: price per 100g.\n"
+            "Filling this auto-sets Unit Price to (Per 100g ÷ 100) — "
+            "treat Qty as grams."
+        )
+        per100_spin.valueChanged.connect(
+            lambda v, up=up_spin: up.setValue(v / 100.0) if v > 0 else None
+        )
+        self.items_table.setCellWidget(row, 3, per100_spin)
 
-        del_btn = QPushButton("✕")
-        del_btn.setFixedSize(26, 26)
+        # Read-only line total — styled to match neighbouring spinboxes so
+        # alignment and background are uniform across the row.
+        line_edit = QLineEdit("0")
+        line_edit.setReadOnly(True)
+        line_edit.setAlignment(Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter)
+        line_edit.setMinimumWidth(110)
+        line_edit.setFocusPolicy(Qt.FocusPolicy.NoFocus)
+        line_edit.setStyleSheet(
+            "QLineEdit{background:transparent;border:none;padding-right:6px;}"
+        )
+        self.items_table.setCellWidget(row, 4, line_edit)
+
+        del_btn = QPushButton("🗑")
+        del_btn.setFixedSize(28, 26)
         del_btn.setObjectName("secondary")
         del_btn.setToolTip("Remove this row")
         del_btn.clicked.connect(lambda _=False, w=name_edit: self._remove_row(w))
-        self.items_table.setCellWidget(row, 4, del_btn)
+        self.items_table.setCellWidget(row, 5, del_btn)
 
         # Stash the original ReceiptItem so we keep its id on save
         name_edit.setProperty("_orig_id", item.id or "")
@@ -453,12 +544,12 @@ class ReceiptEditorDialog(QDialog):
         for r in range(self.items_table.rowCount()):
             qty_spin = self.items_table.cellWidget(r, 1)
             up_spin  = self.items_table.cellWidget(r, 2)
-            line_lbl = self.items_table.cellWidget(r, 3)
-            if not (qty_spin and up_spin and line_lbl):
+            line_w   = self.items_table.cellWidget(r, 4)
+            if not (qty_spin and up_spin and line_w):
                 continue
             line = float(qty_spin.value()) * float(up_spin.value())
             subtotal += line
-            line_lbl.setText(
+            line_w.setText(
                 f"{sym}{line:,.0f}" if decimals == 0 else f"{sym}{line:,.2f}"
             )
         tax = float(self.tax_spin.value())
@@ -484,7 +575,8 @@ class ReceiptEditorDialog(QDialog):
             up_spin   = self.items_table.cellWidget(r, 2)
             if not (name_edit and qty_spin and up_spin):
                 continue
-            name = name_edit.text().strip()
+            name = (name_edit.cleaned_text() if hasattr(name_edit, "cleaned_text")
+                    else name_edit.text().strip())
             if not name:
                 continue
             qty = float(qty_spin.value())
@@ -595,7 +687,7 @@ class QuickExpenseDialog(QDialog):
         self.cur_combo.currentTextChanged.connect(self._on_currency_changed)
         form.addRow("Currency:", self.cur_combo)
 
-        self.amount_spin = QDoubleSpinBox()
+        self.amount_spin = SmartDoubleSpinBox()
         self.amount_spin.setRange(0.0, 99_999_999.0)
         if txn:
             self.amount_spin.setValue(txn.amount)
@@ -700,7 +792,7 @@ class MonthlyExpenseTemplatesDialog(QDialog):
         self._name_edit.setPlaceholderText("e.g. Gym Membership")
         form.addRow("Name:", self._name_edit)
         amt_row = QHBoxLayout(); amt_row.setSpacing(6)
-        self._amount_spin = QDoubleSpinBox()
+        self._amount_spin = SmartDoubleSpinBox()
         self._amount_spin.setRange(0, 9_999_999); self._amount_spin.setDecimals(0)
         self._amount_spin.setSingleStep(1000); self._amount_spin.setValue(0)
         amt_row.addWidget(self._amount_spin, 1)
@@ -862,7 +954,7 @@ class MonthlyExpensesDialog(QDialog):
             chk = QCheckBox(); chk.setChecked(True); chk.setFixedWidth(22)
             rl.addWidget(chk)
             name = QLabel(p["name"]); rl.addWidget(name, 1)
-            amt = QDoubleSpinBox()
+            amt = SmartDoubleSpinBox()
             if p["currency"] == "JPY":
                 amt.setRange(0, 9_999_999); amt.setDecimals(0); amt.setPrefix("¥ ")
                 amt.setSingleStep(1000)

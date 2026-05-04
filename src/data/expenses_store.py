@@ -156,6 +156,15 @@ class ExpensesStore:
 
         conn = get_connection()
         try:
+            # Capture names that were on the receipt before this save so we
+            # can recompute their catalogue stats afterwards if they were
+            # removed by this edit.
+            prev_names = [
+                row["name"] for row in conn.execute(
+                    "SELECT name FROM receipt_items WHERE receipt_id=?",
+                    (receipt.id,),
+                ).fetchall()
+            ]
             conn.execute(
                 """INSERT INTO receipts
                    (id, transaction_id, date, vendor, category, currency,
@@ -203,7 +212,10 @@ class ExpensesStore:
             conn.close()
 
         # Update catalogue stats outside of the transaction; failures here
-        # must not roll back the receipt write.
+        # must not roll back the receipt write. Recompute for both current
+        # items and any that were dropped by this edit so removed instances
+        # stop appearing in last_price / times_seen.
+        new_norms: set[str] = set()
         for item in items:
             if (item.name or "").strip() and item.unit_price > 0:
                 self._upsert_item_stats(
@@ -213,6 +225,15 @@ class ExpensesStore:
                     seen_date=receipt.date,
                     category=receipt.category,
                 )
+                new_norms.add(_normalize(item.name))
+        for old_name in prev_names:
+            old_norm = _normalize(old_name)
+            if old_norm and old_norm not in new_norms:
+                conn2 = get_connection()
+                try:
+                    self._recompute_item_stats(conn2, old_norm)
+                finally:
+                    conn2.close()
 
         # Mirror into the transactions ledger
         self._sync_transaction_for_receipt(receipt)
@@ -276,6 +297,20 @@ class ExpensesStore:
             conn.close()
         if rec and rec.transaction_id:
             self._fs.delete_transaction(rec.transaction_id)
+
+        # Recompute catalogue stats for every item that was on this receipt
+        # so deleted instances stop showing up in last_price / times_seen.
+        if rec:
+            seen: set[str] = set()
+            for it in rec.items:
+                norm = _normalize(it.name)
+                if norm and norm not in seen:
+                    seen.add(norm)
+                    conn2 = get_connection()
+                    try:
+                        self._recompute_item_stats(conn2, norm)
+                    finally:
+                        conn2.close()
 
     def _sync_transaction_for_receipt(self, receipt: Receipt) -> None:
         """Create or update the ledger row that represents this receipt."""
@@ -420,9 +455,10 @@ class ExpensesStore:
                            seen_date: str, category: str = "") -> None:
         """Insert or recompute stats for `name` after a receipt write.
 
-        All aggregate stats (times_seen, avg, min, max) are derived from the
-        actual receipt_items rows rather than incremented so that editing a
-        receipt cannot inflate the counter.
+        All aggregate stats are derived by exact-normalized match against
+        the actual receipt_items rows so editing a receipt cannot inflate
+        the counter, and items whose receipts were all deleted will report
+        zero observable instances.
         """
         norm = _normalize(name)
         if not norm:
@@ -433,62 +469,69 @@ class ExpensesStore:
                 "SELECT * FROM expense_items WHERE normalized_name=? AND deleted=0",
                 (norm,),
             ).fetchone()
-            now = now_utc()
             if row is None:
                 conn.execute(
                     """INSERT INTO expense_items
                        (id, name, normalized_name, category, last_price,
                         last_currency, last_seen_date, times_seen,
                         avg_price, min_price, max_price, updated_at, deleted)
-                       VALUES (?, ?, ?, ?, ?, ?, ?, 0, ?, ?, ?, ?, 0)""",
+                       VALUES (?, ?, ?, ?, 0, ?, '', 0, 0, 0, 0, ?, 0)""",
                     (str(uuid.uuid4()), name.strip(), norm, category,
-                     price, currency, seen_date, price, price, price, now),
+                     currency, now_utc()),
                 )
-
-            # Recompute all price stats from ground-truth receipt_items so the
-            # numbers stay accurate after edits (which delete + re-insert rows).
-            agg = conn.execute(
-                """SELECT COUNT(*)        AS cnt,
-                          AVG(ri.unit_price) AS avg_p,
-                          MIN(ri.unit_price) AS min_p,
-                          MAX(ri.unit_price) AS max_p
-                   FROM receipt_items ri
-                   JOIN receipts r ON ri.receipt_id = r.id
-                   WHERE r.deleted = 0 AND lower(ri.name) LIKE ?""",
-                (f"%{norm}%",),
-            ).fetchone()
-
-            # Find the most-recent purchase to set last_price / last_seen_date.
-            latest = conn.execute(
-                """SELECT ri.unit_price, r.currency, r.date
-                   FROM receipt_items ri
-                   JOIN receipts r ON ri.receipt_id = r.id
-                   WHERE r.deleted = 0 AND lower(ri.name) LIKE ?
-                   ORDER BY r.date DESC, r.updated_at DESC LIMIT 1""",
-                (f"%{norm}%",),
-            ).fetchone()
-
-            cnt   = agg["cnt"]   if agg   and agg["cnt"]   else 1
-            avg_p = agg["avg_p"] if agg   and agg["avg_p"] else price
-            min_p = agg["min_p"] if agg   and agg["min_p"] else price
-            max_p = agg["max_p"] if agg   and agg["max_p"] else price
-            l_price = latest["unit_price"] if latest else price
-            l_cur   = latest["currency"]   if latest else currency
-            l_date  = latest["date"]       if latest else seen_date
-
-            conn.execute(
-                """UPDATE expense_items SET
-                     last_price=?, last_currency=?, last_seen_date=?,
-                     times_seen=?, avg_price=?, min_price=?, max_price=?,
-                     category=COALESCE(NULLIF(category,''), ?),
-                     updated_at=?
-                   WHERE normalized_name=? AND deleted=0""",
-                (l_price, l_cur, l_date, cnt, avg_p, min_p, max_p,
-                 category, now, norm),
-            )
-            conn.commit()
+                conn.commit()
+            self._recompute_item_stats(conn, norm, fallback_category=category)
         finally:
             conn.close()
+
+    def _recompute_item_stats(self, conn, norm: str,
+                              fallback_category: str = "") -> None:
+        """Recompute every catalogue stat for `norm` from receipt_items
+        whose normalized name equals `norm`. Iterates in Python so the
+        match is exact rather than substring-based."""
+        rows = conn.execute(
+            """SELECT ri.name, ri.unit_price, r.currency, r.date,
+                      r.updated_at AS r_updated
+               FROM receipt_items ri
+               JOIN receipts r ON ri.receipt_id = r.id
+               WHERE r.deleted = 0"""
+        ).fetchall()
+        matches = [r for r in rows if _normalize(r["name"]) == norm]
+        now = now_utc()
+
+        if not matches:
+            conn.execute(
+                """UPDATE expense_items SET
+                     last_price=0, last_seen_date='',
+                     times_seen=0, avg_price=0, min_price=0, max_price=0,
+                     updated_at=?
+                   WHERE normalized_name=? AND deleted=0""",
+                (now, norm),
+            )
+            conn.commit()
+            return
+
+        prices = [float(r["unit_price"] or 0.0) for r in matches]
+        cnt    = len(matches)
+        avg_p  = sum(prices) / cnt if cnt else 0.0
+        min_p  = min(prices) if prices else 0.0
+        max_p  = max(prices) if prices else 0.0
+        latest = max(matches, key=lambda r: (r["date"] or "", r["r_updated"] or ""))
+        l_price = float(latest["unit_price"] or 0.0)
+        l_cur   = latest["currency"] or "JPY"
+        l_date  = latest["date"] or ""
+
+        conn.execute(
+            """UPDATE expense_items SET
+                 last_price=?, last_currency=?, last_seen_date=?,
+                 times_seen=?, avg_price=?, min_price=?, max_price=?,
+                 category=COALESCE(NULLIF(category,''), ?),
+                 updated_at=?
+               WHERE normalized_name=? AND deleted=0""",
+            (l_price, l_cur, l_date, cnt, avg_p, min_p, max_p,
+             fallback_category, now, norm),
+        )
+        conn.commit()
 
     @staticmethod
     def _row_to_item(row) -> ExpenseItem:
@@ -515,34 +558,40 @@ class ExpensesStore:
         conn = get_connection()
         try:
             rows = conn.execute(
-                """SELECT r.vendor, r.currency,
-                          COUNT(*) AS times_seen,
-                          MIN(ri.unit_price) AS min_price,
-                          MAX(ri.unit_price) AS max_price,
-                          AVG(ri.unit_price) AS avg_price,
-                          MAX(r.date) AS last_date
+                """SELECT ri.name, r.vendor, r.currency, ri.unit_price, r.date
                    FROM receipt_items ri
                    JOIN receipts r ON ri.receipt_id = r.id
-                   WHERE r.deleted = 0
-                     AND lower(ri.name) LIKE ?
-                   GROUP BY r.vendor, r.currency
-                   ORDER BY times_seen DESC""",
-                (f"%{norm}%",),
+                   WHERE r.deleted = 0"""
             ).fetchall()
-            return [
-                {
-                    "vendor":     r["vendor"] or "Unknown",
-                    "currency":   r["currency"] or "JPY",
-                    "times_seen": r["times_seen"],
-                    "min_price":  r["min_price"] or 0.0,
-                    "max_price":  r["max_price"] or 0.0,
-                    "avg_price":  r["avg_price"] or 0.0,
-                    "last_date":  r["last_date"] or "",
-                }
-                for r in rows
-            ]
         finally:
             conn.close()
+
+        # Group by (vendor, currency) on exact-normalized name match
+        groups: dict[tuple, dict] = {}
+        for r in rows:
+            if _normalize(r["name"]) != norm:
+                continue
+            key = (r["vendor"] or "Unknown", r["currency"] or "JPY")
+            g = groups.setdefault(key, {
+                "vendor": key[0], "currency": key[1],
+                "prices": [], "dates": [],
+            })
+            g["prices"].append(float(r["unit_price"] or 0.0))
+            g["dates"].append(r["date"] or "")
+
+        result = []
+        for g in sorted(groups.values(), key=lambda x: -len(x["prices"])):
+            prices = g["prices"]
+            result.append({
+                "vendor":     g["vendor"],
+                "currency":   g["currency"],
+                "times_seen": len(prices),
+                "min_price":  min(prices) if prices else 0.0,
+                "max_price":  max(prices) if prices else 0.0,
+                "avg_price":  sum(prices) / len(prices) if prices else 0.0,
+                "last_date":  max(g["dates"]) if g["dates"] else "",
+            })
+        return result
 
     def get_item_all_prices(self, item_name: str) -> list[dict]:
         """All individual purchase records for an item, grouped by vendor.
@@ -558,19 +607,20 @@ class ExpensesStore:
         conn = get_connection()
         try:
             rows = conn.execute(
-                """SELECT r.vendor, r.currency, ri.unit_price, r.date
+                """SELECT ri.name, r.vendor, r.currency, ri.unit_price, r.date
                    FROM receipt_items ri
                    JOIN receipts r ON ri.receipt_id = r.id
-                   WHERE r.deleted = 0 AND lower(ri.name) LIKE ?
+                   WHERE r.deleted = 0
                    ORDER BY r.vendor, r.date""",
-                (f"%{norm}%",),
             ).fetchall()
         finally:
             conn.close()
 
-        # Group by (vendor, currency)
+        # Group by (vendor, currency) using exact-normalized name match
         groups: dict[tuple, dict] = {}
         for r in rows:
+            if _normalize(r["name"]) != norm:
+                continue
             key = (r["vendor"] or "Unknown", r["currency"] or "JPY")
             if key not in groups:
                 groups[key] = {
