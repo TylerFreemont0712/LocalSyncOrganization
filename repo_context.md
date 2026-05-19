@@ -1,0 +1,24121 @@
+# 📘 Repository Context Document
+
+This document contains the full context of the repository, formatted for optimal LLM consumption.
+
+## 📑 Document Structure
+1. File Tree
+2. Project Summary
+3. Dependency Graph
+4. Docstring Summary
+5. Full File Contents
+
+---
+
+## 📁 File Tree
+```
+- main.pyw
+- profile_app.py
+  - __init__.py
+  - config.py
+    - __init__.py
+    - activity_store.py
+    - calendar_store.py
+    - database.py
+    - expenses_store.py
+    - finance_store.py
+    - holidays_jp.py
+    - journey_store.py
+    - notes_store.py
+    - soft_events_store.py
+    - todo_store.py
+    - __init__.py
+    - deletion_manifest.py
+    - engine.py
+    - vault_watcher.py
+    - __init__.py
+    - main_window.py
+      - __init__.py
+      - activity_panel.py
+      - calendar_panel.py
+      - dashboard_panel.py
+      - debug_panel.py
+      - expenses_panel.py
+      - finance_charts.py
+      - finance_panel.py
+      - journey_panel.py
+      - notes_panel.py
+      - todo_panel.py
+      - work_panel.py
+      - __init__.py
+      - styles.py
+      - __init__.py
+      - matrix_rain.py
+      - nav_button.py
+      - network_dialog.py
+    - __init__.py
+    - llm.py
+    - paths.py
+    - timestamps.py
+  - __init__.py
+```
+
+## 📊 Project Summary
+- Total Python files: **44**
+- Total lines of code: **21515**
+
+## 🔗 Dependency Graph
+### main.pyw
+- logging
+- sys
+- PyQt6.QtWidgets
+- src.data.database
+- src.config
+- src.ui.main_window
+- src.sync.engine
+- src.sync.vault_watcher
+- traceback
+- PyQt6.QtWidgets
+
+### profile_app.py
+- cProfile
+- pstats
+- sys
+- time
+- src.data.database
+- src.config
+- src.ui.main_window
+- src.sync.engine
+- src.sync.vault_watcher
+- PyQt6.QtWidgets
+
+### src\__init__.py
+- src.config
+
+### src\config.py
+- json
+- platform
+- pathlib
+
+### src\data\__init__.py
+- src.data.database
+- src.data.notes_store
+- src.data.calendar_store
+- src.data.finance_store
+- src.data.todo_store
+
+### src\data\activity_store.py
+- uuid
+- dataclasses
+- src.data.database
+- src.utils.timestamps
+
+### src\data\calendar_store.py
+- uuid
+- dataclasses
+- datetime
+- src.data.database
+- src.utils.timestamps
+
+### src\data\database.py
+- sqlite3
+- pathlib
+- src.config
+
+### src\data\expenses_store.py
+- __future__
+- re
+- uuid
+- dataclasses
+- datetime
+- src.data.database
+- src.data.finance_store
+- src.utils.timestamps
+
+### src\data\finance_store.py
+- calendar
+- uuid
+- dataclasses
+- datetime
+- src.data.database
+- src.utils.timestamps
+- calendar
+
+### src\data\holidays_jp.py
+- datetime
+
+### src\data\journey_store.py
+- __future__
+- json
+- uuid
+- dataclasses
+- typing
+- src.data.database
+- src.utils.timestamps
+
+### src\data\notes_store.py
+- re
+- dataclasses
+- pathlib
+- src.config
+
+### src\data\soft_events_store.py
+- uuid
+- dataclasses
+- datetime
+- src.data.database
+- src.data.calendar_store
+- src.utils.timestamps
+
+### src\data\todo_store.py
+- uuid
+- dataclasses
+- src.data.database
+- src.utils.timestamps
+
+### src\sync\__init__.py
+- src.sync.engine
+
+### src\sync\deletion_manifest.py
+- json
+- logging
+- time
+- pathlib
+- src.config
+
+### src\sync\engine.py
+- json
+- logging
+- socket
+- struct
+- threading
+- time
+- concurrent.futures
+- pathlib
+- PyQt6.QtCore
+- src.config
+- src.data.database
+- src.utils.timestamps
+- src.sync.deletion_manifest
+- src.sync.vault_watcher
+
+### src\sync\vault_watcher.py
+- hashlib
+- logging
+- threading
+- time
+- pathlib
+- PyQt6.QtCore
+- src.config
+- src.sync.deletion_manifest
+
+### src\ui\__init__.py
+- src.ui.main_window
+
+### src\ui\main_window.py
+- datetime
+- PyQt6.QtCore
+- PyQt6.QtGui
+- PyQt6.QtWidgets
+- src.config
+- src.ui.themes.styles
+- src.ui.modules.notes_panel
+- src.ui.modules.calendar_panel
+- src.ui.modules.finance_panel
+- src.ui.modules.expenses_panel
+- src.ui.modules.todo_panel
+- src.ui.modules.dashboard_panel
+- src.ui.modules.finance_charts
+- src.ui.modules.activity_panel
+- src.ui.modules.work_panel
+- src.ui.modules.debug_panel
+- src.data.todo_store
+- src.data.calendar_store
+- src.data.finance_store
+- src.data.activity_store
+- src.data.soft_events_store
+- src.ui.widgets.matrix_rain
+- src.utils.llm
+- PyQt6.QtGui
+- src.ui.widgets.network_dialog
+- src.utils.llm
+- PyQt6.QtWidgets
+
+### src\ui\modules\__init__.py
+- src.ui.modules.notes_panel
+- src.ui.modules.calendar_panel
+- src.ui.modules.finance_panel
+- src.ui.modules.expenses_panel
+
+### src\ui\modules\activity_panel.py
+- __future__
+- datetime
+- pathlib
+- PyQt6.QtCore
+- PyQt6.QtGui
+- PyQt6.QtWidgets
+- src.config
+- src.data.activity_store
+- src.ui.widgets.nav_button
+
+### src\ui\modules\calendar_panel.py
+- __future__
+- calendar
+- datetime
+- PyQt6.QtCore
+- PyQt6.QtGui
+- PyQt6.QtWidgets
+- src.data.calendar_store
+- src.data.soft_events_store
+- src.ui.widgets.nav_button
+- src.ui.modules.dashboard_panel
+- PyQt6.QtGui
+- src.data.holidays_jp
+- PyQt6.QtGui
+- src.data.calendar_store
+- src.data.calendar_store
+
+### src\ui\modules\dashboard_panel.py
+- calendar
+- datetime
+- PyQt6.QtCore
+- PyQt6.QtGui
+- PyQt6.QtWidgets
+- src.config
+- src.data.todo_store
+- src.data.calendar_store
+- src.data.finance_store
+- src.data.soft_events_store
+- src.ui.widgets.nav_button
+- PyQt6.QtWidgets
+
+### src\ui\modules\debug_panel.py
+- __future__
+- PyQt6.QtCore
+- PyQt6.QtGui
+- PyQt6.QtWidgets
+- src.utils.llm
+- src.utils.llm
+
+### src\ui\modules\expenses_panel.py
+- __future__
+- calendar
+- datetime
+- PyQt6.QtCore
+- PyQt6.QtGui
+- PyQt6.QtWidgets
+- src.config
+- src.data.finance_store
+- src.data.expenses_store
+- src.data.database
+
+### src\ui\modules\finance_charts.py
+- calendar
+- datetime
+- math
+- PyQt6.QtCore
+- PyQt6.QtGui
+- PyQt6.QtWidgets
+- src.data.finance_store
+- src.data.activity_store
+- src.config
+
+### src\ui\modules\finance_panel.py
+- threading
+- urllib.request
+- json
+- csv
+- datetime
+- pathlib
+- PyQt6.QtCore
+- PyQt6.QtGui
+- PyQt6.QtWidgets
+- src.config
+- src.data.finance_store
+- src.config
+- calendar
+
+### src\ui\modules\journey_panel.py
+- __future__
+- html
+- json
+- logging
+- re
+- threading
+- urllib.parse
+- urllib.request
+- datetime
+- typing
+- PyQt6.QtCore
+- PyQt6.QtGui
+- PyQt6.QtWidgets
+- src.data.journey_store
+- src.utils.llm
+- markdown
+- src.data.database
+
+### src\ui\modules\notes_panel.py
+- json
+- logging
+- os
+- subprocess
+- sys
+- threading
+- urllib.parse
+- urllib.request
+- collections
+- pathlib
+- PyQt6.QtCore
+- PyQt6.QtGui
+- PyQt6.QtWidgets
+- src.config
+- src.data.notes_store
+- src.sync.deletion_manifest
+- mistune
+
+### src\ui\modules\todo_panel.py
+- datetime
+- PyQt6.QtCore
+- PyQt6.QtGui
+- PyQt6.QtWidgets
+- src.data.todo_store
+- re
+
+### src\ui\modules\work_panel.py
+- __future__
+- datetime
+- pathlib
+- PyQt6.QtCore
+- PyQt6.QtGui
+- PyQt6.QtWidgets
+- src.config
+- src.data.activity_store
+- src.utils.llm
+- PyQt6.QtWidgets
+- src.config
+
+### src\ui\themes\__init__.py
+- src.ui.themes.styles
+
+### src\ui\widgets\__init__.py
+- src.ui.widgets.network_dialog
+
+### src\ui\widgets\matrix_rain.py
+- __future__
+- random
+- dataclasses
+- typing
+- PyQt6.QtCore
+- PyQt6.QtGui
+- PyQt6.QtWidgets
+
+### src\ui\widgets\nav_button.py
+- PyQt6.QtCore
+- PyQt6.QtGui
+- PyQt6.QtWidgets
+
+### src\ui\widgets\network_dialog.py
+- socket
+- threading
+- PyQt6.QtCore
+- PyQt6.QtWidgets
+- src.config
+- src.utils.llm
+- src.utils.llm
+- src.utils.llm
+
+### src\utils\__init__.py
+- src.utils.timestamps
+- src.utils.paths
+- src.utils.llm
+
+### src\utils\llm.py
+- __future__
+- json
+- logging
+- threading
+- time
+- urllib.error
+- urllib.request
+- concurrent.futures
+- dataclasses
+- typing
+- PyQt6.QtCore
+- src.config
+- src.config
+- src.config
+- src.config
+
+### src\utils\paths.py
+- pathlib
+
+### src\utils\timestamps.py
+- datetime
+
+## 📝 Docstring Summary
+### main.pyw
+**Module docstring:**
+LocalSync â€” Personal productivity desktop app.
+
+Entry point: initializes the database, starts the Qt application,
+launches sync engine and vault watcher, and displays the main window.
+
+**Classes:**
+- (None)
+
+**Functions:**
+- `main`: (No docstring)
+
+### profile_app.py
+**Module docstring:**
+(None)
+
+**Classes:**
+- (None)
+
+**Functions:**
+- `main`: (No docstring)
+
+### src\__init__.py
+**Module docstring:**
+LocalSync — Personal productivity desktop app.
+
+**Classes:**
+- (None)
+
+**Functions:**
+- (None)
+
+### src\config.py
+**Module docstring:**
+App-wide configuration and paths.
+
+**Classes:**
+- (None)
+
+**Functions:**
+- `load_config`: (No docstring)
+- `save_config`: (No docstring)
+
+### src\data\__init__.py
+**Module docstring:**
+Data layer — storage backends for all modules.
+
+**Classes:**
+- (None)
+
+**Functions:**
+- (None)
+
+### src\data\activity_store.py
+**Module docstring:**
+Activity tracking storage backed by SQLite.
+
+**Classes:**
+- `Activity`: (No docstring)
+- `ActivityStore`: (No docstring)
+
+**Functions:**
+- `color`: (No docstring)
+- `duration_minutes`: (No docstring)
+- `add`: (No docstring)
+- `update`: (No docstring)
+- `delete`: (No docstring)
+- `get_for_date`: (No docstring)
+- `get_all`: (No docstring)
+- `_upsert`: (No docstring)
+- `_row_to_item`: (No docstring)
+
+### src\data\calendar_store.py
+**Module docstring:**
+Calendar event storage backed by SQLite — supports recurring events and birthdays.
+
+**Classes:**
+- `Event`: (No docstring)
+- `Birthday`: (No docstring)
+- `CalendarStore`: (No docstring)
+
+**Functions:**
+- `_nth_weekday_in_month`: Return the date of the Nth occurrence (1-indexed) of weekday in year/month.
+Returns None if that Nth occurrence does not exist (e.g. 5th Sunday in a short month).
+- `parse_recurrence`: Parse a recurrence string into a dict.
+- `build_recurrence`: Build a recurrence string from type and optional parameters.
+- `expand_recurring_to_range`: Expand a recurring event into concrete dates within [range_start, range_end].
+- `add_event`: (No docstring)
+- `update_event`: (No docstring)
+- `delete_event`: (No docstring)
+- `get_events`: Get non-deleted events, optionally filtered by date range.
+
+For recurring events, this returns the *template* event if its
+start_time falls before `end`. Use expand_recurring_to_range()
+to generate concrete occurrences in a date range.
+- `get_all_recurring_events`: Get all non-deleted recurring events regardless of date.
+- `get_event`: (No docstring)
+- `_upsert`: (No docstring)
+- `_row_to_event`: (No docstring)
+- `add_birthday`: (No docstring)
+- `update_birthday`: (No docstring)
+- `delete_birthday`: (No docstring)
+- `get_birthdays`: (No docstring)
+- `get_birthdays_for_month`: (No docstring)
+- `_upsert_birthday`: (No docstring)
+- `_row_to_birthday`: (No docstring)
+- `get_next_major_events`: Return next `limit` upcoming major events as (event_date, title, category, color).
+
+Sources:
+1. Events with category in ('birthday', 'trip', 'holiday', 'major').
+2. Birthdays table (next annual occurrence).
+Results are sorted by date ascending.
+
+### src\data\database.py
+**Module docstring:**
+SQLite database setup and connection for all LocalSync modules.
+
+**Classes:**
+- (None)
+
+**Functions:**
+- `get_connection`: (No docstring)
+- `init_db`: Create tables if they don't exist, then run migrations.
+- `_migrate`: Add columns that may be missing from older databases.
+
+All changes are purely additive (ALTER TABLE ADD COLUMN).
+Never drop or rename columns — sync relies on stable schemas.
+
+### src\data\expenses_store.py
+**Module docstring:**
+Expense tracking — receipts, line items, and a small item-price catalogue.
+
+The earnings ledger lives in `finance_store.transactions`. This module layers
+*structured* expense data on top: every receipt also writes one transaction
+row (`type='expense'`, tagged `[Receipt] <vendor>`) so the existing summary,
+goal, and chart aggregates keep working without per-call branching.
+
+Data model
+──────────
+Receipt        — header (date, vendor, category, currency, totals, notes)
+ReceiptItem    — line items (name, qty, unit_price, line_total)
+ExpenseItem    — item catalogue with rolling last/avg/min/max price stats,
+                 updated automatically as receipts are saved. Use
+                 `search_items(query)` for autocomplete in entry forms.
+
+A receipt's `transaction_id` points to the linked row in `transactions`;
+saving / updating / soft-deleting a receipt keeps the transaction in sync.
+Standalone expenses (e.g. "rent", "gas") that don't need line-item detail
+can still be entered directly via FinanceStore.add_transaction.
+
+**Classes:**
+- `ReceiptItem`: (No docstring)
+- `Receipt`: (No docstring)
+- `ExpenseItem`: (No docstring)
+- `ExpensesStore`: Receipts, receipt items, and item-price catalogue.
+
+**Functions:**
+- `_normalize`: Lowercase + strip non-alphanumerics for fuzzy item matching.
+- `__init__`: (No docstring)
+- `save_receipt`: Insert or update a receipt + items + linked transaction.
+
+Items, if supplied, REPLACE any existing line items on the receipt.
+Each item updates the catalogue's rolling price stats.
+- `get_receipt`: (No docstring)
+- `get_receipts`: (No docstring)
+- `delete_receipt`: Soft-delete the receipt and its linked transaction.
+- `_sync_transaction_for_receipt`: Create or update the ledger row that represents this receipt.
+- `_row_to_receipt`: (No docstring)
+- `_items_for`: (No docstring)
+- `search_items`: Fuzzy-match items by normalized name. Empty query returns
+the most-frequently-seen items.
+- `get_all_items`: (No docstring)
+- `delete_item`: (No docstring)
+- `_upsert_item_stats`: Insert or recompute stats for `name` after a receipt write.
+
+All aggregate stats are derived by exact-normalized match against
+the actual receipt_items rows so editing a receipt cannot inflate
+the counter, and items whose receipts were all deleted will report
+zero observable instances.
+- `_recompute_item_stats`: Recompute every catalogue stat for `norm` from receipt_items
+whose normalized name equals `norm`. Iterates in Python so the
+match is exact rather than substring-based.
+- `_row_to_item`: (No docstring)
+- `get_item_vendor_stats`: Per-vendor price stats for an item, derived from receipt line items.
+- `get_item_all_prices`: All individual purchase records for an item, grouped by vendor.
+
+Returns a list of dicts with keys: vendor, currency, prices (list of
+floats), dates (list of str), min_price, max_price, avg_price, times_seen,
+last_date.  Suitable for populating the expandable tree rows in the
+catalogue UI.
+- `summary`: Period summary across both receipt and standalone expenses.
+
+### src\data\finance_store.py
+**Module docstring:**
+Financial/earnings storage backed by SQLite.
+
+**Classes:**
+- `Transaction`: (No docstring)
+- `JobPreset`: (No docstring)
+- `SideIncomeGoal`: (No docstring)
+- `FinanceStore`: (No docstring)
+
+**Functions:**
+- `add_transaction`: (No docstring)
+- `update_transaction`: (No docstring)
+- `delete_transaction`: (No docstring)
+- `get_transactions`: (No docstring)
+- `has_monthly_tag`: Return True if any [Monthly] tagged expense exists for this month.
+- `get_summary`: (No docstring)
+- `get_goal_income`: (No docstring)
+- `get_period_income_usd`: All income (side + main job) for a date range, normalized to USD.
+- `get_side_income`: (No docstring)
+- `get_all_time_earned_usd`: (No docstring)
+- `_upsert`: (No docstring)
+- `_row_to_txn`: (No docstring)
+- `get_presets`: (No docstring)
+- `add_preset`: (No docstring)
+- `update_preset`: (No docstring)
+- `delete_preset`: (No docstring)
+- `log_preset`: Log a preset as income.
+
+For "flat" presets the amount is preset.amount_usd × count.
+For "hour"/"minute" presets it is preset.amount_usd × units (count
+is treated as 1 to avoid double-multiplication).
+- `_upsert_preset`: (No docstring)
+- `_row_to_preset`: (No docstring)
+- `get_goal`: (No docstring)
+- `set_goal`: (No docstring)
+- `_row_to_goal`: (No docstring)
+
+### src\data\holidays_jp.py
+**Module docstring:**
+Japanese national holidays calculator.
+
+Covers all 16 national holidays defined by Japanese law, including
+substitute holidays (振替休日) and special rules for vernal/autumnal equinox.
+
+**Classes:**
+- (None)
+
+**Functions:**
+- `_vernal_equinox_day`: Approximate day of vernal equinox (春分の日) for a given year.
+- `_autumnal_equinox_day`: Approximate day of autumnal equinox (秋分の日) for a given year.
+- `_monday_of_week`: Return the nth Monday of a given month (1-indexed).
+- `get_japanese_holidays`: Return a dict mapping date -> holiday name for a given year.
+
+All holiday names are provided in English with Japanese in parentheses.
+- `is_japanese_holiday`: Return holiday name if the date is a Japanese national holiday, else None.
+
+### src\data\journey_store.py
+**Module docstring:**
+Journey store — CRUD for journeys, steps, and council session records.
+
+**Classes:**
+- `RoadmapStep`: (No docstring)
+- `Roadmap`: (No docstring)
+- `Journey`: (No docstring)
+- `JourneyStep`: (No docstring)
+- `CouncilSession`: (No docstring)
+- `CouncilMemberRecord`: (No docstring)
+- `JourneyStore`: (No docstring)
+
+**Functions:**
+- `from_json`: (No docstring)
+- `to_json`: (No docstring)
+- `add_detour_step`: Append a detour step to the roadmap and return it.
+- `get_step_by_title`: (No docstring)
+- `roadmap`: (No docstring)
+- `progress_pct`: (No docstring)
+- `domain_color`: (No docstring)
+- `create_journey`: Create a new journey. Only defined ONCE — no duplicate.
+- `list_journeys`: (No docstring)
+- `get_journey`: (No docstring)
+- `update_journey`: (No docstring)
+- `update_roadmap`: Convenience wrapper to persist an updated Roadmap object.
+- `delete_journey`: (No docstring)
+- `create_step`: (No docstring)
+- `list_steps`: (No docstring)
+- `get_step`: (No docstring)
+- `update_step_notes`: (No docstring)
+- `update_checklist_state`: (No docstring)
+- `complete_step`: (No docstring)
+- `save_council_session`: (No docstring)
+- `list_sessions_for_step`: (No docstring)
+- `_row_to_journey`: (No docstring)
+- `_row_to_step`: (No docstring)
+- `_jl`: (No docstring)
+
+### src\data\notes_store.py
+**Module docstring:**
+File-based notes storage — Obsidian-compatible markdown files.
+
+**Classes:**
+- `Note`: (No docstring)
+- `NotesStore`: Manages markdown notes on disk in an Obsidian-compatible folder layout.
+
+**Functions:**
+- `filename`: (No docstring)
+- `__init__`: (No docstring)
+- `list_notes`: List all .md files under the notes directory, skipping hidden dirs.
+- `get_note`: (No docstring)
+- `save_note`: (No docstring)
+- `delete_note`: (No docstring)
+- `search`: Simple case-insensitive search across titles and content.
+- `_load_note`: (No docstring)
+- `_extract_tags`: Extract #tags from markdown content.
+
+### src\data\soft_events_store.py
+**Module docstring:**
+Soft event storage — lightweight recurring reminders with per-day logs.
+
+**Classes:**
+- `SoftEventTemplate`: (No docstring)
+- `SoftEventLog`: (No docstring)
+- `SoftEventStore`: (No docstring)
+
+**Functions:**
+- `add_template`: (No docstring)
+- `update_template`: (No docstring)
+- `delete_template`: Soft-delete a template.
+- `get_templates`: Return all non-deleted templates.
+- `get_template`: (No docstring)
+- `get_upcoming`: Expand each template's recurrence and return sorted (date, template) tuples.
+
+For templates with empty recurrence, they are skipped (no base date to anchor).
+days_ahead=0 means only from_date itself is checked.
+- `get_or_create_log`: Return existing log or create a new one with a date header.
+- `update_log`: (No docstring)
+- `get_log`: (No docstring)
+- `get_logs_for_template`: Return all non-deleted logs for a template, sorted newest first.
+- `_upsert_template`: (No docstring)
+- `_upsert_log`: (No docstring)
+- `_row_to_template`: (No docstring)
+- `_row_to_log`: (No docstring)
+
+### src\data\todo_store.py
+**Module docstring:**
+Todo/task storage backed by SQLite.
+
+**Classes:**
+- `TodoItem`: (No docstring)
+- `TodoStore`: (No docstring)
+
+**Functions:**
+- `add`: (No docstring)
+- `update`: (No docstring)
+- `toggle_done`: (No docstring)
+- `delete`: (No docstring)
+- `get_all`: (No docstring)
+- `get_counts`: (No docstring)
+- `_upsert`: (No docstring)
+- `_row_to_item`: (No docstring)
+
+### src\sync\__init__.py
+**Module docstring:**
+LAN sync engine for peer-to-peer data synchronization.
+
+**Classes:**
+- (None)
+
+**Functions:**
+- (None)
+
+### src\sync\deletion_manifest.py
+**Module docstring:**
+Shared deletion manifest utilities for vault sync.
+
+Both the VaultWatcher (polling) and the UI (immediate delete/rename) need to
+record deletions in `.localsync_deletions.json`. This module centralizes that
+logic so there's one source of truth.
+
+**Classes:**
+- (None)
+
+**Functions:**
+- `get_vault_path`: Return the configured vault path, or None.
+- `_manifest_path`: (No docstring)
+- `read_manifest`: (No docstring)
+- `write_manifest`: (No docstring)
+- `record_deletion`: Immediately record a file deletion in the vault manifest.
+
+Safe to call from any thread. If vault is None, reads from config.
+Includes both deleted_at (legacy) and deleted_at_ts (float unix timestamp)
+so engine.py LWW comparisons work.
+- `is_deleted`: Check if a path is in the deletion manifest.
+- `remove_deletion`: Remove a path from the deletion manifest (file re-created).
+
+### src\sync\engine.py
+**Module docstring:**
+LAN mesh sync engine — subnet scanning, peer discovery, and data exchange.
+
+How it works:
+1. DISCOVERY: On each cycle, actively scans the local /24 subnet by attempting
+   a fast TCP connect to the sync port on every host. Also listens for UDP
+   broadcast announcements from other instances. This two-pronged approach
+   means peers find each other automatically on the LAN.
+
+2. SYNC: For each discovered peer, opens a TCP connection, exchanges full data
+   sets (events, transactions, notes), and merges using last-write-wins on
+   the updated_at timestamp. Soft-deleted records are propagated.
+
+3. MESH: Every node is both client and server. There's no central coordinator.
+   Any two nodes that can reach each other will converge.
+
+Designed for your setup:
+  Desktop (Windows) 192.168.0.4  <-->  Laptop (Linux) 192.168.0.28
+  Both on the same 192.168.0.0/24 subnet.
+
+**Classes:**
+- `PeerInfo`: Tracks a discovered peer and its health.
+- `SyncEngine`: Background mesh sync thread.
+
+**Functions:**
+- `__init__`: (No docstring)
+- `is_stale`: (No docstring)
+- `__repr__`: (No docstring)
+- `__init__`: (No docstring)
+- `run`: (No docstring)
+- `stop`: (No docstring)
+- `force_sync`: Trigger an immediate sync cycle (called from UI).
+- `force_scan`: Trigger an immediate subnet peer discovery scan without a full data sync.
+- `_force_sync_once`: (No docstring)
+- `trigger_vault_sync`: Called by the vault watcher when local vault files changed.
+
+Immediately syncs with all known peers so the changes propagate.
+- `_vault_sync_once`: (No docstring)
+- `add_manual_peer`: Add a peer IP manually (from the network settings dialog).
+- `reload_config`: Reload config after settings change.
+- `_scan_subnet`: Actively probe every host in the /24 subnet for our sync port.
+- `_probe_host`: Try a fast TCP connect to see if a peer is listening on sync_port.
+- `_broadcast_presence`: Announce ourselves on the LAN via UDP broadcast.
+- `_discovery_listener`: Listen for UDP peer announcements.
+- `_sync_server`: TCP server that accepts sync requests from peers.
+- `_handle_incoming`: Handle an incoming sync connection from a peer.
+- `_sync_with_peer`: Initiate a sync exchange with a specific peer.
+- `ping_peer`: Ping a specific peer. Returns (reachable, hostname_or_error).
+- `_gather_local_data`: (No docstring)
+- `_get_vault_deletions`: Read the deletion manifest for vault files.
+- `_record_vault_deletion`: Record a file deletion in the vault manifest.
+- `_merge_remote_data`: Merge remote data. Returns count of changes applied.
+- `_remove_vault_deletion`: Remove a path from the deletion manifest (file was re-created remotely).
+- `_cleanup_empty_dirs`: Remove empty subdirectories (bottom-up) after file deletions.
+- `_get_alive_peers`: (No docstring)
+- `_prune_stale_peers`: (No docstring)
+- `_emit_peer_list`: (No docstring)
+- `get_peer_list`: Synchronous access to peer list for the settings dialog.
+- `_send_json`: (No docstring)
+- `_recv_json`: (No docstring)
+- `_get_local_ips`: (No docstring)
+- `_log`: (No docstring)
+
+### src\sync\vault_watcher.py
+**Module docstring:**
+Filesystem watcher for Obsidian vault — detects local edits and triggers sync.
+
+Uses a polling approach (no inotify dependency) to watch for .md file changes
+in the configured vault directory. When changes are detected, emits a signal
+so the sync engine can broadcast them to peers.
+
+Sync-safety features:
+  • 10-second poll interval — relaxed for a personal two-machine setup.
+  • Deletion debounce — a file must be absent for 5 consecutive polls (~50 s)
+    before its deletion is recorded.  This prevents Obsidian's atomic-save
+    behaviour (delete + recreate within milliseconds) from being misread as a
+    real deletion.
+  • Content-hash guard — when a pending-deletion file disappears, its MD5 hash
+    (or size as fallback) is stored.  If a new file appears with the same hash
+    during the debounce window, the deletion is treated as a rename/move and
+    is not recorded in the manifest.
+  • Sync-write guard — when the engine writes a vault file it calls
+    mark_sync_written(); the watcher skips that path for the next poll cycle
+    so it does not re-trigger a sync for data that arrived from a peer.
+  • Quiet-period gate — vault_changed is only emitted after two full polls with
+    no new activity.  Rapid sequences (move = delete + create) are collapsed
+    into a single signal.
+  • Move detection — if a pending-deletion's content hash or file size matches
+    a newly appeared file in the same poll cycle the operation is treated as a
+    rename and the deletion manifest entry is suppressed.
+
+**Classes:**
+- `VaultWatcher`: Polls the Obsidian vault for file changes and signals when detected.
+
+**Functions:**
+- `mark_sync_written`: Register a vault-relative path that the sync engine just wrote to disk.
+
+The watcher will ignore this path for the next poll cycle so that incoming
+peer data does not immediately re-trigger a sync.  Call from any thread.
+- `_pop_sync_written`: Drain and return the current sync-written set (called once per poll).
+- `_md5_file`: Compute MD5 hex digest of a file, or None if unreadable.
+- `__init__`: (No docstring)
+- `_load_vault_path`: (No docstring)
+- `reload_config`: Reload vault path from config (called after settings change).
+- `_scan_vault`: Return {posix_relative_path: (mtime, size)} for all visible .md files.
+- `_refresh_hash_cache`: Keep ``self._hash_cache`` in sync with ``current``.
+
+Hashes are computed lazily — only for files that are new in this poll
+or whose mtime/size has changed since the last poll.  Files that
+disappear keep their hash in the cache so that move-detection can
+match them against newly appeared files in the *same* poll cycle.
+- `run`: (No docstring)
+- `_poll`: One full poll cycle: detect changes, debounce, maybe emit.
+- `stop`: (No docstring)
+
+### src\ui\__init__.py
+**Module docstring:**
+UI layer — PyQt6 main window and module panels.
+
+**Classes:**
+- (None)
+
+**Functions:**
+- (None)
+
+### src\ui\main_window.py
+**Module docstring:**
+Main application window with menu bar, sidebar, theme selector, and sync integration.
+
+Changes in this version:
+  • Store injection — all stores instantiated once and passed to panels
+  • System tray icon — programmatic theme-aware icon, minimize to tray
+  • Close-to-tray behaviour controlled by config key 'minimize_to_tray'
+
+**Classes:**
+- `SidebarButton`: (No docstring)
+- `MainWindow`: (No docstring)
+
+**Functions:**
+- `__init__`: (No docstring)
+- `apply_colors`: (No docstring)
+- `__init__`: (No docstring)
+- `resizeEvent`: (No docstring)
+- `_build_menu_bar`: (No docstring)
+- `_action`: (No docstring)
+- `_build_central`: (No docstring)
+- `_build_status_bar`: (No docstring)
+- `_update_clock`: (No docstring)
+- `_setup_tray`: (No docstring)
+- `_update_tray_icon`: Generate a 32x32 theme-aware tray icon (solid circle).
+- `_tray_show`: (No docstring)
+- `_on_tray_activated`: (No docstring)
+- `closeEvent`: (No docstring)
+- `changeEvent`: (No docstring)
+- `_navigate`: (No docstring)
+- `_on_theme_changed`: (No docstring)
+- `_apply_theme`: (No docstring)
+- `set_sync_engine`: Called by main.py to wire up the sync engine.
+- `_on_sync_completed`: Refresh all panels after incoming data has been merged.
+- `set_sync_status`: (No docstring)
+- `_on_peers_updated`: (No docstring)
+- `_force_sync`: (No docstring)
+- `_open_network_dialog`: (No docstring)
+- `_reload_llm_client`: Reload the LLM client from config and push it to all panels that use it.
+- `_show_about`: (No docstring)
+
+### src\ui\modules\__init__.py
+**Module docstring:**
+Module panels for each app feature.
+
+**Classes:**
+- (None)
+
+**Functions:**
+- (None)
+
+### src\ui\modules\activity_panel.py
+**Module docstring:**
+Activity Tracker panel — quick-tap card interface + weekly 24-hour grid.
+
+Layout:
+  Left (scrollable):  7-column × 24-hour painted block grid
+  Right (fixed 380px):
+    - Quick-tap category cards (2×3 grid)
+    - Today's activity log
+    - Manual log form with matching pill picker for category selection
+
+**Classes:**
+- `ActivityBlock`: (No docstring)
+- `WeekBlockWidget`: (No docstring)
+- `NotesDialog`: (No docstring)
+- `RenameCategoriesDialog`: (No docstring)
+- `QuickCard`: (No docstring)
+- `TodayBreakdown`: (No docstring)
+- `_SmallPill`: A single small pill inside CategoryPillPicker.
+- `CategoryPillPicker`: 2×3 grid of small pills + optional custom text field.
+- `LogForm`: (No docstring)
+- `ActivityPanel`: (No docstring)
+
+**Functions:**
+- `_parse_hhmm`: (No docstring)
+- `_hours_to_px`: (No docstring)
+- `_px_to_hours`: (No docstring)
+- `_fmt_hm`: (No docstring)
+- `_fmt_elapsed`: (No docstring)
+- `_resolve_overlaps`: Resolve overlapping activities using last-created-wins policy.
+
+Sorts activities by created_at ascending so the most recently added
+activity claims its time slot, clipping any earlier activities that
+overlap it.
+
+Returns a list of (activity, start_hours, end_hours) tuples,
+sorted by start_hours, with no overlapping segments.
+- `_make_lbl`: (No docstring)
+- `__init__`: (No docstring)
+- `__init__`: (No docstring)
+- `set_palette`: (No docstring)
+- `load_week`: (No docstring)
+- `mousePressEvent`: (No docstring)
+- `paintEvent`: (No docstring)
+- `__init__`: (No docstring)
+- `get_notes`: (No docstring)
+- `__init__`: (No docstring)
+- `get_categories`: (No docstring)
+- `__init__`: (No docstring)
+- `_build_ui`: (No docstring)
+- `set_active`: (No docstring)
+- `set_daily_total`: (No docstring)
+- `tick`: (No docstring)
+- `_refresh_display`: (No docstring)
+- `_apply_style`: (No docstring)
+- `update_category`: (No docstring)
+- `mousePressEvent`: (No docstring)
+- `__init__`: (No docstring)
+- `set_palette`: (No docstring)
+- `refresh`: (No docstring)
+- `__init__`: (No docstring)
+- `set_selected`: (No docstring)
+- `update_category`: (No docstring)
+- `_apply_style`: (No docstring)
+- `mousePressEvent`: (No docstring)
+- `__init__`: (No docstring)
+- `_build_ui`: (No docstring)
+- `_on_pill_tapped`: (No docstring)
+- `_on_custom_changed`: (No docstring)
+- `_sync_pill_styles`: (No docstring)
+- `get_activity`: (No docstring)
+- `set_activity`: (No docstring)
+- `clear`: (No docstring)
+- `update_categories`: (No docstring)
+- `__init__`: (No docstring)
+- `set_palette`: (No docstring)
+- `_build_ui`: (No docstring)
+- `set_week_start`: (No docstring)
+- `update_categories`: (No docstring)
+- `prefill`: (No docstring)
+- `load_for_edit`: (No docstring)
+- `_rebuild_day_combo`: (No docstring)
+- `_selected_date`: (No docstring)
+- `_submit`: (No docstring)
+- `_delete`: (No docstring)
+- `_cancel_edit`: (No docstring)
+- `_open_notes`: (No docstring)
+- `_start_timer`: (No docstring)
+- `_stop_timer`: (No docstring)
+- `_tick`: (No docstring)
+- `__init__`: (No docstring)
+- `_load_quick_cats`: (No docstring)
+- `_save_quick_cats`: (No docstring)
+- `_schedule_midnight_refresh`: Schedule a one-shot timer that fires 5 s after midnight.
+- `_midnight_refresh`: Called at midnight: snap the week view to contain today, then refresh.
+- `set_palette`: (No docstring)
+- `_build_ui`: (No docstring)
+- `_on_card_tapped`: (No docstring)
+- `_start_session`: (No docstring)
+- `_stop_session`: (No docstring)
+- `_card_tick`: (No docstring)
+- `_update_card_states`: (No docstring)
+- `_rename_categories`: (No docstring)
+- `_prev_week`: (No docstring)
+- `_next_week`: (No docstring)
+- `_go_today`: (No docstring)
+- `_refresh`: (No docstring)
+- `_on_block_clicked`: (No docstring)
+- `_on_empty_clicked`: (No docstring)
+- `_on_activity_added`: (No docstring)
+- `_on_activity_updated`: (No docstring)
+- `_on_activity_deleted`: (No docstring)
+- `_export`: (No docstring)
+
+### src\ui\modules\calendar_panel.py
+**Module docstring:**
+Calendar module UI — weekly view + mini-month navigator + major events.
+
+All colors read from the active theme palette so the panel adapts when the
+user switches themes.  No hardcoded hex values remain in inline stylesheets
+or paintEvent code.
+
+Layout (positions unchanged):
+  Upper-left  → Weekly overview grid (7 day columns)
+  Lower-left  → Selected-day detail list
+  Upper-right → Mini month navigator (interactive dot indicators)
+  Lower-right → Next major events panel
+
+**Classes:**
+- `ColorButton`: (No docstring)
+- `EventDialog`: (No docstring)
+- `BirthdayDialog`: (No docstring)
+- `MiniMonthCell`: (No docstring)
+- `MiniMonth`: (No docstring)
+- `EventChip`: (No docstring)
+- `DayColumn`: (No docstring)
+- `MajorEventCard`: (No docstring)
+- `DayEventRow`: (No docstring)
+- `SoftReminderRow`: Styled day-detail row for a soft event reminder. Signals instead of
+monkey-patching mousePressEvent so Qt's event system stays intact.
+- `CalendarPanel`: (No docstring)
+- `BirthdayManagerDialog`: (No docstring)
+- `RecurrenceWidget`: Reusable recurrence picker: combo + weekday buttons + nth-weekday grid.
+- `TemplateEditDialog`: Edit fields for a soft event template.
+- `ViewLogDialog`: Read-only view of all log entries for a soft event template.
+- `SoftEventManagerDialog`: Manage soft event templates — list, add, edit, delete, view log.
+
+**Functions:**
+- `_p`: Return current palette value for *key*.
+- `_cat_emoji`: (No docstring)
+- `_cat_color`: (No docstring)
+- `_clear_layout`: (No docstring)
+- `__init__`: (No docstring)
+- `setChecked`: (No docstring)
+- `_update_style`: (No docstring)
+- `__init__`: (No docstring)
+- `_build_ui`: (No docstring)
+- `_on_color_picked`: (No docstring)
+- `_on_category_changed`: (No docstring)
+- `_toggle_time`: (No docstring)
+- `_on_delete`: (No docstring)
+- `_on_save`: (No docstring)
+- `_selected_color`: (No docstring)
+- `_selected_recurrence`: (No docstring)
+- `get_data`: (No docstring)
+- `__init__`: (No docstring)
+- `_build_ui`: (No docstring)
+- `_on_delete`: (No docstring)
+- `_on_save`: (No docstring)
+- `get_data`: (No docstring)
+- `__init__`: (No docstring)
+- `enterEvent`: (No docstring)
+- `leaveEvent`: (No docstring)
+- `mousePressEvent`: (No docstring)
+- `paintEvent`: (No docstring)
+- `__init__`: (No docstring)
+- `set_events`: (No docstring)
+- `set_holidays`: (No docstring)
+- `set_selected`: (No docstring)
+- `refresh_styles`: Re-apply palette colors to navigation buttons/labels.
+- `_build`: (No docstring)
+- `_render`: (No docstring)
+- `_on_cell_click`: (No docstring)
+- `_prev_month`: (No docstring)
+- `_next_month`: (No docstring)
+- `_prev_year`: (No docstring)
+- `_next_year`: (No docstring)
+- `_go_today_month`: (No docstring)
+- `__init__`: (No docstring)
+- `enterEvent`: (No docstring)
+- `leaveEvent`: (No docstring)
+- `mouseDoubleClickEvent`: (No docstring)
+- `paintEvent`: (No docstring)
+- `__init__`: (No docstring)
+- `_build`: (No docstring)
+- `enterEvent`: (No docstring)
+- `leaveEvent`: (No docstring)
+- `mousePressEvent`: (No docstring)
+- `mouseDoubleClickEvent`: (No docstring)
+- `paintEvent`: (No docstring)
+- `__init__`: (No docstring)
+- `mousePressEvent`: (No docstring)
+- `__init__`: (No docstring)
+- `mousePressEvent`: (No docstring)
+- `mouseDoubleClickEvent`: (No docstring)
+- `__init__`: (No docstring)
+- `mousePressEvent`: (No docstring)
+- `mouseDoubleClickEvent`: (No docstring)
+- `__init__`: (No docstring)
+- `set_palette`: (No docstring)
+- `_build_ui`: (No docstring)
+- `_today_btn`: (No docstring)
+- `_manage_soft_events`: (No docstring)
+- `_refresh`: (No docstring)
+- `_get_week_start`: (No docstring)
+- `_render_week`: (No docstring)
+- `_render_day_detail`: (No docstring)
+- `_render_major_events`: (No docstring)
+- `_open_soft_log`: (No docstring)
+- `_update_mini_month_events`: (No docstring)
+- `_prev_week`: (No docstring)
+- `_next_week`: (No docstring)
+- `_go_today`: (No docstring)
+- `_on_day_column_clicked`: Single-click on a week-grid day column selects that day.
+- `_on_mini_date_selected`: (No docstring)
+- `_jump_to_date`: (No docstring)
+- `_add_event`: (No docstring)
+- `_add_event_on_date`: (No docstring)
+- `_edit_event`: (No docstring)
+- `_open_major_event`: Dispatcher: open the editor for a MajorEventCard or birthday DayEventRow.
+- `_manage_birthdays`: (No docstring)
+- `__init__`: (No docstring)
+- `_build_ui`: (No docstring)
+- `_load`: (No docstring)
+- `_filter`: (No docstring)
+- `_make_row`: (No docstring)
+- `_add_birthday`: (No docstring)
+- `_edit_birthday`: (No docstring)
+- `__init__`: (No docstring)
+- `_on_combo_changed`: (No docstring)
+- `get_recurrence`: Return a recurrence string like 'weekly:0,1,4', 'nth_weekday:2,4:6', etc.
+- `set_recurrence`: Pre-fill from a recurrence string.
+- `__init__`: (No docstring)
+- `_update_color_btn`: (No docstring)
+- `_pick_color`: (No docstring)
+- `_on_save`: (No docstring)
+- `get_data`: (No docstring)
+- `__init__`: (No docstring)
+- `__init__`: (No docstring)
+- `_build_ui`: (No docstring)
+- `_load`: (No docstring)
+- `_selected_template`: (No docstring)
+- `_add`: (No docstring)
+- `_edit`: (No docstring)
+- `_delete`: (No docstring)
+- `_view_log`: (No docstring)
+- `sk`: (No docstring)
+
+### src\ui\modules\dashboard_panel.py
+**Module docstring:**
+Dashboard panel — overview of tasks, upcoming deadlines, and productivity stats.
+
+New in this version:
+  • SideIncomeGoalSection — prominent month-browsable side income goal tracker
+    with a color-coded progress bar (red → green → blue glow at major goal).
+  • Goal data stored in side_income_goals table via FinanceStore.set_goal()
+  • "Coming Up (Next 7 Days)" section for soft event reminders
+  • Store injection — all stores passed in from main_window
+
+**Classes:**
+- `StatCard`: A compact stat card with a big number and label.
+- `UpcomingItem`: A single upcoming deadline / event in the dashboard.
+- `GoalBar`: Paints a progress bar that changes color based on goal thresholds.
+
+States:
+  current < min_goal  → red/orange gradient fill
+  current >= min_goal → green fill
+  current >= major_goal → blue fill + subtle outer glow
+- `GoalEditDialog`: Set minimum and major monthly side income goals.
+
+Input can be entered in USD or JPY — get_goals() always returns USD.
+- `SideIncomeGoalSection`: Prominent side income goal tracker with month navigation and color-coded bar.
+- `SoftEventLogDialog`: Edit the per-day log for a soft event occurrence.
+- `_ComingUpRow`: A single soft event reminder row.
+- `DashboardPanel`: (No docstring)
+
+**Functions:**
+- `_priority_colors`: Return priority-level colours drawn from the current theme palette.
+- `__init__`: (No docstring)
+- `update_value`: (No docstring)
+- `__init__`: (No docstring)
+- `__init__`: (No docstring)
+- `set_values`: (No docstring)
+- `set_palette`: (No docstring)
+- `paintEvent`: (No docstring)
+- `__init__`: (No docstring)
+- `_apply_usd_mode`: (No docstring)
+- `_apply_jpy_mode`: (No docstring)
+- `_on_currency_changed`: (No docstring)
+- `_update_hints`: (No docstring)
+- `_validate_and_accept`: (No docstring)
+- `get_goals`: Always returns (min_usd, major_usd).
+- `__init__`: (No docstring)
+- `set_palette`: (No docstring)
+- `_load_rate`: (No docstring)
+- `_build_ui`: (No docstring)
+- `_refresh`: (No docstring)
+- `_prev_month`: (No docstring)
+- `_next_month`: (No docstring)
+- `_edit_goals`: (No docstring)
+- `__init__`: (No docstring)
+- `_save`: (No docstring)
+- `__init__`: (No docstring)
+- `mousePressEvent`: (No docstring)
+- `__init__`: (No docstring)
+- `showEvent`: Refresh immediately whenever the Dashboard tab becomes visible.
+- `set_palette`: (No docstring)
+- `_build_ui`: (No docstring)
+- `_refresh`: (No docstring)
+- `_clear_layout`: (No docstring)
+
+### src\ui\modules\debug_panel.py
+**Module docstring:**
+Debug / Council Sandbox panel.
+
+Always the final panel in the sidebar (Ctrl+0).  Provides:
+  • A free-form prompt box to run any text through the LLM Council
+  • Per-member response cards showing each model's individual answer + timing
+  • A synthesised result box at the bottom with copy-to-clipboard
+  • Graceful fallback to single-model mode when the council is not configured
+
+This panel intentionally has no persistent state — it is a live debug
+surface, not a data store.
+
+**Classes:**
+- `_MemberCard`: Displays a single council member's response.
+- `_FailedCard`: Displayed when a council member errored out.
+- `_PendingCard`: Placeholder card shown while a council member is in flight.
+- `DebugPanel`: LLM Council debug / sandbox panel — always the last nav item.
+
+**Functions:**
+- `_p`: (No docstring)
+- `__init__`: (No docstring)
+- `_apply_style`: (No docstring)
+- `__init__`: (No docstring)
+- `__init__`: (No docstring)
+- `__init__`: (No docstring)
+- `set_palette`: (No docstring)
+- `_refresh_styles`: (No docstring)
+- `_build_ui`: (No docstring)
+- `_run`: (No docstring)
+- `_swap_card`: Replace the current card for `name` with `new_card`, preserving order.
+- `_on_member_started`: (No docstring)
+- `_on_member_completed`: (No docstring)
+- `_on_member_failed`: (No docstring)
+- `_on_synthesis_started`: (No docstring)
+- `_on_council_result`: (No docstring)
+- `_on_single_result`: (No docstring)
+- `_on_error`: (No docstring)
+- `_clear_results`: Remove all member cards (keep the trailing stretch).
+- `_clear`: (No docstring)
+- `_copy_result`: (No docstring)
+- `_set_status`: (No docstring)
+
+### src\ui\modules\expenses_panel.py
+**Module docstring:**
+Expenses panel — receipts, ledger, item-price catalogue, monthly templates.
+
+Three sub-tabs:
+
+  Ledger      One-row-per-expense table with period/category filters and a
+              quick-add bar at the top for fast non-receipt entries (rent,
+              utilities, etc.). Double-click a row to edit; rows that came
+              from a receipt open the receipt editor with line items.
+
+  Receipts    Full receipt editor with a line-item table. Item-name fields
+              autocomplete from the catalogue, autofilling unit_price from
+              the last seen price. Subtotal/tax/total are computed live.
+              Save writes the receipt + a mirrored ledger transaction.
+
+  Catalogue   Searchable view of every expense item we've ever seen,
+              with last/avg/min/max price stats so the user can quickly
+              answer "what did eggs cost last time?".
+
+Receipts mirror into `transactions` (`type='expense'`) so existing
+summary, goal, and chart aggregates continue to work without changes.
+Standalone expenses go through the same FinanceStore.add_transaction
+path used by the earlier Earnings panel.
+
+**Classes:**
+- `SmartDoubleSpinBox`: A QDoubleSpinBox that:
+
+- Selects all text on focus-in (so tabbing through the form lets the
+  user start typing immediately and overwrite the leading 0).
+- Drops trailing ".00" / ".0" so whole-number values display as
+  integers (e.g. 1 instead of 1.00).
+- `ItemNameEdit`: Line edit that autocompletes against the expense-item catalogue.
+
+When the user picks a known item from the dropdown, the configured
+`price_target` spinbox autofills with that item's last-seen price.
+Pressing Tab on a visible suggestion accepts it (and moves focus on).
+- `ReceiptEditorDialog`: Header + line-item editor for a single receipt.
+
+Use `Receipt(...)` for a fresh receipt or pass in an existing one.
+`result_receipt` is None until the dialog is accepted.
+- `QuickExpenseDialog`: A minimal one-shot expense entry — date, amount, currency, category,
+description. For things like rent, gas, or any bill that doesn't need
+line-item breakdown.
+- `MonthlyExpenseTemplatesDialog`: Add / edit / delete recurring expense templates.
+- `MonthlyExpensesDialog`: Bulk-log a month of recurring bills, tagged [Monthly] for tax export.
+- `ExpensesPanel`: The dedicated Expenses tab — receipts, ledger, and item catalogue.
+
+**Functions:**
+- `_load_categories`: (No docstring)
+- `_save_categories`: (No docstring)
+- `_vendor_history`: Distinct list of vendors we've seen, most recent first.
+- `focusInEvent`: (No docstring)
+- `_select_all`: (No docstring)
+- `textFromValue`: (No docstring)
+- `__init__`: (No docstring)
+- `_refresh_suggestions`: (No docstring)
+- `_on_completer_activated`: (No docstring)
+- `keyPressEvent`: (No docstring)
+- `cleaned_text`: Return the field text with any stray autocomplete price suffix
+stripped. A defensive last line of defence in case the completer
+left a label like "Yakisoba  ·  ¥299" behind.
+- `__init__`: (No docstring)
+- `_build_ui`: (No docstring)
+- `_populate`: (No docstring)
+- `_on_currency_changed`: (No docstring)
+- `_append_row`: (No docstring)
+- `_remove_row`: (No docstring)
+- `_paste_lines`: Bulk-paste a block of items. Each line may be tab- or comma-
+separated; missing fields default to qty=1, unit_price=0.
+- `_recompute_totals`: (No docstring)
+- `_collect`: (No docstring)
+- `_validate`: (No docstring)
+- `_save_and_close`: (No docstring)
+- `_save_and_new`: (No docstring)
+- `_delete`: (No docstring)
+- `__init__`: (No docstring)
+- `_on_currency_changed`: (No docstring)
+- `get_data`: (No docstring)
+- `__init__`: (No docstring)
+- `_load`: (No docstring)
+- `_save`: (No docstring)
+- `_build_ui`: (No docstring)
+- `_on_cur`: (No docstring)
+- `_refresh`: (No docstring)
+- `_add`: (No docstring)
+- `_edit_selected`: (No docstring)
+- `_delete_selected`: (No docstring)
+- `_reset_defaults`: (No docstring)
+- `__init__`: (No docstring)
+- `_build_ui`: (No docstring)
+- `_reload`: (No docstring)
+- `_update_label`: (No docstring)
+- `_update_total`: (No docstring)
+- `_set_all`: (No docstring)
+- `_prev`: (No docstring)
+- `_next`: (No docstring)
+- `_manage`: (No docstring)
+- `_log`: (No docstring)
+- `__init__`: (No docstring)
+- `set_palette`: (No docstring)
+- `showEvent`: (No docstring)
+- `_build_ui`: (No docstring)
+- `_build_ledger_tab`: (No docstring)
+- `_build_receipts_tab`: (No docstring)
+- `_build_catalog_tab`: (No docstring)
+- `_set_range`: (No docstring)
+- `_filter_this_month`: (No docstring)
+- `_filter_last_month`: (No docstring)
+- `_filter_this_year`: (No docstring)
+- `_filter_all_time`: (No docstring)
+- `_refresh`: (No docstring)
+- `_refresh_ledger`: (No docstring)
+- `_refresh_receipts`: (No docstring)
+- `_fmt_price`: (No docstring)
+- `_refresh_catalog`: (No docstring)
+- `_on_catalog_item_expanded`: (No docstring)
+- `_new_receipt`: (No docstring)
+- `_new_quick_expense`: (No docstring)
+- `_open_monthly`: (No docstring)
+- `_manage_categories`: (No docstring)
+- `_edit_row`: (No docstring)
+- `_edit_receipt_row`: (No docstring)
+- `_delete_selected`: (No docstring)
+- `_delete_catalog_item`: (No docstring)
+
+### src\ui\modules\finance_charts.py
+**Module docstring:**
+Finance charts — custom painted graphs for earnings data visualization.
+
+Uses QPainter for zero-dependency chart rendering: line chart, bar chart,
+pie chart, and activity stacked bar chart.
+
+Tabs:
+  Finance          — monthly line chart, earnings by source bar, category pie
+  Expense Breakdown — monthly expense trend + category bar chart
+  Activity         — stacked daily bar chart of time spent per quick category
+
+**Classes:**
+- `LineChart`: Monthly earnings line chart with gradient area fill.
+- `BarChart`: Vertical bar chart with gradient fill per bar.
+- `PieChart`: Donut/pie chart for category distribution.
+- `StackedActivityChart`: Stacked bar chart: one bar per day, segments per quick category.
+- `ActivityChartsPanel`: Activity stacked bar chart view.
+- `_ExpenseBreakdownContent`: Expense charts: monthly trend line + category breakdown bar.
+- `FinanceChartsPanel`: Tabbed charts panel: Finance, Expense Breakdown, and Activity tabs.
+- `_FinanceChartsContent`: Finance overview: monthly income line chart, income-by-source bar,
+and spending-distribution pie — all reading the full transactions table.
+
+**Functions:**
+- `__init__`: (No docstring)
+- `set_data`: (No docstring)
+- `paintEvent`: (No docstring)
+- `__init__`: (No docstring)
+- `set_data`: (No docstring)
+- `paintEvent`: (No docstring)
+- `__init__`: (No docstring)
+- `set_data`: (No docstring)
+- `paintEvent`: (No docstring)
+- `__init__`: (No docstring)
+- `set_data`: (No docstring)
+- `set_palette`: (No docstring)
+- `paintEvent`: (No docstring)
+- `__init__`: (No docstring)
+- `set_palette`: (No docstring)
+- `_build_ui`: (No docstring)
+- `_refresh`: (No docstring)
+- `__init__`: (No docstring)
+- `set_palette`: (No docstring)
+- `_build_ui`: (No docstring)
+- `_get_date_range`: (No docstring)
+- `_refresh`: (No docstring)
+- `__init__`: (No docstring)
+- `set_palette`: (No docstring)
+- `showEvent`: (No docstring)
+- `_build_ui`: (No docstring)
+- `refresh`: (No docstring)
+- `__init__`: (No docstring)
+- `set_palette`: (No docstring)
+- `_build_ui`: (No docstring)
+- `_get_date_range`: (No docstring)
+- `_refresh`: (No docstring)
+
+### src\ui\modules\finance_panel.py
+**Module docstring:**
+Earnings Tracker module UI — income side only.
+
+This panel covers Main Job pay, Side Job income, presets, the
+monthly side-income goal, the period summary (income only), and the
+USD↔JPY exchange-rate badge. Anything expense-related now lives in
+the dedicated Expenses panel (`src/ui/modules/expenses_panel.py`).
+
+The TaxExportDialog stays here because it spans both income and
+expenses for 確定申告 export.
+
+**Classes:**
+- `RateSignals`: (No docstring)
+- `ExchangeRateManager`: (No docstring)
+- `GoalProgressBar`: (No docstring)
+- `CategoryBar`: (No docstring)
+- `PresetManagerDialog`: (No docstring)
+- `GoalSettingsDialog`: Set monthly side-income goals.  Input can be in USD or JPY.
+- `IncomeDialog`: New / edit dialog scoped to income transactions only.
+
+The full income+expense dialog moved to expenses_panel.QuickExpenseDialog
+(for expenses) and ReceiptEditorDialog (for receipts). Earnings now only
+creates / edits Main Job and Side Job rows.
+- `PresetButton`: (No docstring)
+- `TaxExportDialog`: Export transaction data for 確定申告 (annual tax filing).
+- `FinancePanel`: (No docstring)
+
+**Functions:**
+- `__init__`: (No docstring)
+- `rate`: (No docstring)
+- `set_fallback`: (No docstring)
+- `refresh`: (No docstring)
+- `__init__`: (No docstring)
+- `set_values`: (No docstring)
+- `paintEvent`: (No docstring)
+- `__init__`: (No docstring)
+- `__init__`: (No docstring)
+- `_build_ui`: (No docstring)
+- `_on_unit_changed`: (No docstring)
+- `_refresh`: (No docstring)
+- `_add_preset`: (No docstring)
+- `_edit_selected`: (No docstring)
+- `_delete_selected`: (No docstring)
+- `__init__`: (No docstring)
+- `_apply_usd_mode`: (No docstring)
+- `_apply_jpy_mode`: (No docstring)
+- `_on_currency_changed`: (No docstring)
+- `_update_hints`: (No docstring)
+- `_validate_and_accept`: (No docstring)
+- `get_goals`: Always return (min_usd, major_usd).
+- `__init__`: (No docstring)
+- `_build_ui`: (No docstring)
+- `_on_currency_changed`: (No docstring)
+- `get_data`: (No docstring)
+- `__init__`: (No docstring)
+- `_emit_clicked`: (No docstring)
+- `__init__`: (No docstring)
+- `_export`: (No docstring)
+- `__init__`: (No docstring)
+- `set_palette`: (No docstring)
+- `_apply_goal_section_style`: (No docstring)
+- `showEvent`: (No docstring)
+- `_build_ui`: (No docstring)
+- `_build_header`: (No docstring)
+- `_build_quick_log_bar`: (No docstring)
+- `_build_filter_row`: (No docstring)
+- `_build_goal_section`: (No docstring)
+- `_open_tax_export`: (No docstring)
+- `_build_table`: (No docstring)
+- `_build_summary_panel`: (No docstring)
+- `_build_rate_bar`: (No docstring)
+- `_set_date_range`: (No docstring)
+- `_filter_this_month`: (No docstring)
+- `_filter_last_month`: (No docstring)
+- `_filter_this_year`: (No docstring)
+- `_filter_all_time`: (No docstring)
+- `_refresh_rate`: (No docstring)
+- `_on_rate_updated`: (No docstring)
+- `_on_rate_error`: (No docstring)
+- `_rebuild_preset_buttons`: (No docstring)
+- `_update_month_gate`: Disable Quick Log preset buttons when viewing a non-current month.
+- `_log_preset`: (No docstring)
+- `_open_preset_manager`: (No docstring)
+- `_open_goal_settings`: (No docstring)
+- `_on_goal_mode_changed`: (No docstring)
+- `_update_goal_section`: (No docstring)
+- `_get_filters`: (No docstring)
+- `_refresh`: (No docstring)
+- `_add_earning`: (No docstring)
+- `_edit_transaction`: (No docstring)
+- `_delete_transaction`: (No docstring)
+- `_fetch`: (No docstring)
+- `_is_main_job`: (No docstring)
+
+### src\ui\modules\journey_panel.py
+**Module docstring:**
+Journey Panel — goal-driven step tutoring with Council AI.
+
+v0.4.0 — Major overhaul
+───────────────────────
+  • Council retry guardrails: if council call fails, error is shown gracefully
+    and state is never left broken (running flag always cleared)
+  • Roadmap generation failure now reports to UI instead of silently failing
+  • Template steps used as fallback when LLM roadmap gen fails
+  • DDG search replaced with proper HTML scraping from lite.duckduckgo.com
+  • 20+ new journey templates (Space, WoW, Game Dev, Cybersecurity, etc.)
+  • Roadmap widget: wider nodes, gradient progress fill, better typography
+  • Council progress: animated spinner card instead of tiny italic label
+  • Overview tab: better visual hierarchy, informative empty states
+  • Robustness: guards against journey/step deletion mid-council-run
+
+Tabs
+────
+  📋 Overview  : Roadmap flow → selected-step detail → council synthesis/checklist
+  ⚔  Council   : All session comparison cards + quest log
+  ✏  Workspace : Notes, hints, Convene Council, Complete Step, Update Roadmap
+
+Dependencies: markdown (pip install markdown), stdlib urllib
+
+**Classes:**
+- `RoadmapWidget`: Horizontal roadmap flow — single row, scrollable, polished nodes.
+
+Each node is a rounded rect with gradient fill based on status,
+step-number badge, title, and status label below.
+Clicking a node selects it (accent ring) and emits node_selected(index).
+- `StepTrack`: (No docstring)
+- `DomainBadge`: (No docstring)
+- `_MiniProgressBar`: (No docstring)
+- `CouncilSpinner`: Animated arc spinner for council progress display.
+- `ChecklistItem`: (No docstring)
+- `SectionCard`: (No docstring)
+- `CouncilorBadge`: (No docstring)
+- `CouncilMemberCard`: (No docstring)
+- `CouncilSessionCard`: (No docstring)
+- `HistoryStepRow`: (No docstring)
+- `JourneyListItem`: (No docstring)
+- `NewJourneyDialog`: (No docstring)
+- `AddStepDialog`: (No docstring)
+- `JourneyPanel`: (No docstring)
+
+**Functions:**
+- `_ddg_search`: Search DuckDuckGo via the lite HTML interface for actual results.
+
+The previous instant-answer API (?format=json) only returned results for
+very specific factual queries and was essentially useless for tutorial and
+learning content.  This scrapes lite.duckduckgo.com which returns real
+search results even for broad queries.
+- `_generate_search_queries`: (No docstring)
+- `_build_context`: (No docstring)
+- `_parse_structured`: (No docstring)
+- `_run_structured_call`: (No docstring)
+- `_generate_roadmap`: (No docstring)
+- `_update_roadmap_from_pivot`: Re-generate the roadmap based on a pivot request from the workspace.
+- `_run_council`: (No docstring)
+- `_to_html`: (No docstring)
+- `_tab_style`: (No docstring)
+- `_dialog_style`: (No docstring)
+- `idx_of_step`: Return the roadmap index matching the given step title, or -1.
+- `_prog`: (No docstring)
+- `__init__`: (No docstring)
+- `set_palette`: (No docstring)
+- `set_data`: (No docstring)
+- `set_selected`: (No docstring)
+- `_update_size`: (No docstring)
+- `_node_x`: (No docstring)
+- `_step_status`: (No docstring)
+- `paintEvent`: (No docstring)
+- `mouseMoveEvent`: (No docstring)
+- `leaveEvent`: (No docstring)
+- `mousePressEvent`: (No docstring)
+- `__init__`: (No docstring)
+- `set_palette`: (No docstring)
+- `set_steps`: (No docstring)
+- `_node_cx`: (No docstring)
+- `paintEvent`: (No docstring)
+- `mouseMoveEvent`: (No docstring)
+- `leaveEvent`: (No docstring)
+- `mousePressEvent`: (No docstring)
+- `__init__`: (No docstring)
+- `update_domain`: (No docstring)
+- `__init__`: (No docstring)
+- `paintEvent`: (No docstring)
+- `__init__`: (No docstring)
+- `start`: (No docstring)
+- `stop`: (No docstring)
+- `set_message`: (No docstring)
+- `_tick`: (No docstring)
+- `paintEvent`: (No docstring)
+- `__init__`: (No docstring)
+- `_task_style`: (No docstring)
+- `_style_cb`: (No docstring)
+- `__init__`: (No docstring)
+- `body_layout`: (No docstring)
+- `__init__`: (No docstring)
+- `paintEvent`: (No docstring)
+- `__init__`: (No docstring)
+- `_toggle`: (No docstring)
+- `__init__`: (No docstring)
+- `__init__`: (No docstring)
+- `_toggle`: (No docstring)
+- `__init__`: (No docstring)
+- `_build`: (No docstring)
+- `_apply_style`: (No docstring)
+- `set_selected`: (No docstring)
+- `set_palette`: (No docstring)
+- `mousePressEvent`: (No docstring)
+- `_show_context_menu`: (No docstring)
+- `__init__`: (No docstring)
+- `_build`: (No docstring)
+- `_on_template_changed`: (No docstring)
+- `_accept`: (No docstring)
+- `get_data`: (No docstring)
+- `__init__`: (No docstring)
+- `_build`: (No docstring)
+- `_accept`: (No docstring)
+- `get_data`: (No docstring)
+- `__init__`: (No docstring)
+- `_build_ui`: (No docstring)
+- `_build_left_panel`: (No docstring)
+- `_build_empty_right`: (No docstring)
+- `_build_right_panel`: (No docstring)
+- `_build_journey_header`: (No docstring)
+- `_build_overview_tab`: (No docstring)
+- `_build_council_tab`: (No docstring)
+- `_build_workspace_tab`: (No docstring)
+- `_mklbl`: (No docstring)
+- `set_palette`: (No docstring)
+- `_apply_palette`: (No docstring)
+- `_refresh_journey_list`: (No docstring)
+- `_mark_selected`: (No docstring)
+- `_on_journey_selected`: (No docstring)
+- `_load_journey`: (No docstring)
+- `_refresh_workspace`: (No docstring)
+- `_refresh_overview`: (No docstring)
+- `_build_selected_step_card`: Show the selected roadmap step's detail below the flow.
+- `_get_next_roadmap_steps`: (No docstring)
+- `_refresh_sessions`: (No docstring)
+- `_refresh_history`: (No docstring)
+- `_on_checklist_toggled`: (No docstring)
+- `_auto_save_notes`: (No docstring)
+- `_flush_notes`: (No docstring)
+- `_on_roadmap_node_selected`: Node clicked in the flow widget — update selection and refresh detail.
+- `_on_begin_roadmap_step`: User clicked 'Begin Step N' in the selected-step detail card.
+- `_on_roadmap_step_clicked`: 'Up Next' button clicked — open AddStepDialog pre-filled.
+- `_on_new_journey`: (No docstring)
+- `_on_roadmap_gen_done`: Called on main thread after roadmap generation completes.
+- `_on_roadmap_gen_error`: Called on main thread if roadmap generation fails.
+- `_on_add_step`: (No docstring)
+- `_on_web_toggle`: (No docstring)
+- `_on_step_track_clicked`: (No docstring)
+- `_on_toggle_pause`: (No docstring)
+- `_on_toggle_pause_by_id`: (No docstring)
+- `_on_complete_journey`: (No docstring)
+- `_on_archive_journey`: (No docstring)
+- `_on_delete_journey`: (No docstring)
+- `_on_complete_step`: (No docstring)
+- `_on_convene_council`: Manual council convene — the only trigger for council calls.
+- `_on_update_roadmap`: Send current workspace notes+hints to LLM, update the roadmap.
+- `_on_roadmap_updated`: (No docstring)
+- `_on_roadmap_update_failed`: (No docstring)
+- `_on_regen_overview`: (No docstring)
+- `_convene_council_async`: (No docstring)
+- `_on_council_done`: Handle council completion with safety checks.
+- `_show_council_error`: (No docstring)
+- `_refresh`: (No docstring)
+- `_gen_roadmap`: (No docstring)
+- `_worker`: (No docstring)
+- `_worker`: (No docstring)
+- `_prog`: (No docstring)
+- `_worker`: (No docstring)
+- `_tv`: (No docstring)
+
+### src\ui\modules\notes_panel.py
+**Module docstring:**
+Notes/Obsidian module UI — tree-based vault browser, markdown editor, REST API integration.
+
+The sidebar uses a QTreeWidget with collapsible folders (triangle toggles)
+that mimics Obsidian's file explorer layout.
+
+**Classes:**
+- `ObsidianAPI`: Minimal client for the Obsidian Local REST API plugin.
+- `NotesPanel`: (No docstring)
+
+**Functions:**
+- `_build_tree_structure`: Build a nested dict from note paths for the tree view.
+
+Returns: {"_files": [Note, ...], "subfolder": {"_files": [...], ...}}
+- `_populate_tree_widget`: Recursively populate QTreeWidgetItems from the nested dict.
+- `__init__`: (No docstring)
+- `_headers`: (No docstring)
+- `is_available`: (No docstring)
+- `list_files`: (No docstring)
+- `read_note`: (No docstring)
+- `create_note`: (No docstring)
+- `append_note`: (No docstring)
+- `open_in_obsidian`: Open a note in the Obsidian desktop app via URI scheme.
+- `__init__`: (No docstring)
+- `_init_store`: (No docstring)
+- `_init_obsidian_api`: (No docstring)
+- `_build_ui`: (No docstring)
+- `_refresh_list`: Rebuild the tree from the note store.
+- `_save_expanded_state`: Walk the tree and record which folder names are expanded.
+- `_walk_expanded`: (No docstring)
+- `_on_item_expanded`: (No docstring)
+- `_on_item_collapsed`: (No docstring)
+- `_select_note_in_tree`: Find and select a note in the tree by its relative path.
+- `_find_tree_item`: (No docstring)
+- `_reload_if_changed_on_disk`: If the currently open note was modified externally, reload it.
+- `set_palette`: (No docstring)
+- `_toggle_preview`: (No docstring)
+- `_render_preview`: (No docstring)
+- `_update_status_label`: (No docstring)
+- `_set_vault_path`: (No docstring)
+- `_configure_api`: (No docstring)
+- `_create_via_api`: (No docstring)
+- `_open_in_obsidian`: Open the current note in Obsidian via obsidian:// URI scheme.
+- `_on_search`: (No docstring)
+- `_on_tree_item_selected`: (No docstring)
+- `_clear_editor`: (No docstring)
+- `_on_text_changed`: (No docstring)
+- `_save_current`: (No docstring)
+- `_update_footer`: (No docstring)
+- `_new_note`: (No docstring)
+- `_new_folder`: (No docstring)
+- `_rename_note`: (No docstring)
+- `_delete_note`: (No docstring)
+- `check`: (No docstring)
+
+### src\ui\modules\todo_panel.py
+**Module docstring:**
+Todo list module UI — modern task manager with priorities, categories, and due dates.
+
+**Classes:**
+- `TodoDialog`: Dialog to add/edit a todo item.
+- `TodoItemWidget`: A single todo item rendered as a compact card.
+- `TodoPanel`: (No docstring)
+
+**Functions:**
+- `_priority_colors`: Return priority-level colours drawn from the current theme palette.
+
+Fallbacks match Catppuccin Dark so the panel looks correct before the
+first set_palette() call.
+- `_hex_to_rgb`: Convert a hex color string like '#f38ba8' to (r, g, b) ints.
+- `__init__`: (No docstring)
+- `_build_ui`: (No docstring)
+- `get_data`: (No docstring)
+- `__init__`: (No docstring)
+- `_on_toggle`: (No docstring)
+- `_on_edit`: (No docstring)
+- `mouseDoubleClickEvent`: (No docstring)
+- `__init__`: (No docstring)
+- `set_palette`: (No docstring)
+- `_build_ui`: (No docstring)
+- `_refresh`: (No docstring)
+- `_quick_add`: (No docstring)
+- `_add_item`: (No docstring)
+- `_edit_item`: (No docstring)
+- `_toggle_item`: (No docstring)
+- `_clear_done`: (No docstring)
+- `_sort_key`: (No docstring)
+
+### src\ui\modules\work_panel.py
+**Module docstring:**
+Work Panel — daily write-up generator with centralised AI client injection.
+
+**Classes:**
+- `_ActivityCheckRow`: (No docstring)
+- `WorkPanel`: Daily 日報 write-up panel with optional AI generation.
+
+The LLMClient is owned by MainWindow and injected here.
+When settings change in the NetworkDialog, MainWindow calls
+set_llm_client() to push the new client in.
+
+**Functions:**
+- `_jp_date`: (No docstring)
+- `_jp_duration`: (No docstring)
+- `_build_report`: (No docstring)
+- `_build_llm_prompt`: (No docstring)
+- `__init__`: (No docstring)
+- `is_checked`: (No docstring)
+- `row_data`: (No docstring)
+- `row_data_with_notes`: (No docstring)
+- `__init__`: (No docstring)
+- `set_llm_client`: (No docstring)
+- `set_palette`: (No docstring)
+- `_build_ui`: (No docstring)
+- `_refresh`: (No docstring)
+- `_update_preview`: (No docstring)
+- `_set_all_checked`: (No docstring)
+- `_run_ai`: (No docstring)
+- `_on_ai_result`: (No docstring)
+- `_on_ai_error`: (No docstring)
+- `_clear_ai`: (No docstring)
+- `_open_settings`: Open a minimal inline settings dialog for the AI key/model.
+- `_load_drafts`: (No docstring)
+- `_save_drafts`: (No docstring)
+- `_copy_to_clipboard`: (No docstring)
+- `_export_to_vault`: (No docstring)
+- `_flash`: (No docstring)
+- `_do_test`: (No docstring)
+- `_ok`: (No docstring)
+- `_err`: (No docstring)
+
+### src\ui\themes\__init__.py
+**Module docstring:**
+Theme definitions and management.
+
+**Classes:**
+- (None)
+
+**Functions:**
+- (None)
+
+### src\ui\themes\styles.py
+**Module docstring:**
+Theme stylesheets for PyQt6.
+
+Themes included:
+  Dark   — Catppuccin Mocha, Tokyo Night, Dracula, Monokai Pro, One Dark Pro, Rosé Pine
+  Medium — Nord, Gruvbox Dark
+  Light  — Catppuccin Latte, Solarized Light
+
+Arrow rendering:
+  All dropdown / spinner arrows use inline SVG data-URIs so they render
+  correctly in Qt6. The CSS border-trick (width:0; height:0; border-left…)
+  creates triangles in web browsers but has no effect in Qt's QSS engine —
+  the borders appear on a zero-size box and produce nothing visible.
+
+**Classes:**
+- (None)
+
+**Functions:**
+- `_svg_arrow`: Return a QSS url() value for an inline SVG triangle arrow.
+
+direction: 'down' | 'up'
+color    : hex string e.g. '#cdd6f4'
+- `_rgba`: Convert a hex color string to a QSS rgba() value.
+
+Qt's QSS uses 0-255 for the alpha channel (not 0.0-1.0 like web CSS).
+- `_build_theme`: Generate a full QSS stylesheet from a color palette dict.
+
+If the palette contains a ``panel_alpha`` key (int, 0-255), all panel
+background surfaces are rendered with that opacity level so an animated
+background (e.g. Matrix rain) bleeds through.
+- `get_theme_names`: (No docstring)
+
+### src\ui\widgets\__init__.py
+**Module docstring:**
+Reusable UI widgets.
+
+**Classes:**
+- (None)
+
+**Functions:**
+- (None)
+
+### src\ui\widgets\matrix_rain.py
+**Module docstring:**
+Matrix digital-rain background widget.
+
+Renders the classic phosphor-green digital rain as the *background* of the
+application's central widget area.  The panels (sidebar, stack) sit on top;
+they use semi-transparent ``rgba()`` backgrounds in the Matrix stylesheet so
+the rain glows through every surface.
+
+Architecture
+------------
+``MatrixRainWidget`` is a plain ``QWidget`` child of the central widget.  It is
+always positioned to fill its parent exactly, and ``lower()`` places it at the
+very bottom of the z-order so every other panel sits in front of it.
+
+``WA_TransparentForMouseEvents`` is set so no click, scroll, or key press is
+intercepted — they all reach the panels in front.
+
+``setAutoFillBackground(False)`` prevents Qt from painting a solid colour over
+the rain surface before our own ``paintEvent`` runs.
+
+Rendering
+---------
+A ``QPixmap`` is used as a phosphor screen.  Each 40 ms tick:
+
+1. A semi-transparent black rectangle fades all existing glyphs toward black
+   (phosphor decay / trailing glow effect).
+2. Each active stream is advanced and its head + trail characters are drawn
+   in successively dimmer greens.
+3. New streams are randomly spawned in idle columns.
+
+Polish (v2)
+-----------
+  • Soft glow halo around the head character (oversize alpha-low draw)
+    gives the leading glyph an authentic phosphor-bloom look.
+  • Each stream gets its own mild charset bias so some streams skew more
+    katakana, others more digits — adds visual variety.
+  • Mutation roll is precomputed per tick (one random.random() per stream
+    instead of one per cell-per-stream) — roughly halves random call volume.
+  • Pixmap is only (re)allocated when the widget is actively running, so
+    benign Qt resize events while hidden no longer churn memory.
+  • Cooldown range tightened so wider monitors don't feel sparse.
+
+Font
+----
+Tries "Matrix Code NFI" first (download free — search that exact name for the
+most authentic look), then falls back through MS Gothic -> Meiryo UI ->
+Noto Sans JP -> Courier New.  Half-width katakana (U+FF66-U+FF9D) renders
+correctly in all of those families.
+
+**Classes:**
+- `_Stream`: (No docstring)
+- `MatrixRainWidget`: Full-parent-fill background widget that paints Matrix digital rain.
+
+Drop this widget as a child of your central widget and call lower()
+after all other children are added.
+
+**Functions:**
+- `__init__`: (No docstring)
+- `start`: Fill parent, push to back of z-order, begin animating.
+- `stop`: (No docstring)
+- `is_running`: (No docstring)
+- `sync_size`: Call from the parent widget's resizeEvent.
+- `_fit_to_parent`: (No docstring)
+- `_make_font`: (No docstring)
+- `_make_head_font`: Slightly larger font for the head glow halo.
+- `_reset_pixmap`: (No docstring)
+- `_col_xs`: (No docstring)
+- `_n_rows`: (No docstring)
+- `_spawn`: (No docstring)
+- `_maybe_spawn`: (No docstring)
+- `_draw_stream`: (No docstring)
+- `resizeEvent`: (No docstring)
+- `paintEvent`: (No docstring)
+- `_tick`: (No docstring)
+
+### src\ui\widgets\nav_button.py
+**Module docstring:**
+Reusable theme-aware navigation arrow button.
+
+Draws its arrow via QPainter — no glyph/font lookup whatsoever.
+Works identically on every OS, every font configuration, every theme.
+
+Usage:
+    btn = NavButton("left")               # 28×28 single arrow
+    btn = NavButton("right", size=24)     # custom size
+    btn = NavButton("left", double=True)  # double arrow  «  style
+    btn.clicked.connect(my_slot)
+
+    # When theme changes:
+    btn.refresh(palette_dict)
+
+**Classes:**
+- `NavButton`: Theme-aware navigation arrow button rendered with QPainter.
+
+Parameters
+----------
+direction : str
+    One of ``'left'``, ``'right'``, ``'up'``, ``'down'``.
+size : int
+    Width and height in pixels (the button is always square).
+double : bool
+    When True, draws two chevrons (‹‹ / ›› style) for year-jump buttons.
+tooltip : str
+    Optional tooltip text.
+
+**Functions:**
+- `__init__`: (No docstring)
+- `refresh`: Apply new palette colors and schedule a repaint.
+- `enterEvent`: (No docstring)
+- `leaveEvent`: (No docstring)
+- `mousePressEvent`: (No docstring)
+- `mouseReleaseEvent`: (No docstring)
+- `paintEvent`: (No docstring)
+- `_arrow_pts`: Return triangle vertices for a single chevron centred at (cx, cy).
+- `_draw_single`: (No docstring)
+- `_draw_double`: Draw two small chevrons offset along the pointing axis.
+
+### src\ui\widgets\network_dialog.py
+**Module docstring:**
+Network settings dialog — configure sync, view peers, manage connections, AI/LLM.
+
+Tabs
+────
+  ⚙  Settings  : Sync subnet/port/interval/timeout, peer table, force scan/sync, log
+  📓  Obsidian  : Vault path, sync toggle, REST API key/URL
+  🤖  AI / LLM  : llama.cpp server host, connection test, multi-pass council toggle
+
+**Classes:**
+- `NetworkDialog`: Network and sync settings with live peer status, log viewer, and AI config.
+
+**Functions:**
+- `_input_dialog`: (No docstring)
+- `__init__`: (No docstring)
+- `_build_ui`: (No docstring)
+- `_build_settings_tab`: (No docstring)
+- `_build_obsidian_tab`: (No docstring)
+- `_build_ai_tab`: (No docstring)
+- `_load_values`: (No docstring)
+- `_save_settings`: (No docstring)
+- `_save_ai_settings`: (No docstring)
+- `_save_obsidian_settings`: (No docstring)
+- `_test_ai`: (No docstring)
+- `_test_council`: (No docstring)
+- `_refresh_peers`: (No docstring)
+- `_update_peer_table`: (No docstring)
+- `_add_manual_peer`: (No docstring)
+- `_ping_selected`: (No docstring)
+- `_force_scan`: (No docstring)
+- `_force_sync`: (No docstring)
+- `_browse_vault`: (No docstring)
+- `_append_log`: (No docstring)
+- `_get_local_ip`: (No docstring)
+- `_on_ok`: (No docstring)
+- `_on_err`: (No docstring)
+- `_on_ok`: (No docstring)
+- `_on_err`: (No docstring)
+- `do_ping`: (No docstring)
+
+### src\utils\__init__.py
+**Module docstring:**
+Shared utilities.
+
+**Classes:**
+- (None)
+
+**Functions:**
+- (None)
+
+### src\utils\llm.py
+**Module docstring:**
+LLM client — llama.cpp server backend with lightweight multi-pass council.
+
+Uses only stdlib (urllib + json + threading) — no extra dependencies.
+
+The llama.cpp server exposes an OpenAI-compatible /v1/chat/completions endpoint.
+No model selection is needed — the model is locked server-side.
+
+Exports
+-------
+LLMResult       : dataclass returned by every successful call
+LLMSignals      : QObject with result/error pyqtSignals (thread-safe bridge)
+LLMClient       : thin /v1/chat/completions client
+CouncilResult   : dataclass returned by a multi-pass council run
+CouncilSignals  : QObject with result/error pyqtSignals for council
+LightCouncil    : 3-pass council (Precise / Balanced / Creative) + synthesis
+LLMCouncil      : alias for LightCouncil (backwards compat)
+load_llm_client       : config helper → LLMClient
+load_council_config   : config helper → LightCouncil | None
+save_llm_config       : persist host to config
+save_council_config   : persist council enabled flag + mode + concurrency
+LLAMA_DEFAULT_HOST    : default server URL
+COUNCIL_SYNTHESIS_MODES : list of available council modes for the UI
+COUNCIL_MODE_DELIBERATE : N parallel passes + synthesis call (richer, slower)
+COUNCIL_MODE_QUICK      : N parallel passes, longest non-empty wins (faster)
+COUNCIL_DEFAULT_CONCURRENCY : default number of parallel in-flight requests
+
+v0.8.0 — Async, progressive council
+───────────────────────────────────
+  • CouncilSignals now emits a `member_started` and `member_completed` signal
+    as each pass kicks off / returns, so the UI can paint cards live instead
+    of waiting for the slowest pass.
+  • A module-level Semaphore (`_REQUEST_SLOTS`) caps concurrent in-flight
+    completions across the entire app to match the llama.cpp server's
+    configured parallelism — set via `set_request_concurrency()` or the
+    `council_concurrency` config key (default: COUNCIL_DEFAULT_CONCURRENCY).
+  • LightCouncil schedules synthesis as soon as all members complete and
+    runs it through the same semaphore, so a long-running council from one
+    panel cannot starve a chat call from another.
+
+**Classes:**
+- `LLMResult`: Returned by every successful LLM call.
+- `CouncilResult`: Returned by a successful LightCouncil run.
+- `LLMSignals`: QObject whose signals marshal LLM callbacks onto the Qt main thread.
+
+Always store an instance on *self* (not a local variable) so the
+underlying C++ object is not garbage-collected before the worker thread fires.
+- `CouncilSignals`: Thread-safe Qt bridge for a council run.
+
+Signals
+-------
+member_started   (str)              — pass name about to be sent
+member_completed (str, LLMResult)   — pass returned successfully
+member_failed    (str, str)         — pass name, error message
+synthesis_started ()                — synthesis pass kicked off (Deliberate only)
+result           (CouncilResult)    — final consolidated result
+error            (str)              — fatal error (e.g. all passes failed)
+
+Storing CouncilSignals on `self` (not a local) is required so the
+underlying QObject lives long enough for the worker thread to fire.
+- `LLMClient`: Thin OpenAI-compatible /v1/chat/completions client for a llama.cpp server.
+
+The model is locked server-side; the `model` parameter is optional and
+only sent if explicitly set (some server configs require it, most ignore it).
+- `LightCouncil`: Three parallel passes at different temperatures.
+
+All calls hit the same llama.cpp server; the model is server-side locked.
+
+Passes
+------
+Precise  (temp 0.2) — analytical, structured, accurate
+Balanced (temp 0.6) — well-rounded, thorough
+Creative (temp 1.0) — lateral, divergent, exploratory
+
+Modes
+-----
+Deliberate (default)
+    After the 3 parallel passes complete, a synthesis pass (temp 0.4)
+    sees all three responses and produces the final consolidated answer.
+    Wall-clock ≈ slowest pass + synthesis pass.
+
+Quick
+    After the 3 parallel passes complete, the longest non-empty response
+    is returned as the final answer. No second LLM round-trip.
+    Wall-clock ≈ slowest pass.
+
+**Functions:**
+- `set_request_concurrency`: Reset the global request semaphore to allow `n` simultaneous calls.
+
+Safe to call at any time — pending requests already inside the semaphore
+will continue to use the previous slot count until they release.
+- `get_request_concurrency`: (No docstring)
+- `load_llm_client`: Return a configured LLMClient pointed at the llama.cpp server.
+- `save_llm_config`: Persist llama.cpp host to config.
+- `load_council_config`: Return a configured LightCouncil, or None if council is disabled.
+
+Also re-applies the saved request concurrency to the global semaphore
+so changes from the Network → AI tab take effect on the next call.
+- `save_council_config`: Persist council enabled flag, mode, and concurrency to config.
+- `timing_summary`: (No docstring)
+- `summary`: (No docstring)
+- `__init__`: (No docstring)
+- `complete`: Send a chat completion request and return an LLMResult.
+
+If `system` is provided it is prepended as a system message, replacing
+any existing system message at position 0.
+- `complete_async`: Fire-and-forget async wrapper around complete().
+- `__init__`: (No docstring)
+- `_run_pass`: Run one council pass. Returns (name, result_or_None, error_str).
+
+Optional callbacks fire as the request enters/leaves the wire so that
+callers can stream progress to the UI without waiting for the slowest
+pass to finish.
+- `_run_parallel_passes`: Run all configured passes in parallel. Returns (members, failures).
+
+Each pass is throttled by the global server-capacity semaphore inside
+LLMClient.complete; the executor itself runs all passes immediately so
+that whichever pass enters the semaphore first starts work right away.
+- `complete`: Run all passes in parallel, then either synthesise or pick longest.
+
+Parameters
+----------
+mode
+    Override the council's default mode for this call. One of
+    COUNCIL_MODE_DELIBERATE or COUNCIL_MODE_QUICK. If None, uses
+    self.default_mode.
+on_member_started / on_member_completed / on_member_failed
+    Optional progress callbacks fired from worker threads as each
+    council pass begins, completes, or errors out. Use these to
+    stream cards into the UI as they arrive.
+on_synthesis_started
+    Fired right before the (Deliberate-mode) synthesis pass is sent.
+- `complete_async`: Fire-and-forget async wrapper around complete().
+
+Per-member callbacks fire from background threads as each pass
+starts / finishes, allowing the UI to render member cards as they
+arrive instead of after the slowest pass returns.
+- `_worker`: (No docstring)
+- `_worker`: (No docstring)
+
+### src\utils\paths.py
+**Module docstring:**
+Cross-platform path utilities.
+
+**Classes:**
+- (None)
+
+**Functions:**
+- `normalize_path`: Convert a path to forward-slash form for consistent storage.
+- `ensure_parent`: Create parent directories if they don't exist.
+
+### src\utils\timestamps.py
+**Module docstring:**
+Timestamp utilities for sync and data.
+
+**Classes:**
+- (None)
+
+**Functions:**
+- `now_utc`: ISO-8601 UTC timestamp string.
+- `parse_ts`: Parse an ISO-8601 timestamp string.
+
+### tests\__init__.py
+**Module docstring:**
+Tests for LocalSync.
+
+**Classes:**
+- (None)
+
+**Functions:**
+- (None)
+
+## 📄 Full File Contents
+
+### `main.pyw`
+
+```python
+#!/usr/bin/env python3
+"""LocalSync â€” Personal productivity desktop app.
+
+Entry point: initializes the database, starts the Qt application,
+launches sync engine and vault watcher, and displays the main window.
+"""
+
+import logging
+import sys
+
+from PyQt6.QtWidgets import QApplication
+
+from src.data.database import init_db
+from src.config import load_config
+from src.ui.main_window import MainWindow
+from src.sync.engine import SyncEngine
+from src.sync.vault_watcher import VaultWatcher
+
+
+def main():
+    logging.basicConfig(
+        level=logging.INFO,
+        format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
+    )
+
+    # Initialize database
+    init_db()
+
+    app = QApplication(sys.argv)
+    app.setApplicationName("LocalSync")
+
+    window = MainWindow()
+    window.show()
+
+    # Start background sync if enabled
+    cfg = load_config()
+    sync_engine = None
+    vault_watcher = None
+    if cfg.get("sync_enabled", True):
+        sync_engine = SyncEngine()
+        window.set_sync_engine(sync_engine)
+        sync_engine.start()
+
+        # Start vault watcher â€” detects Obsidian edits and pushes to peers
+        vault_watcher = VaultWatcher()
+        vault_watcher.vault_changed.connect(sync_engine.trigger_vault_sync)
+        vault_watcher.vault_changed.connect(window._on_sync_completed)
+        vault_watcher.start()
+
+    exit_code = app.exec()
+
+    # Clean shutdown
+    if vault_watcher:
+        vault_watcher.stop()
+        vault_watcher.wait(3000)
+    if sync_engine:
+        sync_engine.stop()
+        sync_engine.wait(5000)
+
+    return exit_code
+
+
+if __name__ == "__main__":
+    try:
+        sys.exit(main())
+    except Exception:
+        import traceback
+        # QApplication may or may not exist at this point
+        try:
+            from PyQt6.QtWidgets import QApplication, QMessageBox
+            app = QApplication.instance() or QApplication(sys.argv)
+            QMessageBox.critical(None, "Fatal Error", traceback.format_exc())
+        except Exception:
+            print(traceback.format_exc())
+        sys.exit(1)
+
+```
+
+### `profile_app.py`
+
+```python
+import cProfile
+import pstats
+import sys
+import time
+
+def main():
+    p = cProfile.Profile()
+    p.enable()
+    
+    # Run the app for a few seconds
+    from src.data.database import init_db
+    from src.config import load_config
+    from src.ui.main_window import MainWindow
+    from src.sync.engine import SyncEngine
+    from src.sync.vault_watcher import VaultWatcher
+    
+    init_db()
+    
+    from PyQt6.QtWidgets import QApplication
+    app = QApplication(sys.argv)
+    
+    window = MainWindow()
+    window.show()
+    
+    cfg = load_config()
+    sync_engine = SyncEngine()
+    window.set_sync_engine(sync_engine)
+    sync_engine.start()
+    
+    vault_watcher = VaultWatcher()
+    vault_watcher.vault_changed.connect(sync_engine.trigger_vault_sync)
+    vault_watcher.vault_changed.connect(window._on_sync_completed)
+    vault_watcher.start()
+    
+    time.sleep(5)  # Let it run for 5 seconds
+    
+    p.disable()
+    
+    s = pstats.Stats(p)
+    s.sort_stats('cumtime')
+    s.print_stats(30)
+    
+    return app.exec()
+
+if __name__ == "__main__":
+    main()
+
+```
+
+### `src\__init__.py`
+
+```python
+"""LocalSync — Personal productivity desktop app."""
+
+from src.config import APP_NAME, APP_VERSION
+
+__all__ = ["APP_NAME", "APP_VERSION"]
+
+```
+
+### `src\config.py`
+
+```python
+"""App-wide configuration and paths."""
+
+import json
+import platform
+from pathlib import Path
+
+
+APP_NAME = "LocalSync"
+APP_VERSION = "0.3.0"
+
+# Cross-platform data directory
+if platform.system() == "Windows":
+    _base = Path.home() / "AppData" / "Local" / APP_NAME
+else:
+    _base = Path.home() / ".local" / "share" / APP_NAME
+
+DATA_DIR = _base / "data"
+NOTES_DIR = DATA_DIR / "notes"
+DB_PATH = DATA_DIR / "localsync.db"
+CONFIG_PATH = _base / "config.json"
+SYNC_LOG_PATH = _base / "sync.log"
+
+# Ensure directories exist
+for d in [DATA_DIR, NOTES_DIR]:
+    d.mkdir(parents=True, exist_ok=True)
+
+# Default settings
+DEFAULTS = {
+    "config_version": 1,
+    "theme": "Catppuccin Dark",
+    # Sync
+    "sync_enabled": True,
+    "sync_interval_seconds": 30,  # 30 seconds for near-realtime sync
+    "sync_port": 42069,
+    "discovery_port": 42070,
+    "subnet": "192.168.0",          # /24 subnet prefix to scan
+    "known_peers": [],               # Manually pinned peer IPs
+    "scan_range_start": 1,
+    "scan_range_end": 254,
+    "scan_threads": 20,              # Parallel ping threads
+    "scan_timeout_ms": 150,          # Per-host TCP probe timeout
+    # Data
+    "notes_dir": str(NOTES_DIR),
+    # Obsidian
+    "obsidian_vault_path": "",           # Path to the Obsidian vault folder
+    "obsidian_api_key": "",              # Obsidian Local REST API plugin key
+    "obsidian_api_url": "http://127.0.0.1:27123",  # REST API base URL
+    "obsidian_sync_enabled": False,      # Whether to sync vault files
+}
+
+
+def load_config() -> dict:
+    if CONFIG_PATH.exists():
+        with open(CONFIG_PATH, "r", encoding="utf-8") as f:
+            saved = json.load(f)
+        return {**DEFAULTS, **saved}
+    return dict(DEFAULTS)
+
+
+def save_config(cfg: dict):
+    CONFIG_PATH.parent.mkdir(parents=True, exist_ok=True)
+    with open(CONFIG_PATH, "w", encoding="utf-8") as f:
+        json.dump(cfg, f, indent=2)
+```
+
+### `src\data\__init__.py`
+
+```python
+"""Data layer — storage backends for all modules."""
+
+from src.data.database import get_connection, init_db
+from src.data.notes_store import NotesStore, Note
+from src.data.calendar_store import CalendarStore, Event
+from src.data.finance_store import FinanceStore, Transaction, DEFAULT_CATEGORIES
+from src.data.todo_store import TodoStore, TodoItem, PRIORITY_LABELS, DEFAULT_TODO_CATEGORIES
+
+__all__ = [
+    "get_connection", "init_db",
+    "NotesStore", "Note",
+    "CalendarStore", "Event",
+    "FinanceStore", "Transaction", "DEFAULT_CATEGORIES",
+    "TodoStore", "TodoItem", "PRIORITY_LABELS", "DEFAULT_TODO_CATEGORIES",
+]
+
+```
+
+### `src\data\activity_store.py`
+
+```python
+"""Activity tracking storage backed by SQLite."""
+
+import uuid
+from dataclasses import dataclass
+
+from src.data.database import get_connection
+from src.utils.timestamps import now_utc
+
+
+DEFAULT_ACTIVITIES = [
+    "Deep Work", "Meetings", "Email / Comms", "Learning",
+    "Exercise", "Break", "Errands", "Commute",
+    "Coding", "Writing", "Reading", "Admin",
+]
+
+# Quick-tap card categories shown as large cards in the activity panel.
+# Users can rename these via config key "activity_quick_categories".
+QUICK_CATEGORIES = ["Food", "Work", "Side Job", "Break", "Family", "Free Time"]
+
+# Colors for activity bars and quick cards
+ACTIVITY_COLORS = {
+    # Quick categories
+    "Food":         "#fab387",  # peach
+    "Work":         "#89b4fa",  # blue
+    "Side Job":     "#a6e3a1",  # green
+    "Break":        "#9399b2",  # overlay2 / grey
+    "Family":       "#f5c2e7",  # pink
+    "Free Time":    "#cba6f7",  # mauve
+    # Legacy activities (kept for backwards compat)
+    "Deep Work":    "#89b4fa",
+    "Meetings":     "#f38ba8",
+    "Email / Comms":"#fab387",
+    "Learning":     "#a6e3a1",
+    "Exercise":     "#94e2d5",
+    "Errands":      "#f9e2af",
+    "Commute":      "#cba6f7",
+    "Coding":       "#74c7ec",
+    "Writing":      "#b4befe",
+    "Reading":      "#f2cdcd",
+    "Admin":        "#eba0ac",
+}
+
+DEFAULT_COLOR = "#89dceb"
+
+
+@dataclass
+class Activity:
+    id: str
+    date: str           # YYYY-MM-DD
+    activity: str       # Name of the activity
+    start_time: str     # HH:MM (24h)
+    end_time: str       # HH:MM (24h)
+    notes: str = ""
+    created_at: str = ""
+    updated_at: str = ""
+    deleted: bool = False
+
+    @property
+    def color(self) -> str:
+        return ACTIVITY_COLORS.get(self.activity, DEFAULT_COLOR)
+
+    @property
+    def duration_minutes(self) -> int:
+        try:
+            sh, sm = map(int, self.start_time.split(":"))
+            eh, em = map(int, self.end_time.split(":"))
+            return (eh * 60 + em) - (sh * 60 + sm)
+        except (ValueError, AttributeError):
+            return 0
+
+
+class ActivityStore:
+
+    def add(self, date: str, activity: str, start_time: str,
+            end_time: str, notes: str = "") -> Activity:
+        now = now_utc()
+        item = Activity(
+            id=str(uuid.uuid4()), date=date, activity=activity,
+            start_time=start_time, end_time=end_time, notes=notes,
+            created_at=now, updated_at=now,
+        )
+        self._upsert(item)
+        return item
+
+    def update(self, item: Activity) -> Activity:
+        item.updated_at = now_utc()
+        self._upsert(item)
+        return item
+
+    def delete(self, item_id: str):
+        conn = get_connection()
+        try:
+            conn.execute(
+                "UPDATE activities SET deleted=1, updated_at=? WHERE id=?",
+                (now_utc(), item_id),
+            )
+            conn.commit()
+        finally:
+            conn.close()
+
+    def get_for_date(self, date: str) -> list[Activity]:
+        conn = get_connection()
+        try:
+            rows = conn.execute(
+                "SELECT * FROM activities WHERE date=? AND deleted=0 "
+                "ORDER BY start_time ASC",
+                (date,),
+            ).fetchall()
+            return [self._row_to_item(r) for r in rows]
+        finally:
+            conn.close()
+
+    def get_all(self) -> list[Activity]:
+        conn = get_connection()
+        try:
+            rows = conn.execute(
+                "SELECT * FROM activities WHERE deleted=0 ORDER BY date DESC, start_time ASC"
+            ).fetchall()
+            return [self._row_to_item(r) for r in rows]
+        finally:
+            conn.close()
+
+    def _upsert(self, item: Activity):
+        conn = get_connection()
+        try:
+            conn.execute(
+                """INSERT INTO activities (id, date, activity, start_time, end_time,
+                   notes, created_at, updated_at, deleted)
+                   VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                   ON CONFLICT(id) DO UPDATE SET
+                   date=excluded.date, activity=excluded.activity,
+                   start_time=excluded.start_time, end_time=excluded.end_time,
+                   notes=excluded.notes, updated_at=excluded.updated_at,
+                   deleted=excluded.deleted""",
+                (item.id, item.date, item.activity, item.start_time,
+                 item.end_time, item.notes, item.created_at, item.updated_at,
+                 int(item.deleted)),
+            )
+            conn.commit()
+        finally:
+            conn.close()
+
+    @staticmethod
+    def _row_to_item(row) -> Activity:
+        return Activity(
+            id=row["id"], date=row["date"], activity=row["activity"],
+            start_time=row["start_time"], end_time=row["end_time"],
+            notes=row["notes"] or "", created_at=row["created_at"],
+            updated_at=row["updated_at"], deleted=bool(row["deleted"]),
+        )
+```
+
+### `src\data\calendar_store.py`
+
+```python
+"""Calendar event storage backed by SQLite — supports recurring events and birthdays."""
+
+import uuid
+from dataclasses import dataclass, field
+from datetime import date, datetime, timedelta
+
+from src.data.database import get_connection
+from src.utils.timestamps import now_utc
+
+
+# ── Recurrence types ──────────────────────────────────
+# Stored as a string in the DB:
+#   ""              → no recurrence
+#   "daily"         → every day
+#   "weekly:0,1,2"  → every Mon, Tue, Wed  (0=Mon … 6=Sun)
+#   "monthly"       → same day each month
+#   "yearly"        → same day each year
+
+def _nth_weekday_in_month(year: int, month: int, n: int, weekday: int) -> 'date | None':
+    """Return the date of the Nth occurrence (1-indexed) of weekday in year/month.
+    Returns None if that Nth occurrence does not exist (e.g. 5th Sunday in a short month)."""
+    count = 0
+    d = date(year, month, 1)
+    while d.month == month:
+        if d.weekday() == weekday:
+            count += 1
+            if count == n:
+                return d
+        d += timedelta(days=1)
+    return None
+
+def parse_recurrence(rec: str) -> dict:
+    """Parse a recurrence string into a dict."""
+    if not rec:
+        return {"type": "none"}
+    if rec == "daily":
+        return {"type": "daily"}
+    if rec.startswith("weekly:"):
+        days = [int(d) for d in rec.split(":")[1].split(",") if d.strip()]
+        return {"type": "weekly", "days": days}
+    if rec == "monthly":
+        return {"type": "monthly"}
+    if rec == "yearly":
+        return {"type": "yearly"}
+    if rec.startswith("nth_weekday:"):
+        rest = rec[len("nth_weekday:"):]
+        parts = rest.split(":")
+        if len(parts) == 2:
+            weeks = [int(n) for n in parts[0].split(",") if n.strip().isdigit()]
+            days  = [int(d) for d in parts[1].split(",") if d.strip().isdigit()]
+            if weeks and days:
+                return {"type": "nth_weekday", "weeks": weeks, "days": days}
+        return {"type": "none"}
+    return {"type": "none"}
+
+
+def build_recurrence(rec_type: str, weekly_days: list[int] | None = None,
+                     nth_weeks: list[int] | None = None,
+                     nth_days: list[int] | None = None) -> str:
+    """Build a recurrence string from type and optional parameters."""
+    if rec_type == "daily":
+        return "daily"
+    if rec_type == "weekly" and weekly_days:
+        return "weekly:" + ",".join(str(d) for d in sorted(weekly_days))
+    if rec_type == "monthly":
+        return "monthly"
+    if rec_type == "yearly":
+        return "yearly"
+    if rec_type == "nth_weekday" and nth_weeks and nth_days:
+        return ("nth_weekday:"
+                + ",".join(str(n) for n in sorted(nth_weeks))
+                + ":"
+                + ",".join(str(d) for d in sorted(nth_days)))
+    return ""
+
+
+def expand_recurring_to_range(event: 'Event', range_start: date, range_end: date) -> list[date]:
+    """Expand a recurring event into concrete dates within [range_start, range_end]."""
+    rec = parse_recurrence(event.recurrence)
+    if rec["type"] == "none":
+        return []
+
+    try:
+        ev_start = datetime.fromisoformat(event.start_time).date()
+    except Exception:
+        return []
+
+    dates: list[date] = []
+    if rec["type"] == "daily":
+        d = max(ev_start, range_start)
+        while d <= range_end:
+            dates.append(d)
+            d += timedelta(days=1)
+    elif rec["type"] == "weekly":
+        target_days = set(rec.get("days", []))
+        d = max(ev_start, range_start)
+        while d <= range_end:
+            if d.weekday() in target_days:
+                dates.append(d)
+            d += timedelta(days=1)
+    elif rec["type"] == "monthly":
+        target_day = ev_start.day
+        m_start = max(ev_start.replace(day=1), range_start.replace(day=1))
+        y, m = m_start.year, m_start.month
+        while True:
+            try:
+                d = date(y, m, target_day)
+            except ValueError:
+                pass  # e.g. Feb 31
+            else:
+                if range_start <= d <= range_end and d >= ev_start:
+                    dates.append(d)
+            m += 1
+            if m > 12:
+                m = 1
+                y += 1
+            if date(y, m, 1) > range_end:
+                break
+    elif rec["type"] == "yearly":
+        target_month, target_day = ev_start.month, ev_start.day
+        for y in range(max(ev_start.year, range_start.year), range_end.year + 1):
+            try:
+                d = date(y, target_month, target_day)
+            except ValueError:
+                continue
+            if range_start <= d <= range_end:
+                dates.append(d)
+
+    elif rec["type"] == "nth_weekday":
+            weeks_list = rec.get("weeks", [])
+            days_list  = rec.get("days", [])
+            if weeks_list and days_list:
+                start_anchor = max(ev_start.replace(day=1), range_start.replace(day=1))
+                y, m = start_anchor.year, start_anchor.month
+                while True:
+                    for n in weeks_list:
+                        for wd in days_list:
+                            d = _nth_weekday_in_month(y, m, n, wd)
+                            if d and range_start <= d <= range_end and d >= ev_start:
+                                dates.append(d)
+                    m += 1
+                    if m > 12:
+                        m, y = 1, y + 1
+                    if date(y, m, 1) > range_end:
+                        break
+                dates.sort()
+
+    return dates
+
+
+@dataclass
+class Event:
+    id: str
+    title: str
+    start_time: str  # ISO-8601
+    end_time: str | None = None
+    description: str = ""
+    all_day: bool = False
+    color: str = "#4a9eff"
+    updated_at: str = ""
+    deleted: bool = False
+    recurrence: str = ""   # e.g. "weekly:0,1,2,3,4" for weekdays
+    category: str = ""     # "work", "birthday", "holiday", or ""
+
+
+@dataclass
+class Birthday:
+    id: str
+    name: str
+    month: int
+    day: int
+    year: int | None = None
+    note: str = ""
+    updated_at: str = ""
+    deleted: bool = False
+
+
+class CalendarStore:
+
+    # ── Event CRUD ────────────────────────────────────
+
+    def add_event(self, title: str, start_time: str, end_time: str | None = None,
+                  description: str = "", all_day: bool = False, color: str = "#4a9eff",
+                  recurrence: str = "", category: str = "") -> Event:
+        ev = Event(
+            id=str(uuid.uuid4()),
+            title=title,
+            start_time=start_time,
+            end_time=end_time,
+            description=description,
+            all_day=all_day,
+            color=color,
+            updated_at=now_utc(),
+            recurrence=recurrence,
+            category=category,
+        )
+        self._upsert(ev)
+        return ev
+
+    def update_event(self, event: Event) -> Event:
+        event.updated_at = now_utc()
+        self._upsert(event)
+        return event
+
+    def delete_event(self, event_id: str):
+        conn = get_connection()
+        try:
+            conn.execute(
+                "UPDATE events SET deleted=1, updated_at=? WHERE id=?",
+                (now_utc(), event_id),
+            )
+            conn.commit()
+        finally:
+            conn.close()
+
+    def get_events(self, start: str | None = None, end: str | None = None) -> list[Event]:
+        """Get non-deleted events, optionally filtered by date range.
+
+        For recurring events, this returns the *template* event if its
+        start_time falls before `end`. Use expand_recurring_to_range()
+        to generate concrete occurrences in a date range.
+        """
+        conn = get_connection()
+        try:
+            query = "SELECT * FROM events WHERE deleted=0"
+            params: list = []
+            if start:
+                query += " AND (start_time >= ? OR recurrence != '')"
+                params.append(start)
+            if end:
+                query += " AND start_time <= ?"
+                params.append(end)
+            query += " ORDER BY start_time"
+            rows = conn.execute(query, params).fetchall()
+            return [self._row_to_event(r) for r in rows]
+        finally:
+            conn.close()
+
+    def get_all_recurring_events(self) -> list[Event]:
+        """Get all non-deleted recurring events regardless of date."""
+        conn = get_connection()
+        try:
+            rows = conn.execute(
+                "SELECT * FROM events WHERE deleted=0 AND recurrence != '' ORDER BY start_time"
+            ).fetchall()
+            return [self._row_to_event(r) for r in rows]
+        finally:
+            conn.close()
+
+    def get_event(self, event_id: str) -> Event | None:
+        conn = get_connection()
+        try:
+            row = conn.execute("SELECT * FROM events WHERE id=?", (event_id,)).fetchone()
+            return self._row_to_event(row) if row else None
+        finally:
+            conn.close()
+
+    def _upsert(self, ev: Event):
+        conn = get_connection()
+        try:
+            conn.execute(
+                """INSERT INTO events (id, title, description, start_time, end_time,
+                   all_day, color, updated_at, deleted, recurrence, category)
+                   VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                   ON CONFLICT(id) DO UPDATE SET
+                   title=excluded.title, description=excluded.description,
+                   start_time=excluded.start_time, end_time=excluded.end_time,
+                   all_day=excluded.all_day, color=excluded.color,
+                   updated_at=excluded.updated_at, deleted=excluded.deleted,
+                   recurrence=excluded.recurrence, category=excluded.category""",
+                (ev.id, ev.title, ev.description, ev.start_time, ev.end_time,
+                 int(ev.all_day), ev.color, ev.updated_at, int(ev.deleted),
+                 ev.recurrence, ev.category),
+            )
+            conn.commit()
+        finally:
+            conn.close()
+
+    @staticmethod
+    def _row_to_event(row) -> Event:
+        return Event(
+            id=row["id"], title=row["title"], description=row["description"],
+            start_time=row["start_time"], end_time=row["end_time"],
+            all_day=bool(row["all_day"]), color=row["color"],
+            updated_at=row["updated_at"], deleted=bool(row["deleted"]),
+            recurrence=row["recurrence"] if "recurrence" in row.keys() else "",
+            category=row["category"] if "category" in row.keys() else "",
+        )
+
+    # ── Birthday CRUD ─────────────────────────────────
+
+    def add_birthday(self, name: str, month: int, day: int,
+                     year: int | None = None, note: str = "") -> Birthday:
+        b = Birthday(
+            id=str(uuid.uuid4()),
+            name=name, month=month, day=day, year=year,
+            note=note, updated_at=now_utc(),
+        )
+        self._upsert_birthday(b)
+        return b
+
+    def update_birthday(self, birthday: Birthday) -> Birthday:
+        birthday.updated_at = now_utc()
+        self._upsert_birthday(birthday)
+        return birthday
+
+    def delete_birthday(self, birthday_id: str):
+        conn = get_connection()
+        try:
+            conn.execute(
+                "UPDATE birthdays SET deleted=1, updated_at=? WHERE id=?",
+                (now_utc(), birthday_id),
+            )
+            conn.commit()
+        finally:
+            conn.close()
+
+    def get_birthdays(self) -> list[Birthday]:
+        conn = get_connection()
+        try:
+            rows = conn.execute(
+                "SELECT * FROM birthdays WHERE deleted=0 ORDER BY month, day"
+            ).fetchall()
+            return [self._row_to_birthday(r) for r in rows]
+        finally:
+            conn.close()
+
+    def get_birthdays_for_month(self, month: int) -> list[Birthday]:
+        conn = get_connection()
+        try:
+            rows = conn.execute(
+                "SELECT * FROM birthdays WHERE deleted=0 AND month=? ORDER BY day",
+                (month,),
+            ).fetchall()
+            return [self._row_to_birthday(r) for r in rows]
+        finally:
+            conn.close()
+
+    def _upsert_birthday(self, b: Birthday):
+        conn = get_connection()
+        try:
+            conn.execute(
+                """INSERT INTO birthdays (id, name, month, day, year, note, updated_at, deleted)
+                   VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                   ON CONFLICT(id) DO UPDATE SET
+                   name=excluded.name, month=excluded.month, day=excluded.day,
+                   year=excluded.year, note=excluded.note,
+                   updated_at=excluded.updated_at, deleted=excluded.deleted""",
+                (b.id, b.name, b.month, b.day, b.year, b.note, b.updated_at, int(b.deleted)),
+            )
+            conn.commit()
+        finally:
+            conn.close()
+
+    @staticmethod
+    def _row_to_birthday(row) -> Birthday:
+        return Birthday(
+            id=row["id"], name=row["name"], month=row["month"],
+            day=row["day"], year=row["year"],
+            note=row["note"] if row["note"] else "",
+            updated_at=row["updated_at"], deleted=bool(row["deleted"]),
+        )
+
+    # ── Major events ──────────────────────────────────
+
+    def get_next_major_events(self, from_date: date, limit: int = 4) -> list[tuple]:
+        """Return next `limit` upcoming major events as (event_date, title, category, color).
+
+        Sources:
+        1. Events with category in ('birthday', 'trip', 'holiday', 'major').
+        2. Birthdays table (next annual occurrence).
+        Results are sorted by date ascending.
+        """
+        results: list[tuple] = []
+
+        # Regular events with a major category
+        conn = get_connection()
+        try:
+            rows = conn.execute(
+                """SELECT * FROM events WHERE deleted=0
+                   AND category IN ('birthday','trip','holiday','major')
+                   AND start_time >= ?
+                   ORDER BY start_time""",
+                (from_date.isoformat(),),
+            ).fetchall()
+        finally:
+            conn.close()
+
+        for row in rows:
+            ev = self._row_to_event(row)
+            try:
+                ev_date = datetime.fromisoformat(ev.start_time).date()
+            except Exception:
+                continue
+            results.append((ev_date, ev.title, ev.category, ev.color, ev.id, False))
+
+        # Birthday table — find next annual occurrence
+        today = from_date
+        for b in self.get_birthdays():
+            try:
+                candidate = date(today.year, b.month, b.day)
+            except ValueError:
+                continue
+            if candidate < today:
+                try:
+                    candidate = date(today.year + 1, b.month, b.day)
+                except ValueError:
+                    continue
+            results.append((candidate, b.name, "birthday", "birthday", b.id, True))
+
+        results.sort(key=lambda x: x[0])
+        return results[:limit]
+
+```
+
+### `src\data\database.py`
+
+```python
+"""SQLite database setup and connection for all LocalSync modules."""
+
+import sqlite3
+from pathlib import Path
+
+from src.config import DB_PATH
+
+
+def get_connection(db_path: Path | None = None) -> sqlite3.Connection:
+    path = db_path or DB_PATH
+    path.parent.mkdir(parents=True, exist_ok=True)
+    conn = sqlite3.connect(str(path))
+    conn.row_factory = sqlite3.Row
+    conn.execute("PRAGMA journal_mode=WAL")
+    conn.execute("PRAGMA foreign_keys=ON")
+    return conn
+
+
+def init_db(conn: sqlite3.Connection | None = None):
+    """Create tables if they don't exist, then run migrations."""
+    own_conn = conn is None
+    if own_conn:
+        conn = get_connection()
+    try:
+        conn.executescript(_SCHEMA)
+        _migrate(conn)
+        conn.commit()
+    finally:
+        if own_conn:
+            conn.close()
+
+
+def _migrate(conn: sqlite3.Connection):
+    """Add columns that may be missing from older databases.
+
+    All changes are purely additive (ALTER TABLE ADD COLUMN).
+    Never drop or rename columns — sync relies on stable schemas.
+    """
+
+    # ── events ────────────────────────────────────────────────────────────────
+    cols = {r["name"] for r in conn.execute("PRAGMA table_info(events)").fetchall()}
+    if "recurrence" not in cols:
+        conn.execute("ALTER TABLE events ADD COLUMN recurrence TEXT DEFAULT ''")
+    if "category" not in cols:
+        conn.execute("ALTER TABLE events ADD COLUMN category TEXT DEFAULT ''")
+
+    # ── birthdays ─────────────────────────────────────────────────────────────
+    bcols = {r["name"] for r in conn.execute("PRAGMA table_info(birthdays)").fetchall()}
+    if "note" not in bcols:
+        conn.execute("ALTER TABLE birthdays ADD COLUMN note TEXT DEFAULT ''")
+
+    # ── transactions ──────────────────────────────────────────────────────────
+    txn_cols = {r["name"] for r in conn.execute("PRAGMA table_info(transactions)").fetchall()}
+    if "currency" not in txn_cols:
+        conn.execute("ALTER TABLE transactions ADD COLUMN currency TEXT DEFAULT 'USD'")
+    if "is_job_pay" not in txn_cols:
+        conn.execute("ALTER TABLE transactions ADD COLUMN is_job_pay INTEGER DEFAULT 0")
+
+    # ── job_presets ───────────────────────────────────────────────────────────
+    jp_cols = {r["name"] for r in conn.execute("PRAGMA table_info(job_presets)").fetchall()}
+    if "pay_unit" not in jp_cols:
+        conn.execute("ALTER TABLE job_presets ADD COLUMN pay_unit TEXT DEFAULT 'flat'")
+
+    # ── Receipts / item catalogue ─────────────────────────────────────────────
+    tables_now = {r["name"] for r in conn.execute(
+        "SELECT name FROM sqlite_master WHERE type='table'"
+    ).fetchall()}
+    if "receipts" not in tables_now:
+        conn.executescript(_RECEIPT_SCHEMA)
+
+    txn_cols = {r["name"] for r in conn.execute("PRAGMA table_info(transactions)").fetchall()}
+    if "receipt_id" not in txn_cols:
+        conn.execute("ALTER TABLE transactions ADD COLUMN receipt_id TEXT DEFAULT ''")
+
+    # ── Discover all existing tables once ─────────────────────────────────────
+    tables = {r["name"] for r in conn.execute(
+        "SELECT name FROM sqlite_master WHERE type='table'"
+    ).fetchall()}
+
+    # ── soft_event_templates / soft_event_logs ────────────────────────────────
+    if "soft_event_templates" not in tables:
+        conn.executescript("""
+            CREATE TABLE IF NOT EXISTS soft_event_templates (
+                id          TEXT PRIMARY KEY,
+                title       TEXT NOT NULL,
+                note        TEXT DEFAULT '',
+                color       TEXT DEFAULT '#a6e3a1',
+                recurrence  TEXT DEFAULT '',
+                updated_at  TEXT NOT NULL,
+                deleted     INTEGER DEFAULT 0
+            );
+            CREATE TABLE IF NOT EXISTS soft_event_logs (
+                id           TEXT PRIMARY KEY,
+                template_id  TEXT NOT NULL,
+                log_date     TEXT NOT NULL,
+                log_text     TEXT DEFAULT '',
+                updated_at   TEXT NOT NULL,
+                deleted      INTEGER DEFAULT 0,
+                UNIQUE(template_id, log_date)
+            );
+        """)
+        tables = {r["name"] for r in conn.execute(
+            "SELECT name FROM sqlite_master WHERE type='table'"
+        ).fetchall()}
+
+    # ── Journey tables (v0.3) ─────────────────────────────────────────────────
+    if "journeys" not in tables:
+        conn.executescript("""
+            CREATE TABLE IF NOT EXISTS journeys (
+                id                  TEXT PRIMARY KEY,
+                title               TEXT NOT NULL,
+                goal_description    TEXT DEFAULT '',
+                domain              TEXT DEFAULT 'General',
+                status              TEXT DEFAULT 'active',
+                web_search_enabled  INTEGER DEFAULT 0,
+                created_at          TEXT NOT NULL,
+                updated_at          TEXT NOT NULL,
+                deleted             INTEGER DEFAULT 0,
+                roadmap_json        TEXT DEFAULT ''
+            );
+            CREATE TABLE IF NOT EXISTS journey_steps (
+                id                      TEXT PRIMARY KEY,
+                journey_id              TEXT NOT NULL,
+                step_number             INTEGER NOT NULL,
+                title                   TEXT NOT NULL,
+                user_notes              TEXT DEFAULT '',
+                user_next_suggestions   TEXT DEFAULT '',
+                status                  TEXT DEFAULT 'active',
+                created_at              TEXT NOT NULL,
+                completed_at            TEXT,
+                checklist_state         TEXT DEFAULT '{}'
+            );
+            CREATE TABLE IF NOT EXISTS journey_council_sessions (
+                id                  TEXT PRIMARY KEY,
+                step_id             TEXT NOT NULL,
+                synthesis           TEXT DEFAULT '',
+                synthesis_model     TEXT DEFAULT '',
+                synthesis_mode      TEXT DEFAULT 'Consensus',
+                web_search_used     INTEGER DEFAULT 0,
+                web_search_queries  TEXT DEFAULT '[]',
+                created_at          TEXT NOT NULL,
+                step_checklist      TEXT DEFAULT '[]',
+                step_resources      TEXT DEFAULT '[]',
+                roadmap_text        TEXT DEFAULT ''
+            );
+            CREATE TABLE IF NOT EXISTS journey_council_members (
+                id                TEXT PRIMARY KEY,
+                session_id        TEXT NOT NULL,
+                councilor_label   TEXT DEFAULT '',
+                model             TEXT DEFAULT '',
+                raw_response      TEXT DEFAULT '',
+                created_at        TEXT NOT NULL
+            );
+        """)
+    else:
+        # Journey tables exist — patch any columns added in later revisions
+        jcols = {r["name"] for r in conn.execute(
+            "PRAGMA table_info(journeys)").fetchall()}
+        if "roadmap_json" not in jcols:
+            conn.execute(
+                "ALTER TABLE journeys ADD COLUMN roadmap_json TEXT DEFAULT ''")
+
+        js_cols = {r["name"] for r in conn.execute(
+            "PRAGMA table_info(journey_steps)").fetchall()}
+        if "checklist_state" not in js_cols:
+            conn.execute(
+                "ALTER TABLE journey_steps "
+                "ADD COLUMN checklist_state TEXT DEFAULT '{}'")
+
+        jcs_cols = {r["name"] for r in conn.execute(
+            "PRAGMA table_info(journey_council_sessions)").fetchall()}
+        if "step_checklist" not in jcs_cols:
+            conn.execute(
+                "ALTER TABLE journey_council_sessions "
+                "ADD COLUMN step_checklist TEXT DEFAULT '[]'")
+        if "step_resources" not in jcs_cols:
+            conn.execute(
+                "ALTER TABLE journey_council_sessions "
+                "ADD COLUMN step_resources TEXT DEFAULT '[]'")
+        if "roadmap_text" not in jcs_cols:
+            conn.execute(
+                "ALTER TABLE journey_council_sessions "
+                "ADD COLUMN roadmap_text TEXT DEFAULT ''")
+
+
+_SCHEMA = """
+CREATE TABLE IF NOT EXISTS events (
+    id          TEXT PRIMARY KEY,
+    title       TEXT NOT NULL,
+    description TEXT DEFAULT '',
+    start_time  TEXT NOT NULL,
+    end_time    TEXT,
+    all_day     INTEGER DEFAULT 0,
+    color       TEXT DEFAULT '#4a9eff',
+    updated_at  TEXT NOT NULL,
+    deleted     INTEGER DEFAULT 0,
+    recurrence  TEXT DEFAULT '',
+    category    TEXT DEFAULT ''
+);
+
+CREATE TABLE IF NOT EXISTS birthdays (
+    id          TEXT PRIMARY KEY,
+    name        TEXT NOT NULL,
+    month       INTEGER NOT NULL,
+    day         INTEGER NOT NULL,
+    year        INTEGER,
+    note        TEXT DEFAULT '',
+    updated_at  TEXT NOT NULL,
+    deleted     INTEGER DEFAULT 0
+);
+
+CREATE TABLE IF NOT EXISTS transactions (
+    id          TEXT PRIMARY KEY,
+    date        TEXT NOT NULL,
+    amount      REAL NOT NULL,
+    type        TEXT NOT NULL CHECK(type IN ('income', 'expense')),
+    category    TEXT DEFAULT 'Uncategorized',
+    description TEXT DEFAULT '',
+    updated_at  TEXT NOT NULL,
+    deleted     INTEGER DEFAULT 0,
+    currency    TEXT DEFAULT 'USD',
+    is_job_pay  INTEGER DEFAULT 0,
+    receipt_id  TEXT DEFAULT ''
+);
+
+CREATE TABLE IF NOT EXISTS job_presets (
+    id          TEXT PRIMARY KEY,
+    name        TEXT NOT NULL,
+    amount_usd  REAL NOT NULL,
+    category    TEXT DEFAULT 'Contract',
+    updated_at  TEXT NOT NULL,
+    deleted     INTEGER DEFAULT 0,
+    pay_unit    TEXT DEFAULT 'flat'
+);
+
+CREATE TABLE IF NOT EXISTS todos (
+    id          TEXT PRIMARY KEY,
+    title       TEXT NOT NULL,
+    done        INTEGER DEFAULT 0,
+    priority    INTEGER DEFAULT 0,
+    due_date    TEXT,
+    category    TEXT DEFAULT '',
+    notes       TEXT DEFAULT '',
+    created_at  TEXT NOT NULL,
+    updated_at  TEXT NOT NULL,
+    deleted     INTEGER DEFAULT 0
+);
+
+CREATE TABLE IF NOT EXISTS activities (
+    id          TEXT PRIMARY KEY,
+    date        TEXT NOT NULL,
+    activity    TEXT NOT NULL,
+    start_time  TEXT NOT NULL,
+    end_time    TEXT NOT NULL,
+    notes       TEXT DEFAULT '',
+    created_at  TEXT NOT NULL,
+    updated_at  TEXT NOT NULL,
+    deleted     INTEGER DEFAULT 0
+);
+
+CREATE TABLE IF NOT EXISTS side_income_goals (
+    id          TEXT PRIMARY KEY,
+    year        INTEGER NOT NULL,
+    month       INTEGER NOT NULL,
+    min_goal    REAL NOT NULL DEFAULT 0,
+    major_goal  REAL NOT NULL DEFAULT 0,
+    updated_at  TEXT NOT NULL,
+    UNIQUE(year, month)
+);
+
+CREATE TABLE IF NOT EXISTS sync_meta (
+    key   TEXT PRIMARY KEY,
+    value TEXT
+);
+
+CREATE TABLE IF NOT EXISTS soft_event_templates (
+    id          TEXT PRIMARY KEY,
+    title       TEXT NOT NULL,
+    note        TEXT DEFAULT '',
+    color       TEXT DEFAULT '#a6e3a1',
+    recurrence  TEXT DEFAULT '',
+    updated_at  TEXT NOT NULL,
+    deleted     INTEGER DEFAULT 0
+);
+
+CREATE TABLE IF NOT EXISTS soft_event_logs (
+    id           TEXT PRIMARY KEY,
+    template_id  TEXT NOT NULL,
+    log_date     TEXT NOT NULL,
+    log_text     TEXT DEFAULT '',
+    updated_at   TEXT NOT NULL,
+    deleted      INTEGER DEFAULT 0,
+    UNIQUE(template_id, log_date)
+);
+
+CREATE TABLE IF NOT EXISTS journeys (
+    id                  TEXT PRIMARY KEY,
+    title               TEXT NOT NULL,
+    goal_description    TEXT DEFAULT '',
+    domain              TEXT DEFAULT 'General',
+    status              TEXT DEFAULT 'active',
+    web_search_enabled  INTEGER DEFAULT 0,
+    created_at          TEXT NOT NULL,
+    updated_at          TEXT NOT NULL,
+    deleted             INTEGER DEFAULT 0,
+    roadmap_json        TEXT DEFAULT ''
+);
+
+CREATE TABLE IF NOT EXISTS journey_steps (
+    id                      TEXT PRIMARY KEY,
+    journey_id              TEXT NOT NULL,
+    step_number             INTEGER NOT NULL,
+    title                   TEXT NOT NULL,
+    user_notes              TEXT DEFAULT '',
+    user_next_suggestions   TEXT DEFAULT '',
+    status                  TEXT DEFAULT 'active',
+    created_at              TEXT NOT NULL,
+    completed_at            TEXT,
+    checklist_state         TEXT DEFAULT '{}'
+);
+
+CREATE TABLE IF NOT EXISTS journey_council_sessions (
+    id                  TEXT PRIMARY KEY,
+    step_id             TEXT NOT NULL,
+    synthesis           TEXT DEFAULT '',
+    synthesis_model     TEXT DEFAULT '',
+    synthesis_mode      TEXT DEFAULT 'Consensus',
+    web_search_used     INTEGER DEFAULT 0,
+    web_search_queries  TEXT DEFAULT '[]',
+    created_at          TEXT NOT NULL,
+    step_checklist      TEXT DEFAULT '[]',
+    step_resources      TEXT DEFAULT '[]',
+    roadmap_text        TEXT DEFAULT ''
+);
+
+CREATE TABLE IF NOT EXISTS journey_council_members (
+    id                TEXT PRIMARY KEY,
+    session_id        TEXT NOT NULL,
+    councilor_label   TEXT DEFAULT '',
+    model             TEXT DEFAULT '',
+    raw_response      TEXT DEFAULT '',
+    created_at        TEXT NOT NULL
+);
+"""
+
+
+# Schema for the receipt / item-catalogue tables, applied on first run by
+# init_db() when the `receipts` table is missing. Receipts + receipt_items
+# capture the structured detail (line items, qty, unit price); each receipt
+# also writes a single row into the `transactions` table so existing
+# ledger / chart aggregates stay correct without per-call special cases.
+_RECEIPT_SCHEMA = """
+CREATE TABLE IF NOT EXISTS receipts (
+    id              TEXT PRIMARY KEY,
+    transaction_id  TEXT DEFAULT '',
+    date            TEXT NOT NULL,
+    vendor          TEXT NOT NULL DEFAULT '',
+    category        TEXT NOT NULL DEFAULT 'Uncategorized',
+    currency        TEXT NOT NULL DEFAULT 'JPY',
+    subtotal        REAL NOT NULL DEFAULT 0,
+    tax             REAL NOT NULL DEFAULT 0,
+    total           REAL NOT NULL,
+    payment_method  TEXT DEFAULT 'cash',
+    notes           TEXT DEFAULT '',
+    updated_at      TEXT NOT NULL,
+    deleted         INTEGER DEFAULT 0
+);
+
+CREATE TABLE IF NOT EXISTS receipt_items (
+    id              TEXT PRIMARY KEY,
+    receipt_id      TEXT NOT NULL,
+    item_id         TEXT DEFAULT '',
+    name            TEXT NOT NULL,
+    qty             REAL NOT NULL DEFAULT 1,
+    unit_price      REAL NOT NULL DEFAULT 0,
+    line_total      REAL NOT NULL DEFAULT 0,
+    notes           TEXT DEFAULT '',
+    sort_order      INTEGER DEFAULT 0
+);
+CREATE INDEX IF NOT EXISTS idx_receipt_items_receipt
+    ON receipt_items(receipt_id);
+
+CREATE TABLE IF NOT EXISTS expense_items (
+    id                TEXT PRIMARY KEY,
+    name              TEXT NOT NULL,
+    normalized_name   TEXT NOT NULL,
+    category          TEXT DEFAULT '',
+    last_price        REAL DEFAULT 0,
+    last_currency     TEXT DEFAULT 'JPY',
+    last_seen_date    TEXT DEFAULT '',
+    times_seen        INTEGER DEFAULT 0,
+    avg_price         REAL DEFAULT 0,
+    min_price         REAL DEFAULT 0,
+    max_price         REAL DEFAULT 0,
+    updated_at        TEXT NOT NULL,
+    deleted           INTEGER DEFAULT 0
+);
+CREATE INDEX IF NOT EXISTS idx_expense_items_norm
+    ON expense_items(normalized_name);
+"""
+```
+
+### `src\data\expenses_store.py`
+
+```python
+"""Expense tracking — receipts, line items, and a small item-price catalogue.
+
+The earnings ledger lives in `finance_store.transactions`. This module layers
+*structured* expense data on top: every receipt also writes one transaction
+row (`type='expense'`, tagged `[Receipt] <vendor>`) so the existing summary,
+goal, and chart aggregates keep working without per-call branching.
+
+Data model
+──────────
+Receipt        — header (date, vendor, category, currency, totals, notes)
+ReceiptItem    — line items (name, qty, unit_price, line_total)
+ExpenseItem    — item catalogue with rolling last/avg/min/max price stats,
+                 updated automatically as receipts are saved. Use
+                 `search_items(query)` for autocomplete in entry forms.
+
+A receipt's `transaction_id` points to the linked row in `transactions`;
+saving / updating / soft-deleting a receipt keeps the transaction in sync.
+Standalone expenses (e.g. "rent", "gas") that don't need line-item detail
+can still be entered directly via FinanceStore.add_transaction.
+"""
+
+from __future__ import annotations
+
+import re
+import uuid
+from dataclasses import dataclass, field
+from datetime import date as _date
+
+from src.data.database import get_connection
+from src.data.finance_store import FinanceStore
+from src.utils.timestamps import now_utc
+
+
+# ── Categories ────────────────────────────────────────────────────────────────
+# A friendly, opinionated default set that covers the user's mentioned
+# buckets (Groceries, Utilities, Education, Side Expenses, Rent…). The list
+# is duplicated in the Earnings tab's existing EXPENSE_CATEGORIES for
+# transactions written directly through the ledger; here we add Groceries
+# and Side Expenses which the ledger lacked.
+EXPENSE_CATEGORIES = [
+    "Groceries",
+    "Rent / Housing",
+    "Utilities",
+    "Transportation",
+    "Food & Drink",
+    "Education",
+    "Side Expenses",
+    "Software / Tools",
+    "Hardware",
+    "Office Supplies",
+    "Travel",
+    "Health / Medical",
+    "Subscriptions",
+    "Entertainment",
+    "Taxes",
+    "Fees & Banking",
+    "Gifts",
+    "Other",
+]
+
+PAYMENT_METHODS = ["cash", "card", "bank", "ic / e-money", "other"]
+
+
+# ── Dataclasses ───────────────────────────────────────────────────────────────
+
+@dataclass
+class ReceiptItem:
+    id:         str
+    receipt_id: str
+    item_id:    str   = ""
+    name:       str   = ""
+    qty:        float = 1.0
+    unit_price: float = 0.0
+    line_total: float = 0.0
+    notes:      str   = ""
+    sort_order: int   = 0
+
+
+@dataclass
+class Receipt:
+    id:             str
+    date:           str
+    vendor:         str            = ""
+    category:       str            = "Other"
+    currency:       str            = "JPY"
+    subtotal:       float          = 0.0
+    tax:            float          = 0.0
+    total:          float          = 0.0
+    payment_method: str            = "cash"
+    notes:          str            = ""
+    transaction_id: str            = ""
+    updated_at:     str            = ""
+    deleted:        bool           = False
+    items:          list[ReceiptItem] = field(default_factory=list)
+
+
+@dataclass
+class ExpenseItem:
+    id:              str
+    name:            str
+    normalized_name: str
+    category:        str   = ""
+    last_price:      float = 0.0
+    last_currency:   str   = "JPY"
+    last_seen_date:  str   = ""
+    times_seen:      int   = 0
+    avg_price:       float = 0.0
+    min_price:       float = 0.0
+    max_price:       float = 0.0
+    updated_at:      str   = ""
+    deleted:         bool  = False
+
+
+# ── Helpers ───────────────────────────────────────────────────────────────────
+
+_NORM_RE = re.compile(r"[^a-z0-9]+")
+
+
+def _normalize(name: str) -> str:
+    """Lowercase + strip non-alphanumerics for fuzzy item matching."""
+    return _NORM_RE.sub(" ", (name or "").lower()).strip()
+
+
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+#  ExpensesStore
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+class ExpensesStore:
+    """Receipts, receipt items, and item-price catalogue."""
+
+    def __init__(self, finance_store: FinanceStore | None = None):
+        # Receipts mirror into the existing transactions ledger so everything
+        # else (earnings summary, charts, tax export) keeps working unchanged.
+        self._fs = finance_store or FinanceStore()
+
+    # ── Receipts ──────────────────────────────────────────────────────────────
+
+    def save_receipt(self, receipt: Receipt,
+                     items: list[ReceiptItem] | None = None) -> Receipt:
+        """Insert or update a receipt + items + linked transaction.
+
+        Items, if supplied, REPLACE any existing line items on the receipt.
+        Each item updates the catalogue's rolling price stats.
+        """
+        if items is None:
+            items = receipt.items
+        if not receipt.id:
+            receipt.id = str(uuid.uuid4())
+        receipt.updated_at = now_utc()
+
+        # Recompute totals from items if any were given (defensive — UI
+        # already does this but we re-derive so the DB stays consistent).
+        if items:
+            receipt.subtotal = sum(it.line_total for it in items)
+            receipt.total    = receipt.subtotal + (receipt.tax or 0.0)
+
+        conn = get_connection()
+        try:
+            # Capture names that were on the receipt before this save so we
+            # can recompute their catalogue stats afterwards if they were
+            # removed by this edit.
+            prev_names = [
+                row["name"] for row in conn.execute(
+                    "SELECT name FROM receipt_items WHERE receipt_id=?",
+                    (receipt.id,),
+                ).fetchall()
+            ]
+            conn.execute(
+                """INSERT INTO receipts
+                   (id, transaction_id, date, vendor, category, currency,
+                    subtotal, tax, total, payment_method, notes,
+                    updated_at, deleted)
+                   VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                   ON CONFLICT(id) DO UPDATE SET
+                     transaction_id=excluded.transaction_id,
+                     date=excluded.date, vendor=excluded.vendor,
+                     category=excluded.category, currency=excluded.currency,
+                     subtotal=excluded.subtotal, tax=excluded.tax,
+                     total=excluded.total,
+                     payment_method=excluded.payment_method,
+                     notes=excluded.notes, updated_at=excluded.updated_at,
+                     deleted=excluded.deleted""",
+                (receipt.id, receipt.transaction_id, receipt.date,
+                 receipt.vendor, receipt.category, receipt.currency,
+                 receipt.subtotal, receipt.tax, receipt.total,
+                 receipt.payment_method, receipt.notes,
+                 receipt.updated_at, int(receipt.deleted)),
+            )
+
+            # Items: wipe and re-insert. Receipts are small and this keeps
+            # the implementation honest about line-item identity.
+            conn.execute("DELETE FROM receipt_items WHERE receipt_id=?",
+                         (receipt.id,))
+            for i, item in enumerate(items):
+                if not item.id:
+                    item.id = str(uuid.uuid4())
+                item.receipt_id = receipt.id
+                if not item.sort_order:
+                    item.sort_order = i
+                conn.execute(
+                    """INSERT INTO receipt_items
+                       (id, receipt_id, item_id, name, qty, unit_price,
+                        line_total, notes, sort_order)
+                       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+                    (item.id, item.receipt_id, item.item_id or "",
+                     item.name, float(item.qty), float(item.unit_price),
+                     float(item.line_total), item.notes or "",
+                     int(item.sort_order)),
+                )
+            conn.commit()
+        finally:
+            conn.close()
+
+        # Update catalogue stats outside of the transaction; failures here
+        # must not roll back the receipt write. Recompute for both current
+        # items and any that were dropped by this edit so removed instances
+        # stop appearing in last_price / times_seen.
+        new_norms: set[str] = set()
+        for item in items:
+            if (item.name or "").strip() and item.unit_price > 0:
+                self._upsert_item_stats(
+                    name=item.name,
+                    price=float(item.unit_price),
+                    currency=receipt.currency,
+                    seen_date=receipt.date,
+                    category=receipt.category,
+                )
+                new_norms.add(_normalize(item.name))
+        for old_name in prev_names:
+            old_norm = _normalize(old_name)
+            if old_norm and old_norm not in new_norms:
+                conn2 = get_connection()
+                try:
+                    self._recompute_item_stats(conn2, old_norm)
+                finally:
+                    conn2.close()
+
+        # Mirror into the transactions ledger
+        self._sync_transaction_for_receipt(receipt)
+
+        receipt.items = items
+        return receipt
+
+    def get_receipt(self, receipt_id: str) -> Receipt | None:
+        conn = get_connection()
+        try:
+            row = conn.execute(
+                "SELECT * FROM receipts WHERE id=? AND deleted=0",
+                (receipt_id,),
+            ).fetchone()
+            if not row:
+                return None
+            r = self._row_to_receipt(row)
+            r.items = self._items_for(conn, receipt_id)
+            return r
+        finally:
+            conn.close()
+
+    def get_receipts(self, start: str | None = None, end: str | None = None,
+                     category: str | None = None,
+                     vendor_query: str | None = None,
+                     ) -> list[Receipt]:
+        q = "SELECT * FROM receipts WHERE deleted=0"
+        params: list = []
+        if start:
+            q += " AND date >= ?"; params.append(start)
+        if end:
+            q += " AND date <= ?"; params.append(end)
+        if category and category != "All":
+            q += " AND category = ?"; params.append(category)
+        if vendor_query:
+            q += " AND lower(vendor) LIKE ?"; params.append(f"%{vendor_query.lower()}%")
+        q += " ORDER BY date DESC, updated_at DESC"
+        conn = get_connection()
+        try:
+            rows = conn.execute(q, params).fetchall()
+            results: list[Receipt] = []
+            for row in rows:
+                r = self._row_to_receipt(row)
+                r.items = self._items_for(conn, r.id)
+                results.append(r)
+            return results
+        finally:
+            conn.close()
+
+    def delete_receipt(self, receipt_id: str) -> None:
+        """Soft-delete the receipt and its linked transaction."""
+        rec = self.get_receipt(receipt_id)
+        conn = get_connection()
+        try:
+            conn.execute(
+                "UPDATE receipts SET deleted=1, updated_at=? WHERE id=?",
+                (now_utc(), receipt_id),
+            )
+            conn.commit()
+        finally:
+            conn.close()
+        if rec and rec.transaction_id:
+            self._fs.delete_transaction(rec.transaction_id)
+
+        # Recompute catalogue stats for every item that was on this receipt
+        # so deleted instances stop showing up in last_price / times_seen.
+        if rec:
+            seen: set[str] = set()
+            for it in rec.items:
+                norm = _normalize(it.name)
+                if norm and norm not in seen:
+                    seen.add(norm)
+                    conn2 = get_connection()
+                    try:
+                        self._recompute_item_stats(conn2, norm)
+                    finally:
+                        conn2.close()
+
+    def _sync_transaction_for_receipt(self, receipt: Receipt) -> None:
+        """Create or update the ledger row that represents this receipt."""
+        desc = f"[Receipt] {receipt.vendor or receipt.category}"
+        if receipt.transaction_id:
+            txns = [t for t in self._fs.get_transactions()
+                    if t.id == receipt.transaction_id]
+            if txns:
+                t = txns[0]
+                t.date        = receipt.date
+                t.amount      = float(receipt.total)
+                t.type        = "expense"
+                t.category    = receipt.category
+                t.description = desc
+                t.currency    = receipt.currency
+                t.is_job_pay  = False
+                self._fs.update_transaction(t)
+                # Stamp receipt_id on the row (FinanceStore doesn't carry it
+                # in the dataclass but we set it directly here).
+                conn = get_connection()
+                try:
+                    conn.execute(
+                        "UPDATE transactions SET receipt_id=? WHERE id=?",
+                        (receipt.id, t.id),
+                    )
+                    conn.commit()
+                finally:
+                    conn.close()
+                return
+
+        # No linked transaction yet — create one
+        new_txn = self._fs.add_transaction(
+            date=receipt.date,
+            amount=float(receipt.total),
+            txn_type="expense",
+            category=receipt.category,
+            description=desc,
+            currency=receipt.currency,
+            is_job_pay=False,
+        )
+        # Patch the receipt row with the linkage and tag the txn with the receipt
+        conn = get_connection()
+        try:
+            conn.execute(
+                "UPDATE receipts SET transaction_id=? WHERE id=?",
+                (new_txn.id, receipt.id),
+            )
+            conn.execute(
+                "UPDATE transactions SET receipt_id=? WHERE id=?",
+                (receipt.id, new_txn.id),
+            )
+            conn.commit()
+        finally:
+            conn.close()
+        receipt.transaction_id = new_txn.id
+
+    @staticmethod
+    def _row_to_receipt(row) -> Receipt:
+        return Receipt(
+            id=row["id"], date=row["date"],
+            vendor=row["vendor"] or "",
+            category=row["category"] or "Other",
+            currency=row["currency"] or "JPY",
+            subtotal=row["subtotal"] or 0.0,
+            tax=row["tax"] or 0.0,
+            total=row["total"] or 0.0,
+            payment_method=row["payment_method"] or "cash",
+            notes=row["notes"] or "",
+            transaction_id=row["transaction_id"] or "",
+            updated_at=row["updated_at"] or "",
+            deleted=bool(row["deleted"]),
+        )
+
+    @staticmethod
+    def _items_for(conn, receipt_id: str) -> list[ReceiptItem]:
+        rows = conn.execute(
+            "SELECT * FROM receipt_items WHERE receipt_id=? "
+            "ORDER BY sort_order ASC, rowid ASC",
+            (receipt_id,),
+        ).fetchall()
+        return [ReceiptItem(
+            id=r["id"], receipt_id=r["receipt_id"],
+            item_id=r["item_id"] or "",
+            name=r["name"], qty=r["qty"], unit_price=r["unit_price"],
+            line_total=r["line_total"], notes=r["notes"] or "",
+            sort_order=r["sort_order"] or 0,
+        ) for r in rows]
+
+    # ── Item catalogue ────────────────────────────────────────────────────────
+
+    def search_items(self, query: str, limit: int = 12) -> list[ExpenseItem]:
+        """Fuzzy-match items by normalized name. Empty query returns
+        the most-frequently-seen items."""
+        conn = get_connection()
+        try:
+            if not query.strip():
+                rows = conn.execute(
+                    "SELECT * FROM expense_items WHERE deleted=0 "
+                    "ORDER BY times_seen DESC, last_seen_date DESC LIMIT ?",
+                    (limit,),
+                ).fetchall()
+            else:
+                norm = _normalize(query)
+                rows = conn.execute(
+                    "SELECT * FROM expense_items WHERE deleted=0 "
+                    "AND normalized_name LIKE ? "
+                    "ORDER BY times_seen DESC, last_seen_date DESC LIMIT ?",
+                    (f"%{norm}%", limit),
+                ).fetchall()
+            return [self._row_to_item(r) for r in rows]
+        finally:
+            conn.close()
+
+    def get_all_items(self, sort_by: str = "name") -> list[ExpenseItem]:
+        order = {
+            "name":    "name COLLATE NOCASE ASC",
+            "price":   "last_price DESC",
+            "seen":    "times_seen DESC",
+            "recent":  "last_seen_date DESC",
+        }.get(sort_by, "name COLLATE NOCASE ASC")
+        conn = get_connection()
+        try:
+            rows = conn.execute(
+                f"SELECT * FROM expense_items WHERE deleted=0 ORDER BY {order}"
+            ).fetchall()
+            return [self._row_to_item(r) for r in rows]
+        finally:
+            conn.close()
+
+    def delete_item(self, item_id: str) -> None:
+        conn = get_connection()
+        try:
+            conn.execute(
+                "UPDATE expense_items SET deleted=1, updated_at=? WHERE id=?",
+                (now_utc(), item_id),
+            )
+            conn.commit()
+        finally:
+            conn.close()
+
+    def _upsert_item_stats(self, name: str, price: float, currency: str,
+                           seen_date: str, category: str = "") -> None:
+        """Insert or recompute stats for `name` after a receipt write.
+
+        All aggregate stats are derived by exact-normalized match against
+        the actual receipt_items rows so editing a receipt cannot inflate
+        the counter, and items whose receipts were all deleted will report
+        zero observable instances.
+        """
+        norm = _normalize(name)
+        if not norm:
+            return
+        conn = get_connection()
+        try:
+            row = conn.execute(
+                "SELECT * FROM expense_items WHERE normalized_name=? AND deleted=0",
+                (norm,),
+            ).fetchone()
+            if row is None:
+                conn.execute(
+                    """INSERT INTO expense_items
+                       (id, name, normalized_name, category, last_price,
+                        last_currency, last_seen_date, times_seen,
+                        avg_price, min_price, max_price, updated_at, deleted)
+                       VALUES (?, ?, ?, ?, 0, ?, '', 0, 0, 0, 0, ?, 0)""",
+                    (str(uuid.uuid4()), name.strip(), norm, category,
+                     currency, now_utc()),
+                )
+                conn.commit()
+            self._recompute_item_stats(conn, norm, fallback_category=category)
+        finally:
+            conn.close()
+
+    def _recompute_item_stats(self, conn, norm: str,
+                              fallback_category: str = "") -> None:
+        """Recompute every catalogue stat for `norm` from receipt_items
+        whose normalized name equals `norm`. Iterates in Python so the
+        match is exact rather than substring-based."""
+        rows = conn.execute(
+            """SELECT ri.name, ri.unit_price, r.currency, r.date,
+                      r.updated_at AS r_updated
+               FROM receipt_items ri
+               JOIN receipts r ON ri.receipt_id = r.id
+               WHERE r.deleted = 0"""
+        ).fetchall()
+        matches = [r for r in rows if _normalize(r["name"]) == norm]
+        now = now_utc()
+
+        if not matches:
+            conn.execute(
+                """UPDATE expense_items SET
+                     last_price=0, last_seen_date='',
+                     times_seen=0, avg_price=0, min_price=0, max_price=0,
+                     updated_at=?
+                   WHERE normalized_name=? AND deleted=0""",
+                (now, norm),
+            )
+            conn.commit()
+            return
+
+        prices = [float(r["unit_price"] or 0.0) for r in matches]
+        cnt    = len(matches)
+        avg_p  = sum(prices) / cnt if cnt else 0.0
+        min_p  = min(prices) if prices else 0.0
+        max_p  = max(prices) if prices else 0.0
+        latest = max(matches, key=lambda r: (r["date"] or "", r["r_updated"] or ""))
+        l_price = float(latest["unit_price"] or 0.0)
+        l_cur   = latest["currency"] or "JPY"
+        l_date  = latest["date"] or ""
+
+        conn.execute(
+            """UPDATE expense_items SET
+                 last_price=?, last_currency=?, last_seen_date=?,
+                 times_seen=?, avg_price=?, min_price=?, max_price=?,
+                 category=COALESCE(NULLIF(category,''), ?),
+                 updated_at=?
+               WHERE normalized_name=? AND deleted=0""",
+            (l_price, l_cur, l_date, cnt, avg_p, min_p, max_p,
+             fallback_category, now, norm),
+        )
+        conn.commit()
+
+    @staticmethod
+    def _row_to_item(row) -> ExpenseItem:
+        return ExpenseItem(
+            id=row["id"], name=row["name"],
+            normalized_name=row["normalized_name"],
+            category=row["category"] or "",
+            last_price=row["last_price"] or 0.0,
+            last_currency=row["last_currency"] or "JPY",
+            last_seen_date=row["last_seen_date"] or "",
+            times_seen=row["times_seen"] or 0,
+            avg_price=row["avg_price"] or 0.0,
+            min_price=row["min_price"] or 0.0,
+            max_price=row["max_price"] or 0.0,
+            updated_at=row["updated_at"] or "",
+            deleted=bool(row["deleted"]),
+        )
+
+    def get_item_vendor_stats(self, item_name: str) -> list[dict]:
+        """Per-vendor price stats for an item, derived from receipt line items."""
+        norm = _normalize(item_name)
+        if not norm:
+            return []
+        conn = get_connection()
+        try:
+            rows = conn.execute(
+                """SELECT ri.name, r.vendor, r.currency, ri.unit_price, r.date
+                   FROM receipt_items ri
+                   JOIN receipts r ON ri.receipt_id = r.id
+                   WHERE r.deleted = 0"""
+            ).fetchall()
+        finally:
+            conn.close()
+
+        # Group by (vendor, currency) on exact-normalized name match
+        groups: dict[tuple, dict] = {}
+        for r in rows:
+            if _normalize(r["name"]) != norm:
+                continue
+            key = (r["vendor"] or "Unknown", r["currency"] or "JPY")
+            g = groups.setdefault(key, {
+                "vendor": key[0], "currency": key[1],
+                "prices": [], "dates": [],
+            })
+            g["prices"].append(float(r["unit_price"] or 0.0))
+            g["dates"].append(r["date"] or "")
+
+        result = []
+        for g in sorted(groups.values(), key=lambda x: -len(x["prices"])):
+            prices = g["prices"]
+            result.append({
+                "vendor":     g["vendor"],
+                "currency":   g["currency"],
+                "times_seen": len(prices),
+                "min_price":  min(prices) if prices else 0.0,
+                "max_price":  max(prices) if prices else 0.0,
+                "avg_price":  sum(prices) / len(prices) if prices else 0.0,
+                "last_date":  max(g["dates"]) if g["dates"] else "",
+            })
+        return result
+
+    def get_item_all_prices(self, item_name: str) -> list[dict]:
+        """All individual purchase records for an item, grouped by vendor.
+
+        Returns a list of dicts with keys: vendor, currency, prices (list of
+        floats), dates (list of str), min_price, max_price, avg_price, times_seen,
+        last_date.  Suitable for populating the expandable tree rows in the
+        catalogue UI.
+        """
+        norm = _normalize(item_name)
+        if not norm:
+            return []
+        conn = get_connection()
+        try:
+            rows = conn.execute(
+                """SELECT ri.name, r.vendor, r.currency, ri.unit_price, r.date
+                   FROM receipt_items ri
+                   JOIN receipts r ON ri.receipt_id = r.id
+                   WHERE r.deleted = 0
+                   ORDER BY r.vendor, r.date""",
+            ).fetchall()
+        finally:
+            conn.close()
+
+        # Group by (vendor, currency) using exact-normalized name match
+        groups: dict[tuple, dict] = {}
+        for r in rows:
+            if _normalize(r["name"]) != norm:
+                continue
+            key = (r["vendor"] or "Unknown", r["currency"] or "JPY")
+            if key not in groups:
+                groups[key] = {
+                    "vendor":   key[0],
+                    "currency": key[1],
+                    "prices":   [],
+                    "dates":    [],
+                }
+            groups[key]["prices"].append(r["unit_price"] or 0.0)
+            groups[key]["dates"].append(r["date"] or "")
+
+        result = []
+        for g in sorted(groups.values(), key=lambda x: (-len(x["prices"]), x["vendor"])):
+            prices = g["prices"]
+            result.append({
+                "vendor":     g["vendor"],
+                "currency":   g["currency"],
+                "prices":     prices,
+                "dates":      g["dates"],
+                "times_seen": len(prices),
+                "min_price":  min(prices) if prices else 0.0,
+                "max_price":  max(prices) if prices else 0.0,
+                "avg_price":  sum(prices) / len(prices) if prices else 0.0,
+                "last_date":  max(g["dates"]) if g["dates"] else "",
+            })
+        return result
+
+    # ── Aggregates ────────────────────────────────────────────────────────────
+
+    def summary(self, start: str, end: str,
+                rate: float = 150.0) -> dict:
+        """Period summary across both receipt and standalone expenses."""
+        txns = [t for t in self._fs.get_transactions(start, end, "expense")]
+        total_usd = 0.0
+        by_cat: dict[str, float] = {}
+        for t in txns:
+            usd = t.amount / rate if t.currency == "JPY" else t.amount
+            total_usd += usd
+            by_cat[t.category] = by_cat.get(t.category, 0.0) + usd
+        return {
+            "total_usd": total_usd,
+            "by_category": by_cat,
+            "count": len(txns),
+        }
+
+```
+
+### `src\data\finance_store.py`
+
+```python
+"""Financial/earnings storage backed by SQLite."""
+
+import calendar as _calendar
+import uuid
+from dataclasses import dataclass
+from datetime import date as _date
+
+from src.data.database import get_connection
+from src.utils.timestamps import now_utc
+
+
+INCOME_CATEGORIES = ["Main Job", "Side Job"]
+
+EXPENSE_CATEGORIES = [
+    "Rent / Housing",
+    "Software / Tools",
+    "Hardware",
+    "Office Supplies",
+    "Travel",
+    "Education",
+    "Food & Drink",
+    "Subscriptions",
+    "Utilities",
+    "Taxes",
+    "Fees & Banking",
+    "Uncategorized",
+]
+
+DEFAULT_CATEGORIES = INCOME_CATEGORIES + EXPENSE_CATEGORIES
+
+
+@dataclass
+class Transaction:
+    id: str
+    date: str
+    amount: float
+    type: str
+    category: str = "Side Job"
+    description: str = ""
+    updated_at: str = ""
+    deleted: bool = False
+    currency: str = "USD"
+    is_job_pay: bool = False
+
+
+@dataclass
+class JobPreset:
+    id: str
+    name: str
+    amount_usd: float
+    category: str = "Main Job"
+    updated_at: str = ""
+    deleted: bool = False
+    # pay_unit: "flat" (single payment), "hour" (rate × hours), "minute" (rate × minutes)
+    pay_unit: str = "flat"
+
+
+PAY_UNITS = ("flat", "hour", "minute")
+
+
+@dataclass
+class SideIncomeGoal:
+    id: str
+    year: int
+    month: int
+    min_goal: float
+    major_goal: float
+    updated_at: str = ""
+
+
+class FinanceStore:
+
+    # ── Transactions ──────────────────────────────────────────────────────────
+
+    def add_transaction(self, date: str, amount: float, txn_type: str,
+                        category: str = "Side Job", description: str = "",
+                        currency: str = "USD", is_job_pay: bool = False) -> Transaction:
+        txn = Transaction(
+            id=str(uuid.uuid4()),
+            date=date, amount=amount, type=txn_type,
+            category=category, description=description,
+            updated_at=now_utc(), currency=currency, is_job_pay=is_job_pay,
+        )
+        self._upsert(txn)
+        return txn
+
+    def update_transaction(self, txn: Transaction) -> Transaction:
+        txn.updated_at = now_utc()
+        self._upsert(txn)
+        return txn
+
+    def delete_transaction(self, txn_id: str):
+        conn = get_connection()
+        try:
+            conn.execute(
+                "UPDATE transactions SET deleted=1, updated_at=? WHERE id=?",
+                (now_utc(), txn_id),
+            )
+            conn.commit()
+        finally:
+            conn.close()
+
+    def get_transactions(self, start_date: str | None = None,
+                         end_date: str | None = None,
+                         txn_type: str | None = None) -> list[Transaction]:
+        conn = get_connection()
+        try:
+            query = "SELECT * FROM transactions WHERE deleted=0"
+            params: list = []
+            if start_date:
+                query += " AND date >= ?"; params.append(start_date)
+            if end_date:
+                query += " AND date <= ?"; params.append(end_date)
+            if txn_type:
+                query += " AND type = ?"; params.append(txn_type)
+            query += " ORDER BY date DESC"
+            rows = conn.execute(query, params).fetchall()
+            return [self._row_to_txn(r) for r in rows]
+        finally:
+            conn.close()
+
+    def has_monthly_tag(self, year: int, month: int) -> bool:
+        """Return True if any [Monthly] tagged expense exists for this month."""
+        import calendar as _cal
+        last_day = _cal.monthrange(year, month)[1]
+        first = _date(year, month, 1).isoformat()
+        last  = _date(year, month, last_day).isoformat()
+        conn = get_connection()
+        try:
+            row = conn.execute(
+                "SELECT COUNT(*) as cnt FROM transactions "
+                "WHERE deleted=0 AND type='expense' "
+                "AND description LIKE '[Monthly]%' "
+                "AND date >= ? AND date <= ?",
+                (first, last),
+            ).fetchone()
+            return row["cnt"] > 0
+        finally:
+            conn.close()
+
+    def get_summary(self, start_date: str | None = None,
+                    end_date: str | None = None) -> dict:
+        txns = self.get_transactions(start_date, end_date)
+        earned = sum(t.amount for t in txns if t.type == "income")
+        spent  = sum(t.amount for t in txns if t.type == "expense")
+        by_category: dict[str, float] = {}
+        for t in txns:
+            by_category[t.category] = by_category.get(t.category, 0) + t.amount
+        return {"earned": earned, "spent": spent, "net": earned - spent,
+                "by_category": by_category, "count": len(txns)}
+
+    def get_goal_income(self, start_date: str, end_date: str,
+                        usd_jpy_rate: float = 150.0) -> float:
+        conn = get_connection()
+        try:
+            rows = conn.execute(
+                "SELECT amount, currency FROM transactions "
+                "WHERE deleted=0 AND type='income' AND is_job_pay=0 "
+                "AND date >= ? AND date <= ?",
+                (start_date, end_date),
+            ).fetchall()
+        finally:
+            conn.close()
+        total = 0.0
+        for r in rows:
+            total += r["amount"] / usd_jpy_rate if r["currency"] == "JPY" else r["amount"]
+        return total
+
+    def get_period_income_usd(self, start_date: str, end_date: str,
+                              usd_jpy_rate: float = 150.0) -> float:
+        """All income (side + main job) for a date range, normalized to USD."""
+        conn = get_connection()
+        try:
+            rows = conn.execute(
+                "SELECT amount, currency FROM transactions "
+                "WHERE deleted=0 AND type='income' "
+                "AND date >= ? AND date <= ?",
+                (start_date, end_date),
+            ).fetchall()
+        finally:
+            conn.close()
+        total = 0.0
+        for r in rows:
+            total += r["amount"] / usd_jpy_rate if r["currency"] == "JPY" else r["amount"]
+        return total
+
+    def get_side_income(self, year: int, month: int,
+                        usd_jpy_rate: float = 150.0) -> float:
+        last_day = _calendar.monthrange(year, month)[1]
+        return self.get_goal_income(
+            _date(year, month, 1).isoformat(),
+            _date(year, month, last_day).isoformat(),
+            usd_jpy_rate,
+        )
+
+    def get_all_time_earned_usd(self, usd_jpy_rate: float = 150.0) -> float:
+        conn = get_connection()
+        try:
+            rows = conn.execute(
+                "SELECT amount, currency FROM transactions WHERE deleted=0 AND type='income'"
+            ).fetchall()
+        finally:
+            conn.close()
+        total = 0.0
+        for r in rows:
+            total += r["amount"] / usd_jpy_rate if r["currency"] == "JPY" else r["amount"]
+        return total
+
+    def _upsert(self, txn: Transaction):
+        conn = get_connection()
+        try:
+            conn.execute(
+                """INSERT INTO transactions
+                   (id, date, amount, type, category, description,
+                    updated_at, deleted, currency, is_job_pay)
+                   VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                   ON CONFLICT(id) DO UPDATE SET
+                   date=excluded.date, amount=excluded.amount, type=excluded.type,
+                   category=excluded.category, description=excluded.description,
+                   updated_at=excluded.updated_at, deleted=excluded.deleted,
+                   currency=excluded.currency, is_job_pay=excluded.is_job_pay""",
+                (txn.id, txn.date, txn.amount, txn.type, txn.category,
+                 txn.description, txn.updated_at, int(txn.deleted),
+                 txn.currency, int(txn.is_job_pay)),
+            )
+            conn.commit()
+        finally:
+            conn.close()
+
+    @staticmethod
+    def _row_to_txn(row) -> Transaction:
+        return Transaction(
+            id=row["id"], date=row["date"], amount=row["amount"],
+            type=row["type"], category=row["category"],
+            description=row["description"], updated_at=row["updated_at"],
+            deleted=bool(row["deleted"]),
+            currency=row["currency"] if row["currency"] else "USD",
+            is_job_pay=bool(row["is_job_pay"]),
+        )
+
+    # ── Job Presets ───────────────────────────────────────────────────────────
+
+    def get_presets(self) -> list[JobPreset]:
+        conn = get_connection()
+        try:
+            rows = conn.execute(
+                "SELECT * FROM job_presets WHERE deleted=0 ORDER BY name"
+            ).fetchall()
+            return [self._row_to_preset(r) for r in rows]
+        finally:
+            conn.close()
+
+    def add_preset(self, name: str, amount_usd: float,
+                   category: str = "Main Job",
+                   pay_unit: str = "flat") -> JobPreset:
+        preset = JobPreset(id=str(uuid.uuid4()), name=name,
+                           amount_usd=amount_usd, category=category,
+                           updated_at=now_utc(),
+                           pay_unit=pay_unit if pay_unit in PAY_UNITS else "flat")
+        self._upsert_preset(preset)
+        return preset
+
+    def update_preset(self, preset: JobPreset) -> JobPreset:
+        preset.updated_at = now_utc()
+        self._upsert_preset(preset)
+        return preset
+
+    def delete_preset(self, preset_id: str):
+        conn = get_connection()
+        try:
+            conn.execute(
+                "UPDATE job_presets SET deleted=1, updated_at=? WHERE id=?",
+                (now_utc(), preset_id),
+            )
+            conn.commit()
+        finally:
+            conn.close()
+
+    def log_preset(self, preset: JobPreset, count: int = 1,
+                   units: float = 1.0,
+                   on_date: str | None = None) -> list[Transaction]:
+        """Log a preset as income.
+
+        For "flat" presets the amount is preset.amount_usd × count.
+        For "hour"/"minute" presets it is preset.amount_usd × units (count
+        is treated as 1 to avoid double-multiplication).
+        """
+        day = on_date or _date.today().isoformat()
+        is_job_pay = (preset.category == "Main Job")
+        unit = (preset.pay_unit or "flat").lower()
+
+        if unit == "hour":
+            amount = preset.amount_usd * float(units)
+            desc   = f"[Job] {preset.name} ({units:g}h @ ${preset.amount_usd:,.2f}/hr)"
+            n_logs = 1
+        elif unit == "minute":
+            amount = preset.amount_usd * float(units)
+            desc   = f"[Job] {preset.name} ({units:g}m @ ${preset.amount_usd:,.2f}/min)"
+            n_logs = 1
+        else:
+            amount = preset.amount_usd
+            desc   = f"[Job] {preset.name}"
+            n_logs = max(int(count), 1)
+
+        txns = []
+        for _ in range(n_logs):
+            txns.append(self.add_transaction(
+                date=day,
+                amount=amount,
+                txn_type="income",
+                category=preset.category,
+                description=desc,
+                currency="USD",
+                is_job_pay=is_job_pay,
+            ))
+        return txns
+
+    def _upsert_preset(self, preset: JobPreset):
+        conn = get_connection()
+        try:
+            conn.execute(
+                """INSERT INTO job_presets
+                   (id, name, amount_usd, category, updated_at, deleted, pay_unit)
+                   VALUES (?, ?, ?, ?, ?, ?, ?)
+                   ON CONFLICT(id) DO UPDATE SET
+                   name=excluded.name, amount_usd=excluded.amount_usd,
+                   category=excluded.category, updated_at=excluded.updated_at,
+                   deleted=excluded.deleted, pay_unit=excluded.pay_unit""",
+                (preset.id, preset.name, preset.amount_usd,
+                 preset.category, preset.updated_at, int(preset.deleted),
+                 preset.pay_unit or "flat"),
+            )
+            conn.commit()
+        finally:
+            conn.close()
+
+    @staticmethod
+    def _row_to_preset(row) -> JobPreset:
+        # pay_unit may be missing from rows on databases predating the migration
+        try:
+            unit = row["pay_unit"] or "flat"
+        except (IndexError, KeyError):
+            unit = "flat"
+        return JobPreset(
+            id=row["id"], name=row["name"], amount_usd=row["amount_usd"],
+            category=row["category"], updated_at=row["updated_at"],
+            deleted=bool(row["deleted"]),
+            pay_unit=unit if unit in PAY_UNITS else "flat",
+        )
+
+    # ── Side Income Goals ─────────────────────────────────────────────────────
+
+    def get_goal(self, year: int, month: int) -> SideIncomeGoal | None:
+        conn = get_connection()
+        try:
+            row = conn.execute(
+                "SELECT * FROM side_income_goals WHERE year=? AND month=?",
+                (year, month),
+            ).fetchone()
+            return self._row_to_goal(row) if row else None
+        finally:
+            conn.close()
+
+    def set_goal(self, year: int, month: int,
+                 min_goal: float, major_goal: float) -> SideIncomeGoal:
+        conn = get_connection()
+        now = now_utc()
+        try:
+            existing = conn.execute(
+                "SELECT id FROM side_income_goals WHERE year=? AND month=?",
+                (year, month),
+            ).fetchone()
+            goal_id = existing["id"] if existing else str(uuid.uuid4())
+            conn.execute(
+                """INSERT INTO side_income_goals
+                   (id, year, month, min_goal, major_goal, updated_at)
+                   VALUES (?, ?, ?, ?, ?, ?)
+                   ON CONFLICT(year, month) DO UPDATE SET
+                   min_goal=excluded.min_goal, major_goal=excluded.major_goal,
+                   updated_at=excluded.updated_at""",
+                (goal_id, year, month, min_goal, major_goal, now),
+            )
+            conn.commit()
+        finally:
+            conn.close()
+        return SideIncomeGoal(id=goal_id, year=year, month=month,
+                              min_goal=min_goal, major_goal=major_goal,
+                              updated_at=now)
+
+    @staticmethod
+    def _row_to_goal(row) -> SideIncomeGoal:
+        return SideIncomeGoal(
+            id=row["id"], year=row["year"], month=row["month"],
+            min_goal=row["min_goal"], major_goal=row["major_goal"],
+            updated_at=row["updated_at"],
+        )
+```
+
+### `src\data\holidays_jp.py`
+
+```python
+"""Japanese national holidays calculator.
+
+Covers all 16 national holidays defined by Japanese law, including
+substitute holidays (振替休日) and special rules for vernal/autumnal equinox.
+"""
+
+from datetime import date, timedelta
+
+
+def _vernal_equinox_day(year: int) -> int:
+    """Approximate day of vernal equinox (春分の日) for a given year."""
+    if year <= 1947:
+        return 21
+    if year <= 1979:
+        return int(20.8357 + 0.242194 * (year - 1980) - int((year - 1983) / 4))
+    if year <= 2099:
+        return int(20.8431 + 0.242194 * (year - 1980) - int((year - 1980) / 4))
+    return 21
+
+
+def _autumnal_equinox_day(year: int) -> int:
+    """Approximate day of autumnal equinox (秋分の日) for a given year."""
+    if year <= 1947:
+        return 23
+    if year <= 1979:
+        return int(23.2588 + 0.242194 * (year - 1980) - int((year - 1983) / 4))
+    if year <= 2099:
+        return int(23.2488 + 0.242194 * (year - 1980) - int((year - 1980) / 4))
+    return 23
+
+
+def _monday_of_week(year: int, month: int, nth: int) -> date:
+    """Return the nth Monday of a given month (1-indexed)."""
+    first = date(year, month, 1)
+    # Days until first Monday
+    offset = (7 - first.weekday()) % 7
+    first_monday = first + timedelta(days=offset)
+    return first_monday + timedelta(weeks=nth - 1)
+
+
+def get_japanese_holidays(year: int) -> dict[date, str]:
+    """Return a dict mapping date -> holiday name for a given year.
+
+    All holiday names are provided in English with Japanese in parentheses.
+    """
+    holidays: dict[date, str] = {}
+
+    # Fixed-date holidays
+    holidays[date(year, 1, 1)] = "New Year's Day (元日)"
+    holidays[date(year, 2, 11)] = "National Foundation Day (建国記念の日)"
+    holidays[date(year, 2, 23)] = "Emperor's Birthday (天皇誕生日)"
+    holidays[date(year, 4, 29)] = "Shōwa Day (昭和の日)"
+    holidays[date(year, 5, 3)] = "Constitution Memorial Day (憲法記念日)"
+    holidays[date(year, 5, 4)] = "Greenery Day (みどりの日)"
+    holidays[date(year, 5, 5)] = "Children's Day (こどもの日)"
+    holidays[date(year, 8, 11)] = "Mountain Day (山の日)"
+    holidays[date(year, 11, 3)] = "Culture Day (文化の日)"
+    holidays[date(year, 11, 23)] = "Labour Thanksgiving Day (勤労感謝の日)"
+
+    # Happy Monday holidays (moved to specific Mondays)
+    holidays[_monday_of_week(year, 1, 2)] = "Coming of Age Day (成人の日)"
+    holidays[_monday_of_week(year, 7, 3)] = "Marine Day (海の日)"
+    holidays[_monday_of_week(year, 9, 3)] = "Respect for the Aged Day (敬老の日)"
+    holidays[_monday_of_week(year, 10, 2)] = "Sports Day (スポーツの日)"
+
+    # Equinox days
+    ve_day = _vernal_equinox_day(year)
+    holidays[date(year, 3, ve_day)] = "Vernal Equinox Day (春分の日)"
+
+    ae_day = _autumnal_equinox_day(year)
+    holidays[date(year, 9, ae_day)] = "Autumnal Equinox Day (秋分の日)"
+
+    # Substitute holidays (振替休日):
+    # If a holiday falls on Sunday, the next non-holiday weekday is a holiday.
+    substitute: dict[date, str] = {}
+    for d, name in sorted(holidays.items()):
+        if d.weekday() == 6:  # Sunday
+            sub = d + timedelta(days=1)
+            while sub in holidays or sub in substitute:
+                sub += timedelta(days=1)
+            substitute[sub] = f"Substitute Holiday ({name})"
+
+    holidays.update(substitute)
+
+    # Citizen's Holiday (国民の休日):
+    # If a day is sandwiched between two holidays, it becomes a holiday.
+    all_dates = sorted(holidays.keys())
+    for i in range(len(all_dates) - 1):
+        d1, d2 = all_dates[i], all_dates[i + 1]
+        if (d2 - d1).days == 2:
+            between = d1 + timedelta(days=1)
+            if between not in holidays and between.weekday() != 6:
+                holidays[between] = "Citizen's Holiday (国民の休日)"
+
+    return holidays
+
+
+def is_japanese_holiday(d: date) -> str | None:
+    """Return holiday name if the date is a Japanese national holiday, else None."""
+    holidays = get_japanese_holidays(d.year)
+    return holidays.get(d)
+
+```
+
+### `src\data\journey_store.py`
+
+```python
+"""Journey store — CRUD for journeys, steps, and council session records."""
+
+from __future__ import annotations
+
+import json
+import uuid
+from dataclasses import dataclass, field
+from typing import Optional
+
+from src.data.database import get_connection
+from src.utils.timestamps import now_utc
+
+JOURNEY_DOMAINS = [
+    "Coding", "Language Learning", "Creative",
+    "Business / Freelance", "Health & Fitness", "Academic", "General",
+]
+
+DOMAIN_COLORS = {
+    "Coding":              "#89b4fa",
+    "Language Learning":   "#a6e3a1",
+    "Creative":            "#f5c2e7",
+    "Business / Freelance":"#fab387",
+    "Health & Fitness":    "#94e2d5",
+    "Academic":            "#cba6f7",
+    "General":             "#89dceb",
+}
+
+
+@dataclass
+class RoadmapStep:
+    number:      int
+    title:       str
+    description: str
+    objectives:  list[str] = field(default_factory=list)
+    is_detour:   bool      = False   # True = step not in original plan
+    branch_from: Optional[int] = None  # parent step number for detours
+
+
+@dataclass
+class Roadmap:
+    overview: str
+    steps:    list[RoadmapStep] = field(default_factory=list)
+
+    @classmethod
+    def from_json(cls, raw: str) -> "Roadmap":
+        try:
+            data = json.loads(raw or "{}")
+            steps = [
+                RoadmapStep(
+                    number=s.get("number", i + 1),
+                    title=s.get("title", ""),
+                    description=s.get("description", ""),
+                    objectives=s.get("objectives", []),
+                    is_detour=bool(s.get("is_detour", False)),
+                    branch_from=s.get("branch_from"),
+                )
+                for i, s in enumerate(data.get("steps", []))
+            ]
+            return cls(overview=data.get("overview", ""), steps=steps)
+        except Exception:
+            return cls(overview="")
+
+    def to_json(self) -> str:
+        return json.dumps({
+            "overview": self.overview,
+            "steps": [
+                {
+                    "number":      s.number,
+                    "title":       s.title,
+                    "description": s.description,
+                    "objectives":  s.objectives,
+                    "is_detour":   s.is_detour,
+                    "branch_from": s.branch_from,
+                }
+                for s in self.steps
+            ],
+        })
+
+    def add_detour_step(self, title: str, description: str,
+                        branch_from: Optional[int] = None) -> RoadmapStep:
+        """Append a detour step to the roadmap and return it."""
+        next_num = (max(s.number for s in self.steps) + 1) if self.steps else 1
+        rs = RoadmapStep(
+            number=next_num, title=title, description=description,
+            is_detour=True, branch_from=branch_from,
+        )
+        self.steps.append(rs)
+        return rs
+
+    def get_step_by_title(self, title: str) -> Optional[RoadmapStep]:
+        t = title.strip().lower()
+        for s in self.steps:
+            if s.title.strip().lower() == t:
+                return s
+        return None
+
+
+@dataclass
+class Journey:
+    id:                 str
+    title:              str
+    goal_description:   str
+    domain:             str
+    status:             str
+    web_search_enabled: bool
+    created_at:         str
+    updated_at:         str
+    step_count:         int = 0
+    completed_steps:    int = 0
+    roadmap_json:       str = ""
+
+    @property
+    def roadmap(self) -> Roadmap:
+        return Roadmap.from_json(self.roadmap_json)
+
+    @property
+    def progress_pct(self) -> float:
+        return self.completed_steps / self.step_count if self.step_count else 0.0
+
+    @property
+    def domain_color(self) -> str:
+        return DOMAIN_COLORS.get(self.domain, "#89dceb")
+
+
+@dataclass
+class JourneyStep:
+    id:                    str
+    journey_id:            str
+    step_number:           int
+    title:                 str
+    user_notes:            str
+    user_next_suggestions: str
+    status:                str
+    created_at:            str
+    completed_at:          Optional[str]
+    checklist_state:       dict = field(default_factory=dict)
+    council_sessions:      list["CouncilSession"] = field(default_factory=list)
+
+
+@dataclass
+class CouncilSession:
+    id:                 str
+    step_id:            str
+    synthesis:          str
+    synthesis_model:    str
+    synthesis_mode:     str
+    web_search_used:    bool
+    web_search_queries: list[str]
+    created_at:         str
+    step_checklist:     list[str] = field(default_factory=list)
+    step_resources:     list[str] = field(default_factory=list)
+    roadmap_text:       str       = ""
+    member_records:     list["CouncilMemberRecord"] = field(default_factory=list)
+
+
+@dataclass
+class CouncilMemberRecord:
+    id:               str
+    session_id:       str
+    councilor_label:  str
+    model:            str
+    raw_response:     str
+    created_at:       str
+
+
+class JourneyStore:
+
+    # ── Journeys ──────────────────────────────────────────────────────────────
+
+    def create_journey(self, title: str, goal: str, domain: str,
+                       web_search: bool = False) -> Journey:
+        """Create a new journey. Only defined ONCE — no duplicate."""
+        conn = get_connection()
+        jid  = str(uuid.uuid4())
+        now  = now_utc()
+        conn.execute(
+            "INSERT INTO journeys "
+            "(id,title,goal_description,domain,status,"
+            "web_search_enabled,created_at,updated_at,roadmap_json) "
+            "VALUES (?,?,?,?,'active',?,?,?,'')",
+            (jid, title.strip(), goal.strip(), domain,
+             1 if web_search else 0, now, now),
+        )
+        conn.commit()
+        conn.close()
+        return Journey(
+            id=jid, title=title.strip(), goal_description=goal.strip(),
+            domain=domain, status="active", web_search_enabled=web_search,
+            created_at=now, updated_at=now,
+        )
+
+    def list_journeys(self, include_archived: bool = False) -> list[Journey]:
+        conn = get_connection()
+        sf = "" if include_archived else "AND j.status != 'archived'"
+        rows = conn.execute(
+            f"SELECT j.*,"
+            f"(SELECT COUNT(*) FROM journey_steps s WHERE s.journey_id=j.id) AS step_count,"
+            f"(SELECT COUNT(*) FROM journey_steps s WHERE s.journey_id=j.id"
+            f" AND s.status='completed') AS completed_steps "
+            f"FROM journeys j WHERE j.deleted=0 {sf} ORDER BY j.updated_at DESC"
+        ).fetchall()
+        conn.close()
+        return [self._row_to_journey(r) for r in rows]
+
+    def get_journey(self, journey_id: str) -> Optional[Journey]:
+        conn = get_connection()
+        row = conn.execute(
+            "SELECT j.*,"
+            "(SELECT COUNT(*) FROM journey_steps s WHERE s.journey_id=j.id) AS step_count,"
+            "(SELECT COUNT(*) FROM journey_steps s WHERE s.journey_id=j.id"
+            " AND s.status='completed') AS completed_steps "
+            "FROM journeys j WHERE j.id=?", (journey_id,)
+        ).fetchone()
+        conn.close()
+        return self._row_to_journey(row) if row else None
+
+    def update_journey(self, journey_id: str, **kwargs) -> None:
+        allowed = {"title", "goal_description", "domain", "status",
+                   "web_search_enabled", "roadmap_json"}
+        fields  = {k: v for k, v in kwargs.items() if k in allowed}
+        if not fields:
+            return
+        fields["updated_at"] = now_utc()
+        setters = ", ".join(f"{k}=?" for k in fields)
+        conn = get_connection()
+        conn.execute(f"UPDATE journeys SET {setters} WHERE id=?",
+                     (*fields.values(), journey_id))
+        conn.commit()
+        conn.close()
+
+    def update_roadmap(self, journey_id: str, roadmap: Roadmap) -> None:
+        """Convenience wrapper to persist an updated Roadmap object."""
+        self.update_journey(journey_id, roadmap_json=roadmap.to_json())
+
+    def delete_journey(self, journey_id: str) -> None:
+        conn = get_connection()
+        conn.execute(
+            "UPDATE journeys SET deleted=1, updated_at=? WHERE id=?",
+            (now_utc(), journey_id))
+        conn.commit()
+        conn.close()
+
+    # ── Steps ─────────────────────────────────────────────────────────────────
+
+    def create_step(self, journey_id: str, title: str,
+                    user_notes: str = "", suggestions: str = "") -> JourneyStep:
+        conn = get_connection()
+        row = conn.execute(
+            "SELECT MAX(step_number) FROM journey_steps WHERE journey_id=?",
+            (journey_id,)).fetchone()
+        next_num = (row[0] or 0) + 1
+        sid = str(uuid.uuid4())
+        now = now_utc()
+        conn.execute(
+            "INSERT INTO journey_steps "
+            "(id,journey_id,step_number,title,user_notes,"
+            "user_next_suggestions,status,created_at) "
+            "VALUES (?,?,?,?,?,?,'active',?)",
+            (sid, journey_id, next_num, title.strip(), user_notes, suggestions, now),
+        )
+        conn.execute("UPDATE journeys SET updated_at=? WHERE id=?", (now, journey_id))
+        conn.commit()
+        conn.close()
+        return JourneyStep(
+            id=sid, journey_id=journey_id, step_number=next_num,
+            title=title.strip(), user_notes=user_notes,
+            user_next_suggestions=suggestions, status="active",
+            created_at=now, completed_at=None,
+        )
+
+    def list_steps(self, journey_id: str) -> list[JourneyStep]:
+        conn = get_connection()
+        rows = conn.execute(
+            "SELECT * FROM journey_steps WHERE journey_id=? ORDER BY step_number ASC",
+            (journey_id,)).fetchall()
+        conn.close()
+        return [self._row_to_step(r) for r in rows]
+
+    def get_step(self, step_id: str) -> Optional[JourneyStep]:
+        conn = get_connection()
+        row = conn.execute(
+            "SELECT * FROM journey_steps WHERE id=?", (step_id,)).fetchone()
+        conn.close()
+        return self._row_to_step(row) if row else None
+
+    def update_step_notes(self, step_id: str, user_notes: str,
+                          suggestions: str) -> None:
+        conn = get_connection()
+        conn.execute(
+            "UPDATE journey_steps SET user_notes=?, user_next_suggestions=? WHERE id=?",
+            (user_notes, suggestions, step_id))
+        conn.commit()
+        conn.close()
+
+    def update_checklist_state(self, step_id: str, state: dict) -> None:
+        conn = get_connection()
+        conn.execute(
+            "UPDATE journey_steps SET checklist_state=? WHERE id=?",
+            (json.dumps(state), step_id))
+        conn.commit()
+        conn.close()
+
+    def complete_step(self, step_id: str) -> None:
+        conn = get_connection()
+        conn.execute(
+            "UPDATE journey_steps SET status='completed', completed_at=? WHERE id=?",
+            (now_utc(), step_id))
+        conn.commit()
+        conn.close()
+
+    # ── Council Sessions ──────────────────────────────────────────────────────
+
+    def save_council_session(
+        self, step_id: str, synthesis: str, synthesis_model: str,
+        synthesis_mode: str, web_search_used: bool, web_search_queries: list[str],
+        member_records: list[dict],
+        step_checklist: list[str] = None, step_resources: list[str] = None,
+        roadmap_text: str = "",
+    ) -> CouncilSession:
+        conn    = get_connection()
+        sess_id = str(uuid.uuid4())
+        now     = now_utc()
+        conn.execute(
+            "INSERT INTO journey_council_sessions "
+            "(id,step_id,synthesis,synthesis_model,synthesis_mode,"
+            "web_search_used,web_search_queries,created_at,"
+            "step_checklist,step_resources,roadmap_text) "
+            "VALUES (?,?,?,?,?,?,?,?,?,?,?)",
+            (sess_id, step_id, synthesis, synthesis_model, synthesis_mode,
+             1 if web_search_used else 0, json.dumps(web_search_queries), now,
+             json.dumps(step_checklist or []),
+             json.dumps(step_resources or []),
+             roadmap_text),
+        )
+        members: list[CouncilMemberRecord] = []
+        for rec in member_records:
+            mid = str(uuid.uuid4())
+            conn.execute(
+                "INSERT INTO journey_council_members "
+                "(id,session_id,councilor_label,model,raw_response,created_at) "
+                "VALUES (?,?,?,?,?,?)",
+                (mid, sess_id,
+                 rec.get("label", rec.get("model", "")).split("/")[-1][:20],
+                 rec["model"], rec["response"], now),
+            )
+            members.append(CouncilMemberRecord(
+                id=mid, session_id=sess_id,
+                councilor_label=rec.get("label", rec.get("model", "")).split("/")[-1][:20],
+                model=rec["model"], raw_response=rec["response"], created_at=now,
+            ))
+        conn.commit()
+        conn.close()
+        return CouncilSession(
+            id=sess_id, step_id=step_id, synthesis=synthesis,
+            synthesis_model=synthesis_model, synthesis_mode=synthesis_mode,
+            web_search_used=web_search_used, web_search_queries=web_search_queries,
+            created_at=now,
+            step_checklist=step_checklist or [],
+            step_resources=step_resources or [],
+            roadmap_text=roadmap_text,
+            member_records=members,
+        )
+
+    def list_sessions_for_step(self, step_id: str) -> list[CouncilSession]:
+        conn      = get_connection()
+        sess_rows = conn.execute(
+            "SELECT * FROM journey_council_sessions "
+            "WHERE step_id=? ORDER BY created_at ASC", (step_id,)).fetchall()
+
+        def _jl(val, default):
+            try:
+                r = json.loads(val or "null")
+                return r if r is not None else default
+            except Exception:
+                return default
+
+        sessions = []
+        for s in sess_rows:
+            sk = s.keys()
+            mem_rows = conn.execute(
+                "SELECT * FROM journey_council_members "
+                "WHERE session_id=? ORDER BY rowid ASC", (s["id"],)).fetchall()
+            members = [
+                CouncilMemberRecord(
+                    id=m["id"], session_id=m["session_id"],
+                    councilor_label=m["councilor_label"], model=m["model"],
+                    raw_response=m["raw_response"], created_at=m["created_at"],
+                )
+                for m in mem_rows
+            ]
+            sessions.append(CouncilSession(
+                id=s["id"], step_id=s["step_id"],
+                synthesis=s["synthesis"] or "",
+                synthesis_model=s["synthesis_model"],
+                synthesis_mode=s["synthesis_mode"],
+                web_search_used=bool(s["web_search_used"]),
+                web_search_queries=_jl(s["web_search_queries"], []),
+                created_at=s["created_at"],
+                step_checklist=_jl(s["step_checklist"] if "step_checklist" in sk else None, []),
+                step_resources=_jl(s["step_resources"]  if "step_resources"  in sk else None, []),
+                roadmap_text=(s["roadmap_text"] if "roadmap_text" in sk else "") or "",
+                member_records=members,
+            ))
+        conn.close()
+        return sessions
+
+    # ── Private helpers ───────────────────────────────────────────────────────
+
+    def _row_to_journey(self, row) -> Journey:
+        keys = row.keys()
+        return Journey(
+            id=row["id"], title=row["title"],
+            goal_description=row["goal_description"],
+            domain=row["domain"], status=row["status"],
+            web_search_enabled=bool(row["web_search_enabled"]),
+            created_at=row["created_at"], updated_at=row["updated_at"],
+            step_count=(row["step_count"] if "step_count" in keys else 0),
+            completed_steps=(row["completed_steps"] if "completed_steps" in keys else 0),
+            roadmap_json=(row["roadmap_json"] if "roadmap_json" in keys else "") or "",
+        )
+
+    def _row_to_step(self, row) -> JourneyStep:
+        keys = row.keys()
+        raw  = (row["checklist_state"] if "checklist_state" in keys else None) or "{}"
+        try:
+            cs = json.loads(raw)
+            if not isinstance(cs, dict):
+                cs = {}
+        except Exception:
+            cs = {}
+        return JourneyStep(
+            id=row["id"], journey_id=row["journey_id"],
+            step_number=row["step_number"], title=row["title"],
+            user_notes=row["user_notes"] or "",
+            user_next_suggestions=row["user_next_suggestions"] or "",
+            status=row["status"], created_at=row["created_at"],
+            completed_at=row["completed_at"] if row["completed_at"] else None,
+            checklist_state=cs,
+        )
+```
+
+### `src\data\notes_store.py`
+
+```python
+"""File-based notes storage — Obsidian-compatible markdown files."""
+
+import re
+from dataclasses import dataclass, field
+from pathlib import Path, PurePosixPath
+
+from src.config import load_config
+
+
+@dataclass
+class Note:
+    title: str
+    content: str
+    path: Path  # Relative path within notes dir
+    tags: list[str] = field(default_factory=list)
+
+    @property
+    def filename(self) -> str:
+        return self.path.name
+
+
+class NotesStore:
+    """Manages markdown notes on disk in an Obsidian-compatible folder layout."""
+
+    def __init__(self, notes_dir: Path | None = None):
+        cfg = load_config()
+        self.root = notes_dir or Path(cfg["notes_dir"])
+        self.root.mkdir(parents=True, exist_ok=True)
+
+    def list_notes(self) -> list[Note]:
+        """List all .md files under the notes directory, skipping hidden dirs."""
+        notes = []
+        for md_file in sorted(self.root.rglob("*.md")):
+            rel = md_file.relative_to(self.root)
+            # Skip hidden directories like .obsidian, .trash, etc.
+            if any(part.startswith(".") for part in rel.parts):
+                continue
+            notes.append(self._load_note(md_file))
+        return notes
+
+    def get_note(self, rel_path: str) -> Note | None:
+        # Convert posix-style path to OS-native for file access
+        full = self.root / Path(rel_path.replace("\\", "/"))
+        if full.exists():
+            return self._load_note(full)
+        return None
+
+    def save_note(self, note: Note):
+        # Convert posix-style path to OS-native for file access
+        full = self.root / Path(str(note.path).replace("\\", "/"))
+        full.parent.mkdir(parents=True, exist_ok=True)
+        full.write_text(note.content, encoding="utf-8")
+
+    def delete_note(self, rel_path: str):
+        full = self.root / Path(rel_path.replace("\\", "/"))
+        if full.exists():
+            full.unlink()
+
+    def search(self, query: str) -> list[Note]:
+        """Simple case-insensitive search across titles and content."""
+        query_lower = query.lower()
+        results = []
+        for note in self.list_notes():
+            if (query_lower in note.title.lower()
+                    or query_lower in note.content.lower()
+                    or any(query_lower in t.lower() for t in note.tags)):
+                results.append(note)
+        return results
+
+    def _load_note(self, full_path: Path) -> Note:
+        content = full_path.read_text(encoding="utf-8")
+        tags = self._extract_tags(content)
+        title = full_path.stem
+        # Always store relative path with forward slashes for cross-platform consistency
+        rel = PurePosixPath(full_path.relative_to(self.root))
+        return Note(title=title, content=content, path=rel, tags=tags)
+
+    @staticmethod
+    def _extract_tags(content: str) -> list[str]:
+        """Extract #tags from markdown content."""
+        # Match #tag but not inside code blocks or headings
+        return list(set(re.findall(r'(?<!\w)#([a-zA-Z0-9_/-]+)', content)))
+
+```
+
+### `src\data\soft_events_store.py`
+
+```python
+"""Soft event storage — lightweight recurring reminders with per-day logs."""
+
+import uuid
+from dataclasses import dataclass
+from datetime import date, timedelta
+
+from src.data.database import get_connection
+from src.data.calendar_store import expand_recurring_to_range, Event, parse_recurrence
+from src.utils.timestamps import now_utc
+
+
+@dataclass
+class SoftEventTemplate:
+    id: str
+    title: str
+    note: str = ""
+    color: str = "#a6e3a1"
+    recurrence: str = ""
+    updated_at: str = ""
+    deleted: bool = False
+
+
+@dataclass
+class SoftEventLog:
+    id: str
+    template_id: str
+    log_date: str        # YYYY-MM-DD
+    log_text: str = ""
+    updated_at: str = ""
+    deleted: bool = False
+
+
+class SoftEventStore:
+
+    # ── Template CRUD ────────────────────────────────────
+
+    def add_template(self, title: str, note: str = "", color: str = "#a6e3a1",
+                     recurrence: str = "") -> SoftEventTemplate:
+        now = now_utc()
+        tpl = SoftEventTemplate(
+            id=str(uuid.uuid4()), title=title, note=note,
+            color=color, recurrence=recurrence, updated_at=now,
+        )
+        self._upsert_template(tpl)
+        return tpl
+
+    def update_template(self, template: SoftEventTemplate) -> SoftEventTemplate:
+        template.updated_at = now_utc()
+        self._upsert_template(template)
+        return template
+
+    def delete_template(self, template_id: str):
+        """Soft-delete a template."""
+        conn = get_connection()
+        try:
+            conn.execute(
+                "UPDATE soft_event_templates SET deleted=1, updated_at=? WHERE id=?",
+                (now_utc(), template_id),
+            )
+            conn.commit()
+        finally:
+            conn.close()
+
+    def get_templates(self) -> list[SoftEventTemplate]:
+        """Return all non-deleted templates."""
+        conn = get_connection()
+        try:
+            rows = conn.execute(
+                "SELECT * FROM soft_event_templates WHERE deleted=0 ORDER BY title"
+            ).fetchall()
+            return [self._row_to_template(r) for r in rows]
+        finally:
+            conn.close()
+
+    def get_template(self, template_id: str) -> SoftEventTemplate | None:
+        conn = get_connection()
+        try:
+            row = conn.execute(
+                "SELECT * FROM soft_event_templates WHERE id=?", (template_id,)
+            ).fetchone()
+            return self._row_to_template(row) if row else None
+        finally:
+            conn.close()
+
+    def get_upcoming(self, from_date: date, days_ahead: int = 7) -> list[tuple[date, SoftEventTemplate]]:
+        """Expand each template's recurrence and return sorted (date, template) tuples.
+
+        For templates with empty recurrence, they are skipped (no base date to anchor).
+        days_ahead=0 means only from_date itself is checked.
+        """
+        templates = self.get_templates()
+        range_end = from_date + timedelta(days=max(days_ahead, 0))
+        results: list[tuple[date, SoftEventTemplate]] = []
+
+        for tpl in templates:
+            rec = parse_recurrence(tpl.recurrence)
+            if rec["type"] == "none":
+                # No recurrence — skip (no base date to match)
+                continue
+
+            # Build a lightweight Event-like object for expand_recurring_to_range
+            # We need a start_time in ISO format; use epoch start as a safe anchor
+            # for daily/weekly, or use recurrence info for monthly/yearly.
+            # The expand function reads start_time to extract the anchor date.
+            # We'll use 2020-01-01 as a generic anchor for daily/weekly,
+            # which still produces correct results since those patterns
+            # are relative to weekday, not an absolute date.
+            dummy_event = Event(
+                id=tpl.id, title=tpl.title,
+                start_time="2020-01-01T00:00:00",
+                recurrence=tpl.recurrence,
+            )
+            dates = expand_recurring_to_range(dummy_event, from_date, range_end)
+            for d in dates:
+                results.append((d, tpl))
+
+        results.sort(key=lambda x: x[0])
+        return results
+
+    # ── Log CRUD ─────────────────────────────────────────
+
+    def get_or_create_log(self, template_id: str, log_date: str) -> SoftEventLog:
+        """Return existing log or create a new one with a date header."""
+        existing = self.get_log(template_id, log_date)
+        if existing:
+            return existing
+        now = now_utc()
+        log = SoftEventLog(
+            id=str(uuid.uuid4()),
+            template_id=template_id,
+            log_date=log_date,
+            log_text=f"— {log_date} —",
+            updated_at=now,
+        )
+        self._upsert_log(log)
+        return log
+
+    def update_log(self, log: SoftEventLog) -> SoftEventLog:
+        log.updated_at = now_utc()
+        self._upsert_log(log)
+        return log
+
+    def get_log(self, template_id: str, log_date: str) -> SoftEventLog | None:
+        conn = get_connection()
+        try:
+            row = conn.execute(
+                "SELECT * FROM soft_event_logs WHERE template_id=? AND log_date=? AND deleted=0",
+                (template_id, log_date),
+            ).fetchone()
+            return self._row_to_log(row) if row else None
+        finally:
+            conn.close()
+
+    def get_logs_for_template(self, template_id: str) -> list[SoftEventLog]:
+        """Return all non-deleted logs for a template, sorted newest first."""
+        conn = get_connection()
+        try:
+            rows = conn.execute(
+                "SELECT * FROM soft_event_logs WHERE template_id=? AND deleted=0 "
+                "ORDER BY log_date DESC",
+                (template_id,),
+            ).fetchall()
+            return [self._row_to_log(r) for r in rows]
+        finally:
+            conn.close()
+
+    # ── Internal helpers ─────────────────────────────────
+
+    def _upsert_template(self, tpl: SoftEventTemplate):
+        conn = get_connection()
+        try:
+            conn.execute(
+                """INSERT INTO soft_event_templates
+                   (id, title, note, color, recurrence, updated_at, deleted)
+                   VALUES (?, ?, ?, ?, ?, ?, ?)
+                   ON CONFLICT(id) DO UPDATE SET
+                   title=excluded.title, note=excluded.note, color=excluded.color,
+                   recurrence=excluded.recurrence, updated_at=excluded.updated_at,
+                   deleted=excluded.deleted""",
+                (tpl.id, tpl.title, tpl.note, tpl.color,
+                 tpl.recurrence, tpl.updated_at, int(tpl.deleted)),
+            )
+            conn.commit()
+        finally:
+            conn.close()
+
+    def _upsert_log(self, log: SoftEventLog):
+        conn = get_connection()
+        try:
+            conn.execute(
+                """INSERT INTO soft_event_logs
+                   (id, template_id, log_date, log_text, updated_at, deleted)
+                   VALUES (?, ?, ?, ?, ?, ?)
+                   ON CONFLICT(id) DO UPDATE SET
+                   template_id=excluded.template_id, log_date=excluded.log_date,
+                   log_text=excluded.log_text, updated_at=excluded.updated_at,
+                   deleted=excluded.deleted""",
+                (log.id, log.template_id, log.log_date,
+                 log.log_text, log.updated_at, int(log.deleted)),
+            )
+            conn.commit()
+        finally:
+            conn.close()
+
+    @staticmethod
+    def _row_to_template(row) -> SoftEventTemplate:
+        return SoftEventTemplate(
+            id=row["id"], title=row["title"],
+            note=row["note"] or "", color=row["color"] or "#a6e3a1",
+            recurrence=row["recurrence"] or "",
+            updated_at=row["updated_at"],
+            deleted=bool(row["deleted"]),
+        )
+
+    @staticmethod
+    def _row_to_log(row) -> SoftEventLog:
+        return SoftEventLog(
+            id=row["id"], template_id=row["template_id"],
+            log_date=row["log_date"], log_text=row["log_text"] or "",
+            updated_at=row["updated_at"],
+            deleted=bool(row["deleted"]),
+        )
+```
+
+### `src\data\todo_store.py`
+
+```python
+"""Todo/task storage backed by SQLite."""
+
+import uuid
+from dataclasses import dataclass
+
+from src.data.database import get_connection
+from src.utils.timestamps import now_utc
+
+
+PRIORITY_LABELS = {0: "None", 1: "Low", 2: "Medium", 3: "High"}
+DEFAULT_TODO_CATEGORIES = [
+    "Personal", "Work", "Freelance", "Errand", "Health",
+    "Learning", "Project", "Urgent",
+]
+
+
+@dataclass
+class TodoItem:
+    id: str
+    title: str
+    done: bool = False
+    priority: int = 0      # 0=none, 1=low, 2=med, 3=high
+    due_date: str = ""     # YYYY-MM-DD or ""
+    category: str = ""
+    notes: str = ""
+    created_at: str = ""
+    updated_at: str = ""
+    deleted: bool = False
+
+
+class TodoStore:
+
+    def add(self, title: str, priority: int = 0, due_date: str = "",
+            category: str = "", notes: str = "") -> TodoItem:
+        now = now_utc()
+        item = TodoItem(
+            id=str(uuid.uuid4()), title=title, priority=priority,
+            due_date=due_date, category=category, notes=notes,
+            created_at=now, updated_at=now,
+        )
+        self._upsert(item)
+        return item
+
+    def update(self, item: TodoItem) -> TodoItem:
+        item.updated_at = now_utc()
+        self._upsert(item)
+        return item
+
+    def toggle_done(self, item_id: str) -> bool:
+        conn = get_connection()
+        try:
+            row = conn.execute("SELECT done FROM todos WHERE id=?", (item_id,)).fetchone()
+            if row is None:
+                return False
+            new_val = 0 if row["done"] else 1
+            conn.execute(
+                "UPDATE todos SET done=?, updated_at=? WHERE id=?",
+                (new_val, now_utc(), item_id),
+            )
+            conn.commit()
+            return bool(new_val)
+        finally:
+            conn.close()
+
+    def delete(self, item_id: str):
+        conn = get_connection()
+        try:
+            conn.execute(
+                "UPDATE todos SET deleted=1, updated_at=? WHERE id=?",
+                (now_utc(), item_id),
+            )
+            conn.commit()
+        finally:
+            conn.close()
+
+    def get_all(self, include_done: bool = True) -> list[TodoItem]:
+        conn = get_connection()
+        try:
+            query = "SELECT * FROM todos WHERE deleted=0"
+            if not include_done:
+                query += " AND done=0"
+            query += " ORDER BY done ASC, priority DESC, due_date ASC, created_at DESC"
+            rows = conn.execute(query).fetchall()
+            return [self._row_to_item(r) for r in rows]
+        finally:
+            conn.close()
+
+    def get_counts(self) -> dict:
+        conn = get_connection()
+        try:
+            total = conn.execute("SELECT COUNT(*) as c FROM todos WHERE deleted=0").fetchone()["c"]
+            done = conn.execute("SELECT COUNT(*) as c FROM todos WHERE deleted=0 AND done=1").fetchone()["c"]
+            return {"total": total, "done": done, "pending": total - done}
+        finally:
+            conn.close()
+
+    def _upsert(self, item: TodoItem):
+        conn = get_connection()
+        try:
+            conn.execute(
+                """INSERT INTO todos (id, title, done, priority, due_date, category,
+                   notes, created_at, updated_at, deleted)
+                   VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                   ON CONFLICT(id) DO UPDATE SET
+                   title=excluded.title, done=excluded.done, priority=excluded.priority,
+                   due_date=excluded.due_date, category=excluded.category,
+                   notes=excluded.notes, updated_at=excluded.updated_at,
+                   deleted=excluded.deleted""",
+                (item.id, item.title, int(item.done), item.priority,
+                 item.due_date, item.category, item.notes,
+                 item.created_at, item.updated_at, int(item.deleted)),
+            )
+            conn.commit()
+        finally:
+            conn.close()
+
+    @staticmethod
+    def _row_to_item(row) -> TodoItem:
+        return TodoItem(
+            id=row["id"], title=row["title"], done=bool(row["done"]),
+            priority=row["priority"], due_date=row["due_date"] or "",
+            category=row["category"] or "", notes=row["notes"] or "",
+            created_at=row["created_at"], updated_at=row["updated_at"],
+            deleted=bool(row["deleted"]),
+        )
+
+```
+
+### `src\sync\__init__.py`
+
+```python
+"""LAN sync engine for peer-to-peer data synchronization."""
+
+from src.sync.engine import SyncEngine
+
+__all__ = ["SyncEngine"]
+
+```
+
+### `src\sync\deletion_manifest.py`
+
+```python
+"""Shared deletion manifest utilities for vault sync.
+
+Both the VaultWatcher (polling) and the UI (immediate delete/rename) need to
+record deletions in `.localsync_deletions.json`. This module centralizes that
+logic so there's one source of truth.
+"""
+
+import json
+import logging
+import time
+from pathlib import Path
+
+from src.config import load_config
+
+logger = logging.getLogger(__name__)
+
+MANIFEST_FILENAME = ".localsync_deletions.json"
+RETENTION_DAYS = 30
+
+
+def get_vault_path() -> Path | None:
+    """Return the configured vault path, or None."""
+    cfg = load_config()
+    vault = cfg.get("obsidian_vault_path", "")
+    if vault and Path(vault).is_dir():
+        return Path(vault)
+    return None
+
+
+def _manifest_path(vault: Path) -> Path:
+    return vault / MANIFEST_FILENAME
+
+
+def read_manifest(vault: Path) -> list[dict]:
+    mp = _manifest_path(vault)
+    if mp.exists():
+        try:
+            data = json.loads(mp.read_text(encoding="utf-8"))
+            return data if isinstance(data, list) else []
+        except Exception:
+            return []
+    return []
+
+
+def write_manifest(vault: Path, entries: list[dict]):
+    mp = _manifest_path(vault)
+    try:
+        mp.write_text(json.dumps(entries, indent=2), encoding="utf-8")
+    except OSError as e:
+        logger.warning(f"Failed to write deletion manifest: {e}")
+
+
+def record_deletion(rel_posix: str, vault: Path | None = None):
+    """Immediately record a file deletion in the vault manifest.
+
+    Safe to call from any thread. If vault is None, reads from config.
+    Includes both deleted_at (legacy) and deleted_at_ts (float unix timestamp)
+    so engine.py LWW comparisons work.
+    """
+    if vault is None:
+        vault = get_vault_path()
+    if vault is None:
+        return
+
+    entries = read_manifest(vault)
+    existing_paths = {d["path"] for d in entries}
+    now = time.time()
+
+    if rel_posix not in existing_paths:
+        entries.append({
+            "path": rel_posix,
+            "deleted_at": now,
+            "deleted_at_ts": now,
+        })
+        logger.info(f"Recorded vault deletion: {rel_posix}")
+
+    # Prune old entries
+    cutoff = now - (RETENTION_DAYS * 86400)
+    entries = [d for d in entries if d.get("deleted_at", 0) > cutoff]
+
+    write_manifest(vault, entries)
+
+
+def is_deleted(rel_posix: str, vault: Path | None = None) -> bool:
+    """Check if a path is in the deletion manifest."""
+    if vault is None:
+        vault = get_vault_path()
+    if vault is None:
+        return False
+    entries = read_manifest(vault)
+    return any(d["path"] == rel_posix for d in entries)
+
+
+def remove_deletion(rel_posix: str, vault: Path | None = None):
+    """Remove a path from the deletion manifest (file re-created)."""
+    if vault is None:
+        vault = get_vault_path()
+    if vault is None:
+        return
+    entries = read_manifest(vault)
+    entries = [d for d in entries if d["path"] != rel_posix]
+    write_manifest(vault, entries)
+```
+
+### `src\sync\engine.py`
+
+```python
+"""LAN mesh sync engine — subnet scanning, peer discovery, and data exchange.
+
+How it works:
+1. DISCOVERY: On each cycle, actively scans the local /24 subnet by attempting
+   a fast TCP connect to the sync port on every host. Also listens for UDP
+   broadcast announcements from other instances. This two-pronged approach
+   means peers find each other automatically on the LAN.
+
+2. SYNC: For each discovered peer, opens a TCP connection, exchanges full data
+   sets (events, transactions, notes), and merges using last-write-wins on
+   the updated_at timestamp. Soft-deleted records are propagated.
+
+3. MESH: Every node is both client and server. There's no central coordinator.
+   Any two nodes that can reach each other will converge.
+
+Designed for your setup:
+  Desktop (Windows) 192.168.0.4  <-->  Laptop (Linux) 192.168.0.28
+  Both on the same 192.168.0.0/24 subnet.
+"""
+
+import json
+import logging
+import socket
+import struct
+import threading
+import time
+from concurrent.futures import ThreadPoolExecutor, as_completed
+from pathlib import Path, PurePosixPath
+
+from PyQt6.QtCore import QThread, pyqtSignal
+
+from src.config import load_config, NOTES_DIR
+from src.data.database import get_connection
+from src.utils.timestamps import now_utc
+from src.sync.deletion_manifest import (
+    read_manifest as _read_vault_manifest,
+    record_deletion as _record_vault_del,
+    remove_deletion as _remove_vault_del,
+)
+from src.sync.vault_watcher import mark_sync_written as _mark_vault_written
+
+logger = logging.getLogger(__name__)
+
+SYNC_MAGIC = b"LSYNC2"
+PROTOCOL_VERSION = 2
+
+
+class PeerInfo:
+    """Tracks a discovered peer and its health."""
+
+    def __init__(self, ip: str, port: int):
+        self.ip = ip
+        self.port = port
+        self.last_seen: float = time.time()
+        self.last_sync: float = 0
+        self.fail_count: int = 0
+        self.hostname: str = ""
+
+    @property
+    def is_stale(self) -> bool:
+        return time.time() - self.last_seen > 600  # 10 min without contact
+
+    def __repr__(self):
+        return f"Peer({self.ip}:{self.port})"
+
+
+class SyncEngine(QThread):
+    """Background mesh sync thread."""
+
+    # Signals for the UI
+    status_changed = pyqtSignal(str)          # Human-readable status
+    sync_completed = pyqtSignal()             # Fired after a successful sync cycle
+    peer_discovered = pyqtSignal(str)         # IP of a newly found peer
+    peer_lost = pyqtSignal(str)               # IP of a peer that went stale
+    peers_updated = pyqtSignal(list)          # Full peer list [{"ip":..., "status":...}, ...]
+    sync_log = pyqtSignal(str)                # Detailed log line for the network panel
+
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.cfg = load_config()
+        self.sync_port: int = self.cfg.get("sync_port", 42069)
+        self.discovery_port: int = self.cfg.get("discovery_port", 42070)
+        self.interval: int = self.cfg.get("sync_interval_seconds", 300)
+        self.subnet: str = self.cfg.get("subnet", "192.168.0")
+        self.scan_start: int = self.cfg.get("scan_range_start", 1)
+        self.scan_end: int = self.cfg.get("scan_range_end", 254)
+        self.scan_threads: int = self.cfg.get("scan_threads", 20)
+        self.scan_timeout: float = self.cfg.get("scan_timeout_ms", 150) / 1000.0
+
+        self._running = True
+        self._peers: dict[str, PeerInfo] = {}  # ip -> PeerInfo
+        self._lock = threading.Lock()
+
+        # Long-lived thread pool for subnet scans — re-used across cycles
+        # rather than spinning up 20 threads every sync interval.
+        self._scan_pool = ThreadPoolExecutor(
+            max_workers=self.scan_threads,
+            thread_name_prefix="sync-scan",
+        )
+
+        # Seed known peers from config
+        for ip in self.cfg.get("known_peers", []):
+            self._peers[ip] = PeerInfo(ip, self.sync_port)
+
+    # ── Main loop ──────────────────────────────────────
+
+    def run(self):
+        # Start background listeners
+        threading.Thread(target=self._discovery_listener, daemon=True).start()
+        threading.Thread(target=self._sync_server, daemon=True).start()
+
+        self._log("Sync engine started")
+        self._log(f"Scanning subnet {self.subnet}.0/24 on port {self.sync_port}")
+        self._log(f"Sync interval: {self.interval}s")
+
+        while self._running:
+            try:
+                # Phase 1: Discover peers
+                self.status_changed.emit("scanning...")
+                self._broadcast_presence()
+                self._scan_subnet()
+                self._prune_stale_peers()
+                self._emit_peer_list()
+
+                # Phase 2: Sync with each peer
+                alive_peers = self._get_alive_peers()
+                if alive_peers:
+                    self.status_changed.emit(f"syncing with {len(alive_peers)} peer(s)...")
+                    synced = 0
+                    for peer in alive_peers:
+                        try:
+                            self._sync_with_peer(peer)
+                            peer.last_sync = time.time()
+                            peer.fail_count = 0
+                            synced += 1
+                            self._log(f"Synced with {peer.ip}")
+                        except Exception as e:
+                            peer.fail_count += 1
+                            self._log(f"Sync failed with {peer.ip}: {e}")
+                            logger.warning(f"Sync with {peer.ip} failed: {e}")
+
+                    self.status_changed.emit(
+                        f"synced ({synced}/{len(alive_peers)} peers)"
+                    )
+                    self.sync_completed.emit()
+                else:
+                    self.status_changed.emit("no peers on network")
+                    self._log("No peers found this cycle")
+
+            except Exception as e:
+                logger.error(f"Sync loop error: {e}")
+                self.status_changed.emit(f"error: {e}")
+                self._log(f"ERROR: {e}")
+
+            # Interruptible sleep
+            for _ in range(self.interval):
+                if not self._running:
+                    break
+                time.sleep(1)
+
+        self._log("Sync engine stopped")
+
+    def stop(self):
+        self._running = False
+        # Tear down the scan pool — non-blocking so we don't hang on stop()
+        try:
+            self._scan_pool.shutdown(wait=False, cancel_futures=True)
+        except Exception:
+            pass
+
+    def force_sync(self):
+        """Trigger an immediate sync cycle (called from UI)."""
+        # Just interrupt the sleep by setting a flag — next iteration runs immediately
+        # We achieve this by starting a one-shot thread
+        threading.Thread(target=self._force_sync_once, daemon=True).start()
+    def force_scan(self):
+        """Trigger an immediate subnet peer discovery scan without a full data sync."""
+        self._log("Manual subnet scan triggered")
+        threading.Thread(target=self._scan_subnet, daemon=True).start()
+
+    def _force_sync_once(self):
+        self.status_changed.emit("force syncing...")
+        self._broadcast_presence()
+        self._scan_subnet()
+        for peer in self._get_alive_peers():
+            try:
+                self._sync_with_peer(peer)
+                peer.last_sync = time.time()
+                peer.fail_count = 0
+                self._log(f"Force-synced with {peer.ip}")
+            except Exception as e:
+                self._log(f"Force-sync failed with {peer.ip}: {e}")
+        self._emit_peer_list()
+        self.status_changed.emit("idle")
+        self.sync_completed.emit()
+
+    def trigger_vault_sync(self):
+        """Called by the vault watcher when local vault files changed.
+
+        Immediately syncs with all known peers so the changes propagate.
+        """
+        threading.Thread(target=self._vault_sync_once, daemon=True).start()
+
+    def _vault_sync_once(self):
+        self._log("Vault change detected — pushing to peers")
+        self.status_changed.emit("vault changed, syncing...")
+        peers = self._get_alive_peers()
+        synced = 0
+        for peer in peers:
+            try:
+                self._sync_with_peer(peer)
+                peer.last_sync = time.time()
+                peer.fail_count = 0
+                synced += 1
+                self._log(f"Vault sync pushed to {peer.ip}")
+            except Exception as e:
+                peer.fail_count += 1
+                self._log(f"Vault sync to {peer.ip} failed: {e}")
+        if synced:
+            self.status_changed.emit(f"vault synced ({synced} peer{'s' if synced != 1 else ''})")
+        else:
+            self.status_changed.emit("vault changed (no peers)")
+        self.sync_completed.emit()
+
+    def add_manual_peer(self, ip: str):
+        """Add a peer IP manually (from the network settings dialog)."""
+        with self._lock:
+            if ip not in self._peers:
+                self._peers[ip] = PeerInfo(ip, self.sync_port)
+                self._log(f"Manually added peer: {ip}")
+                self.peer_discovered.emit(ip)
+        self._emit_peer_list()
+
+    def reload_config(self):
+        """Reload config after settings change."""
+        self.cfg = load_config()
+        self.subnet = self.cfg.get("subnet", "192.168.0")
+        self.interval = self.cfg.get("sync_interval_seconds", 300)
+        self.sync_port = self.cfg.get("sync_port", 42069)
+        self.scan_timeout = self.cfg.get("scan_timeout_ms", 150) / 1000.0
+        self._log(f"Config reloaded — subnet={self.subnet}, interval={self.interval}s")
+
+    # ── Subnet scanning ────────────────────────────────
+
+    def _scan_subnet(self):
+        """Actively probe every host in the /24 subnet for our sync port."""
+        my_ips = self._get_local_ips()
+        targets = [
+            f"{self.subnet}.{i}"
+            for i in range(self.scan_start, self.scan_end + 1)
+            if f"{self.subnet}.{i}" not in my_ips
+        ]
+
+        found   = []
+        futures = {
+            self._scan_pool.submit(self._probe_host, ip): ip
+            for ip in targets
+        }
+        for future in as_completed(futures):
+            ip = futures[future]
+            try:
+                if future.result():
+                    found.append(ip)
+            except Exception:
+                pass
+
+        with self._lock:
+            for ip in found:
+                if ip not in self._peers:
+                    self._peers[ip] = PeerInfo(ip, self.sync_port)
+                    self._log(f"Discovered peer: {ip}")
+                    self.peer_discovered.emit(ip)
+                else:
+                    self._peers[ip].last_seen = time.time()
+
+    def _probe_host(self, ip: str) -> bool:
+        """Try a fast TCP connect to see if a peer is listening on sync_port."""
+        try:
+            sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            sock.settimeout(self.scan_timeout)
+            result = sock.connect_ex((ip, self.sync_port))
+            sock.close()
+            return result == 0
+        except Exception:
+            return False
+
+    # ── UDP broadcast discovery (supplement to scanning) ──
+
+    def _broadcast_presence(self):
+        """Announce ourselves on the LAN via UDP broadcast."""
+        try:
+            sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+            sock.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
+            sock.settimeout(1)
+            hostname = socket.gethostname()[:32]
+            payload = (
+                SYNC_MAGIC
+                + struct.pack("!HB", self.sync_port, PROTOCOL_VERSION)
+                + hostname.encode("utf-8")
+            )
+            sock.sendto(payload, ("<broadcast>", self.discovery_port))
+            sock.close()
+        except Exception as e:
+            logger.debug(f"Broadcast failed: {e}")
+
+    def _discovery_listener(self):
+        """Listen for UDP peer announcements."""
+        try:
+            sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+            sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+            sock.bind(("", self.discovery_port))
+            sock.settimeout(5)
+        except Exception as e:
+            logger.error(f"Discovery listener bind failed: {e}")
+            self._log(f"Discovery listener failed: {e}")
+            return
+
+        my_ips = self._get_local_ips()
+        while self._running:
+            try:
+                data, addr = sock.recvfrom(1024)
+                if len(data) >= 9 and data[:6] == SYNC_MAGIC and addr[0] not in my_ips:
+                    peer_port = struct.unpack("!H", data[6:8])[0]
+                    _version = data[8]
+                    hostname = data[9:].decode("utf-8", errors="replace")
+                    ip = addr[0]
+                    with self._lock:
+                        if ip not in self._peers:
+                            self._peers[ip] = PeerInfo(ip, peer_port)
+                            self._log(f"Broadcast discovery: {ip} ({hostname})")
+                            self.peer_discovered.emit(ip)
+                        self._peers[ip].last_seen = time.time()
+                        self._peers[ip].hostname = hostname
+            except socket.timeout:
+                continue
+            except Exception as e:
+                logger.debug(f"Discovery error: {e}")
+
+    # ── Sync server (accept incoming connections) ──────
+
+    def _sync_server(self):
+        """TCP server that accepts sync requests from peers."""
+        try:
+            server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            server.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+            server.bind(("0.0.0.0", self.sync_port))
+            server.listen(5)
+            server.settimeout(5)
+            self._log(f"Sync server listening on port {self.sync_port}")
+        except Exception as e:
+            logger.error(f"Sync server bind failed: {e}")
+            self._log(f"FAILED to bind sync server on port {self.sync_port}: {e}")
+            return
+
+        while self._running:
+            try:
+                conn, addr = server.accept()
+                threading.Thread(
+                    target=self._handle_incoming, args=(conn, addr), daemon=True
+                ).start()
+            except socket.timeout:
+                continue
+            except Exception as e:
+                logger.debug(f"Server accept error: {e}")
+
+    def _handle_incoming(self, conn: socket.socket, addr: tuple):
+        """Handle an incoming sync connection from a peer."""
+        peer_ip = addr[0]
+        try:
+            msg = self._recv_json(conn)
+            if not msg:
+                return
+            if msg.get("type") == "sync_request" and msg.get("version") == PROTOCOL_VERSION:
+                # Register this peer if unknown
+                with self._lock:
+                    if peer_ip not in self._peers:
+                        self._peers[peer_ip] = PeerInfo(peer_ip, self.sync_port)
+                        self.peer_discovered.emit(peer_ip)
+                    self._peers[peer_ip].last_seen = time.time()
+
+                # Send our data back
+                our_data = self._gather_local_data()
+                self._send_json(conn, {
+                    "type": "sync_response",
+                    "version": PROTOCOL_VERSION,
+                    "data": our_data,
+                })
+                # Merge their data into ours
+                their_data = msg.get("data", {})
+                changes = self._merge_remote_data(their_data)
+                if changes:
+                    self._log(f"Received {changes} change(s) from {peer_ip}")
+                self.sync_completed.emit()
+            elif msg.get("type") == "ping":
+                self._send_json(conn, {"type": "pong", "hostname": socket.gethostname()})
+        except Exception as e:
+            logger.warning(f"Incoming sync error from {peer_ip}: {e}")
+        finally:
+            conn.close()
+
+    # ── Sync client (outbound to a peer) ───────────────
+
+    def _sync_with_peer(self, peer: PeerInfo):
+        """Initiate a sync exchange with a specific peer."""
+        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        sock.settimeout(15)
+        try:
+            sock.connect((peer.ip, peer.port))
+            our_data = self._gather_local_data()
+            self._send_json(sock, {
+                "type": "sync_request",
+                "version": PROTOCOL_VERSION,
+                "data": our_data,
+            })
+            response = self._recv_json(sock)
+            if response and response.get("type") == "sync_response":
+                changes = self._merge_remote_data(response.get("data", {}))
+                if changes:
+                    self._log(f"Merged {changes} change(s) from {peer.ip}")
+        finally:
+            sock.close()
+
+    def ping_peer(self, ip: str) -> tuple[bool, str]:
+        """Ping a specific peer. Returns (reachable, hostname_or_error)."""
+        try:
+            sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            sock.settimeout(2)
+            sock.connect((ip, self.sync_port))
+            self._send_json(sock, {"type": "ping"})
+            resp = self._recv_json(sock)
+            sock.close()
+            if resp and resp.get("type") == "pong":
+                return True, resp.get("hostname", ip)
+            return True, ip
+        except Exception as e:
+            return False, str(e)
+
+    # ── Data gathering & merging ───────────────────────
+
+    def _gather_local_data(self) -> dict:
+        conn = get_connection()
+        try:
+            events = [dict(r) for r in conn.execute("SELECT * FROM events").fetchall()]
+            transactions = [dict(r) for r in conn.execute("SELECT * FROM transactions").fetchall()]
+            todos = [dict(r) for r in conn.execute("SELECT * FROM todos").fetchall()]
+            # Activities — may not exist in older DBs
+            try:
+                activities = [dict(r) for r in conn.execute("SELECT * FROM activities").fetchall()]
+            except Exception:
+                activities = []
+            # Birthdays — may not exist in older DBs
+            try:
+                birthdays = [dict(r) for r in conn.execute("SELECT * FROM birthdays").fetchall()]
+            except Exception:
+                birthdays = []
+            # Soft event templates + logs — may not exist in older DBs
+            try:
+                soft_templates = [dict(r) for r in conn.execute(
+                    "SELECT * FROM soft_event_templates").fetchall()]
+                soft_logs = [dict(r) for r in conn.execute(
+                    "SELECT * FROM soft_event_logs").fetchall()]
+            except Exception:
+                soft_templates = []
+                soft_logs = []
+            # Job presets — may not exist in older DBs
+            try:
+                job_presets = [dict(r) for r in conn.execute(
+                    "SELECT * FROM job_presets").fetchall()]
+            except Exception:
+                job_presets = []
+            # Side income goals — may not exist in older DBs
+            try:
+                side_income_goals = [dict(r) for r in conn.execute(
+                    "SELECT * FROM side_income_goals").fetchall()]
+            except Exception:
+                side_income_goals = []
+        finally:
+            conn.close()
+
+        cfg = load_config()
+
+        # Gather notes from configured notes dir (built-in notes)
+        notes = []
+        notes_dir = Path(cfg.get("notes_dir", str(NOTES_DIR)))
+        if notes_dir.exists():
+            for md in notes_dir.rglob("*.md"):
+                rel = md.relative_to(notes_dir)
+                if any(part.startswith(".") for part in rel.parts):
+                    continue
+                # Always use forward slashes for cross-platform compatibility
+                rel_posix = str(PurePosixPath(rel))
+                try:
+                    mtime = md.stat().st_mtime
+                    content = md.read_text(encoding="utf-8")
+                    notes.append({"path": rel_posix, "mtime": mtime, "content": content})
+                except OSError:
+                    pass
+
+        # Gather Obsidian vault files if configured
+        vault_notes = []
+        vault_existing_paths = set()  # track what exists for deletion manifest
+        vault_path = cfg.get("obsidian_vault_path", "")
+        if vault_path:
+            vault_dir = Path(vault_path)
+            if vault_dir.exists():
+                for md in vault_dir.rglob("*.md"):
+                    rel = md.relative_to(vault_dir)
+                    # Skip hidden dirs (.obsidian, .trash, etc.)
+                    if any(p.startswith(".") for p in rel.parts):
+                        continue
+                    # Always use forward slashes for cross-platform compatibility
+                    rel_posix = str(PurePosixPath(rel))
+                    vault_existing_paths.add(rel_posix)
+                    try:
+                        mtime = md.stat().st_mtime
+                        content = md.read_text(encoding="utf-8")
+                        vault_notes.append({"path": rel_posix, "mtime": mtime, "content": content})
+                    except OSError:
+                        pass
+
+        # Build deletion manifest — files we know were deleted locally
+        vault_deletions = self._get_vault_deletions(vault_path)
+
+        return {
+            "events": events, "transactions": transactions,
+            "todos": todos, "activities": activities,
+            "birthdays": birthdays,
+            "soft_templates": soft_templates, "soft_logs": soft_logs,
+            "job_presets": job_presets, "side_income_goals": side_income_goals,
+            "notes": notes, "vault_notes": vault_notes,
+            "vault_deletions": vault_deletions,
+        }
+
+    def _get_vault_deletions(self, vault_path: str) -> list[dict]:
+        """Read the deletion manifest for vault files."""
+        if not vault_path:
+            return []
+        return _read_vault_manifest(Path(vault_path))
+
+    def _record_vault_deletion(self, vault_path: str, rel_posix: str):
+        """Record a file deletion in the vault manifest."""
+        if not vault_path:
+            return
+        _record_vault_del(rel_posix, Path(vault_path))
+
+    def _merge_remote_data(self, remote: dict) -> int:
+        """Merge remote data. Returns count of changes applied."""
+        changes = 0
+        conn = get_connection()
+        try:
+            for rev in remote.get("events", []):
+                local = conn.execute(
+                    "SELECT updated_at FROM events WHERE id=?", (rev["id"],)
+                ).fetchone()
+                if local is None or rev["updated_at"] > local["updated_at"]:
+                    conn.execute(
+                        """INSERT INTO events (id, title, description, start_time, end_time,
+                           all_day, color, updated_at, deleted, recurrence, category)
+                           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                           ON CONFLICT(id) DO UPDATE SET
+                           title=excluded.title, description=excluded.description,
+                           start_time=excluded.start_time, end_time=excluded.end_time,
+                           all_day=excluded.all_day, color=excluded.color,
+                           updated_at=excluded.updated_at, deleted=excluded.deleted,
+                           recurrence=excluded.recurrence, category=excluded.category""",
+                        (rev["id"], rev["title"], rev["description"],
+                         rev["start_time"], rev["end_time"], rev["all_day"],
+                         rev["color"], rev["updated_at"], rev["deleted"],
+                         rev.get("recurrence", ""), rev.get("category", "")),
+                    )
+                    changes += 1
+
+            for rtx in remote.get("transactions", []):
+                local = conn.execute(
+                    "SELECT updated_at FROM transactions WHERE id=?", (rtx["id"],)
+                ).fetchone()
+                if local is None or rtx["updated_at"] > local["updated_at"]:
+                    conn.execute(
+                        """INSERT INTO transactions (id, date, amount, type, category,
+                           description, updated_at, deleted)
+                           VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                           ON CONFLICT(id) DO UPDATE SET
+                           date=excluded.date, amount=excluded.amount, type=excluded.type,
+                           category=excluded.category, description=excluded.description,
+                           updated_at=excluded.updated_at, deleted=excluded.deleted""",
+                        (rtx["id"], rtx["date"], rtx["amount"], rtx["type"],
+                         rtx["category"], rtx["description"],
+                         rtx["updated_at"], rtx["deleted"]),
+                    )
+                    changes += 1
+
+            # Merge activities
+            for ra in remote.get("activities", []):
+                try:
+                    local = conn.execute(
+                        "SELECT updated_at FROM activities WHERE id=?", (ra["id"],)
+                    ).fetchone()
+                    if local is None or ra["updated_at"] > local["updated_at"]:
+                        conn.execute(
+                            """INSERT INTO activities (id, date, activity, start_time, end_time,
+                               notes, created_at, updated_at, deleted)
+                               VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                               ON CONFLICT(id) DO UPDATE SET
+                               date=excluded.date, activity=excluded.activity,
+                               start_time=excluded.start_time, end_time=excluded.end_time,
+                               notes=excluded.notes, updated_at=excluded.updated_at,
+                               deleted=excluded.deleted""",
+                            (ra["id"], ra["date"], ra["activity"], ra["start_time"],
+                             ra["end_time"], ra["notes"], ra["created_at"],
+                             ra["updated_at"], ra["deleted"]),
+                        )
+                        changes += 1
+                except Exception:
+                    pass  # Gracefully handle if activities table doesn't exist on peer
+
+            # Merge birthdays
+            for rb in remote.get("birthdays", []):
+                try:
+                    local = conn.execute(
+                        "SELECT updated_at FROM birthdays WHERE id=?", (rb["id"],)
+                    ).fetchone()
+                    if local is None or rb["updated_at"] > local["updated_at"]:
+                        conn.execute(
+                            """INSERT INTO birthdays (id, name, month, day, year,
+                               updated_at, deleted)
+                               VALUES (?, ?, ?, ?, ?, ?, ?)
+                               ON CONFLICT(id) DO UPDATE SET
+                               name=excluded.name, month=excluded.month,
+                               day=excluded.day, year=excluded.year,
+                               updated_at=excluded.updated_at,
+                               deleted=excluded.deleted""",
+                            (rb["id"], rb["name"], rb["month"], rb["day"],
+                             rb.get("year"), rb["updated_at"], rb["deleted"]),
+                        )
+                        changes += 1
+                except Exception:
+                    pass  # Gracefully handle if birthdays table doesn't exist on peer
+
+            # Merge soft event templates
+            for rs in remote.get("soft_templates", []):
+                try:
+                    local = conn.execute(
+                        "SELECT updated_at FROM soft_event_templates WHERE id=?", (rs["id"],)
+                    ).fetchone()
+                    if local is None or rs["updated_at"] > local["updated_at"]:
+                        conn.execute(
+                            """INSERT INTO soft_event_templates
+                               (id, title, note, color, recurrence, updated_at, deleted)
+                               VALUES (?, ?, ?, ?, ?, ?, ?)
+                               ON CONFLICT(id) DO UPDATE SET
+                               title=excluded.title, note=excluded.note,
+                               color=excluded.color, recurrence=excluded.recurrence,
+                               updated_at=excluded.updated_at, deleted=excluded.deleted""",
+                            (rs["id"], rs["title"], rs.get("note", ""),
+                             rs.get("color", "#a6e3a1"), rs.get("recurrence", ""),
+                             rs["updated_at"], rs["deleted"]),
+                        )
+                        changes += 1
+                except Exception:
+                    pass  # Gracefully handle if table doesn't exist on peer
+
+            # Merge soft event logs
+            for rl in remote.get("soft_logs", []):
+                try:
+                    local = conn.execute(
+                        "SELECT updated_at FROM soft_event_logs WHERE id=?", (rl["id"],)
+                    ).fetchone()
+                    if local is None or rl["updated_at"] > local["updated_at"]:
+                        conn.execute(
+                            """INSERT INTO soft_event_logs
+                               (id, template_id, log_date, log_text, updated_at, deleted)
+                               VALUES (?, ?, ?, ?, ?, ?)
+                               ON CONFLICT(id) DO UPDATE SET
+                               template_id=excluded.template_id,
+                               log_date=excluded.log_date, log_text=excluded.log_text,
+                               updated_at=excluded.updated_at, deleted=excluded.deleted""",
+                            (rl["id"], rl["template_id"], rl["log_date"],
+                             rl.get("log_text", ""), rl["updated_at"], rl["deleted"]),
+                        )
+                        changes += 1
+                except Exception:
+                    pass  # Gracefully handle if table doesn't exist on peer
+
+            # Merge job presets
+            for rp in remote.get("job_presets", []):
+                try:
+                    local = conn.execute(
+                        "SELECT updated_at FROM job_presets WHERE id=?", (rp["id"],)
+                    ).fetchone()
+                    if local is None or rp["updated_at"] > local["updated_at"]:
+                        conn.execute(
+                            """INSERT INTO job_presets
+                               (id, name, amount_usd, category, updated_at, deleted)
+                               VALUES (?, ?, ?, ?, ?, ?)
+                               ON CONFLICT(id) DO UPDATE SET
+                               name=excluded.name, amount_usd=excluded.amount_usd,
+                               category=excluded.category, updated_at=excluded.updated_at,
+                               deleted=excluded.deleted""",
+                            (rp["id"], rp["name"], rp["amount_usd"],
+                             rp.get("category", "Contract"),
+                             rp["updated_at"], rp["deleted"]),
+                        )
+                        changes += 1
+                except Exception:
+                    pass  # Gracefully handle if table doesn't exist on peer
+
+            # Merge side income goals
+            for rg in remote.get("side_income_goals", []):
+                try:
+                    local = conn.execute(
+                        "SELECT updated_at FROM side_income_goals WHERE year=? AND month=?",
+                        (rg["year"], rg["month"])
+                    ).fetchone()
+                    if local is None or rg["updated_at"] > local["updated_at"]:
+                        conn.execute(
+                            """INSERT INTO side_income_goals
+                               (id, year, month, min_goal, major_goal, updated_at)
+                               VALUES (?, ?, ?, ?, ?, ?)
+                               ON CONFLICT(year, month) DO UPDATE SET
+                               min_goal=excluded.min_goal, major_goal=excluded.major_goal,
+                               updated_at=excluded.updated_at""",
+                            (rg["id"], rg["year"], rg["month"],
+                             rg["min_goal"], rg["major_goal"], rg["updated_at"]),
+                        )
+                        changes += 1
+                except Exception:
+                    pass  # Gracefully handle if table doesn't exist on peer
+
+            # Merge todos
+            for rt in remote.get("todos", []):
+                local = conn.execute(
+                    "SELECT updated_at FROM todos WHERE id=?", (rt["id"],)
+                ).fetchone()
+                if local is None or rt["updated_at"] > local["updated_at"]:
+                    conn.execute(
+                        """INSERT INTO todos (id, title, done, priority, due_date,
+                           category, notes, created_at, updated_at, deleted)
+                           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                           ON CONFLICT(id) DO UPDATE SET
+                           title=excluded.title, done=excluded.done,
+                           priority=excluded.priority, due_date=excluded.due_date,
+                           category=excluded.category, notes=excluded.notes,
+                           updated_at=excluded.updated_at, deleted=excluded.deleted""",
+                        (rt["id"], rt["title"], rt["done"], rt["priority"],
+                         rt["due_date"], rt["category"], rt["notes"],
+                         rt["created_at"], rt["updated_at"], rt["deleted"]),
+                    )
+                    changes += 1
+
+            conn.commit()
+        finally:
+            conn.close()
+
+        # Merge notes (built-in notes dir)
+        cfg = load_config()
+        notes_dir = Path(cfg.get("notes_dir", str(NOTES_DIR)))
+        for rnote in remote.get("notes", []):
+            # Normalize path — always convert to OS-native from posix
+            rel_posix = rnote["path"].replace("\\", "/")
+            local_path = notes_dir / Path(rel_posix)
+            should_write = False
+            if local_path.exists():
+                if rnote["mtime"] > local_path.stat().st_mtime:
+                    should_write = True
+            else:
+                should_write = True
+            if should_write:
+                try:
+                    _mark_vault_written(rel_posix)   # BEFORE writing
+                    local_path.parent.mkdir(parents=True, exist_ok=True)
+                    local_path.write_text(rnote["content"], encoding="utf-8")
+                    changes += 1
+                except OSError as e:
+                    logger.warning(f"Failed to write note {rel_posix}: {e}")
+
+        # Merge Obsidian vault notes
+        vault_path = cfg.get("obsidian_vault_path", "")
+        if vault_path:
+            vault_dir = Path(vault_path)
+
+            # First, apply remote deletions — remove files the peer deleted
+            for deletion in remote.get("vault_deletions", []):
+                del_posix = deletion["path"].replace("\\", "/")
+                del_time = deletion.get("deleted_at", 0)
+                local_path = vault_dir / Path(del_posix)
+                if local_path.exists():
+                    try:
+                        local_mtime = local_path.stat().st_mtime
+                        deletion_ts = deletion.get("deleted_at_ts", deletion.get("deleted_at", 0))
+                        if local_mtime > deletion_ts:
+                            logger.debug(f"LWW: local '{del_posix}' modified after peer deletion, keeping local")
+                            continue
+                        local_path.unlink()
+                        changes += 1
+                        self._log(f"Deleted vault file (remote deletion): {del_posix}")
+                        # Also record locally so we don't re-create from other peers
+                        self._record_vault_deletion(vault_path, del_posix)
+                    except OSError as e:
+                        logger.warning(f"Failed to delete {del_posix}: {e}")
+
+            # Build set of remotely-deleted paths for this sync
+            remote_deleted = {
+                d["path"].replace("\\", "/")
+                for d in remote.get("vault_deletions", [])
+            }
+
+            # Snapshot the deletion manifest ONCE per merge — the previous
+            # implementation re-read it twice for every incoming vault note,
+            # which is N*2 disk reads of the same JSON file per sync.
+            local_del_lookup: dict[str, float] = {
+                d["path"]: d.get("deleted_at", 0)
+                for d in self._get_vault_deletions(vault_path)
+            }
+
+            # Then, merge vault notes — create/update files
+            for rnote in remote.get("vault_notes", []):
+                rel_posix = rnote["path"].replace("\\", "/")
+                # Skip if this file was deleted locally
+                if rel_posix in local_del_lookup:
+                    local_del_time = local_del_lookup[rel_posix]
+                    if rnote["mtime"] <= local_del_time:
+                        continue  # Our deletion is newer, skip
+                    # Remote edit is newer than our deletion — re-create
+                    # Remove from deletion manifest *and* from our local lookup
+                    self._remove_vault_deletion(vault_path, rel_posix)
+                    local_del_lookup.pop(rel_posix, None)
+
+                local_path = vault_dir / Path(rel_posix)
+                should_write = False
+                if local_path.exists():
+                    try:
+                        if rnote["mtime"] > local_path.stat().st_mtime:
+                            should_write = True
+                    except OSError:
+                        should_write = True
+                else:
+                    should_write = True
+                if should_write:
+                    try:
+                        _mark_vault_written(rel_posix)   # BEFORE writing
+                        local_path.parent.mkdir(parents=True, exist_ok=True)
+                        local_path.write_text(rnote["content"], encoding="utf-8")
+                        changes += 1
+                    except OSError as e:
+                        logger.warning(f"Failed to write vault file {rel_posix}: {e}")
+
+            # Clean up empty directories left after deletions — but only
+            # if we actually deleted something this merge.  Walking the
+            # whole vault tree on every sync is wasteful when no deletions
+            # arrived.
+            if vault_dir.exists() and remote.get("vault_deletions"):
+                self._cleanup_empty_dirs(vault_dir)
+
+        return changes
+
+    def _remove_vault_deletion(self, vault_path: str, rel_posix: str):
+        """Remove a path from the deletion manifest (file was re-created remotely)."""
+        if not vault_path:
+            return
+        _remove_vault_del(rel_posix, Path(vault_path))
+
+    @staticmethod
+    def _cleanup_empty_dirs(root: Path):
+        """Remove empty subdirectories (bottom-up) after file deletions."""
+        for dirpath in sorted(root.rglob("*"), reverse=True):
+            if dirpath.is_dir() and dirpath != root:
+                # Skip hidden dirs
+                rel = dirpath.relative_to(root)
+                if any(p.startswith(".") for p in rel.parts):
+                    continue
+                try:
+                    if not any(dirpath.iterdir()):
+                        dirpath.rmdir()
+                except OSError:
+                    pass
+
+    # ── Peer management ────────────────────────────────
+
+    def _get_alive_peers(self) -> list[PeerInfo]:
+        with self._lock:
+            return [p for p in self._peers.values() if not p.is_stale and p.fail_count < 5]
+
+    def _prune_stale_peers(self):
+        with self._lock:
+            stale = [ip for ip, p in self._peers.items() if p.is_stale]
+            for ip in stale:
+                # Keep manually-added peers, just mark stale
+                if ip in self.cfg.get("known_peers", []):
+                    continue
+                del self._peers[ip]
+                self.peer_lost.emit(ip)
+                self._log(f"Peer went stale: {ip}")
+
+    def _emit_peer_list(self):
+        with self._lock:
+            peers = []
+            for ip, p in self._peers.items():
+                status = "stale" if p.is_stale else ("failing" if p.fail_count > 0 else "online")
+                peers.append({
+                    "ip": ip,
+                    "hostname": p.hostname,
+                    "status": status,
+                    "last_seen": p.last_seen,
+                    "last_sync": p.last_sync,
+                    "fail_count": p.fail_count,
+                })
+            self.peers_updated.emit(peers)
+
+    def get_peer_list(self) -> list[dict]:
+        """Synchronous access to peer list for the settings dialog."""
+        with self._lock:
+            return [
+                {"ip": ip, "hostname": p.hostname,
+                 "status": "stale" if p.is_stale else "online",
+                 "fail_count": p.fail_count}
+                for ip, p in self._peers.items()
+            ]
+
+    # ── Network helpers ────────────────────────────────
+
+    @staticmethod
+    def _send_json(sock: socket.socket, obj: dict):
+        data = json.dumps(obj).encode("utf-8")
+        length = struct.pack("!I", len(data))
+        sock.sendall(length + data)
+
+    @staticmethod
+    def _recv_json(sock: socket.socket) -> dict | None:
+        raw_len = b""
+        while len(raw_len) < 4:
+            chunk = sock.recv(4 - len(raw_len))
+            if not chunk:
+                return None
+            raw_len += chunk
+        msg_len = struct.unpack("!I", raw_len)[0]
+        if msg_len > 50_000_000:
+            return None
+        data = b""
+        while len(data) < msg_len:
+            chunk = sock.recv(min(65536, msg_len - len(data)))
+            if not chunk:
+                return None
+            data += chunk
+        return json.loads(data.decode("utf-8"))
+
+    @staticmethod
+    def _get_local_ips() -> set[str]:
+        ips = {"127.0.0.1"}
+        try:
+            hostname = socket.gethostname()
+            for info in socket.getaddrinfo(hostname, None, socket.AF_INET):
+                ips.add(info[4][0])
+        except Exception:
+            pass
+        # Also try connecting to an external address to find our LAN IP
+        try:
+            s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+            s.connect(("192.168.0.1", 1))
+            ips.add(s.getsockname()[0])
+            s.close()
+        except Exception:
+            pass
+        return ips
+
+    def _log(self, msg: str):
+        ts = time.strftime("%H:%M:%S")
+        self.sync_log.emit(f"[{ts}] {msg}")
+        logger.info(msg)
+```
+
+### `src\sync\vault_watcher.py`
+
+```python
+"""Filesystem watcher for Obsidian vault — detects local edits and triggers sync.
+
+Uses a polling approach (no inotify dependency) to watch for .md file changes
+in the configured vault directory. When changes are detected, emits a signal
+so the sync engine can broadcast them to peers.
+
+Sync-safety features:
+  • 10-second poll interval — relaxed for a personal two-machine setup.
+  • Deletion debounce — a file must be absent for 5 consecutive polls (~50 s)
+    before its deletion is recorded.  This prevents Obsidian's atomic-save
+    behaviour (delete + recreate within milliseconds) from being misread as a
+    real deletion.
+  • Content-hash guard — when a pending-deletion file disappears, its MD5 hash
+    (or size as fallback) is stored.  If a new file appears with the same hash
+    during the debounce window, the deletion is treated as a rename/move and
+    is not recorded in the manifest.
+  • Sync-write guard — when the engine writes a vault file it calls
+    mark_sync_written(); the watcher skips that path for the next poll cycle
+    so it does not re-trigger a sync for data that arrived from a peer.
+  • Quiet-period gate — vault_changed is only emitted after two full polls with
+    no new activity.  Rapid sequences (move = delete + create) are collapsed
+    into a single signal.
+  • Move detection — if a pending-deletion's content hash or file size matches
+    a newly appeared file in the same poll cycle the operation is treated as a
+    rename and the deletion manifest entry is suppressed.
+"""
+
+import hashlib
+import logging
+import threading
+import time
+from pathlib import Path, PurePosixPath
+
+from PyQt6.QtCore import QThread, pyqtSignal
+
+from src.config import load_config
+from src.sync.deletion_manifest import record_deletion, read_manifest
+
+logger = logging.getLogger(__name__)
+
+# ── Tuning constants ────────────────────────────────────────────────────────
+POLL_INTERVAL          = 10  # seconds between each vault scan
+DELETION_CONFIRM_POLLS = 5   # polls a file must be absent before deletion confirmed (~50 s)
+QUIET_POLLS_BEFORE_EMIT = 2  # polls of silence required before emitting vault_changed
+
+
+# ── Sync-write guard (module-level so engine.py can call without a reference) ─
+_sync_written: set[str] = set()
+_sync_written_lock = threading.Lock()
+
+
+def mark_sync_written(rel_posix: str) -> None:
+    """Register a vault-relative path that the sync engine just wrote to disk.
+
+    The watcher will ignore this path for the next poll cycle so that incoming
+    peer data does not immediately re-trigger a sync.  Call from any thread.
+    """
+    with _sync_written_lock:
+        _sync_written.add(rel_posix)
+
+
+def _pop_sync_written() -> set[str]:
+    """Drain and return the current sync-written set (called once per poll)."""
+    with _sync_written_lock:
+        result = set(_sync_written)
+        _sync_written.clear()
+        return result
+
+
+def _md5_file(path: Path) -> str | None:
+    """Compute MD5 hex digest of a file, or None if unreadable."""
+    try:
+        h = hashlib.md5()
+        with open(path, "rb") as f:
+            for chunk in iter(lambda: f.read(65536), b""):
+                h.update(chunk)
+        return h.hexdigest()
+    except OSError:
+        return None
+
+
+# ── Watcher thread ──────────────────────────────────────────────────────────
+
+class VaultWatcher(QThread):
+    """Polls the Obsidian vault for file changes and signals when detected."""
+
+    # Emitted when vault files have changed (added, modified, or deleted)
+    vault_changed = pyqtSignal()
+
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self._running = True
+
+        # rel_posix -> (mtime, size)
+        self._snapshot: dict[str, tuple[float, int]] = {}
+
+        # rel_posix -> md5 hex digest, refreshed lazily when a file is new
+        # or has changed.  Persists across polls so that move-detection can
+        # still match a file's hash after it disappears.
+        self._hash_cache: dict[str, str] = {}
+
+        self._vault_path: Path | None = None
+
+        # Deletion debounce: rel_posix -> number of polls the file has been absent
+        self._pending_deletions: dict[str, int] = {}
+        # Size of the file when it was last seen (for move detection fallback)
+        self._pending_deletion_sizes: dict[str, int] = {}
+        # MD5 hash of the file when it was last seen (for move detection)
+        self._pending_deletion_hashes: dict[str, str] = {}
+
+        # Quiet-period state
+        self._changes_pending: bool = False  # we have unsent changes
+        self._quiet_polls: int = 0           # polls since last new-change detection
+
+        self._load_vault_path()
+
+    # ── Config ───────────────────────────────────────────────────────────────
+
+    def _load_vault_path(self) -> None:
+        cfg = load_config()
+        vault = cfg.get("obsidian_vault_path", "")
+        if vault and Path(vault).is_dir():
+            self._vault_path = Path(vault)
+        else:
+            self._vault_path = None
+
+    def reload_config(self) -> None:
+        """Reload vault path from config (called after settings change)."""
+        self._load_vault_path()
+        self._snapshot.clear()
+        self._hash_cache.clear()
+        self._pending_deletions.clear()
+        self._pending_deletion_sizes.clear()
+        self._pending_deletion_hashes.clear()
+        self._changes_pending = False
+        self._quiet_polls = 0
+        if self._vault_path:
+            self._snapshot = self._scan_vault()
+            self._refresh_hash_cache(self._snapshot)
+
+    # ── Vault scanning ───────────────────────────────────────────────────────
+
+    def _scan_vault(self) -> dict[str, tuple[float, int]]:
+        """Return {posix_relative_path: (mtime, size)} for all visible .md files."""
+        if not self._vault_path or not self._vault_path.is_dir():
+            return {}
+        result: dict[str, tuple[float, int]] = {}
+        try:
+            for md in self._vault_path.rglob("*.md"):
+                rel = md.relative_to(self._vault_path)
+                # Skip hidden dirs (.obsidian, .trash, etc.)
+                if any(p.startswith(".") for p in rel.parts):
+                    continue
+                rel_posix = str(PurePosixPath(rel))
+                try:
+                    st = md.stat()
+                    result[rel_posix] = (st.st_mtime, st.st_size)
+                except OSError:
+                    pass
+        except OSError as e:
+            logger.warning(f"Vault scan error: {e}")
+        return result
+
+    def _refresh_hash_cache(
+        self,
+        current: dict[str, tuple[float, int]],
+    ) -> None:
+        """Keep ``self._hash_cache`` in sync with ``current``.
+
+        Hashes are computed lazily — only for files that are new in this poll
+        or whose mtime/size has changed since the last poll.  Files that
+        disappear keep their hash in the cache so that move-detection can
+        match them against newly appeared files in the *same* poll cycle.
+        """
+        if not self._vault_path:
+            return
+        for path, (mtime, size) in current.items():
+            prev_meta = self._snapshot.get(path)
+            if prev_meta is not None and prev_meta == (mtime, size):
+                # Unchanged since last poll — re-use cached hash if we have one
+                continue
+            full = self._vault_path / Path(path)
+            h    = _md5_file(full)
+            if h is not None:
+                self._hash_cache[path] = h
+        # Drop hashes for files that have been gone long enough that we no
+        # longer have a pending-deletion entry tracking them
+        live_or_pending = set(current.keys()) | set(self._pending_deletions.keys())
+        for stale in list(self._hash_cache.keys()):
+            if stale not in live_or_pending:
+                self._hash_cache.pop(stale, None)
+
+    # ── Main thread loop ─────────────────────────────────────────────────────
+
+    def run(self) -> None:
+        logger.info("Vault watcher started")
+
+        if self._vault_path:
+            self._snapshot = self._scan_vault()
+            logger.info(
+                f"Watching vault: {self._vault_path}  "
+                f"({len(self._snapshot)} files)"
+            )
+        else:
+            logger.info("No vault configured, watcher idle")
+
+        while self._running:
+            if self._vault_path and self._vault_path.is_dir():
+                self._poll()
+            else:
+                # Re-check config periodically in case vault is set later
+                self._load_vault_path()
+                if self._vault_path:
+                    self._snapshot = self._scan_vault()
+                    logger.info(f"Vault now configured: {self._vault_path}")
+
+            # Interruptible sleep
+            for _ in range(POLL_INTERVAL):
+                if not self._running:
+                    break
+                time.sleep(1)
+
+        logger.info("Vault watcher stopped")
+
+    # ── Poll logic ───────────────────────────────────────────────────────────
+
+    def _poll(self) -> None:
+        """One full poll cycle: detect changes, debounce, maybe emit."""
+        current  = self._scan_vault()
+        skip_set = _pop_sync_written()   # paths the engine just wrote — ignore
+
+        # Refresh the hash cache *first* — cheap for unchanged files, and
+        # ensures we have a hash for every live path before we start
+        # processing disappearances.
+        self._refresh_hash_cache(current)
+
+        new_activity_this_poll = False   # did we find anything new *this* poll?
+
+        # ── 1. New / modified files ─────────────────────────────────────────
+        # Track sizes and hashes of genuinely new files for move detection later.
+        new_file_sizes: set[int] = set()
+        new_file_hashes: set[str] = set()
+
+        for path, (mtime, size) in current.items():
+            if path in skip_set:
+                # Written by the sync engine — don't react to our own writes
+                continue
+
+            prev = self._snapshot.get(path)
+            if prev is None:
+                # File is brand-new (or re-appeared after a move)
+                new_file_sizes.add(size)
+                h = self._hash_cache.get(path)
+                if h:
+                    new_file_hashes.add(h)
+                new_activity_this_poll = True
+                logger.debug(f"New file detected: {path}")
+            elif mtime > prev[0]:
+                # File was modified
+                new_activity_this_poll = True
+                logger.debug(f"Modified file: {path}")
+
+        # ── 2. Deletion debounce ────────────────────────────────────────────
+        gone_now = set(self._snapshot.keys()) - set(current.keys())
+
+        # Files that came back this poll (Obsidian atomic save — ignore them)
+        returned = set(self._pending_deletions.keys()) & set(current.keys())
+        for path in returned:
+            logger.debug(
+                f"'{path}' reappeared after being absent — "
+                "likely an atomic save, clearing pending deletion"
+            )
+            self._pending_deletions.pop(path, None)
+            self._pending_deletion_sizes.pop(path, None)
+            self._pending_deletion_hashes.pop(path, None)
+
+        # Increment absence counter for files still gone
+        for path in gone_now:
+            # AIRTIGHT: skip_set check BEFORE incrementing counter
+            if path in skip_set:
+                # Engine deleted it as part of a remote deletion — ignore
+                self._pending_deletions.pop(path, None)
+                self._pending_deletion_sizes.pop(path, None)
+                self._pending_deletion_hashes.pop(path, None)
+                continue
+
+            count = self._pending_deletions.get(path, 0) + 1
+            self._pending_deletions[path] = count
+
+            # Cache the file's last known size for the move-detection fallback
+            if path not in self._pending_deletion_sizes and path in self._snapshot:
+                self._pending_deletion_sizes[path] = self._snapshot[path][1]
+
+            # Pull the *previously* computed hash from the cache.  The old code
+            # tried to re-hash the file here, but at this point it is already
+            # gone from disk so the hash always came back None.
+            if path not in self._pending_deletion_hashes:
+                cached = self._hash_cache.get(path)
+                if cached:
+                    self._pending_deletion_hashes[path] = cached
+
+            logger.debug(f"'{path}' absent for {count} poll(s) (confirm at {DELETION_CONFIRM_POLLS})")
+
+        # ── 3. Confirm deletions that have been gone long enough ────────────
+        for path in list(self._pending_deletions.keys()):
+            if path in current:
+                continue  # came back — handled above
+            if self._pending_deletions[path] < DELETION_CONFIRM_POLLS:
+                continue  # not yet confirmed
+
+            # ── Move detection (content hash + size fallback) ──────────────
+            del_hash = self._pending_deletion_hashes.get(path)
+            del_size = self._pending_deletion_sizes.get(path)
+
+            is_move = False
+            if del_hash and del_hash in new_file_hashes:
+                is_move = True
+            elif del_size is not None and del_size in new_file_sizes:
+                is_move = True
+
+            if is_move:
+                logger.info(
+                    f"Move detected: '{path}' disappeared but a new file with "
+                    f"matching content appeared — skipping deletion record"
+                )
+            else:
+                # Genuine deletion — record in manifest and flag as changed
+                if self._vault_path:
+                    existing_paths = {d["path"] for d in read_manifest(self._vault_path)}
+                    if path not in existing_paths:
+                        record_deletion(path, self._vault_path)
+                        logger.info(f"Confirmed deletion recorded: {path}")
+                new_activity_this_poll = True
+
+            # Clean up tracking dicts
+            self._pending_deletions.pop(path)
+            self._pending_deletion_sizes.pop(path, None)
+            self._pending_deletion_hashes.pop(path, None)
+
+        # ── 4. Quiet-period gate ────────────────────────────────────────────
+        if new_activity_this_poll:
+            self._changes_pending = True
+            self._quiet_polls = 0          # reset — we're still seeing changes
+        elif self._changes_pending:
+            self._quiet_polls += 1         # one more quiet poll
+            if self._quiet_polls >= QUIET_POLLS_BEFORE_EMIT:
+                logger.info(
+                    "Vault stable — emitting vault_changed "
+                    f"(quiet for {self._quiet_polls} poll(s))"
+                )
+                self._changes_pending = False
+                self._quiet_polls = 0
+                self.vault_changed.emit()
+
+        # ── 5. Advance snapshot ─────────────────────────────────────────────
+        self._snapshot = current
+
+    # ── Lifecycle ────────────────────────────────────────────────────────────
+
+    def stop(self) -> None:
+        self._running = False
+```
+
+### `src\ui\__init__.py`
+
+```python
+"""UI layer — PyQt6 main window and module panels."""
+
+from src.ui.main_window import MainWindow
+
+__all__ = ["MainWindow"]
+
+```
+
+### `src\ui\main_window.py`
+
+```python
+"""Main application window with menu bar, sidebar, theme selector, and sync integration.
+
+Changes in this version:
+  • Store injection — all stores instantiated once and passed to panels
+  • System tray icon — programmatic theme-aware icon, minimize to tray
+  • Close-to-tray behaviour controlled by config key 'minimize_to_tray'
+"""
+
+from datetime import datetime
+
+from PyQt6.QtCore import Qt, QTimer, QEvent
+from PyQt6.QtGui import QKeySequence, QShortcut, QAction, QPainter, QColor, QPixmap
+from PyQt6.QtWidgets import (
+    QMainWindow, QWidget, QHBoxLayout, QVBoxLayout,
+    QStackedWidget, QPushButton, QLabel, QFrame,
+    QComboBox, QStatusBar, QMenuBar, QSystemTrayIcon,
+    QMenu, QApplication,
+)
+
+from src.config import APP_NAME, APP_VERSION, load_config, save_config
+from src.ui.themes.styles import THEMES, PALETTES, get_theme_names
+from src.ui.modules.notes_panel import NotesPanel
+from src.ui.modules.calendar_panel import CalendarPanel
+from src.ui.modules.finance_panel import FinancePanel
+from src.ui.modules.expenses_panel import ExpensesPanel
+from src.ui.modules.todo_panel import TodoPanel
+from src.ui.modules.dashboard_panel import DashboardPanel
+from src.ui.modules.finance_charts import FinanceChartsPanel
+from src.ui.modules.activity_panel import ActivityPanel
+from src.ui.modules.work_panel import WorkPanel
+from src.ui.modules.debug_panel import DebugPanel
+
+from src.data.todo_store import TodoStore
+from src.data.calendar_store import CalendarStore
+from src.data.finance_store import FinanceStore
+from src.data.activity_store import ActivityStore
+from src.data.soft_events_store import SoftEventStore
+from src.ui.widgets.matrix_rain import MatrixRainWidget
+
+
+class SidebarButton(QPushButton):
+
+    def __init__(self, text: str, icon_char: str = "", shortcut_hint: str = ""):
+        display = f"{icon_char}  {text}"
+        if shortcut_hint:
+            display += f"   {shortcut_hint}"
+        super().__init__(display)
+        self.setCheckable(True)
+        self.setFixedHeight(34)
+        self.setCursor(Qt.CursorShape.PointingHandCursor)
+
+    def apply_colors(self, accent: str, accent_fg: str, hover: str):
+        self.setStyleSheet(f"""
+            QPushButton {{
+                text-align: left;
+                padding-left: 12px;
+                border: none;
+                border-radius: 6px;
+                font-size: 12px;
+            }}
+            QPushButton:checked {{
+                background-color: {accent};
+                color: {accent_fg};
+                font-weight: bold;
+            }}
+            QPushButton:hover:!checked {{
+                background-color: {hover};
+            }}
+        """)
+
+
+class MainWindow(QMainWindow):
+
+    def __init__(self):
+        super().__init__()
+        self.cfg = load_config()
+        self.sync_engine = None  # Set by main.py after construction
+
+        # ── Instantiate all stores once ──
+        self.todo_store = TodoStore()
+        self.calendar_store = CalendarStore()
+        self.finance_store = FinanceStore()
+        self.activity_store = ActivityStore()
+        self.soft_events_store = SoftEventStore()
+        from src.utils.llm import load_llm_client
+        self.llm_client = load_llm_client()
+
+        self.setWindowTitle(f"{APP_NAME} v{APP_VERSION}")
+        self.setMinimumSize(1000, 650)
+        self.resize(1200, 750)
+
+        self._palette: dict = {}
+        self._tray = None  # initialized properly in _setup_tray()
+
+        self._build_menu_bar()
+        self._build_central()
+        self._build_status_bar()
+
+        # ── Matrix rain overlay (hidden until Matrix theme is active) ──
+        # Child of the central widget so it fills the content area only.
+        # lower() keeps it behind the sidebar and stacked panels.
+        self._matrix_rain = MatrixRainWidget(self._central)
+        self._matrix_rain.hide()
+
+        # Apply theme and default to Dashboard
+        current_theme = self.cfg.get("theme", "Catppuccin Dark")
+        if current_theme in ("dark", "light"):
+            current_theme = "Catppuccin Dark" if current_theme == "dark" else "Catppuccin Light"
+        self._apply_theme(current_theme)
+        self._navigate("Dashboard")
+
+        # ── System tray ──
+        self._setup_tray()
+
+    # ── Resize — keep rain synced to central widget ────
+
+    def resizeEvent(self, event) -> None:
+        super().resizeEvent(event)
+        if hasattr(self, "_matrix_rain") and self._matrix_rain.is_running():
+            self._matrix_rain.sync_size()
+
+    # ── Menu bar ───────────────────────────────────────
+
+    def _build_menu_bar(self):
+        menubar = self.menuBar()
+
+        # File menu
+        file_menu = menubar.addMenu("&File")
+
+        file_menu.addAction(self._action("&Dashboard", "Ctrl+1", lambda: self._navigate("Dashboard")))
+        file_menu.addAction(self._action("&Notes",     "Ctrl+2", lambda: self._navigate("Notes")))
+        file_menu.addAction(self._action("&Calendar",  "Ctrl+3", lambda: self._navigate("Calendar")))
+        file_menu.addAction(self._action("&Earnings",  "Ctrl+4", lambda: self._navigate("Earnings")))
+        file_menu.addAction(self._action("E&xpenses",  "Ctrl+5", lambda: self._navigate("Expenses")))
+        file_menu.addAction(self._action("C&harts",    "Ctrl+6", lambda: self._navigate("Charts")))
+        file_menu.addAction(self._action("&Tasks",     "Ctrl+7", lambda: self._navigate("Tasks")))
+        file_menu.addAction(self._action("&Activity",  "Ctrl+8", lambda: self._navigate("Activity")))
+        file_menu.addAction(self._action("&Work",      "Ctrl+9", lambda: self._navigate("Work")))
+        file_menu.addSeparator()
+        file_menu.addAction(self._action("E&xit", "Ctrl+Q", self.close))
+
+        # Sync menu
+        sync_menu = menubar.addMenu("&Sync")
+        sync_menu.addAction(self._action("Sync &Now", "Ctrl+Shift+S", self._force_sync))
+        sync_menu.addAction(self._action("&Network Settings...", "Ctrl+Shift+N", self._open_network_dialog))
+
+        # View menu
+        view_menu = menubar.addMenu("&View")
+        for theme_name in get_theme_names():
+            view_menu.addAction(self._action(
+                theme_name, "",
+                lambda checked=False, t=theme_name: self._on_theme_changed(t),
+            ))
+
+        # Help menu
+        help_menu = menubar.addMenu("&Help")
+        help_menu.addAction(self._action("&About", "", self._show_about))
+
+    def _action(self, text: str, shortcut: str, callback) -> QAction:
+        act = QAction(text, self)
+        if shortcut:
+            act.setShortcut(QKeySequence(shortcut))
+        act.triggered.connect(callback)
+        return act
+
+    # ── Central widget ─────────────────────────────────
+
+    def _build_central(self):
+        central = QWidget()
+        self._central = central          # kept for rain sizing
+        central.setAutoFillBackground(False)   # let rain show through gaps
+        self.setCentralWidget(central)
+        main_layout = QHBoxLayout(central)
+        main_layout.setContentsMargins(0, 0, 0, 0)
+        main_layout.setSpacing(0)
+
+        # ── Sidebar ──────────────────────────────────
+        self.sidebar = QWidget()
+        self.sidebar.setFixedWidth(190)
+        self.sidebar.setObjectName("sidebar")
+        sidebar_layout = QVBoxLayout(self.sidebar)
+        sidebar_layout.setContentsMargins(8, 10, 8, 10)
+        sidebar_layout.setSpacing(3)
+
+        app_label = QLabel(APP_NAME)
+        app_label.setObjectName("sectionTitle")
+        sidebar_layout.addWidget(app_label)
+
+        version_label = QLabel(f"v{APP_VERSION}")
+        version_label.setObjectName("subtitle")
+        sidebar_layout.addWidget(version_label)
+
+        sidebar_layout.addSpacing(8)
+        sep = QFrame()
+        sep.setObjectName("separator")
+        sep.setFrameShape(QFrame.Shape.HLine)
+        sidebar_layout.addWidget(sep)
+        sidebar_layout.addSpacing(8)
+
+        # Nav buttons
+        self.nav_buttons: list[SidebarButton] = []
+        nav_items = [
+            ("Dashboard", "\U0001f4ca", "Ctrl+1"),
+            ("Notes",     "\U0001f4dd", "Ctrl+2"),
+            ("Calendar",  "\U0001f4c5", "Ctrl+3"),
+            ("Earnings",  "\U0001f4b0", "Ctrl+4"),
+            ("Expenses",  "\U0001f4b3", "Ctrl+5"),
+            ("Charts",    "\U0001f4c8", "Ctrl+6"),
+            ("Tasks",     "\u2611",     "Ctrl+7"),
+            ("Activity",  "\u23f1",     "Ctrl+8"),
+            ("Work",      "\U0001f4bc", "Ctrl+9"),
+            ("Debug",     "\U0001f52c", "Ctrl+0"),
+        ]
+        for name, icon, shortcut_text in nav_items:
+            btn = SidebarButton(name, icon, shortcut_text)
+            btn.clicked.connect(lambda checked, n=name: self._navigate(n))
+            btn.setToolTip(f"Switch to {name} ({shortcut_text})")
+            sidebar_layout.addWidget(btn)
+            self.nav_buttons.append(btn)
+
+            sc = QShortcut(QKeySequence(shortcut_text), self)
+            sc.activated.connect(lambda n=name: self._navigate(n))
+
+        sidebar_layout.addStretch()
+
+        # Theme selector
+        theme_label = QLabel("Theme")
+        theme_label.setObjectName("subtitle")
+        sidebar_layout.addWidget(theme_label)
+
+        self.theme_combo = QComboBox()
+        self.theme_combo.addItems(get_theme_names())
+        current_theme = self.cfg.get("theme", "Catppuccin Dark")
+        if current_theme in ("dark", "light"):
+            current_theme = "Catppuccin Dark" if current_theme == "dark" else "Catppuccin Light"
+        idx = self.theme_combo.findText(current_theme)
+        if idx >= 0:
+            self.theme_combo.setCurrentIndex(idx)
+        self.theme_combo.currentTextChanged.connect(self._on_theme_changed)
+        sidebar_layout.addWidget(self.theme_combo)
+
+        sidebar_layout.addSpacing(8)
+
+        # Network button
+        net_btn = QPushButton("Network...")
+        net_btn.setObjectName("secondary")
+        net_btn.setToolTip("Open network & sync settings")
+        net_btn.clicked.connect(self._open_network_dialog)
+        sidebar_layout.addWidget(net_btn)
+
+        sidebar_layout.addSpacing(4)
+
+        # Sync status
+        self.sync_label = QLabel("Sync: starting...")
+        self.sync_label.setObjectName("subtitle")
+        sidebar_layout.addWidget(self.sync_label)
+
+        self.peer_count_label = QLabel("Peers: 0")
+        self.peer_count_label.setObjectName("subtitle")
+        sidebar_layout.addWidget(self.peer_count_label)
+
+        main_layout.addWidget(self.sidebar)
+
+        # ── Content stack (panels receive injected stores) ──
+        self.stack = QStackedWidget()
+        self.dashboard_panel = DashboardPanel(
+            todo_store=self.todo_store,
+            calendar_store=self.calendar_store,
+            finance_store=self.finance_store,
+            soft_events_store=self.soft_events_store,
+        )
+        self.notes_panel = NotesPanel()
+        self.calendar_panel = CalendarPanel(
+            calendar_store=self.calendar_store,
+            soft_events_store=self.soft_events_store,
+        )
+        self.finance_panel = FinancePanel()
+        self.expenses_panel = ExpensesPanel(finance_store=self.finance_store)
+        self.charts_panel = FinanceChartsPanel()
+        self.todo_panel = TodoPanel(todo_store=self.todo_store)
+        self.activity_panel = ActivityPanel()
+        self.work_panel  = WorkPanel(llm_client=self.llm_client)
+        self.debug_panel = DebugPanel()
+
+        self.stack.addWidget(self.dashboard_panel)   # 0
+        self.stack.addWidget(self.notes_panel)       # 1
+        self.stack.addWidget(self.calendar_panel)    # 2
+        self.stack.addWidget(self.finance_panel)     # 3
+        self.stack.addWidget(self.expenses_panel)    # 4
+        self.stack.addWidget(self.charts_panel)      # 5
+        self.stack.addWidget(self.todo_panel)        # 6
+        self.stack.addWidget(self.activity_panel)    # 7
+        self.stack.addWidget(self.work_panel)        # 8
+        self.stack.addWidget(self.debug_panel)       # 9
+        self.work_panel.llm_config_changed.connect(self._reload_llm_client)        
+        main_layout.addWidget(self.stack, 1)
+
+    # ── Status bar ─────────────────────────────────────
+
+    def _build_status_bar(self):
+        self.status_bar = QStatusBar()
+        self.setStatusBar(self.status_bar)
+
+        self.clock_label = QLabel()
+        self.status_bar.addPermanentWidget(self.clock_label)
+        self._update_clock()
+
+        clock_timer = QTimer(self)
+        clock_timer.timeout.connect(self._update_clock)
+        clock_timer.start(30_000)
+
+    def _update_clock(self):
+        now = datetime.now()
+        self.clock_label.setText(now.strftime("%A, %b %d  %H:%M"))
+
+    # ── System tray ────────────────────────────────────
+
+    def _setup_tray(self):
+        if not QSystemTrayIcon.isSystemTrayAvailable():
+            self._tray = None
+            return
+
+        self._tray = QSystemTrayIcon(self)
+        self._tray.setToolTip("LocalSync")
+        self._update_tray_icon()
+
+        # Context menu
+        tray_menu = QMenu()
+        show_action = tray_menu.addAction("Show")
+        show_action.triggered.connect(self._tray_show)
+        tray_menu.addSeparator()
+        quit_action = tray_menu.addAction("Quit")
+        quit_action.triggered.connect(QApplication.quit)
+        self._tray.setContextMenu(tray_menu)
+
+        # Double-click to show
+        self._tray.activated.connect(self._on_tray_activated)
+
+    def _update_tray_icon(self):
+        """Generate a 32x32 theme-aware tray icon (solid circle)."""
+        if not self._tray:
+            return
+        accent = self._palette.get("accent", "#89b4fa")
+        bg = self._palette.get("bg", "#1e1e2e")
+
+        pixmap = QPixmap(32, 32)
+        pixmap.fill(QColor(bg))
+        painter = QPainter(pixmap)
+        painter.setRenderHint(QPainter.RenderHint.Antialiasing)
+        painter.setBrush(QColor(accent))
+        painter.setPen(Qt.PenStyle.NoPen)
+        painter.drawEllipse(4, 4, 24, 24)
+        painter.end()
+
+        from PyQt6.QtGui import QIcon
+        self._tray.setIcon(QIcon(pixmap))
+
+    def _tray_show(self):
+        self.show()
+        self.raise_()
+        self.activateWindow()
+
+    def _on_tray_activated(self, reason):
+        if reason == QSystemTrayIcon.ActivationReason.DoubleClick:
+            self._tray_show()
+
+    # ── Close / minimize to tray ───────────────────────
+
+    def closeEvent(self, event):
+        minimize_to_tray = self.cfg.get("minimize_to_tray", True)
+        if minimize_to_tray and self._tray:
+            event.ignore()
+            self.hide()
+            self._tray.show()
+        else:
+            super().closeEvent(event)
+
+    def changeEvent(self, event):
+        if (event.type() == QEvent.Type.WindowStateChange
+                and self.isMinimized()
+                and self.cfg.get("minimize_to_tray", True)
+                and self._tray):
+            self.hide()
+            self._tray.show()
+        super().changeEvent(event)
+
+    # ── Navigation ─────────────────────────────────────
+
+    def _navigate(self, name: str):
+        idx_map = {
+            "Dashboard": 0, "Notes": 1, "Calendar": 2,
+            "Earnings": 3, "Expenses": 4, "Charts": 5, "Tasks": 6,
+            "Activity": 7, "Work": 8, "Debug": 9,
+        }
+        idx = idx_map.get(name, 0)
+        self.stack.setCurrentIndex(idx)
+        for i, btn in enumerate(self.nav_buttons):
+            btn.setChecked(i == idx)
+        self.status_bar.showMessage(f"  {name}", 2000)
+
+    # ── Theming ────────────────────────────────────────
+
+    def _on_theme_changed(self, theme_name: str):
+        self.cfg["theme"] = theme_name
+        save_config(self.cfg)
+        self._apply_theme(theme_name)
+        # Keep combo in sync (in case called from menu)
+        idx = self.theme_combo.findText(theme_name)
+        if idx >= 0:
+            self.theme_combo.blockSignals(True)
+            self.theme_combo.setCurrentIndex(idx)
+            self.theme_combo.blockSignals(False)
+
+    def _apply_theme(self, name: str):
+        sheet = THEMES.get(name, THEMES["Catppuccin Dark"])
+        palette = PALETTES.get(name, PALETTES["Catppuccin Dark"])
+        self._palette = palette
+        self.setStyleSheet(sheet)
+        self.sidebar.setStyleSheet(
+            f"QWidget#sidebar {{ background-color: {palette['header_bg']}; }}"
+        )
+        for btn in self.nav_buttons:
+            btn.apply_colors(palette["accent"], palette["accent_fg"], palette["hover"])
+        if hasattr(self.finance_panel, 'set_palette'):
+            self.finance_panel.set_palette(palette)
+        if hasattr(self.expenses_panel, 'set_palette'):
+            self.expenses_panel.set_palette(palette)
+        if hasattr(self.calendar_panel, 'set_palette'):
+            self.calendar_panel.set_palette(palette)
+        if hasattr(self.todo_panel, 'set_palette'):
+            self.todo_panel.set_palette(palette)
+        if hasattr(self.dashboard_panel, 'set_palette'):
+            self.dashboard_panel.set_palette(palette)
+        if hasattr(self.charts_panel, 'set_palette'):
+            self.charts_panel.set_palette(palette)
+        if hasattr(self.activity_panel, 'set_palette'):
+            self.activity_panel.set_palette(palette)
+        if hasattr(self.activity_panel, 'set_palette'):
+            self.activity_panel.set_palette(palette)
+        if hasattr(self.notes_panel, 'set_palette'):
+            self.notes_panel.set_palette(palette)
+        if hasattr(self.debug_panel, 'set_palette'):
+            self.debug_panel.set_palette(palette)
+
+        # Update tray icon with new theme colors
+
+        # Update tray icon with new theme colors
+        self._update_tray_icon()
+
+        # Start or stop the Matrix rain background
+        if hasattr(self, "_matrix_rain"):
+            if name == "Matrix":
+                self._matrix_rain.sync_size()
+                self._matrix_rain.start()   # start() calls lower() internally
+            else:
+                self._matrix_rain.stop()
+
+    # ── Sync integration ───────────────────────────────
+
+    def set_sync_engine(self, engine):
+        """Called by main.py to wire up the sync engine."""
+        self.sync_engine = engine
+        engine.status_changed.connect(self.set_sync_status)
+        engine.peers_updated.connect(self._on_peers_updated)
+        engine.sync_completed.connect(self._on_sync_completed)
+
+    def _on_sync_completed(self):
+        """Refresh all panels after incoming data has been merged."""
+        if hasattr(self.notes_panel, '_refresh_list'):
+            self.notes_panel._refresh_list()
+        if hasattr(self.calendar_panel, '_refresh'):
+            self.calendar_panel._refresh()
+        if hasattr(self.finance_panel, '_refresh'):
+            self.finance_panel._refresh()
+        if hasattr(self.expenses_panel, '_refresh'):
+            self.expenses_panel._refresh()
+        if hasattr(self.todo_panel, '_refresh'):
+            self.todo_panel._refresh()
+        if hasattr(self.dashboard_panel, '_refresh'):
+            self.dashboard_panel._refresh()
+        if hasattr(self.charts_panel, '_refresh'):
+            self.charts_panel._refresh()
+        if hasattr(self.activity_panel, '_refresh'):
+            self.activity_panel._refresh()
+        if hasattr(self.work_panel, '_refresh'):
+            self.work_panel._refresh()
+
+    def set_sync_status(self, text: str):
+        self.sync_label.setText(f"Sync: {text}")
+        if "error" in text.lower():
+            self.sync_label.setObjectName("statusWarn")
+        else:
+            self.sync_label.setObjectName("subtitle")
+        self.sync_label.style().unpolish(self.sync_label)
+        self.sync_label.style().polish(self.sync_label)
+
+    def _on_peers_updated(self, peers: list):
+        online = sum(1 for p in peers if p.get("status") == "online")
+        total = len(peers)
+        self.peer_count_label.setText(f"Peers: {online}/{total} online")
+
+    def _force_sync(self):
+        if self.sync_engine:
+            self.sync_engine.force_sync()
+            self.status_bar.showMessage("  Force sync triggered", 3000)
+
+    def _open_network_dialog(self):
+        from src.ui.widgets.network_dialog import NetworkDialog
+        dlg = NetworkDialog(sync_engine=self.sync_engine, parent=self)
+        dlg.llm_settings_saved.connect(self._reload_llm_client)
+        dlg.exec()
+        
+    def _reload_llm_client(self):
+        """Reload the LLM client from config and push it to all panels that use it."""
+        from src.utils.llm import load_llm_client
+        self.llm_client = load_llm_client()
+        self.work_panel.set_llm_client(self.llm_client)
+
+    def _show_about(self):
+        from PyQt6.QtWidgets import QMessageBox
+        QMessageBox.about(
+            self, f"About {APP_NAME}",
+            f"<b>{APP_NAME}</b> v{APP_VERSION}<br><br>"
+            f"Personal productivity app with LAN mesh sync.<br>"
+            f"Notes \u2022 Calendar \u2022 Earnings \u2022 Tasks<br><br>"
+            f"Syncs automatically over your home network.",
+        )
+```
+
+### `src\ui\modules\__init__.py`
+
+```python
+"""Module panels for each app feature."""
+
+from src.ui.modules.notes_panel import NotesPanel
+from src.ui.modules.calendar_panel import CalendarPanel
+from src.ui.modules.finance_panel import FinancePanel
+from src.ui.modules.expenses_panel import ExpensesPanel
+
+__all__ = ["NotesPanel", "CalendarPanel", "FinancePanel", "ExpensesPanel"]
+
+```
+
+### `src\ui\modules\activity_panel.py`
+
+```python
+"""Activity Tracker panel — quick-tap card interface + weekly 24-hour grid.
+
+Layout:
+  Left (scrollable):  7-column × 24-hour painted block grid
+  Right (fixed 380px):
+    - Quick-tap category cards (2×3 grid)
+    - Today's activity log
+    - Manual log form with matching pill picker for category selection
+"""
+
+from __future__ import annotations
+
+from datetime import date, datetime, timedelta
+from pathlib import Path
+
+from PyQt6.QtCore import Qt, QRectF, QPointF, QTimer, QTime, pyqtSignal
+from PyQt6.QtGui import (
+    QPainter, QColor, QFont, QFontMetrics, QPen, QBrush, QMouseEvent,
+)
+from PyQt6.QtWidgets import (
+    QWidget, QVBoxLayout, QHBoxLayout, QLabel,
+    QPushButton, QComboBox, QTimeEdit, QPlainTextEdit,
+    QFrame, QScrollArea, QMessageBox, QSizePolicy,
+    QDialog, QGridLayout, QDialogButtonBox, QLineEdit,
+)
+
+from src.config import load_config, save_config
+from src.data.activity_store import (
+    ActivityStore, Activity,
+    DEFAULT_ACTIVITIES, ACTIVITY_COLORS, DEFAULT_COLOR, QUICK_CATEGORIES,
+)
+from src.ui.widgets.nav_button import NavButton
+
+
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+#  Layout constants
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+HOUR_H    = 52
+HEADER_H  = 44
+TIME_W    = 52
+DAY_COUNT = 7
+TOTAL_H   = HEADER_H + 24 * HOUR_H
+
+
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+#  Helpers
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+def _parse_hhmm(s: str) -> float:
+    try:
+        h, m = map(int, s.split(":"))
+        return h + m / 60.0
+    except Exception:
+        return 0.0
+
+def _hours_to_px(hours: float) -> float:
+    return HEADER_H + hours * HOUR_H
+
+def _px_to_hours(py: float) -> float:
+    return max(0.0, min(24.0, (py - HEADER_H) / HOUR_H))
+
+def _fmt_hm(total_minutes: int) -> str:
+    h, m = divmod(abs(total_minutes), 60)
+    return f"{h}h {m}m" if m else f"{h}h"
+
+def _fmt_elapsed(secs: int) -> str:
+    h, rem = divmod(secs, 3600)
+    m, s = divmod(rem, 60)
+    return f"{h}:{m:02d}:{s:02d}" if h else f"{m:02d}:{s:02d}"
+
+
+def _resolve_overlaps(activities: list) -> list[tuple]:
+    """Resolve overlapping activities using last-created-wins policy.
+
+    Sorts activities by created_at ascending so the most recently added
+    activity claims its time slot, clipping any earlier activities that
+    overlap it.
+
+    Returns a list of (activity, start_hours, end_hours) tuples,
+    sorted by start_hours, with no overlapping segments.
+    """
+    if not activities:
+        return []
+
+    # Oldest first — newest will overwrite overlapping segments below
+    sorted_acts = sorted(activities, key=lambda a: a.created_at or "")
+
+    # Each segment: (start_hour, end_hour, activity)
+    segments: list[tuple[float, float, object]] = []
+
+    for act in sorted_acts:
+        start = _parse_hhmm(act.start_time)
+        end   = _parse_hhmm(act.end_time)
+        if end <= start:
+            end = 24.0          # midnight-overflow: extend to end of day
+
+        new_segments: list[tuple[float, float, object]] = []
+        for (s, e, a) in segments:
+            if e <= start or s >= end:
+                # No overlap — keep as-is
+                new_segments.append((s, e, a))
+            else:
+                # Partial overlap — keep only the non-overlapping tails
+                if s < start:
+                    new_segments.append((s, start, a))
+                if e > end:
+                    new_segments.append((end, e, a))
+                # The middle portion [start, end] is claimed by the newer act
+
+        new_segments.append((start, end, act))
+        segments = new_segments
+
+    segments.sort(key=lambda x: x[0])
+    return segments
+
+
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+#  ActivityBlock
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+class ActivityBlock:
+    def __init__(self, activity: Activity, col: int,
+                 y_start: float, y_end: float, overflow: bool = False):
+        self.activity = activity
+        self.col      = col
+        self.y_start  = y_start
+        self.y_end    = y_end
+        self.overflow = overflow
+        self.rect     = QRectF()
+
+
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+#  WeekBlockWidget
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+class WeekBlockWidget(QWidget):
+    block_clicked = pyqtSignal(object)
+    empty_clicked = pyqtSignal(object, float)
+
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self._palette: dict = {}
+        self._blocks:  list[ActivityBlock] = []
+        self._week_start = date.today() - timedelta(days=date.today().weekday())
+        self._selected: ActivityBlock | None = None
+        self._drag_start: QPointF | None = None
+        self.setMinimumHeight(TOTAL_H)
+        self.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
+        self.setCursor(Qt.CursorShape.CrossCursor)
+
+    def set_palette(self, palette: dict):
+        self._palette = palette
+        self.update()
+
+    def load_week(self, week_start: date, activities_by_date: dict):
+        self._week_start = week_start
+        self._blocks = []
+        for col, (d, acts) in enumerate(activities_by_date.items()):
+            # Resolve overlaps: latest-created wins for any time slot
+            segments = _resolve_overlaps(list(acts))
+            for (start_h, end_h, act) in segments:
+                y0 = _hours_to_px(start_h)
+                y1 = _hours_to_px(end_h)
+                # Mark overflow only when the original activity wraps midnight
+                orig_start = _parse_hhmm(act.start_time)
+                orig_end   = _parse_hhmm(act.end_time)
+                overflow   = orig_end <= orig_start
+                self._blocks.append(ActivityBlock(act, col, y0, y1, overflow))
+        self._selected = None
+        self.update()
+
+    def mousePressEvent(self, ev: QMouseEvent):
+        if ev.button() != Qt.MouseButton.LeftButton:
+            return
+        pos = ev.position()
+        for b in self._blocks:
+            if b.rect.contains(pos):
+                self._selected = b
+                self.update()
+                self.block_clicked.emit(b.activity)
+                return
+        # Empty click — work out which day/hour
+        total_w = self.width() - TIME_W
+        col_w   = total_w / DAY_COUNT
+        col     = int((pos.x() - TIME_W) / col_w)
+        col     = max(0, min(DAY_COUNT - 1, col))
+        d       = self._week_start + timedelta(days=col)
+        hour    = _px_to_hours(pos.y())
+        self.empty_clicked.emit(d, hour)
+
+    def paintEvent(self, _):
+        p = QPainter(self)
+        p.setRenderHint(QPainter.RenderHint.Antialiasing)
+
+        w    = self.width()
+        bg   = QColor(self._palette.get("bg",      "#1e1e2e"))
+        surf = QColor(self._palette.get("surface", "#313244"))
+        bord = QColor(self._palette.get("border",  "#45475a"))
+        fg   = QColor(self._palette.get("fg",      "#cdd6f4"))
+        mut  = QColor(self._palette.get("muted",   "#7f849c"))
+        acc  = QColor(self._palette.get("accent",  "#89b4fa"))
+        today = date.today()
+
+        total_w = w - TIME_W
+        col_w   = total_w / DAY_COUNT
+
+        # Background
+        p.fillRect(0, 0, w, TOTAL_H, bg)
+
+        # Hour grid lines + time labels
+        time_font = QFont(); time_font.setPixelSize(10)
+        p.setFont(time_font)
+        for hour in range(25):
+            y = int(_hours_to_px(hour))
+            p.setPen(QPen(bord, 1))
+            p.drawLine(TIME_W, y, w, y)
+            if hour < 24:
+                p.setPen(mut)
+                p.drawText(0, y, TIME_W - 4, HOUR_H,
+                           Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignTop,
+                           f"{hour:02d}:00")
+
+        # Column separators + day headers
+        day_names  = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
+        hdr_font   = QFont(); hdr_font.setPixelSize(11); hdr_font.setBold(True)
+        p.setFont(hdr_font)
+        for col in range(DAY_COUNT):
+            x  = TIME_W + col * col_w
+            d  = self._week_start + timedelta(days=col)
+            is_today = (d == today)
+
+            # Column background
+            if is_today:
+                today_bg = QColor(acc); today_bg.setAlpha(15)
+                p.fillRect(int(x), HEADER_H, int(col_w), TOTAL_H - HEADER_H, today_bg)
+
+            # Vertical separator
+            p.setPen(QPen(bord, 1))
+            p.drawLine(int(x), 0, int(x), TOTAL_H)
+
+            # Header cell
+            hdr_bg = QColor(acc) if is_today else surf
+            p.fillRect(int(x) + 1, 0, int(col_w) - 1, HEADER_H, hdr_bg)
+
+            p.setPen(QColor(self._palette.get("accent_fg", "#1e1e2e")) if is_today else fg)
+            label = f"{day_names[col]}\n{d.day}"
+            p.drawText(int(x), 0, int(col_w), HEADER_H,
+                       Qt.AlignmentFlag.AlignCenter, label)
+
+        # Right border
+        p.setPen(QPen(bord, 1))
+        p.drawLine(w - 1, 0, w - 1, TOTAL_H)
+
+        # Activity blocks — solid fill, latest-wins segments already resolved
+        for b in self._blocks:
+            x  = TIME_W + b.col * col_w + 2
+            bw = col_w - 4
+            by = b.y_start + 1
+            bh = max(b.y_end - b.y_start - 2, 4)
+            b.rect = QRectF(x, by, bw, bh)
+
+            color = QColor(ACTIVITY_COLORS.get(b.activity.activity, DEFAULT_COLOR))
+            fill  = QColor(color)
+
+            is_sel = (b is self._selected)
+            if is_sel:
+                fill.setAlpha(240)
+                p.setPen(QPen(color.lighter(140), 2))
+            else:
+                fill.setAlpha(200)
+                p.setPen(QPen(color.darker(130), 1))
+
+            p.setBrush(QBrush(fill))
+            p.drawRoundedRect(b.rect, 4, 4)
+
+            if bh >= 14:
+                lf = QFont(); lf.setPixelSize(10 if bh < 32 else 11); lf.setBold(True)
+                p.setFont(lf)
+                # Contrast: dark text on light blocks, light text on dark blocks
+                p.setPen(QColor("#11111b") if color.lightness() > 128 else QColor("#cdd6f4"))
+                fm   = QFontMetrics(lf)
+                text = ("\u2190 " if b.overflow else "") + b.activity.activity
+                etext = fm.elidedText(text, Qt.TextElideMode.ElideRight, int(bw - 8))
+                tr = b.rect.adjusted(4, 2, -4, -2)
+                if bh >= 32:
+                    p.drawText(tr, Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop, etext)
+                    lf.setPixelSize(9); lf.setBold(False); p.setFont(lf)
+                    p.drawText(QRectF(x+4, by+13, bw-8, 12),
+                               Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop,
+                               f"{b.activity.start_time}\u2013{b.activity.end_time}")
+                else:
+                    p.drawText(tr, Qt.AlignmentFlag.AlignVCenter | Qt.AlignmentFlag.AlignLeft, etext)
+
+        now = datetime.now()
+        if self._week_start <= today <= self._week_start + timedelta(days=6):
+            nc = (today - self._week_start).days
+            ny = _hours_to_px(now.hour + now.minute / 60)
+            x0 = TIME_W + nc * col_w; x1 = x0 + col_w
+            nc_color = QColor(self._palette.get("red", "#f38ba8"))
+            p.setPen(QPen(nc_color, 2))
+            p.drawLine(QPointF(x0, ny), QPointF(x1, ny))
+            p.setBrush(QBrush(nc_color)); p.setPen(Qt.PenStyle.NoPen)
+            p.drawEllipse(QPointF(x0, ny), 4, 4)
+        p.end()
+
+
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+#  NotesDialog
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+class NotesDialog(QDialog):
+    def __init__(self, parent=None, notes: str = "", title: str = "Activity Notes"):
+        super().__init__(parent)
+        self.setWindowTitle(title)
+        self.setMinimumSize(360, 220)
+        self.setModal(True)
+        layout = QVBoxLayout(self)
+        layout.setSpacing(8)
+        layout.addWidget(QLabel("Notes (optional):"))
+        self.edit = QPlainTextEdit()
+        self.edit.setPlainText(notes)
+        self.edit.setPlaceholderText("What did you do during this time?")
+        self.edit.setMinimumHeight(120)
+        layout.addWidget(self.edit)
+        btn_box = QDialogButtonBox(
+            QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel)
+        btn_box.accepted.connect(self.accept)
+        btn_box.rejected.connect(self.reject)
+        layout.addWidget(btn_box)
+
+    def get_notes(self) -> str:
+        return self.edit.toPlainText().strip()
+
+
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+#  RenameCategoriesDialog
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+class RenameCategoriesDialog(QDialog):
+    def __init__(self, categories: list[str], parent=None):
+        super().__init__(parent)
+        self.setWindowTitle("Edit Quick Categories")
+        self.setMinimumWidth(320)
+        self.setModal(True)
+        layout = QVBoxLayout(self)
+        layout.addWidget(QLabel("Rename the 6 quick-tap categories:"))
+        self._edits: list[QLineEdit] = []
+        form = QGridLayout(); form.setSpacing(6)
+        for i, cat in enumerate(categories):
+            lbl  = QLabel(f"Card {i + 1}:")
+            edit = QLineEdit(cat)
+            self._edits.append(edit)
+            form.addWidget(lbl, i, 0); form.addWidget(edit, i, 1)
+        layout.addLayout(form)
+        btn_box = QDialogButtonBox(
+            QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel)
+        btn_box.accepted.connect(self.accept)
+        btn_box.rejected.connect(self.reject)
+        layout.addWidget(btn_box)
+
+    def get_categories(self) -> list[str]:
+        return [e.text().strip() or "—" for e in self._edits]
+
+
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+#  QuickCard — large pill card for one-tap tracking
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+class QuickCard(QFrame):
+    tapped = pyqtSignal(str)
+
+    def __init__(self, category: str, parent=None):
+        super().__init__(parent)
+        self._category = category
+        self._active   = False
+        self._elapsed_secs    = 0
+        self._daily_total_mins = 0
+        self._color = ACTIVITY_COLORS.get(category, DEFAULT_COLOR)
+        self.setMinimumHeight(78)
+        self.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
+        self.setCursor(Qt.CursorShape.PointingHandCursor)
+        self._build_ui()
+        self._apply_style(active=False)
+
+    def _build_ui(self):
+        layout = QVBoxLayout(self)
+        layout.setContentsMargins(10, 8, 10, 8)
+        layout.setSpacing(3)
+        layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
+
+        name_row = QHBoxLayout(); name_row.setSpacing(4)
+        self._play_lbl = QLabel()
+        self._play_lbl.setFixedWidth(16)
+        self._play_lbl.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        name_row.addWidget(self._play_lbl)
+        self._name_lbl = QLabel(self._category)
+        self._name_lbl.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self._name_lbl.setStyleSheet(
+            "font-size:13px;font-weight:bold;background:transparent;border:none;")
+        name_row.addWidget(self._name_lbl, 1)
+        layout.addLayout(name_row)
+
+        self._time_lbl = QLabel("—")
+        self._time_lbl.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self._time_lbl.setStyleSheet(
+            "font-size:11px;font-family:monospace;background:transparent;border:none;")
+        layout.addWidget(self._time_lbl)
+
+        self._total_lbl = QLabel("")
+        self._total_lbl.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self._total_lbl.setStyleSheet("font-size:9px;background:transparent;border:none;")
+        layout.addWidget(self._total_lbl)
+
+    def set_active(self, active: bool, elapsed_secs: int = 0):
+        self._active = active
+        self._elapsed_secs = elapsed_secs
+        self._refresh_display()
+        self._apply_style(active)
+
+    def set_daily_total(self, minutes: int):
+        self._daily_total_mins = minutes
+        self._refresh_display()
+
+    def tick(self, elapsed_secs: int):
+        self._elapsed_secs = elapsed_secs
+        self._refresh_display()
+
+    def _refresh_display(self):
+        if self._active:
+            self._play_lbl.setText("\u25b6")
+            self._play_lbl.setStyleSheet(
+                f"color:{self._color};font-size:11px;background:transparent;border:none;")
+            self._time_lbl.setText(_fmt_elapsed(self._elapsed_secs))
+            self._time_lbl.setStyleSheet(
+                f"font-size:13px;font-weight:bold;font-family:monospace;"
+                f"color:{self._color};background:transparent;border:none;")
+            total = self._daily_total_mins + self._elapsed_secs // 60
+            self._total_lbl.setText(f"Today: {_fmt_hm(total)}" if total else "Today: just started")
+        else:
+            self._play_lbl.setText("")
+            self._play_lbl.setStyleSheet("background:transparent;border:none;")
+            if self._daily_total_mins > 0:
+                self._time_lbl.setText(_fmt_hm(self._daily_total_mins))
+                self._time_lbl.setStyleSheet(
+                    "font-size:12px;font-family:monospace;background:transparent;border:none;")
+                self._total_lbl.setText("today")
+            else:
+                self._time_lbl.setText("—")
+                self._time_lbl.setStyleSheet(
+                    "font-size:11px;font-family:monospace;background:transparent;border:none;")
+                self._total_lbl.setText("")
+
+    def _apply_style(self, active: bool):
+        color = self._color
+        if active:
+            c = QColor(color); c.setAlpha(45)
+            bg = c.name(QColor.NameFormat.HexArgb)
+            self.setStyleSheet(
+                f"QuickCard{{border:2px solid {color};border-radius:12px;"
+                f"background-color:{bg};}}")
+        else:
+            self.setStyleSheet(
+                f"QuickCard{{border:1px solid {color}55;border-radius:12px;"
+                f"background-color:transparent;}}"
+                f"QuickCard:hover{{border:1px solid {color};"
+                f"background-color:{color}18;}}")
+
+    def update_category(self, new_name: str):
+        self._category = new_name
+        self._color    = ACTIVITY_COLORS.get(new_name, DEFAULT_COLOR)
+        self._name_lbl.setText(new_name)
+        self._apply_style(self._active)
+
+    def mousePressEvent(self, ev):
+        if ev.button() == Qt.MouseButton.LeftButton:
+            self.tapped.emit(self._category)
+        super().mousePressEvent(ev)
+
+
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+#  TodayBreakdown
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+def _make_lbl(text: str, style: str) -> QLabel:
+    l = QLabel(text); l.setStyleSheet(style); return l
+
+
+class TodayBreakdown(QWidget):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self._palette: dict = {}
+        self._layout = QVBoxLayout(self)
+        self._layout.setContentsMargins(0, 0, 0, 0)
+        self._layout.setSpacing(2)
+
+    def set_palette(self, palette: dict):
+        self._palette = palette
+
+    def refresh(self, activities: list, active_category=None, session_start=None):
+        while self._layout.count():
+            child = self._layout.takeAt(0)
+            if child.widget():
+                child.widget().deleteLater()
+
+        muted = self._palette.get("muted", "#7f849c")
+
+        if not activities and not active_category:
+            self._layout.addWidget(_make_lbl(
+                "No activity logged today.", f"font-size:10px;color:{muted};"))
+            return
+
+        if active_category and session_start:
+            color = ACTIVITY_COLORS.get(active_category, DEFAULT_COLOR)
+            elapsed_mins = int((datetime.now() - session_start).total_seconds() // 60)
+            row = QHBoxLayout(); row.setSpacing(6); row.setContentsMargins(0, 1, 0, 1)
+            dot = QLabel("\u25b6"); dot.setFixedWidth(12)
+            dot.setStyleSheet(f"color:{color};font-size:10px;")
+            row.addWidget(dot)
+            name = QLabel(active_category)
+            name.setStyleSheet(f"font-size:10px;font-weight:bold;color:{color};")
+            row.addWidget(name, 1)
+            row.addWidget(_make_lbl(f"{elapsed_mins}m\u2026", f"font-size:10px;color:{color};"))
+            w = QWidget(); w.setLayout(row)
+            self._layout.addWidget(w)
+
+        for act in reversed(activities):
+            color = ACTIVITY_COLORS.get(act.activity, DEFAULT_COLOR)
+            row = QHBoxLayout(); row.setSpacing(6); row.setContentsMargins(0, 1, 0, 1)
+            dot = QLabel("\u25cf"); dot.setFixedWidth(12)
+            dot.setStyleSheet(f"color:{color};font-size:10px;")
+            row.addWidget(dot)
+            row.addWidget(_make_lbl(act.activity, "font-size:10px;font-weight:bold;"), 1)
+            dur = act.duration_minutes
+            row.addWidget(_make_lbl(_fmt_hm(dur) if dur > 0 else "\u2014",
+                                    f"font-size:10px;color:{muted};"))
+            row.addWidget(_make_lbl(f"{act.start_time}\u2013{act.end_time}",
+                                    f"font-size:9px;color:{muted};"))
+            w = QWidget(); w.setLayout(row)
+            self._layout.addWidget(w)
+
+        self._layout.addStretch()
+
+
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+#  CategoryPillPicker — compact pill grid for LogForm
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+class _SmallPill(QFrame):
+    """A single small pill inside CategoryPillPicker."""
+
+    tapped = pyqtSignal(str)
+
+    def __init__(self, category: str, parent=None):
+        super().__init__(parent)
+        self._category = category
+        self._selected = False
+        self._color = ACTIVITY_COLORS.get(category, DEFAULT_COLOR)
+        self.setMinimumHeight(40)
+        self.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
+        self.setCursor(Qt.CursorShape.PointingHandCursor)
+
+        layout = QVBoxLayout(self)
+        layout.setContentsMargins(6, 4, 6, 4)
+        layout.setSpacing(1)
+        layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
+
+        self._name_lbl = QLabel(category)
+        self._name_lbl.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self._name_lbl.setStyleSheet(
+            "font-size:11px;font-weight:bold;background:transparent;border:none;")
+        layout.addWidget(self._name_lbl)
+
+        self._apply_style()
+
+    def set_selected(self, selected: bool):
+        self._selected = selected
+        self._apply_style()
+
+    def update_category(self, name: str):
+        self._category = name
+        self._color = ACTIVITY_COLORS.get(name, DEFAULT_COLOR)
+        self._name_lbl.setText(name)
+        self._apply_style()
+
+    def _apply_style(self):
+        color = self._color
+        if self._selected:
+            c = QColor(color); c.setAlpha(50)
+            bg = c.name(QColor.NameFormat.HexArgb)
+            self.setStyleSheet(
+                f"_SmallPill{{border:2px solid {color};border-radius:8px;"
+                f"background-color:{bg};}}")
+            self._name_lbl.setStyleSheet(
+                f"font-size:11px;font-weight:bold;color:{color};"
+                "background:transparent;border:none;")
+        else:
+            self.setStyleSheet(
+                f"_SmallPill{{border:1px solid {color}44;border-radius:8px;"
+                f"background-color:transparent;}}"
+                f"_SmallPill:hover{{border:1px solid {color}aa;"
+                f"background-color:{color}15;}}")
+            self._name_lbl.setStyleSheet(
+                "font-size:11px;font-weight:bold;background:transparent;border:none;")
+
+    def mousePressEvent(self, ev):
+        if ev.button() == Qt.MouseButton.LeftButton:
+            self.tapped.emit(self._category)
+        super().mousePressEvent(ev)
+
+
+class CategoryPillPicker(QWidget):
+    """2×3 grid of small pills + optional custom text field."""
+
+    def __init__(self, categories: list[str], parent=None):
+        super().__init__(parent)
+        self._pills: list[_SmallPill] = []
+        self._selected_cat: str | None = None
+        self._build_ui(categories)
+
+    def _build_ui(self, categories: list[str]):
+        root = QVBoxLayout(self)
+        root.setContentsMargins(0, 0, 0, 0)
+        root.setSpacing(4)
+
+        grid = QGridLayout(); grid.setSpacing(5)
+        for i, cat in enumerate(categories):
+            pill = _SmallPill(cat)
+            pill.tapped.connect(self._on_pill_tapped)
+            self._pills.append(pill)
+            grid.addWidget(pill, i // 3, i % 3)
+        root.addLayout(grid)
+
+        self._custom = QLineEdit()
+        self._custom.setPlaceholderText("Other activity\u2026")
+        self._custom.setFixedHeight(26)
+        self._custom.setStyleSheet("font-size:11px;")
+        self._custom.textChanged.connect(self._on_custom_changed)
+        root.addWidget(self._custom)
+
+    def _on_pill_tapped(self, category: str):
+        self._custom.blockSignals(True)
+        self._custom.clear()
+        self._custom.blockSignals(False)
+        if self._selected_cat == category:
+            self._selected_cat = None
+        else:
+            self._selected_cat = category
+        self._sync_pill_styles()
+
+    def _on_custom_changed(self, text: str):
+        if text.strip():
+            self._selected_cat = None
+            self._sync_pill_styles()
+
+    def _sync_pill_styles(self):
+        for pill in self._pills:
+            pill.set_selected(pill._category == self._selected_cat)
+
+    def get_activity(self) -> str:
+        custom = self._custom.text().strip()
+        if custom:
+            return custom
+        return self._selected_cat or ""
+
+    def set_activity(self, name: str):
+        self._custom.blockSignals(True)
+        self._custom.clear()
+        self._custom.blockSignals(False)
+        self._selected_cat = None
+        for pill in self._pills:
+            if pill._category == name:
+                self._selected_cat = name
+                break
+        if self._selected_cat is None and name:
+            self._custom.setText(name)
+        self._sync_pill_styles()
+
+    def clear(self):
+        self._selected_cat = None
+        self._custom.blockSignals(True)
+        self._custom.clear()
+        self._custom.blockSignals(False)
+        self._sync_pill_styles()
+
+    def update_categories(self, categories: list[str]):
+        for pill, cat in zip(self._pills, categories):
+            pill.update_category(cat)
+        if self._selected_cat not in categories:
+            self._selected_cat = None
+            self._sync_pill_styles()
+
+
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+#  LogForm — manual activity entry / edit form
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+class LogForm(QWidget):
+    activity_added   = pyqtSignal(object)
+    activity_updated = pyqtSignal(object)
+    activity_deleted = pyqtSignal(str)
+
+    def __init__(self, week_start: date, quick_cats: list[str], parent=None):
+        super().__init__(parent)
+        self._week_start   = week_start
+        self._quick_cats   = quick_cats
+        self._editing: Activity | None = None
+        self._pending_notes = ""
+        self._timer: QTimer | None = None
+        self._timer_start: datetime | None = None
+        self._palette: dict = {}
+        self._build_ui()
+
+    def set_palette(self, palette: dict):
+        self._palette = palette
+
+    def _build_ui(self):
+        root = QVBoxLayout(self)
+        root.setContentsMargins(0, 0, 0, 0)
+        root.setSpacing(5)
+
+        hdr = QHBoxLayout()
+        self._form_title = QLabel("Log Activity")
+        self._form_title.setStyleSheet("font-size:12px;font-weight:bold;")
+        hdr.addWidget(self._form_title); hdr.addStretch()
+        self._cancel_btn = QPushButton("Cancel")
+        self._cancel_btn.setObjectName("secondary")
+        self._cancel_btn.setFixedHeight(24)
+        self._cancel_btn.clicked.connect(self._cancel_edit)
+        self._cancel_btn.setVisible(False)
+        hdr.addWidget(self._cancel_btn)
+        root.addLayout(hdr)
+
+        self._pill_picker = CategoryPillPicker(self._quick_cats)
+        root.addWidget(self._pill_picker)
+
+        self.day_combo = QComboBox()
+        self._rebuild_day_combo()
+        root.addWidget(self.day_combo)
+
+        time_row = QHBoxLayout(); time_row.setSpacing(6)
+        self._start_lbl = QLabel("Start"); self._start_lbl.setFixedWidth(30)
+        muted = "#7f849c"
+        self._start_lbl.setStyleSheet(f"font-size:10px;color:{muted};")
+        time_row.addWidget(self._start_lbl)
+        self.start_edit = QTimeEdit()
+        self.start_edit.setDisplayFormat("HH:mm")
+        now = datetime.now()
+        self.start_edit.setTime(QTime(now.hour, 0))
+        time_row.addWidget(self.start_edit, 1)
+        time_row.addSpacing(4)
+        self._end_lbl = QLabel("End"); self._end_lbl.setFixedWidth(24)
+        self._end_lbl.setStyleSheet(f"font-size:10px;color:{muted};")
+        time_row.addWidget(self._end_lbl)
+        self.end_edit = QTimeEdit()
+        self.end_edit.setDisplayFormat("HH:mm")
+        self.end_edit.setTime(QTime(min(now.hour + 1, 23), 0))
+        time_row.addWidget(self.end_edit, 1)
+        root.addLayout(time_row)
+
+        timer_row = QHBoxLayout(); timer_row.setSpacing(6)
+        timer_icon = QLabel("\u23f1"); timer_icon.setStyleSheet("font-size:13px;")
+        timer_icon.setFixedWidth(18); timer_row.addWidget(timer_icon)
+        self._timer_label = QLabel("00:00")
+        self._timer_label.setStyleSheet(
+            "font-family:monospace;font-size:13px;font-weight:bold;")
+        self._timer_label.setMinimumWidth(52)
+        timer_row.addWidget(self._timer_label); timer_row.addStretch()
+        self._start_btn = QPushButton("Start")
+        self._start_btn.setFixedHeight(26)
+        self._start_btn.setStyleSheet(
+            "background-color:#a6e3a1;color:#1e1e2e;font-weight:bold;"
+            "border-radius:4px;padding:2px 10px;font-size:11px;")
+        self._start_btn.clicked.connect(self._start_timer)
+        timer_row.addWidget(self._start_btn)
+        self._stop_btn = QPushButton("Stop")
+        self._stop_btn.setFixedHeight(26)
+        self._stop_btn.setStyleSheet(
+            "background-color:#f38ba8;color:#1e1e2e;font-weight:bold;"
+            "border-radius:4px;padding:2px 10px;font-size:11px;")
+        self._stop_btn.setEnabled(False)
+        self._stop_btn.clicked.connect(self._stop_timer)
+        timer_row.addWidget(self._stop_btn)
+        root.addLayout(timer_row)
+
+        action_row = QHBoxLayout(); action_row.setSpacing(5)
+        self._notes_btn = QPushButton("Notes\u2026")
+        self._notes_btn.setObjectName("secondary")
+        self._notes_btn.setFixedHeight(26)
+        self._notes_btn.clicked.connect(self._open_notes)
+        action_row.addWidget(self._notes_btn); action_row.addStretch()
+        self._delete_btn = QPushButton("Delete")
+        self._delete_btn.setObjectName("destructive")
+        self._delete_btn.setFixedHeight(26)
+        self._delete_btn.clicked.connect(self._delete)
+        self._delete_btn.setVisible(False)
+        action_row.addWidget(self._delete_btn)
+        self._action_btn = QPushButton("Add")
+        self._action_btn.setFixedHeight(26)
+        self._action_btn.clicked.connect(self._submit)
+        action_row.addWidget(self._action_btn)
+        root.addLayout(action_row)
+
+    def set_week_start(self, week_start: date):
+        self._week_start = week_start
+        self._rebuild_day_combo()
+
+    def update_categories(self, categories: list[str]):
+        self._quick_cats = categories
+        self._pill_picker.update_categories(categories)
+
+    def prefill(self, d: date, hour: float):
+        self._cancel_edit()
+        idx = (d - self._week_start).days
+        if 0 <= idx < 7: self.day_combo.setCurrentIndex(idx)
+        h = int(hour); m = int((hour - h) * 60)
+        self.start_edit.setTime(QTime(h, m))
+        self.end_edit.setTime(QTime(min(h + 1, 23), m))
+
+    def load_for_edit(self, activity: Activity):
+        self._editing       = activity
+        self._pending_notes = activity.notes or ""
+        self._pill_picker.set_activity(activity.activity)
+
+        act_date = date.fromisoformat(activity.date)
+        day_idx  = (act_date - self._week_start).days
+        if 0 <= day_idx < 7: self.day_combo.setCurrentIndex(day_idx)
+
+        sh, sm = map(int, activity.start_time.split(":"))
+        eh, em = map(int, activity.end_time.split(":"))
+        self.start_edit.setTime(QTime(sh, sm))
+        self.end_edit.setTime(QTime(eh, em))
+
+        self._form_title.setText("Edit Activity")
+        self._action_btn.setText("Update")
+        self._cancel_btn.setVisible(True)
+        self._delete_btn.setVisible(True)
+        self._notes_btn.setText("Notes \u2713" if self._pending_notes else "Notes\u2026")
+
+    def _rebuild_day_combo(self):
+        self.day_combo.clear()
+        day_names = ["Mon","Tue","Wed","Thu","Fri","Sat","Sun"]
+        today = date.today()
+        for i in range(7):
+            d = self._week_start + timedelta(days=i)
+            label = f"{day_names[i]} {d.day}" + (" \u2605" if d == today else "")
+            self.day_combo.addItem(label, d)
+        idx = (today - self._week_start).days
+        if 0 <= idx < 7: self.day_combo.setCurrentIndex(idx)
+
+    def _selected_date(self) -> date:
+        d = self.day_combo.currentData()
+        return d if isinstance(d, date) else self._week_start
+
+    def _submit(self):
+        name = self._pill_picker.get_activity().strip()
+        if not name: return
+        self._stop_timer()
+        start = self.start_edit.time().toString("HH:mm")
+        end   = self.end_edit.time().toString("HH:mm")
+        d     = self._selected_date()
+        if self._editing:
+            self._editing.activity   = name
+            self._editing.date       = d.isoformat()
+            self._editing.start_time = start
+            self._editing.end_time   = end
+            self._editing.notes      = self._pending_notes
+            self.activity_updated.emit(self._editing)
+            self._cancel_edit()
+        else:
+            act = ActivityStore().add(date=d.isoformat(), activity=name,
+                                      start_time=start, end_time=end,
+                                      notes=self._pending_notes)
+            self._pending_notes = ""
+            self._notes_btn.setText("Notes\u2026")
+            self.activity_added.emit(act)
+
+    def _delete(self):
+        if not self._editing: return
+        reply = QMessageBox.question(
+            self, "Delete Activity",
+            f"Delete '{self._editing.activity}' "
+            f"({self._editing.start_time}\u2013{self._editing.end_time})?",
+            QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
+        )
+        if reply == QMessageBox.StandardButton.Yes:
+            self.activity_deleted.emit(self._editing.id)
+            self._cancel_edit()
+
+    def _cancel_edit(self):
+        self._editing = None
+        self._pending_notes = ""
+        self._pill_picker.clear()
+        self._form_title.setText("Log Activity")
+        self._action_btn.setText("Add")
+        self._cancel_btn.setVisible(False)
+        self._delete_btn.setVisible(False)
+        self._notes_btn.setText("Notes\u2026")
+
+    def _open_notes(self):
+        dlg = NotesDialog(self, self._pending_notes)
+        if dlg.exec() == QDialog.DialogCode.Accepted:
+            self._pending_notes = dlg.get_notes()
+            self._notes_btn.setText(
+                "Notes \u2713" if self._pending_notes else "Notes\u2026")
+
+    def _start_timer(self):
+        now = datetime.now()
+        self._timer_start = now
+        self.start_edit.setTime(QTime(now.hour, now.minute))
+        self.end_edit.setTime(QTime(now.hour, now.minute))
+        self._timer = QTimer(self)
+        self._timer.timeout.connect(self._tick)
+        self._timer.start(1000)
+        self._start_btn.setEnabled(False); self._stop_btn.setEnabled(True)
+        self._timer_label.setStyleSheet(
+            "font-family:monospace;font-size:13px;font-weight:bold;color:#a6e3a1;")
+
+    def _stop_timer(self):
+        if self._timer: self._timer.stop(); self._timer = None
+        if self._timer_start:
+            now = datetime.now()
+            self.end_edit.setTime(QTime(now.hour, now.minute))
+        self._timer_start = None
+        self._start_btn.setEnabled(True); self._stop_btn.setEnabled(False)
+        self._timer_label.setStyleSheet(
+            "font-family:monospace;font-size:13px;font-weight:bold;")
+
+    def _tick(self):
+        if not self._timer_start: return
+        secs = int((datetime.now() - self._timer_start).total_seconds())
+        h, s = divmod(secs, 3600); m, s = divmod(s, 60)
+        self._timer_label.setText(f"{h:02d}:{m:02d}" if h else f"{m:02d}:{s:02d}")
+        now = datetime.now()
+        self.end_edit.setTime(QTime(now.hour, now.minute))
+
+
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+#  ActivityPanel — main panel
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+class ActivityPanel(QWidget):
+
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self._palette: dict = {}
+        self.store = ActivityStore()
+        self._week_start = date.today() - timedelta(days=date.today().weekday())
+        self._activities_by_date: dict[date, list[Activity]] = {}
+
+        self._active_category: str | None = None
+        self._session_start: datetime | None = None
+        self._card_timer: QTimer | None = None
+
+        # NavButton references stored for palette refresh
+        self._prev_week_btn: NavButton | None = None
+        self._next_week_btn: NavButton | None = None
+
+        self._quick_cats = self._load_quick_cats()
+        self._build_ui()
+        self._refresh()
+        self._schedule_midnight_refresh()
+
+    def _load_quick_cats(self) -> list[str]:
+        cfg = load_config()
+        saved = cfg.get("activity_quick_categories", [])
+        return saved if len(saved) == 6 else list(QUICK_CATEGORIES)
+
+    def _save_quick_cats(self):
+        cfg = load_config()
+        cfg["activity_quick_categories"] = self._quick_cats
+        save_config(cfg)
+
+    # ── Midnight rollover ───────────────────────────
+
+    def _schedule_midnight_refresh(self):
+        """Schedule a one-shot timer that fires 5 s after midnight."""
+        now = datetime.now()
+        next_midnight = (now + timedelta(days=1)).replace(
+            hour=0, minute=0, second=5, microsecond=0)
+        ms = max(int((next_midnight - now).total_seconds() * 1000), 1000)
+        QTimer.singleShot(ms, self._midnight_refresh)
+
+    def _midnight_refresh(self):
+        """Called at midnight: snap the week view to contain today, then refresh."""
+        today = date.today()
+        current_week_start = today - timedelta(days=today.weekday())
+        # If the panel is still showing a week that no longer contains today, advance it
+        if self._week_start < current_week_start:
+            self._week_start = current_week_start
+            self._log_form.set_week_start(self._week_start)
+        self._refresh()
+        self._schedule_midnight_refresh()   # re-arm for the next midnight
+
+    # ── Palette ─────────────────────────────────────
+
+    def set_palette(self, palette: dict):
+        self._palette = palette
+        self._grid.set_palette(palette)
+        self._today_breakdown.set_palette(palette)
+        muted   = palette.get("muted",     "#7f849c")
+        green   = palette.get("green",     "#a6e3a1")
+        red     = palette.get("red",       "#f38ba8")
+        acc_fg  = palette.get("accent_fg", "#1e1e2e")
+        btn_css = "font-weight:bold;border-radius:4px;padding:2px 10px;font-size:11px;"
+        if self._prev_week_btn:
+            self._prev_week_btn.refresh(palette)
+        if self._next_week_btn:
+            self._next_week_btn.refresh(palette)
+        if hasattr(self, "_log_form"):
+            self._log_form.set_palette(palette)
+            if hasattr(self._log_form, "_start_lbl"):
+                self._log_form._start_lbl.setStyleSheet(f"font-size:10px;color:{muted};")
+                self._log_form._end_lbl.setStyleSheet(f"font-size:10px;color:{muted};")
+            if hasattr(self._log_form, "_start_btn"):
+                self._log_form._start_btn.setStyleSheet(
+                    f"background-color:{green};color:{acc_fg};" + btn_css)
+                self._log_form._stop_btn.setStyleSheet(
+                    f"background-color:{red};color:{acc_fg};" + btn_css)
+
+    def _build_ui(self):
+        root = QHBoxLayout(self)
+        root.setContentsMargins(0, 0, 0, 0); root.setSpacing(0)
+
+        # ── LEFT: week grid ──
+        left = QWidget()
+        left_l = QVBoxLayout(left)
+        left_l.setContentsMargins(0, 10, 0, 10); left_l.setSpacing(8)
+
+        top_bar = QHBoxLayout(); top_bar.setContentsMargins(14, 0, 8, 0)
+        title = QLabel("Activity Tracker"); title.setObjectName("sectionTitle")
+        top_bar.addWidget(title); top_bar.addStretch()
+        self._week_label = QLabel()
+        self._week_label.setStyleSheet("font-size:12px;font-weight:bold;")
+        top_bar.addWidget(self._week_label); top_bar.addSpacing(8)
+
+        self._prev_week_btn = NavButton("left", size=28, tooltip="Previous week")
+        self._prev_week_btn.clicked.connect(self._prev_week)
+        top_bar.addWidget(self._prev_week_btn)
+
+        today_btn = QPushButton("Today")
+        today_btn.setObjectName("secondary")
+        today_btn.setFixedHeight(28)
+        today_btn.clicked.connect(self._go_today)
+        top_bar.addWidget(today_btn)
+
+        self._next_week_btn = NavButton("right", size=28, tooltip="Next week")
+        self._next_week_btn.clicked.connect(self._next_week)
+        top_bar.addWidget(self._next_week_btn)
+
+        top_bar.addSpacing(8)
+        btn_exp = QPushButton("Export\u2026"); btn_exp.setObjectName("secondary")
+        btn_exp.setFixedHeight(28); btn_exp.clicked.connect(self._export)
+        top_bar.addWidget(btn_exp)
+        left_l.addLayout(top_bar)
+
+        self._grid = WeekBlockWidget()
+        self._grid.block_clicked.connect(self._on_block_clicked)
+        self._grid.empty_clicked.connect(self._on_empty_clicked)
+        scroll = QScrollArea(); scroll.setWidgetResizable(True)
+        scroll.setWidget(self._grid)
+        scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+        scroll.setFrameShape(QFrame.Shape.NoFrame)
+        left_l.addWidget(scroll, 1)
+        root.addWidget(left, 1)
+
+        # ── RIGHT: cards + breakdown + form ──
+        right = QWidget(); right.setFixedWidth(385)
+        right_l = QVBoxLayout(right)
+        right_l.setContentsMargins(8, 10, 12, 10); right_l.setSpacing(8)
+
+        cards_hdr = QHBoxLayout()
+        cards_title = QLabel("Quick Track")
+        cards_title.setStyleSheet("font-size:12px;font-weight:bold;")
+        cards_hdr.addWidget(cards_title); cards_hdr.addStretch()
+        rename_btn = QPushButton("Edit"); rename_btn.setObjectName("secondary")
+        rename_btn.setFixedSize(48, 24)
+        rename_btn.setToolTip("Edit category names")
+        rename_btn.clicked.connect(self._rename_categories)
+        cards_hdr.addWidget(rename_btn)
+        right_l.addLayout(cards_hdr)
+
+        cards_grid = QGridLayout(); cards_grid.setSpacing(8)
+        self._cards: list[QuickCard] = []
+        for i, cat in enumerate(self._quick_cats):
+            card = QuickCard(cat); card.tapped.connect(self._on_card_tapped)
+            self._cards.append(card)
+            cards_grid.addWidget(card, i // 3, i % 3)
+        right_l.addLayout(cards_grid)
+
+        div1 = QFrame(); div1.setFrameShape(QFrame.Shape.HLine)
+        div1.setObjectName("separator"); right_l.addWidget(div1)
+
+        self._today_breakdown = TodayBreakdown()
+        right_l.addWidget(self._today_breakdown)
+
+        div2 = QFrame(); div2.setFrameShape(QFrame.Shape.HLine)
+        div2.setObjectName("separator"); right_l.addWidget(div2)
+
+        self._log_form = LogForm(self._week_start, self._quick_cats)
+        self._log_form.activity_added.connect(self._on_activity_added)
+        self._log_form.activity_updated.connect(self._on_activity_updated)
+        self._log_form.activity_deleted.connect(self._on_activity_deleted)
+        right_l.addWidget(self._log_form)
+        right_l.addStretch()
+
+        root.addWidget(right)
+
+        self._auto_timer = QTimer(self)
+        self._auto_timer.setInterval(60_000)
+        self._auto_timer.timeout.connect(self._refresh)
+        self._auto_timer.start()
+
+    # ── Quick card session management ────────────────
+
+    def _on_card_tapped(self, category: str):
+        if self._active_category == category:
+            self._stop_session(prompt_notes=True)
+        else:
+            self._stop_session(prompt_notes=False)
+            self._start_session(category)
+
+    def _start_session(self, category: str):
+        self._active_category = category
+        self._session_start   = datetime.now()
+        self._card_timer = QTimer(self)
+        self._card_timer.timeout.connect(self._card_tick)
+        self._card_timer.start(1000)
+        self._update_card_states()
+        self._today_breakdown.refresh(
+            self._activities_by_date.get(date.today(), []),
+            self._active_category, self._session_start)
+
+    def _stop_session(self, prompt_notes: bool = True):
+        if not self._active_category or not self._session_start: return
+        if self._card_timer:
+            self._card_timer.stop(); self._card_timer = None
+
+        category  = self._active_category
+        start_dt  = self._session_start
+        end_dt    = datetime.now()
+        start_str = start_dt.strftime("%H:%M")
+        end_str   = "23:59" if end_dt.date() > start_dt.date() else end_dt.strftime("%H:%M")
+
+        notes = ""
+        if prompt_notes:
+            dlg = NotesDialog(self, title=f"Notes for {category}")
+            if dlg.exec() == QDialog.DialogCode.Accepted:
+                notes = dlg.get_notes()
+
+        if int((end_dt - start_dt).total_seconds() // 60) >= 1:
+            self.store.add(date=start_dt.date().isoformat(), activity=category,
+                           start_time=start_str, end_time=end_str, notes=notes)
+
+        self._active_category = None
+        self._session_start   = None
+        for card in self._cards: card.set_active(False)
+        self._refresh()
+
+    def _card_tick(self):
+        if not self._session_start or not self._active_category: return
+        elapsed = int((datetime.now() - self._session_start).total_seconds())
+        for card in self._cards:
+            if card._category == self._active_category:
+                card.tick(elapsed); break
+        self._today_breakdown.refresh(
+            self._activities_by_date.get(date.today(), []),
+            self._active_category, self._session_start)
+
+    def _update_card_states(self):
+        today_acts = self._activities_by_date.get(date.today(), [])
+        for card in self._cards:
+            cat = card._category
+            total_mins = sum(a.duration_minutes for a in today_acts if a.activity == cat)
+            card.set_daily_total(total_mins)
+            if cat == self._active_category:
+                elapsed = int((datetime.now() - self._session_start).total_seconds()) \
+                    if self._session_start else 0
+                card.set_active(True, elapsed)
+            else:
+                card.set_active(False)
+
+    def _rename_categories(self):
+        dlg = RenameCategoriesDialog(self._quick_cats, self)
+        if dlg.exec() == QDialog.DialogCode.Accepted:
+            new_cats = dlg.get_categories()
+            self._quick_cats = new_cats
+            self._save_quick_cats()
+            for card, cat in zip(self._cards, new_cats):
+                card.update_category(cat)
+            self._log_form.update_categories(new_cats)
+            self._update_card_states()
+
+    # ── Navigation ──────────────────────────────────
+
+    def _prev_week(self):
+        self._week_start -= timedelta(weeks=1)
+        self._log_form.set_week_start(self._week_start)
+        self._refresh()
+
+    def _next_week(self):
+        self._week_start += timedelta(weeks=1)
+        self._log_form.set_week_start(self._week_start)
+        self._refresh()
+
+    def _go_today(self):
+        today = date.today()
+        self._week_start = today - timedelta(days=today.weekday())
+        self._log_form.set_week_start(self._week_start)
+        self._refresh()
+
+    # ── Refresh ─────────────────────────────────────
+
+    def _refresh(self):
+        we = self._week_start + timedelta(days=6)
+        self._week_label.setText(
+            f"{self._week_start.strftime('%b %d')} \u2013 {we.strftime('%b %d, %Y')}")
+        self._activities_by_date = {}
+        for i in range(7):
+            d = self._week_start + timedelta(days=i)
+            self._activities_by_date[d] = self.store.get_for_date(d.isoformat())
+        self._grid.load_week(self._week_start, self._activities_by_date)
+        self._update_card_states()
+        self._today_breakdown.refresh(
+            self._activities_by_date.get(date.today(), []),
+            self._active_category, self._session_start)
+
+    # ── Grid callbacks ──────────────────────────────
+
+    def _on_block_clicked(self, activity: Activity):
+        self._log_form.load_for_edit(activity)
+
+    def _on_empty_clicked(self, d: date, hour: float):
+        self._log_form.prefill(d, hour)
+
+    # ── CRUD callbacks ──────────────────────────────
+
+    def _on_activity_added(self, _: Activity):  self._refresh()
+
+    def _on_activity_updated(self, activity: Activity):
+        self.store.update(activity); self._refresh()
+
+    def _on_activity_deleted(self, activity_id: str):
+        self.store.delete(activity_id); self._refresh()
+
+    # ── Export ──────────────────────────────────────
+
+    def _export(self):
+        cfg = load_config()
+        vault_path = cfg.get("obsidian_vault_path", "")
+        if not vault_path or not Path(vault_path).is_dir():
+            QMessageBox.warning(self, "No Vault",
+                "Set an Obsidian vault path first (Notes \u2192 Set Vault).")
+            return
+        vault = Path(vault_path)
+        exported = 0
+        for d, activities in self._activities_by_date.items():
+            if not activities: continue
+            base = (vault / "Activity Tracker" / str(d.year)
+                    / f"{d.month:02d} - {d.strftime('%B')}"
+                    / f"{d.day:02d} - {d.strftime('%A')}")
+            base.mkdir(parents=True, exist_ok=True)
+            total_mins = sum(a.duration_minutes for a in activities)
+            h, m = divmod(total_mins, 60)
+            lines = [
+                f"# Activity Summary \u2014 {d.strftime('%A, %B %d, %Y')}",
+                "", f"**Total tracked:** {h}h {m}m", "",
+                "| Time | Activity | Duration | Notes |",
+                "|------|----------|----------|-------|",
+            ]
+            for a in activities:
+                notes = (a.notes or "").replace("\n", " ").replace("|", "/")
+                lines.append(f"| {a.start_time}\u2013{a.end_time} | {a.activity} "
+                             f"| {a.duration_minutes}m | {notes} |")
+            (base / "_Daily Summary.md").write_text("\n".join(lines), encoding="utf-8")
+            exported += len(activities)
+        we = self._week_start + timedelta(days=6)
+        QMessageBox.information(self, "Exported",
+            f"Exported {exported} activities for week of "
+            f"{self._week_start.strftime('%b %d')} \u2013 {we.strftime('%b %d')}.")
+```
+
+### `src\ui\modules\calendar_panel.py`
+
+```python
+"""Calendar module UI — weekly view + mini-month navigator + major events.
+
+All colors read from the active theme palette so the panel adapts when the
+user switches themes.  No hardcoded hex values remain in inline stylesheets
+or paintEvent code.
+
+Layout (positions unchanged):
+  Upper-left  → Weekly overview grid (7 day columns)
+  Lower-left  → Selected-day detail list
+  Upper-right → Mini month navigator (interactive dot indicators)
+  Lower-right → Next major events panel
+"""
+
+from __future__ import annotations
+
+import calendar
+from datetime import date, datetime, timedelta
+
+from PyQt6.QtCore import Qt, QDate, QTime, QTimer, pyqtSignal
+from PyQt6.QtGui import QColor, QPainter, QPen, QBrush, QFont, QFontMetrics, QMouseEvent
+from PyQt6.QtWidgets import (
+    QWidget, QVBoxLayout, QHBoxLayout, QGridLayout,
+    QLabel, QPushButton, QDialog, QLineEdit, QTextEdit,
+    QDateEdit, QTimeEdit, QCheckBox, QFrame, QComboBox,
+    QMessageBox, QScrollArea, QSizePolicy, QTabWidget,
+    QButtonGroup, QToolButton, QSpinBox, QListWidget,
+    QListWidgetItem, QColorDialog,
+)
+
+from src.data.calendar_store import (
+    CalendarStore, Event, Birthday,
+    build_recurrence, expand_recurring_to_range,
+)
+from src.data.soft_events_store import SoftEventStore, SoftEventTemplate
+from src.ui.widgets.nav_button import NavButton
+
+
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+#  Module-level palette  (updated by CalendarPanel.set_palette)
+#  Defaults = Catppuccin Dark so the panel renders correctly before
+#  MainWindow calls set_palette() for the first time.
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+_PALETTE: dict = {
+    "bg":        "#1e1e2e", "surface":   "#313244", "border": "#45475a",
+    "fg":        "#cdd6f4", "muted":     "#7f849c",  "hover":  "#3b3d54",
+    "accent":    "#89b4fa", "accent_fg": "#1e1e2e",
+    "header_bg": "#181825", "alt_row":   "#252538",
+    "red":       "#f38ba8", "green":     "#a6e3a1",  "yellow": "#f9e2af",
+}
+
+
+def _p(key: str, fallback: str = "#888888") -> str:
+    """Return current palette value for *key*."""
+    return _PALETTE.get(key, fallback)
+
+
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+#  Category / color constants
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+EVENT_COLORS: dict[str, str] = {
+    "Sky Blue": "#4a9eff", "Mint":     "#a6e3a1", "Rose":    "#f38ba8",
+    "Peach":    "#fab387", "Gold":     "#f9e2af", "Lavender":"#cba6f7",
+    "Teal":     "#94e2d5", "Pink":     "#f5c2e7", "Coral":   "#ff6b6b",
+    "Sage":     "#74c7b8",
+}
+
+CATEGORY_META: dict[str, dict] = {
+    "":         {"label": "General",     "emoji": "📅", "color": "#4a9eff"},
+    "work":     {"label": "Work",        "emoji": "💼", "color": "#4a9eff"},
+    "birthday": {"label": "Birthday",    "emoji": "🎂", "color": "#f38ba8"},
+    "trip":     {"label": "Trip",        "emoji": "✈️",  "color": "#94e2d5"},
+    "holiday":  {"label": "Holiday",     "emoji": "🎉", "color": "#f9e2af"},
+    "major":    {"label": "Major Event", "emoji": "⭐", "color": "#cba6f7"},
+    "health":   {"label": "Health",      "emoji": "🏥", "color": "#a6e3a1"},
+    "social":   {"label": "Social",      "emoji": "🎭", "color": "#fab387"},
+}
+
+RECURRENCE_OPTIONS = [
+    ("",        "Does not repeat"), ("daily",   "Every day"),
+    ("weekly",  "Weekly (select days)"), ("monthly", "Monthly"),
+    ("yearly",  "Yearly"),
+]
+
+WEEKDAY_LABELS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
+
+
+def _cat_emoji(cat: str) -> str:
+    return CATEGORY_META.get(cat, CATEGORY_META[""]).get("emoji", "")
+
+def _cat_color(cat: str) -> str:
+    return CATEGORY_META.get(cat, CATEGORY_META[""]).get("color", "#4a9eff")
+
+def _clear_layout(layout):
+    while layout.count():
+        child = layout.takeAt(0)
+        if child.widget():   child.widget().deleteLater()
+        elif child.layout(): _clear_layout(child.layout())
+
+
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+#  ColorButton — theme-aware color swatch
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+class ColorButton(QToolButton):
+    def __init__(self, hex_color: str, name: str, parent=None):
+        super().__init__(parent)
+        self.hex_color = hex_color
+        self.setFixedSize(28, 28)
+        self.setCheckable(True)
+        self.setToolTip(name)
+        self._update_style()
+
+    def setChecked(self, checked: bool):
+        super().setChecked(checked)
+        self._update_style()
+
+    def _update_style(self):
+        border_color = _p("fg") if self.isChecked() else "transparent"
+        border_width = "3px" if self.isChecked() else "2px"
+        self.setStyleSheet(
+            f"QToolButton {{ background-color: {self.hex_color}; "
+            f"border: {border_width} solid {border_color}; border-radius: 6px; }}"
+        )
+
+
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+#  EventDialog
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+class EventDialog(QDialog):
+    def __init__(self, parent=None, event: Event | None = None,
+                 prefill_date: date | None = None):
+        super().__init__(parent)
+        self.event = event
+        self._delete_requested = False
+        self.setWindowTitle("Edit Event" if event else "New Event")
+        self.setMinimumWidth(460)
+        self.setModal(True)
+        self._build_ui(prefill_date)
+
+    def _build_ui(self, prefill_date):
+        root = QVBoxLayout(self)
+        root.setContentsMargins(0, 0, 0, 0)
+        root.setSpacing(0)
+
+        init_color = self.event.color if self.event else _p("accent")
+        self._header_strip = QFrame()
+        self._header_strip.setFixedHeight(6)
+        self._header_strip.setStyleSheet(
+            f"background-color: {init_color}; border-radius: 3px 3px 0 0;")
+        root.addWidget(self._header_strip)
+
+        body = QWidget()
+        body_l = QVBoxLayout(body)
+        body_l.setContentsMargins(20, 16, 20, 16)
+        body_l.setSpacing(12)
+        root.addWidget(body)
+
+        tabs = QTabWidget()
+        tabs.setDocumentMode(True)
+        body_l.addWidget(tabs)
+
+        # ── Details tab ──
+        det_tab = QWidget()
+        det = QVBoxLayout(det_tab)
+        det.setContentsMargins(4, 12, 4, 4)
+        det.setSpacing(10)
+        tabs.addTab(det_tab, "Details")
+
+        self.title_edit = QLineEdit()
+        self.title_edit.setPlaceholderText("Event title…")
+        self.title_edit.setStyleSheet("font-size: 15px; padding: 6px; font-weight: bold;")
+        if self.event: self.title_edit.setText(self.event.title)
+        det.addWidget(self.title_edit)
+
+        self.desc_edit = QTextEdit()
+        self.desc_edit.setMaximumHeight(68)
+        self.desc_edit.setPlaceholderText("Optional description…")
+        if self.event: self.desc_edit.setPlainText(self.event.description)
+        det.addWidget(self.desc_edit)
+
+        cat_row = QHBoxLayout()
+        cat_row.addWidget(QLabel("Category"))
+        self.category_combo = QComboBox()
+        for key, meta in CATEGORY_META.items():
+            self.category_combo.addItem(f"{meta['emoji']} {meta['label']}", key)
+        if self.event:
+            idx = self.category_combo.findData(self.event.category)
+            if idx >= 0: self.category_combo.setCurrentIndex(idx)
+        self.category_combo.currentIndexChanged.connect(self._on_category_changed)
+        cat_row.addWidget(self.category_combo, 1)
+        det.addLayout(cat_row)
+
+        det.addWidget(QLabel("Color"))
+        color_row = QHBoxLayout()
+        color_row.setSpacing(6)
+        self._color_group = QButtonGroup(self)
+        self._color_group.setExclusive(True)
+        self._color_btns: dict[str, ColorButton] = {}
+        current_color = self.event.color if self.event else _p("accent")
+        for name, hex_val in EVENT_COLORS.items():
+            btn = ColorButton(hex_val, name)
+            btn.setChecked(hex_val == current_color)
+            btn.clicked.connect(lambda _, h=hex_val: self._on_color_picked(h))
+            self._color_group.addButton(btn)
+            self._color_btns[hex_val] = btn
+            color_row.addWidget(btn)
+        color_row.addStretch()
+        det.addLayout(color_row)
+
+        self.all_day_check = QCheckBox("All-day event")
+        if self.event: self.all_day_check.setChecked(self.event.all_day)
+        self.all_day_check.toggled.connect(self._toggle_time)
+        det.addWidget(self.all_day_check)
+
+        dt_row = QHBoxLayout()
+        dt_row.setSpacing(8)
+        dt_row.addWidget(QLabel("Date"))
+        self.date_edit = QDateEdit()
+        self.date_edit.setCalendarPopup(True)
+        self.date_edit.setDisplayFormat("dd MMM yyyy")
+        if self.event:
+            d0 = datetime.fromisoformat(self.event.start_time)
+            self.date_edit.setDate(QDate(d0.year, d0.month, d0.day))
+        elif prefill_date:
+            self.date_edit.setDate(QDate(prefill_date.year, prefill_date.month, prefill_date.day))
+        else:
+            t = date.today()
+            self.date_edit.setDate(QDate(t.year, t.month, t.day))
+        dt_row.addWidget(self.date_edit, 2)
+
+        dt_row.addWidget(QLabel("Start"))
+        self.start_time = QTimeEdit()
+        self.start_time.setDisplayFormat("HH:mm")
+        if self.event and not self.event.all_day:
+            d0 = datetime.fromisoformat(self.event.start_time)
+            self.start_time.setTime(QTime(d0.hour, d0.minute))
+        else:
+            self.start_time.setTime(QTime(9, 0))
+        dt_row.addWidget(self.start_time, 1)
+
+        dt_row.addWidget(QLabel("End"))
+        self.end_time = QTimeEdit()
+        self.end_time.setDisplayFormat("HH:mm")
+        if self.event and self.event.end_time:
+            d0 = datetime.fromisoformat(self.event.end_time)
+            self.end_time.setTime(QTime(d0.hour, d0.minute))
+        else:
+            self.end_time.setTime(QTime(10, 0))
+        dt_row.addWidget(self.end_time, 1)
+        det.addLayout(dt_row)
+        self._toggle_time(self.all_day_check.isChecked())
+
+        # ── Repeat tab ──
+        rec_tab = QWidget()
+        rec = QVBoxLayout(rec_tab)
+        rec.setContentsMargins(4, 12, 4, 4)
+        rec.setSpacing(10)
+        tabs.addTab(rec_tab, "Repeat")
+
+        rec.addWidget(QLabel("Repeat pattern"))
+        self.rec_combo = QComboBox()
+        for val, label in RECURRENCE_OPTIONS:
+            self.rec_combo.addItem(label, val)
+        rec.addWidget(self.rec_combo)
+        self.rec_combo.currentIndexChanged.connect(
+            lambda _: self._weekday_frame.setVisible(
+                self.rec_combo.currentData() == "weekly"))
+
+        self._weekday_frame = QFrame()
+        wdf = QHBoxLayout(self._weekday_frame)
+        wdf.setContentsMargins(0, 4, 0, 0)
+        wdf.setSpacing(4)
+        self._weekday_btns: list[QToolButton] = []
+        for label in WEEKDAY_LABELS:
+            btn = QToolButton()
+            btn.setText(label)
+            btn.setCheckable(True)
+            btn.setFixedSize(42, 30)
+            self._weekday_btns.append(btn)
+            wdf.addWidget(btn)
+        wdf.addStretch()
+        rec.addWidget(self._weekday_frame)
+        self._weekday_frame.setVisible(False)
+        rec.addStretch()
+
+        if self.event and self.event.recurrence:
+            r = self.event.recurrence
+            if r == "daily":      self.rec_combo.setCurrentIndex(1)
+            elif r.startswith("weekly:"):
+                self.rec_combo.setCurrentIndex(2)
+                for d in [int(x) for x in r.split(":")[1].split(",") if x.strip()]:
+                    if 0 <= d < len(self._weekday_btns):
+                        self._weekday_btns[d].setChecked(True)
+            elif r == "monthly":  self.rec_combo.setCurrentIndex(3)
+            elif r == "yearly":   self.rec_combo.setCurrentIndex(4)
+
+        # ── Buttons ──
+        sep = QFrame()
+        sep.setFrameShape(QFrame.Shape.HLine)
+        sep.setObjectName("separator")
+        body_l.addWidget(sep)
+
+        btn_row = QHBoxLayout()
+        if self.event:
+            del_btn = QPushButton("🗑  Delete")
+            del_btn.setObjectName("destructive")
+            del_btn.clicked.connect(self._on_delete)
+            btn_row.addWidget(del_btn)
+        btn_row.addStretch()
+        cancel = QPushButton("Cancel")
+        cancel.setObjectName("secondary")
+        cancel.clicked.connect(self.reject)
+        btn_row.addWidget(cancel)
+        save = QPushButton("Save Event")
+        save.setDefault(True)
+        save.clicked.connect(self._on_save)
+        btn_row.addWidget(save)
+        body_l.addLayout(btn_row)
+
+    def _on_color_picked(self, hex_val: str):
+        self._header_strip.setStyleSheet(
+            f"background-color: {hex_val}; border-radius: 3px 3px 0 0;")
+        for hv, btn in self._color_btns.items():
+            btn._update_style()
+
+    def _on_category_changed(self, _):
+        auto = _cat_color(self.category_combo.currentData())
+        btn = self._color_btns.get(auto)
+        if btn:
+            for b in self._color_btns.values(): b.setChecked(False)
+            btn.setChecked(True)
+            self._on_color_picked(auto)
+
+    def _toggle_time(self, all_day: bool):
+        self.start_time.setEnabled(not all_day)
+        self.end_time.setEnabled(not all_day)
+
+    def _on_delete(self):
+        self._delete_requested = True; self.reject()
+
+    def _on_save(self):
+        if not self.title_edit.text().strip():
+            self.title_edit.setFocus()
+            self.title_edit.setPlaceholderText("⚠ Title is required")
+            return
+        self.accept()
+
+    def _selected_color(self) -> str:
+        for hex_val, btn in self._color_btns.items():
+            if btn.isChecked(): return hex_val
+        return _p("accent")
+
+    def _selected_recurrence(self) -> str:
+        val = self.rec_combo.currentData()
+        if val == "weekly":
+            days = [i for i, b in enumerate(self._weekday_btns) if b.isChecked()]
+            return build_recurrence("weekly", days) if days else ""
+        return build_recurrence(val) if val else ""
+
+    def get_data(self) -> dict:
+        qd = self.date_edit.date()
+        d = date(qd.year(), qd.month(), qd.day())
+        all_day = self.all_day_check.isChecked()
+        if all_day:
+            start = datetime(d.year, d.month, d.day).isoformat()
+            end = None
+        else:
+            st = self.start_time.time(); et = self.end_time.time()
+            start = datetime(d.year, d.month, d.day, st.hour(), st.minute()).isoformat()
+            end   = datetime(d.year, d.month, d.day, et.hour(), et.minute()).isoformat()
+        return {
+            "title":       self.title_edit.text().strip() or "Untitled",
+            "description": self.desc_edit.toPlainText(),
+            "start_time":  start, "end_time": end,
+            "all_day":     all_day, "color": self._selected_color(),
+            "category":    self.category_combo.currentData() or "",
+            "recurrence":  self._selected_recurrence(),
+        }
+
+
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+#  BirthdayDialog
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+class BirthdayDialog(QDialog):
+    def __init__(self, parent=None, birthday: Birthday | None = None):
+        super().__init__(parent)
+        self.birthday = birthday
+        self._delete_requested = False
+        self.setWindowTitle("Edit Birthday" if birthday else "Add Birthday")
+        self.setMinimumWidth(360); self.setModal(True)
+        self._build_ui()
+
+    def _build_ui(self):
+        layout = QVBoxLayout(self)
+        layout.setContentsMargins(20, 20, 20, 16)
+        layout.setSpacing(12)
+
+        hdr = QLabel("🎂  Birthday")
+        hdr.setStyleSheet("font-size: 16px; font-weight: bold;")
+        layout.addWidget(hdr)
+
+        layout.addWidget(QLabel("Name"))
+        self.name_edit = QLineEdit()
+        self.name_edit.setPlaceholderText("Person's name…")
+        if self.birthday: self.name_edit.setText(self.birthday.name)
+        layout.addWidget(self.name_edit)
+
+        mdy = QHBoxLayout()
+        for label, attr, lo, hi in [("Month", "month", 1, 12), ("Day", "day", 1, 31)]:
+            col = QVBoxLayout()
+            col.addWidget(QLabel(label))
+            spin = QSpinBox(); spin.setRange(lo, hi)
+            if self.birthday: spin.setValue(getattr(self.birthday, attr))
+            col.addWidget(spin); mdy.addLayout(col)
+            setattr(self, f"{attr}_spin", spin)
+        yr_col = QVBoxLayout()
+        yr_col.addWidget(QLabel("Year (optional)"))
+        self.year_spin = QSpinBox()
+        self.year_spin.setRange(0, 9999)
+        self.year_spin.setSpecialValueText("—")
+        self.year_spin.setValue(self.birthday.year if (self.birthday and self.birthday.year) else 0)
+        yr_col.addWidget(self.year_spin); mdy.addLayout(yr_col)
+        layout.addLayout(mdy)
+
+        layout.addWidget(QLabel("Note"))
+        self.note_edit = QTextEdit()
+        self.note_edit.setPlaceholderText("Optional note about this person…")
+        self.note_edit.setMinimumHeight(80)
+        self.note_edit.setMaximumHeight(140)
+        if self.birthday and self.birthday.note:
+            self.note_edit.setPlainText(self.birthday.note)
+        layout.addWidget(self.note_edit)
+
+        sep = QFrame(); sep.setFrameShape(QFrame.Shape.HLine); sep.setObjectName("separator")
+        layout.addWidget(sep)
+
+        btn_row = QHBoxLayout()
+        if self.birthday:
+            del_btn = QPushButton("Delete"); del_btn.setObjectName("destructive")
+            del_btn.clicked.connect(self._on_delete); btn_row.addWidget(del_btn)
+        btn_row.addStretch()
+        cancel = QPushButton("Cancel"); cancel.setObjectName("secondary")
+        cancel.clicked.connect(self.reject); btn_row.addWidget(cancel)
+        save = QPushButton("Save"); save.setDefault(True)
+        save.clicked.connect(self._on_save); btn_row.addWidget(save)
+        layout.addLayout(btn_row)
+
+    def _on_delete(self): self._delete_requested = True; self.reject()
+
+    def _on_save(self):
+        if not self.name_edit.text().strip(): self.name_edit.setFocus(); return
+        self.accept()
+
+    def get_data(self) -> dict:
+        y = self.year_spin.value()
+        return {
+            "name":  self.name_edit.text().strip(),
+            "month": self.month_spin.value(),
+            "day":   self.day_spin.value(),
+            "year":  y if y > 0 else None,
+            "note":  self.note_edit.toPlainText().strip(),
+        }
+
+
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+#  MiniMonthCell  — fully painted using current palette
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+class MiniMonthCell(QWidget):
+    clicked = pyqtSignal(int, int, int)
+    CELL = 32
+
+    def __init__(self, year, month, day, is_today, is_selected,
+                 event_colors: list[str], is_holiday: bool = False, parent=None):
+        super().__init__(parent)
+        self.year, self.month, self.day = year, month, day
+        self.is_today = is_today; self.is_selected = is_selected
+        self.event_colors = event_colors[:4]; self.is_holiday = is_holiday
+        self._hovered = False
+        self.setFixedSize(self.CELL, self.CELL)
+        self.setCursor(Qt.CursorShape.PointingHandCursor)
+        self.setAttribute(Qt.WidgetAttribute.WA_Hover, True)
+        if event_colors or is_holiday:
+            parts = (["Holiday"] if is_holiday else []) + ([f"{len(event_colors)} event(s)"] if event_colors else [])
+            self.setToolTip(", ".join(parts))
+
+    def enterEvent(self, ev): self._hovered = True;  self.update()
+    def leaveEvent(self, ev): self._hovered = False; self.update()
+    def mousePressEvent(self, ev): self.clicked.emit(self.year, self.month, self.day)
+
+    def paintEvent(self, ev):
+        p = QPainter(self)
+        p.setRenderHint(QPainter.RenderHint.Antialiasing)
+        w, h = self.width(), self.height()
+        cx, cy = w / 2, (h - 6) / 2
+
+        accent  = QColor(_p("accent"))
+        fg      = QColor(_p("fg"))
+        hover_c = QColor(_p("hover"))
+        red     = QColor(_p("red"))
+
+        if self.is_today:
+            p.setBrush(QBrush(accent)); p.setPen(Qt.PenStyle.NoPen)
+            p.drawEllipse(int(cx-13), int(cy-13), 26, 26)
+        elif self.is_selected:
+            c = QColor(accent); c.setAlpha(45)
+            p.setBrush(QBrush(c)); p.setPen(QPen(accent, 1.5))
+            p.drawEllipse(int(cx-13), int(cy-13), 26, 26)
+        elif self._hovered:
+            p.setBrush(QBrush(hover_c)); p.setPen(Qt.PenStyle.NoPen)
+            p.drawEllipse(int(cx-13), int(cy-13), 26, 26)
+
+        font = QFont(); font.setPixelSize(12)
+        if self.is_today or self.is_selected: font.setBold(True)
+        p.setFont(font)
+        if self.is_today:     p.setPen(QColor(_p("accent_fg")))
+        elif self.is_holiday: p.setPen(red)
+        else:                 p.setPen(fg)
+        p.drawText(0, 0, w, int(h-7), Qt.AlignmentFlag.AlignCenter, str(self.day))
+
+        if self.event_colors:
+            dr=3; n=len(self.event_colors); sp=dr*2+2
+            sx = cx - (n*sp-2)/2; dy = h-5
+            for i, color in enumerate(self.event_colors):
+                p.setBrush(QBrush(QColor(color))); p.setPen(Qt.PenStyle.NoPen)
+                p.drawEllipse(int(sx+i*sp-dr), int(dy-dr), dr*2, dr*2)
+        p.end()
+
+
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+#  MiniMonth
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+class MiniMonth(QWidget):
+    date_selected = pyqtSignal(object)
+
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.setFixedWidth(240)
+        self._selected    = date.today()
+        self._view_year   = self._selected.year
+        self._view_month  = self._selected.month
+        self._events:    dict[date, list[str]] = {}
+        self._holidays:  set[date]             = set()
+        self._nav_buttons: list[NavButton]     = []
+        self._dow_labels:  list[QLabel]        = []
+        self._title_btn:   QPushButton         = None  # type: ignore
+        self._build()
+
+    # ── Public ──────────────────────────────────────
+
+    def set_events(self, by_date: dict[date, list[str]]):
+        self._events = by_date; self._render()
+
+    def set_holidays(self, holidays: set[date]):
+        self._holidays = holidays; self._render()
+
+    def set_selected(self, d: date):
+        self._selected = d
+        self._view_year = d.year; self._view_month = d.month
+        self._render()
+
+    def refresh_styles(self):
+        """Re-apply palette colors to navigation buttons/labels."""
+        for btn in self._nav_buttons:
+            btn.refresh(_PALETTE)
+        if self._title_btn:
+            self._title_btn.setStyleSheet(
+                f"QPushButton {{ background-color: transparent; color: {_p('fg')}; "
+                f"border: none; font-weight: bold; font-size: 13px; }}"
+                f"QPushButton:hover {{ color: {_p('accent')}; }}"
+            )
+        for lbl in self._dow_labels:
+            lbl.setStyleSheet(f"font-size: 10px; font-weight: bold; color: {_p('muted')};")
+        self._render()
+
+    # ── Build ────────────────────────────────────────
+
+    def _build(self):
+        outer = QVBoxLayout(self)
+        outer.setContentsMargins(8, 8, 8, 8); outer.setSpacing(2)
+
+        nav = QHBoxLayout(); nav.setSpacing(0)
+        for direction, double, tip, handler in [
+            ("left",  True,  "Previous year",  self._prev_year),
+            ("left",  False, "Previous month", self._prev_month),
+        ]:
+            btn = NavButton(direction, size=26, double=double, tooltip=tip)
+            btn.refresh(_PALETTE)
+            btn.clicked.connect(handler)
+            self._nav_buttons.append(btn); nav.addWidget(btn)
+
+        self._title_btn = QPushButton()
+        self._title_btn.setFlat(True)
+        self._title_btn.clicked.connect(self._go_today_month)
+        self._title_btn.setStyleSheet(
+            f"QPushButton {{ background-color: transparent; color: {_p('fg')}; "
+            f"border: none; font-weight: bold; font-size: 13px; }}"
+            f"QPushButton:hover {{ color: {_p('accent')}; }}"
+        )
+        nav.addWidget(self._title_btn, 1)
+
+        for direction, double, tip, handler in [
+            ("right", False, "Next month", self._next_month),
+            ("right", True,  "Next year",  self._next_year),
+        ]:
+            btn = NavButton(direction, size=26, double=double, tooltip=tip)
+            btn.refresh(_PALETTE)
+            btn.clicked.connect(handler)
+            self._nav_buttons.append(btn); nav.addWidget(btn)
+
+        outer.addLayout(nav)
+
+        dow_row = QHBoxLayout(); dow_row.setSpacing(0)
+        dow_row.setContentsMargins(0, 4, 0, 0)
+        for label in ["Mo", "Tu", "We", "Th", "Fr", "Sa", "Su"]:
+            lbl = QLabel(label)
+            lbl.setFixedSize(MiniMonthCell.CELL, 16)
+            lbl.setAlignment(Qt.AlignmentFlag.AlignCenter)
+            lbl.setStyleSheet(f"font-size: 10px; font-weight: bold; color: {_p('muted')};")
+            self._dow_labels.append(lbl); dow_row.addWidget(lbl)
+        outer.addLayout(dow_row)
+
+        self._grid_w = QWidget()
+        self._grid   = QGridLayout(self._grid_w)
+        self._grid.setSpacing(1); self._grid.setContentsMargins(0, 0, 0, 0)
+        outer.addWidget(self._grid_w)
+        outer.addStretch()
+        self._render()
+
+    def _render(self):
+        _clear_layout(self._grid)
+        self._title_btn.setText(
+            f"{calendar.month_abbr[self._view_month]} {self._view_year}"
+        )
+        today = date.today()
+        for row, week in enumerate(
+                calendar.Calendar(firstweekday=0).monthdayscalendar(
+                    self._view_year, self._view_month)):
+            for col, day in enumerate(week):
+                if day == 0:
+                    sp = QLabel(); sp.setFixedSize(MiniMonthCell.CELL, MiniMonthCell.CELL)
+                    self._grid.addWidget(sp, row, col)
+                else:
+                    d = date(self._view_year, self._view_month, day)
+                    cell = MiniMonthCell(
+                        self._view_year, self._view_month, day,
+                        is_today=(d == today), is_selected=(d == self._selected),
+                        event_colors=self._events.get(d, []),
+                        is_holiday=(d in self._holidays),
+                    )
+                    cell.clicked.connect(self._on_cell_click)
+                    self._grid.addWidget(cell, row, col)
+
+    def _on_cell_click(self, y, m, d):
+        self._selected = date(y, m, d); self._render()
+        self.date_selected.emit(self._selected)
+
+    def _prev_month(self):
+        if self._view_month == 1: self._view_month = 12; self._view_year -= 1
+        else: self._view_month -= 1
+        self._render()
+
+    def _next_month(self):
+        if self._view_month == 12: self._view_month = 1; self._view_year += 1
+        else: self._view_month += 1
+        self._render()
+
+    def _prev_year(self): self._view_year -= 1; self._render()
+    def _next_year(self): self._view_year += 1; self._render()
+
+    def _go_today_month(self):
+        t = date.today(); self._view_year = t.year; self._view_month = t.month; self._render()
+
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+#  EventChip  — event chip in week grid (word-wrapped, up to ~3 lines)
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+class EventChip(QFrame):
+    double_clicked = pyqtSignal(object)
+
+    def __init__(self, event: Event, parent=None):
+        super().__init__(parent)
+        self.event = event
+        self._hovered = False
+        self.setCursor(Qt.CursorShape.PointingHandCursor)
+        self.setAttribute(Qt.WidgetAttribute.WA_Hover, True)
+        self.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred)
+        self.setMinimumHeight(24)
+
+        color = QColor(event.color)
+        text_color = color.lighter(140).name()
+
+        # Soft-event reminders get no emoji — they need every pixel for their title
+        if event.category == "reminder":
+            display = event.title
+        else:
+            emoji = _cat_emoji(event.category)
+            display = f"{emoji} {event.title}" if emoji else event.title
+
+        # paintEvent draws the bg tint + left accent bar;
+        # child QLabels handle text so Qt word-wraps for free.
+        root = QHBoxLayout(self)
+        root.setContentsMargins(6, 2, 4, 2)   # 6 px left clears the painted accent bar
+        root.setSpacing(0)
+
+        text_col = QVBoxLayout()
+        text_col.setSpacing(1)
+        text_col.setContentsMargins(0, 0, 0, 0)
+
+        # Time row (timed events only)
+        time_str = ""
+        if not event.all_day:
+            try:
+                dt = datetime.fromisoformat(event.start_time)
+                time_str = dt.strftime("%H:%M")
+                if event.end_time:
+                    et = datetime.fromisoformat(event.end_time)
+                    time_str += f"\u2013{et.strftime('%H:%M')}"
+            except Exception:
+                pass
+
+        if time_str:
+            tl = QLabel(time_str)
+            tl.setStyleSheet(
+                f"font-size:9px;color:{text_color};background:transparent;border:none;")
+            text_col.addWidget(tl)
+
+        # Title — word-wrapped, grows naturally up to ~3 lines
+        title_lbl = QLabel(display)
+        title_lbl.setWordWrap(True)
+        title_lbl.setStyleSheet(
+            f"font-size:11px;font-weight:bold;color:{text_color};"
+            "background:transparent;border:none;")
+        text_col.addWidget(title_lbl)
+        root.addLayout(text_col, 1)
+
+        # Tooltip
+        tip = display
+        if time_str:
+            tip += f"\n{time_str}"
+        if event.description:
+            tip += f"\n{event.description[:80]}"
+        self.setToolTip(tip)
+
+    def enterEvent(self, ev): self._hovered = True;  self.update()
+    def leaveEvent(self, ev): self._hovered = False; self.update()
+    def mouseDoubleClickEvent(self, ev): self.double_clicked.emit(self.event)
+
+    def paintEvent(self, ev):
+        p = QPainter(self)
+        p.setRenderHint(QPainter.RenderHint.Antialiasing)
+        w, h = self.width(), self.height()
+        color = QColor(self.event.color)
+        bg = QColor(color); bg.setAlpha(55 if self._hovered else 35)
+        p.setBrush(QBrush(bg)); p.setPen(Qt.PenStyle.NoPen)
+        p.drawRoundedRect(0, 0, w, h, 4, 4)
+        # 3-px left accent bar
+        p.setBrush(QBrush(color))
+        p.drawRoundedRect(0, 0, 3, h, 2, 2)
+        p.end()
+
+
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+#  DayColumn
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+class DayColumn(QWidget):
+    request_add  = pyqtSignal(object)
+    request_edit = pyqtSignal(object)
+    day_clicked  = pyqtSignal(object)   # emitted on single left-click → select day
+
+    def __init__(self, d: date, events: list[Event], birthdays: list[Birthday],
+                 is_today: bool, is_selected: bool, parent=None):
+        super().__init__(parent)
+        self.d = d; self._hovered = False
+        self.setAttribute(Qt.WidgetAttribute.WA_Hover, True)
+        self.setSizePolicy(QSizePolicy.Policy.Ignored, QSizePolicy.Policy.Preferred)
+        self._build(events, birthdays, is_today, is_selected)
+
+    def _build(self, events, birthdays, is_today, is_selected):
+        layout = QVBoxLayout(self)
+        layout.setContentsMargins(3, 4, 3, 4); layout.setSpacing(3)
+
+        header = QWidget(); header.setFixedHeight(46)
+        hl = QVBoxLayout(header); hl.setContentsMargins(0, 2, 0, 2); hl.setSpacing(0)
+
+        name_lbl = QLabel(self.d.strftime("%a").upper())
+        name_lbl.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        name_lbl.setStyleSheet(f"font-size:10px; font-weight:bold; color:{_p('muted')};")
+        hl.addWidget(name_lbl)
+
+        num_lbl = QLabel(str(self.d.day))
+        num_lbl.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        if is_today:
+            num_lbl.setStyleSheet(
+                f"background-color:{_p('accent')};color:{_p('accent_fg')};"
+                "border-radius:13px;font-size:16px;font-weight:bold;padding:0 4px;")
+            num_lbl.setFixedSize(26, 26)
+        elif is_selected:
+            num_lbl.setStyleSheet(
+                f"border:1.5px solid {_p('accent')};border-radius:13px;"
+                f"font-size:16px;font-weight:bold;padding:0 4px;color:{_p('fg')};")
+            num_lbl.setFixedSize(26, 26)
+        else:
+            num_lbl.setStyleSheet(f"font-size:16px;color:{_p('fg')};")
+        hl.addWidget(num_lbl, 0, Qt.AlignmentFlag.AlignHCenter)
+        layout.addWidget(header)
+
+        sep = QFrame(); sep.setFrameShape(QFrame.Shape.HLine)
+        sep.setStyleSheet(f"border:none;border-top:1px solid {_p('border')};")
+        layout.addWidget(sep)
+
+        for ev in sorted(events, key=lambda e: e.start_time):
+            if ev.all_day:
+                chip = EventChip(ev)
+                # Reminder chips (soft events) are read-only in the week grid —
+                # double-clicking them would hit the wrong store. Skip the signal.
+                if ev.category != "reminder":
+                    chip.double_clicked.connect(self.request_edit.emit)
+                layout.addWidget(chip)
+
+        for b in birthdays:
+            try: age = (self.d.year - b.year) if b.year else None
+            except Exception: age = None
+            age_str = f" ({age})" if age else ""
+            fake = Event(
+                id=b.id,
+                title=f"{b.name} 🎂{age_str}",
+                start_time=datetime(self.d.year, self.d.month, self.d.day).isoformat(),
+                all_day=True, color=_p("red"), category="birthday",
+            )
+            layout.addWidget(EventChip(fake))
+
+        for ev in sorted(events, key=lambda e: e.start_time):
+            if not ev.all_day:
+                chip = EventChip(ev)
+                chip.double_clicked.connect(self.request_edit.emit)
+                layout.addWidget(chip)
+
+        layout.addStretch()
+
+    def enterEvent(self, ev): self._hovered = True;  self.update()
+    def leaveEvent(self, ev): self._hovered = False; self.update()
+
+    def mousePressEvent(self, ev):
+        if ev.button() == Qt.MouseButton.LeftButton:
+            self.day_clicked.emit(self.d)
+
+    def mouseDoubleClickEvent(self, ev): self.request_add.emit(self.d)
+
+    def paintEvent(self, ev):
+        p = QPainter(self)
+        if self._hovered: p.fillRect(self.rect(), QColor(_p("hover")))
+        p.end()
+
+
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+#  MajorEventCard — clickable, opens editor on click
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+class MajorEventCard(QFrame):
+    clicked = pyqtSignal(str, bool)  # (item_id, is_birthday)
+
+    def __init__(self, ev_date: date, title: str, category: str, color: str,
+                 item_id: str, is_birthday: bool, parent=None):
+        super().__init__(parent)
+        self._item_id    = item_id
+        self._is_birthday = is_birthday
+        today = date.today(); delta = (ev_date - today).days
+
+        self.setCursor(Qt.CursorShape.PointingHandCursor)
+
+        layout = QHBoxLayout(self)
+        layout.setContentsMargins(10, 8, 10, 8); layout.setSpacing(10)
+
+        bar = QFrame(); bar.setFixedWidth(3)
+        bar.setStyleSheet(f"background-color:{color};border-radius:2px;")
+        layout.addWidget(bar)
+
+        emoji_text = _cat_emoji(category)
+        if emoji_text:
+            emoji_lbl = QLabel(emoji_text)
+            emoji_lbl.setStyleSheet(
+                "font-size:16px; background:transparent; border:none; padding:0;")
+            emoji_lbl.setAlignment(Qt.AlignmentFlag.AlignCenter)
+            emoji_lbl.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Preferred)
+            layout.addWidget(emoji_lbl)
+
+        text_col = QVBoxLayout(); text_col.setSpacing(1)
+        title_lbl = QLabel(title)
+        title_lbl.setStyleSheet(f"font-size:12px;font-weight:bold;color:{_p('fg')};")
+        title_lbl.setWordWrap(True); text_col.addWidget(title_lbl)
+        date_lbl = QLabel(ev_date.strftime("%b %d, %Y"))
+        date_lbl.setStyleSheet(f"font-size:10px;color:{_p('muted')};")
+        text_col.addWidget(date_lbl); layout.addLayout(text_col, 1)
+
+        if   delta == 0:   bt, bc = "Today",          color
+        elif delta == 1:   bt, bc = "Tomorrow",        color
+        elif delta < 0:    bt, bc = f"{abs(delta)}d ago", _p("muted")
+        elif delta <= 7:   bt, bc = f"{delta}d",       color
+        elif delta <= 30:  bt, bc = f"{delta}d",       _p("yellow")
+        else:              bt, bc = f"{delta//7}w",    _p("muted")
+
+        badge = QLabel(bt)
+        badge.setStyleSheet(
+            f"color:{bc};font-size:10px;font-weight:bold;"
+            f"border:1px solid {bc};border-radius:8px;padding:2px 7px;"
+            f"background:transparent;")
+        badge.setAlignment(Qt.AlignmentFlag.AlignCenter); layout.addWidget(badge)
+
+        self.setStyleSheet(
+            f"MajorEventCard{{border:1px solid {_p('border')};border-radius:6px;"
+            f"background-color:{_p('header_bg')};}}"
+            f"MajorEventCard:hover{{border-color:{color};"
+            f"background-color:{_p('surface')};}}")
+
+    def mousePressEvent(self, ev):
+        if ev.button() == Qt.MouseButton.LeftButton:
+            self.clicked.emit(self._item_id, self._is_birthday)
+
+
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+#  DayEventRow — single-click opens edit dialog
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+class DayEventRow(QFrame):
+    edit_requested = pyqtSignal(object)
+
+    def __init__(self, event: Event, parent=None):
+        super().__init__(parent)
+        self.event = event
+        self.setCursor(Qt.CursorShape.PointingHandCursor)
+
+        layout = QHBoxLayout(self)
+        layout.setContentsMargins(0, 0, 0, 0); layout.setSpacing(0)
+
+        bar = QFrame(); bar.setFixedWidth(4)
+        bar.setStyleSheet(f"background-color:{event.color};border-radius:2px 0 0 2px;")
+        layout.addWidget(bar)
+
+        body = QWidget(); bl = QHBoxLayout(body)
+        bl.setContentsMargins(8, 6, 8, 6); bl.setSpacing(8)
+
+        if not event.all_day:
+            try: t = datetime.fromisoformat(event.start_time).strftime("%H:%M")
+            except Exception: t = ""
+            tl = QLabel(t)
+            tl.setStyleSheet(f"font-size:11px;color:{_p('muted')};min-width:38px;")
+            bl.addWidget(tl)
+
+        emoji   = _cat_emoji(event.category)
+        display = f"{emoji} {event.title}" if emoji else event.title
+        tl2 = QLabel(display)
+        tl2.setStyleSheet(f"font-size:13px;color:{_p('fg')};")
+        tl2.setWordWrap(True); bl.addWidget(tl2, 1)
+
+        if event.recurrence:
+            rl = QLabel("↻")
+            rl.setStyleSheet(f"color:{_p('muted')};font-size:14px;")
+            rl.setToolTip("Recurring event"); bl.addWidget(rl)
+
+        layout.addWidget(body, 1)
+        self.setStyleSheet(
+            f"DayEventRow{{border:1px solid {_p('border')};border-radius:4px;"
+            f"background-color:{_p('header_bg')};}}"
+            f"DayEventRow:hover{{border-color:{_p('muted')};"
+            f"background-color:{_p('surface')};}}")
+
+    def mousePressEvent(self, ev):
+        if ev.button() == Qt.MouseButton.LeftButton:
+            self.edit_requested.emit(self.event)
+
+    def mouseDoubleClickEvent(self, ev):
+        self.edit_requested.emit(self.event)
+
+
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+#  SoftReminderRow — styled row for soft event reminders
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+class SoftReminderRow(QFrame):
+    """Styled day-detail row for a soft event reminder. Signals instead of
+    monkey-patching mousePressEvent so Qt's event system stays intact."""
+
+    open_log = pyqtSignal(object, object)   # (template, log_date)
+
+    def __init__(self, template: SoftEventTemplate, log_date: date, parent=None):
+        super().__init__(parent)
+        self._template = template
+        self._log_date = log_date
+        self.setCursor(Qt.CursorShape.PointingHandCursor)
+
+        layout = QHBoxLayout(self)
+        layout.setContentsMargins(0, 0, 0, 0)
+        layout.setSpacing(0)
+
+        bar = QFrame()
+        bar.setFixedWidth(4)
+        bar.setStyleSheet(
+            f"background-color:{template.color};border-radius:2px 0 0 2px;")
+        layout.addWidget(bar)
+
+        body = QWidget()
+        bl = QHBoxLayout(body)
+        bl.setContentsMargins(8, 6, 8, 6)
+        bl.setSpacing(8)
+
+        pin_lbl = QLabel("📌")
+        pin_lbl.setStyleSheet(
+            "font-size:13px;background:transparent;border:none;padding:0;")
+        pin_lbl.setFixedWidth(20)
+        bl.addWidget(pin_lbl)
+
+        title_lbl = QLabel(template.title)
+        title_lbl.setStyleSheet(f"font-size:13px;color:{_p('fg')};")
+        bl.addWidget(title_lbl, 1)
+
+        hint = QLabel("tap to log")
+        hint.setStyleSheet(
+            f"font-size:10px;color:{_p('muted')};font-style:italic;")
+        bl.addWidget(hint)
+
+        layout.addWidget(body, 1)
+        self.setStyleSheet(
+            f"SoftReminderRow{{border:1px solid {_p('border')};border-radius:4px;"
+            f"background-color:{_p('header_bg')};}}"
+            f"SoftReminderRow:hover{{border-color:{template.color};"
+            f"background-color:{_p('surface')};}}"
+        )
+
+    def mousePressEvent(self, ev):
+        if ev.button() == Qt.MouseButton.LeftButton:
+            self.open_log.emit(self._template, self._log_date)
+
+    def mouseDoubleClickEvent(self, ev):
+        if ev.button() == Qt.MouseButton.LeftButton:
+            self.open_log.emit(self._template, self._log_date)
+
+
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+#  CalendarPanel — main widget
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+class CalendarPanel(QWidget):
+
+    def __init__(self, calendar_store=None, soft_events_store=None, parent=None):
+        super().__init__(parent)
+        self.store = calendar_store or CalendarStore()
+        self.soft_events_store = soft_events_store or SoftEventStore()
+        self._selected_date = date.today()
+        self._build_ui(); self._refresh()
+        self._auto_timer = QTimer(self)
+        self._auto_timer.setInterval(60_000)
+        self._auto_timer.timeout.connect(self._refresh)
+        self._auto_timer.start()
+
+    # ── Palette ─────────────────────────────────────
+
+    def set_palette(self, palette: dict):
+        global _PALETTE
+        _PALETTE = palette
+        self._week_label.setStyleSheet(
+            f"font-size:13px;font-weight:bold;color:{_p('muted')};")
+        self._left_div.setStyleSheet(
+            f"border:none;border-top:1px solid {_p('border')};margin:8px 0;")
+        self._mini_frame.setStyleSheet(
+            f"#miniMonthFrame{{border:1px solid {_p('border')};"
+            f"border-radius:8px;background-color:{_p('header_bg')};}}")
+        self._major_count_lbl.setStyleSheet(f"font-size:10px;color:{_p('muted')};")
+        self._major_title_lbl.setStyleSheet(
+            f"font-size:13px;font-weight:bold;color:{_p('fg')};")
+        self._day_title.setStyleSheet(
+            f"font-size:14px;font-weight:bold;color:{_p('fg')};")
+        for btn in self._week_nav_btns:
+            btn.refresh(_PALETTE)
+        self.mini_month.refresh_styles()
+        self._refresh()
+
+    # ── Build UI ────────────────────────────────────
+
+    def _build_ui(self):
+        root = QHBoxLayout(self)
+        root.setContentsMargins(0, 0, 0, 0); root.setSpacing(0)
+
+        # ── Left column ──────────────────────────────
+        left = QWidget()
+        left_l = QVBoxLayout(left)
+        left_l.setContentsMargins(14, 10, 8, 10); left_l.setSpacing(0)
+
+        top_bar = QHBoxLayout(); top_bar.setSpacing(6)
+        title = QLabel("Calendar"); title.setObjectName("sectionTitle")
+        top_bar.addWidget(title); top_bar.addStretch()
+
+        self._week_label = QLabel()
+        self._week_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self._week_label.setStyleSheet(
+            f"font-size:13px;font-weight:bold;color:{_p('muted')};")
+        top_bar.addWidget(self._week_label); top_bar.addSpacing(8)
+
+        self._week_nav_btns: list[NavButton] = []
+        for direction, tip, slot in [("left",  "Previous week", self._prev_week),
+                                      ("right", "Next week",     self._next_week)]:
+            if direction == "right":
+                top_bar.addWidget(self._today_btn())
+            btn = NavButton(direction, size=28, tooltip=tip)
+            btn.refresh(_PALETTE)
+            btn.clicked.connect(slot)
+            self._week_nav_btns.append(btn)
+            top_bar.addWidget(btn)
+
+        top_bar.addSpacing(8)
+        btn_add = QPushButton("+ Event"); btn_add.clicked.connect(self._add_event)
+        top_bar.addWidget(btn_add)
+        left_l.addLayout(top_bar); left_l.addSpacing(8)
+
+        self._week_container = QWidget()
+        self._week_grid = QHBoxLayout(self._week_container)
+        self._week_grid.setSpacing(0); self._week_grid.setContentsMargins(0, 0, 0, 0)
+        week_scroll = QScrollArea()
+        week_scroll.setWidgetResizable(True); week_scroll.setWidget(self._week_container)
+        week_scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+        week_scroll.setMinimumHeight(220); week_scroll.setMaximumHeight(340)
+        week_scroll.setFrameShape(QFrame.Shape.NoFrame)
+        left_l.addWidget(week_scroll, 3)
+
+        self._left_div = QFrame(); self._left_div.setFrameShape(QFrame.Shape.HLine)
+        self._left_div.setStyleSheet(
+            f"border:none;border-top:1px solid {_p('border')};margin:8px 0;")
+        left_l.addWidget(self._left_div)
+
+        detail_bar = QHBoxLayout()
+        self._day_title = QLabel("Today")
+        self._day_title.setStyleSheet(f"font-size:14px;font-weight:bold;color:{_p('fg')};")
+        detail_bar.addWidget(self._day_title); detail_bar.addStretch()
+        btn_add_here = QPushButton("+"); btn_add_here.setObjectName("secondary")
+        btn_add_here.setFixedSize(26, 26); btn_add_here.setToolTip("Add event on this day")
+        btn_add_here.clicked.connect(lambda: self._add_event_on_date(self._selected_date))
+        detail_bar.addWidget(btn_add_here); left_l.addLayout(detail_bar)
+        left_l.addSpacing(4)
+
+        self._day_list_layout = QVBoxLayout(); self._day_list_layout.setSpacing(4)
+        day_list_w = QWidget(); day_list_w.setLayout(self._day_list_layout)
+        day_scroll = QScrollArea(); day_scroll.setWidgetResizable(True)
+        day_scroll.setWidget(day_list_w)
+        day_scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+        day_scroll.setFrameShape(QFrame.Shape.NoFrame)
+        left_l.addWidget(day_scroll, 2)
+        root.addWidget(left, 1)
+
+        # ── Right sidebar ────────────────────────────
+        right = QWidget(); right.setFixedWidth(258)
+        right_l = QVBoxLayout(right)
+        right_l.setContentsMargins(0, 10, 12, 10); right_l.setSpacing(0)
+
+        self._mini_frame = QFrame(); self._mini_frame.setObjectName("miniMonthFrame")
+        self._mini_frame.setStyleSheet(
+            f"#miniMonthFrame{{border:1px solid {_p('border')};"
+            f"border-radius:8px;background-color:{_p('header_bg')};}}")
+        mf_l = QVBoxLayout(self._mini_frame); mf_l.setContentsMargins(0, 0, 0, 0)
+        self.mini_month = MiniMonth()
+        self.mini_month.date_selected.connect(self._on_mini_date_selected)
+        mf_l.addWidget(self.mini_month); right_l.addWidget(self._mini_frame)
+        right_l.addSpacing(8)
+
+        # ── Row 1: Jump to date (full width) ─────────
+        btn_jump = QPushButton("📅  Go to date…")
+        btn_jump.setObjectName("secondary")
+        btn_jump.clicked.connect(self._jump_to_date)
+        right_l.addWidget(btn_jump)
+        right_l.addSpacing(4)
+
+        # ── Row 2: Birthdays | Soft Events (50 / 50) ─
+        tool_row = QHBoxLayout()
+        tool_row.setSpacing(4)
+
+        btn_bday = QPushButton("🎂  Birthdays")
+        btn_bday.setObjectName("secondary")
+        btn_bday.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred)
+        btn_bday.clicked.connect(self._manage_birthdays)
+        tool_row.addWidget(btn_bday)
+
+        btn_soft = QPushButton("📌  Soft Events")
+        btn_soft.setObjectName("secondary")
+        btn_soft.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred)
+        btn_soft.clicked.connect(self._manage_soft_events)
+        tool_row.addWidget(btn_soft)
+
+        right_l.addLayout(tool_row)
+        right_l.addSpacing(8)
+
+        rdiv1 = QFrame(); rdiv1.setFrameShape(QFrame.Shape.HLine)
+        rdiv1.setStyleSheet(f"border:none;border-top:1px solid {_p('border')};")
+        right_l.addWidget(rdiv1); right_l.addSpacing(8)
+
+        major_hdr = QHBoxLayout()
+        self._major_title_lbl = QLabel("Upcoming Events")
+        self._major_title_lbl.setStyleSheet(
+            f"font-size:13px;font-weight:bold;color:{_p('fg')};")
+        major_hdr.addWidget(self._major_title_lbl); major_hdr.addStretch()
+        self._major_count_lbl = QLabel("")
+        self._major_count_lbl.setStyleSheet(f"font-size:10px;color:{_p('muted')};")
+        major_hdr.addWidget(self._major_count_lbl); right_l.addLayout(major_hdr)
+        right_l.addSpacing(6)
+
+        self._major_list_layout = QVBoxLayout(); self._major_list_layout.setSpacing(5)
+        major_list_w = QWidget(); major_list_w.setLayout(self._major_list_layout)
+        major_scroll = QScrollArea(); major_scroll.setWidgetResizable(True)
+        major_scroll.setWidget(major_list_w)
+        major_scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+        major_scroll.setFrameShape(QFrame.Shape.NoFrame)
+        right_l.addWidget(major_scroll, 1)
+        root.addWidget(right)
+
+    def _today_btn(self) -> QPushButton:
+        btn = QPushButton("Today"); btn.setObjectName("secondary")
+        btn.setFixedHeight(28); btn.clicked.connect(self._go_today)
+        return btn
+
+    def _manage_soft_events(self):
+        dlg = SoftEventManagerDialog(self.soft_events_store, self)
+        dlg.exec()
+        self._refresh()
+
+    # ── Refresh ─────────────────────────────────────
+
+    def _refresh(self):
+        self._render_week(); self._render_day_detail()
+        self._render_major_events(); self._update_mini_month_events()
+
+    def _get_week_start(self) -> date:
+        d = self._selected_date; return d - timedelta(days=d.weekday())
+
+    def _render_week(self):
+        _clear_layout(self._week_grid)
+        ws = self._get_week_start(); we = ws + timedelta(days=6)
+        self._week_label.setText(
+            f"{ws.strftime('%b %d')} – {we.strftime('%b %d, %Y')}")
+
+        events = self.store.get_events(ws.isoformat(), we.isoformat() + "T23:59:59")
+        ebd: dict[date, list[Event]] = {}
+        for ev in events:
+            try: d = datetime.fromisoformat(ev.start_time).date()
+            except Exception: continue
+            ebd.setdefault(d, []).append(ev)
+        for ev in self.store.get_all_recurring_events():
+            for occ in expand_recurring_to_range(ev, ws, we):
+                if ev not in ebd.get(occ, []): ebd.setdefault(occ, []).append(ev)
+
+        bbd: dict[date, list[Birthday]] = {}
+        for b in self.store.get_birthdays():
+            try: bd = date(ws.year, b.month, b.day)
+            except ValueError: continue
+            if ws <= bd <= we: bbd.setdefault(bd, []).append(b)
+
+        # ── Soft event reminders in week grid ──
+        try:
+            for occ_date, tpl in self.soft_events_store.get_upcoming(ws, days_ahead=6):
+                if ws <= occ_date <= we:
+                    ebd.setdefault(occ_date, []).append(Event(
+                        id=tpl.id,
+                        title=tpl.title,
+                        start_time=datetime(occ_date.year, occ_date.month, occ_date.day).isoformat(),
+                        all_day=True,
+                        color=tpl.color,
+                        category="reminder",
+                    ))
+        except Exception:
+            pass
+
+        today = date.today()
+        for i in range(7):
+            d = ws + timedelta(days=i)
+            if i > 0:
+                sep = QFrame(); sep.setFrameShape(QFrame.Shape.VLine)
+                sep.setStyleSheet(f"border:none;border-left:1px solid {_p('border')};")
+                self._week_grid.addWidget(sep)
+
+            col = DayColumn(d, ebd.get(d, []), bbd.get(d, []),
+                            is_today=(d == today), is_selected=(d == self._selected_date))
+            col.request_add.connect(self._add_event_on_date)
+            col.request_edit.connect(self._edit_event)
+            col.day_clicked.connect(self._on_day_column_clicked)
+            self._week_grid.addWidget(col, 1)
+
+    def _render_day_detail(self):
+        _clear_layout(self._day_list_layout)
+        d = self._selected_date; today = date.today()
+        if   d == today:               hdr = f"Today  ·  {d.strftime('%A, %B %d')}"
+        elif d == today+timedelta(1):  hdr = f"Tomorrow  ·  {d.strftime('%A, %B %d')}"
+        elif d == today-timedelta(1):  hdr = f"Yesterday  ·  {d.strftime('%A, %B %d')}"
+        else:                          hdr = d.strftime("%A, %B %d, %Y")
+        self._day_title.setText(hdr)
+
+        events = self.store.get_events(d.isoformat(), d.isoformat() + "T23:59:59")
+        for ev in self.store.get_all_recurring_events():
+            if expand_recurring_to_range(ev, d, d) and ev not in events:
+                events.append(ev)
+
+        bday_evs: list[Event] = []
+        for b in self.store.get_birthdays():
+            if b.month == d.month and b.day == d.day:
+                age = (d.year - b.year) if b.year else None
+                if d < today:
+                    age_str = f" (turned {age})" if age else ""
+                elif d == today:
+                    age_str = f" (turns {age} today)" if age else ""
+                else:
+                    age_str = f" (turns {age})" if age else ""
+                bday_evs.append(Event(
+                    id=b.id,
+                    title=f"🎂 {b.name} 🎂{age_str}",
+                    start_time=datetime(d.year, d.month, d.day).isoformat(),
+                    all_day=True, color=_p("red"), category="birthday",
+                ))
+
+        all_evs = sorted(bday_evs + events,
+                         key=lambda e: (0 if e.all_day else 1, e.start_time))
+
+        # Fetch soft events before deciding whether to show the empty-state label
+        try:
+            soft_occ = self.soft_events_store.get_upcoming(d, days_ahead=0)
+        except Exception:
+            soft_occ = []
+
+        if not all_evs and not soft_occ:
+            lbl = QLabel("No events — double-click a day to add one")
+            lbl.setStyleSheet(f"color:{_p('muted')};font-size:12px;padding:8px 0;")
+            self._day_list_layout.addWidget(lbl)
+        else:
+            for ev in all_evs:
+                row = DayEventRow(ev)
+                if ev.category == "birthday":
+                    row.edit_requested.connect(
+                        lambda e: self._open_major_event(e.id, True))
+                else:
+                    row.edit_requested.connect(self._edit_event)
+                self._day_list_layout.addWidget(row)
+
+        # ── Soft event reminders for this day ──
+        if soft_occ:
+            sep_lbl = QLabel("Reminders")
+            sep_lbl.setStyleSheet(
+                f"color:{_p('muted')};font-size:11px;font-weight:bold;"
+                f"border-top:1px solid {_p('border')};padding-top:6px;margin-top:4px;"
+            )
+            self._day_list_layout.addWidget(sep_lbl)
+
+            for occ_date, tpl in soft_occ:
+                row = SoftReminderRow(tpl, occ_date)
+                row.open_log.connect(self._open_soft_log)
+                self._day_list_layout.addWidget(row)
+
+        self._day_list_layout.addStretch()
+
+    def _render_major_events(self):
+        _clear_layout(self._major_list_layout)
+        majors = self.store.get_next_major_events(date.today(), limit=8)
+        if not majors:
+            lbl = QLabel("No upcoming major events")
+            lbl.setStyleSheet(f"color:{_p('muted')};font-size:12px;padding:8px 0;")
+            lbl.setWordWrap(True); self._major_list_layout.addWidget(lbl)
+            self._major_count_lbl.setText("")
+        else:
+            self._major_count_lbl.setText(f"{len(majors)} upcoming")
+            for ev_date, title, category, color, item_id, is_birthday in majors:
+                card = MajorEventCard(ev_date, title, category, color,
+                                      item_id, is_birthday)
+                card.clicked.connect(self._open_major_event)
+                self._major_list_layout.addWidget(card)
+        self._major_list_layout.addStretch()
+
+    def _open_soft_log(self, template, log_date):
+        from src.ui.modules.dashboard_panel import SoftEventLogDialog
+        dlg = SoftEventLogDialog(self, self.soft_events_store, template, log_date)
+        dlg.exec()
+
+    def _update_mini_month_events(self):
+        vy, vm = self.mini_month._view_year, self.mini_month._view_month
+        first = date(vy, vm, 1)
+        last  = date(vy + (vm == 12), 1 if vm == 12 else vm + 1, 1) - timedelta(days=1)
+        by_date: dict[date, list[str]] = {}
+        for ev in self.store.get_events(first.isoformat(), last.isoformat() + "T23:59:59"):
+            try: d = datetime.fromisoformat(ev.start_time).date()
+            except Exception: continue
+            by_date.setdefault(d, []).append(ev.color)
+        for ev in self.store.get_all_recurring_events():
+            for occ in expand_recurring_to_range(ev, first, last):
+                by_date.setdefault(occ, []).append(ev.color)
+        for b in self.store.get_birthdays():
+            if b.month == vm:
+                try:
+                    d = date(vy, b.month, b.day)
+                    if first <= d <= last: by_date.setdefault(d, []).append(_p("red"))
+                except ValueError: pass
+        # ── Soft event reminder dots ──
+        try:
+            days_in_month = (last - first).days
+            for occ_date, tpl in self.soft_events_store.get_upcoming(
+                    first, days_ahead=days_in_month):
+                if first <= occ_date <= last:
+                    by_date.setdefault(occ_date, []).append(tpl.color)
+        except Exception:
+            pass
+        self.mini_month.set_events(by_date)
+        try:
+            from src.data.holidays_jp import get_japanese_holidays
+            hset = {d for d in get_japanese_holidays(vy) if first <= d <= last}
+            self.mini_month.set_holidays(hset)
+        except Exception: pass
+
+    # ── Navigation ──────────────────────────────────
+
+    def _prev_week(self):
+        self._selected_date -= timedelta(weeks=1)
+        self.mini_month.set_selected(self._selected_date); self._refresh()
+
+    def _next_week(self):
+        self._selected_date += timedelta(weeks=1)
+        self.mini_month.set_selected(self._selected_date); self._refresh()
+
+    def _go_today(self):
+        self._selected_date = date.today()
+        self.mini_month.set_selected(self._selected_date); self._refresh()
+
+    def _on_day_column_clicked(self, d: date):
+        """Single-click on a week-grid day column selects that day."""
+        self._selected_date = d
+        self.mini_month.set_selected(d)
+        self._render_week()
+        self._render_day_detail()
+
+    def _on_mini_date_selected(self, d: date):
+        self._selected_date = d
+        self._update_mini_month_events(); self._render_week(); self._render_day_detail()
+
+    def _jump_to_date(self):
+        dlg = QDialog(self); dlg.setWindowTitle("Go to date"); dlg.setModal(True)
+        layout = QVBoxLayout(dlg); layout.addWidget(QLabel("Jump to date:"))
+        de = QDateEdit(); de.setCalendarPopup(True); de.setDisplayFormat("dd MMM yyyy")
+        sd = self._selected_date; de.setDate(QDate(sd.year, sd.month, sd.day))
+        layout.addWidget(de)
+        br = QHBoxLayout()
+        cancel = QPushButton("Cancel"); cancel.setObjectName("secondary"); cancel.clicked.connect(dlg.reject)
+        go = QPushButton("Go"); go.setDefault(True); go.clicked.connect(dlg.accept)
+        br.addStretch(); br.addWidget(cancel); br.addWidget(go); layout.addLayout(br)
+        if dlg.exec():
+            qd = de.date(); self._selected_date = date(qd.year(), qd.month(), qd.day())
+            self.mini_month.set_selected(self._selected_date); self._refresh()
+
+    # ── Event CRUD ───────────────────────────────────
+
+    def _add_event(self): self._add_event_on_date(self._selected_date)
+
+    def _add_event_on_date(self, d: date):
+        dlg = EventDialog(self, prefill_date=d)
+        if dlg.exec(): self.store.add_event(**dlg.get_data()); self._refresh()
+
+    def _edit_event(self, event: Event):
+        dlg = EventDialog(self, event=event); result = dlg.exec()
+        if dlg._delete_requested:
+            if QMessageBox.question(
+                self, "Delete Event", f'Delete "{event.title}"?',
+                QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
+            ) == QMessageBox.StandardButton.Yes:
+                self.store.delete_event(event.id); self._refresh()
+        elif result:
+            data = dlg.get_data()
+            event.title       = data["title"];       event.description = data["description"]
+            event.start_time  = data["start_time"];  event.end_time    = data["end_time"]
+            event.all_day     = data["all_day"];     event.color       = data["color"]
+            event.category    = data["category"];    event.recurrence  = data["recurrence"]
+            self.store.update_event(event); self._refresh()
+
+    def _open_major_event(self, item_id: str, is_birthday: bool):
+        """Dispatcher: open the editor for a MajorEventCard or birthday DayEventRow."""
+        if is_birthday:
+            birthday = next(
+                (b for b in self.store.get_birthdays() if b.id == item_id), None)
+            if birthday is None:
+                return
+            dlg = BirthdayDialog(self, birthday); result = dlg.exec()
+            if dlg._delete_requested:
+                if QMessageBox.question(
+                    self, "Delete Birthday",
+                    f"Remove birthday for {birthday.name}?",
+                    QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
+                ) == QMessageBox.StandardButton.Yes:
+                    self.store.delete_birthday(birthday.id); self._refresh()
+            elif result:
+                data = dlg.get_data()
+                birthday.name  = data["name"];  birthday.month = data["month"]
+                birthday.day   = data["day"];   birthday.year  = data["year"]
+                birthday.note  = data["note"]
+                self.store.update_birthday(birthday); self._refresh()
+        else:
+            event = self.store.get_event(item_id)
+            if event:
+                self._edit_event(event)
+
+    def _manage_birthdays(self):
+        BirthdayManagerDialog(self, self.store).exec(); self._refresh()
+
+
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+#  BirthdayManagerDialog
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+class BirthdayManagerDialog(QDialog):
+    def __init__(self, parent, store: CalendarStore):
+        super().__init__(parent); self.store = store
+        self.setWindowTitle("Birthday Manager")
+        self.setMinimumSize(420, 480); self.setModal(True)
+        self._build_ui(); self._load()
+
+    def _build_ui(self):
+        layout = QVBoxLayout(self)
+        layout.setContentsMargins(16, 16, 16, 16); layout.setSpacing(10)
+
+        hdr = QHBoxLayout()
+        title = QLabel("🎂  Birthdays")
+        title.setStyleSheet("font-size:15px;font-weight:bold;")
+        hdr.addWidget(title); hdr.addStretch()
+        add_btn = QPushButton("+ Add"); add_btn.clicked.connect(self._add_birthday)
+        hdr.addWidget(add_btn); layout.addLayout(hdr)
+        self._search = QLineEdit(); self._search.setPlaceholderText("Search by name…")
+        self._search.textChanged.connect(self._filter); layout.addWidget(self._search)
+
+        self._list_widget = QWidget(); self._list_layout = QVBoxLayout(self._list_widget)
+        self._list_layout.setSpacing(4); self._list_layout.setContentsMargins(0, 0, 0, 0)
+        scroll = QScrollArea(); scroll.setWidgetResizable(True)
+        scroll.setWidget(self._list_widget); scroll.setFrameShape(QFrame.Shape.NoFrame)
+        layout.addWidget(scroll, 1)
+
+        close_btn = QPushButton("Close"); close_btn.clicked.connect(self.accept)
+        layout.addWidget(close_btn, 0, Qt.AlignmentFlag.AlignRight)
+
+    def _load(self):
+        self._birthdays = self.store.get_birthdays()
+        self._filter(self._search.text())
+
+    def _filter(self, text: str):
+        _clear_layout(self._list_layout); q = text.lower(); today = date.today()
+        filtered = [b for b in self._birthdays if q in b.name.lower()]
+
+        def sk(b):
+            try:
+                c = date(today.year, b.month, b.day)
+                if c < today: c = date(today.year + 1, b.month, b.day)
+                return (c - today).days
+            except ValueError: return 9999
+
+        filtered.sort(key=sk)
+        if not filtered:
+            self._list_layout.addWidget(
+                QLabel("No birthdays yet — add one!" if not text else "No matches"))
+        for b in filtered:
+            self._list_layout.addWidget(self._make_row(b))
+        self._list_layout.addStretch()
+
+    def _make_row(self, b: Birthday) -> QFrame:
+        row = QFrame()
+        row.setStyleSheet(
+            f"QFrame{{border:1px solid {_p('border')};border-radius:6px;"
+            f"background-color:{_p('header_bg')};padding:2px;}}"
+            f"QFrame:hover{{border-color:{_p('muted')};"
+            f"background-color:{_p('surface')};}}")
+        rl = QHBoxLayout(row); rl.setContentsMargins(10, 8, 10, 8); rl.setSpacing(10)
+
+        cake_badge = QLabel("🎂")
+        cake_badge.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        cake_badge.setFixedSize(32, 32)
+        cake_badge.setStyleSheet(
+            f"font-size:18px; background-color:{_p('surface')};"
+            f"border:1px solid {_p('border')}; border-radius:16px; padding:0;")
+        rl.addWidget(cake_badge)
+
+        info = QVBoxLayout(); info.setSpacing(2)
+
+        name_lbl = QLabel(f"🎂  {b.name}  🎂")
+        name_lbl.setStyleSheet(f"font-size:13px;font-weight:bold;color:{_p('fg')};")
+        info.addWidget(name_lbl)
+
+        today = date.today()
+        try:
+            nb = date(today.year, b.month, b.day)
+            if nb < today: nb = date(today.year + 1, b.month, b.day)
+            suffix = f"  ·  {(nb-today).days}d away" if (nb-today).days > 0 else "  ·  Today! 🎉"
+        except ValueError:
+            suffix = ""
+
+        months = ["Jan","Feb","Mar","Apr","May","Jun",
+                  "Jul","Aug","Sep","Oct","Nov","Dec"]
+        ds = f"{months[b.month-1]} {b.day}"
+        if b.year: ds += f", {b.year}  (turns {today.year - b.year})"
+        ds += suffix
+
+        dl = QLabel(ds); dl.setStyleSheet(f"font-size:11px;color:{_p('muted')};")
+        info.addWidget(dl)
+
+        if b.note:
+            note_lbl = QLabel(b.note)
+            note_lbl.setStyleSheet(
+                f"font-size:11px;color:{_p('muted')};font-style:italic;")
+            note_lbl.setWordWrap(True)
+            info.addWidget(note_lbl)
+
+        rl.addLayout(info, 1)
+
+        edit_btn = QPushButton("Edit"); edit_btn.setObjectName("secondary")
+        edit_btn.setFixedHeight(28)
+        edit_btn.clicked.connect(lambda _, bd=b: self._edit_birthday(bd))
+        rl.addWidget(edit_btn)
+        return row
+
+    def _add_birthday(self):
+        dlg = BirthdayDialog(self)
+        if dlg.exec(): self.store.add_birthday(**dlg.get_data()); self._load()
+
+    def _edit_birthday(self, birthday: Birthday):
+        dlg = BirthdayDialog(self, birthday); result = dlg.exec()
+        if dlg._delete_requested:
+            if QMessageBox.question(
+                self, "Delete Birthday",
+                f"Remove birthday for {birthday.name}?",
+                QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
+            ) == QMessageBox.StandardButton.Yes:
+                self.store.delete_birthday(birthday.id); self._load()
+        elif result:
+            data = dlg.get_data()
+            birthday.name  = data["name"];  birthday.month = data["month"]
+            birthday.day   = data["day"];   birthday.year  = data["year"]
+            birthday.note  = data["note"]
+            self.store.update_birthday(birthday); self._load()
+
+
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+#  RecurrenceWidget — reusable recurrence picker
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+_SOFT_RECURRENCE_OPTIONS = [
+    ("",            "No repeat"),
+    ("daily",       "Daily"),
+    ("weekly",      "Weekly"),
+    ("monthly",     "Monthly"),
+    ("yearly",      "Yearly"),
+    ("nth_weekday", "Nth Weekday of Month"),
+]
+
+
+class RecurrenceWidget(QWidget):
+    """Reusable recurrence picker: combo + weekday buttons + nth-weekday grid."""
+
+    _NTH_LABELS = ["1st", "2nd", "3rd", "4th", "5th"]
+
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        layout = QVBoxLayout(self)
+        layout.setContentsMargins(0, 0, 0, 0)
+        layout.setSpacing(4)
+
+        layout.addWidget(QLabel("Repeat pattern"))
+        self.rec_combo = QComboBox()
+        for val, label in _SOFT_RECURRENCE_OPTIONS:
+            self.rec_combo.addItem(label, val)
+        layout.addWidget(self.rec_combo)
+        self.rec_combo.currentIndexChanged.connect(self._on_combo_changed)
+
+        # ── Weekly sub-frame ──────────────────────────────
+        self._weekday_frame = QFrame()
+        wdf = QHBoxLayout(self._weekday_frame)
+        wdf.setContentsMargins(0, 4, 0, 0); wdf.setSpacing(4)
+        self._weekday_btns: list[QToolButton] = []
+        for label in WEEKDAY_LABELS:
+            btn = QToolButton(); btn.setText(label)
+            btn.setCheckable(True); btn.setFixedSize(42, 30)
+            self._weekday_btns.append(btn); wdf.addWidget(btn)
+        wdf.addStretch()
+        layout.addWidget(self._weekday_frame)
+        self._weekday_frame.setVisible(False)
+
+        # ── Nth-weekday sub-frame ─────────────────────────
+        self._nth_frame = QFrame()
+        nth_layout = QVBoxLayout(self._nth_frame)
+        nth_layout.setContentsMargins(0, 4, 0, 0); nth_layout.setSpacing(4)
+
+        nth_layout.addWidget(QLabel("Which week(s) of the month:"))
+        week_row = QHBoxLayout(); week_row.setSpacing(4)
+        self._nth_week_btns: list[QToolButton] = []
+        for lbl in self._NTH_LABELS:
+            btn = QToolButton(); btn.setText(lbl)
+            btn.setCheckable(True); btn.setFixedSize(46, 30)
+            self._nth_week_btns.append(btn); week_row.addWidget(btn)
+        week_row.addStretch()
+        nth_layout.addLayout(week_row)
+
+        nth_layout.addWidget(QLabel("Which day(s):"))
+        day_row = QHBoxLayout(); day_row.setSpacing(4)
+        self._nth_day_btns: list[QToolButton] = []
+        for label in WEEKDAY_LABELS:
+            btn = QToolButton(); btn.setText(label)
+            btn.setCheckable(True); btn.setFixedSize(42, 30)
+            self._nth_day_btns.append(btn); day_row.addWidget(btn)
+        day_row.addStretch()
+        nth_layout.addLayout(day_row)
+
+        layout.addWidget(self._nth_frame)
+        self._nth_frame.setVisible(False)
+
+    def _on_combo_changed(self, _):
+        val = self.rec_combo.currentData()
+        self._weekday_frame.setVisible(val == "weekly")
+        self._nth_frame.setVisible(val == "nth_weekday")
+
+    def get_recurrence(self) -> str:
+        """Return a recurrence string like 'weekly:0,1,4', 'nth_weekday:2,4:6', etc."""
+        val = self.rec_combo.currentData()
+        if val == "weekly":
+            days = [i for i, b in enumerate(self._weekday_btns) if b.isChecked()]
+            return "weekly:" + ",".join(str(d) for d in sorted(days)) if days else ""
+        if val == "nth_weekday":
+            weeks = [i + 1 for i, b in enumerate(self._nth_week_btns) if b.isChecked()]
+            days  = [i for i, b in enumerate(self._nth_day_btns) if b.isChecked()]
+            if weeks and days:
+                from src.data.calendar_store import build_recurrence
+                return build_recurrence("nth_weekday", nth_weeks=weeks, nth_days=days)
+            return ""
+        return val if val else ""
+
+    def set_recurrence(self, rec_str: str):
+        """Pre-fill from a recurrence string."""
+        if not rec_str:
+            self.rec_combo.setCurrentIndex(0); return
+        if rec_str == "daily":
+            self.rec_combo.setCurrentIndex(1)
+        elif rec_str.startswith("weekly:"):
+            self.rec_combo.setCurrentIndex(2)
+            for d in [int(x) for x in rec_str.split(":")[1].split(",") if x.strip()]:
+                if 0 <= d < len(self._weekday_btns):
+                    self._weekday_btns[d].setChecked(True)
+        elif rec_str == "monthly":
+            self.rec_combo.setCurrentIndex(3)
+        elif rec_str == "yearly":
+            self.rec_combo.setCurrentIndex(4)
+        elif rec_str.startswith("nth_weekday:"):
+            self.rec_combo.setCurrentIndex(5)
+            from src.data.calendar_store import parse_recurrence
+            p = parse_recurrence(rec_str)
+            for n in p.get("weeks", []):
+                idx = n - 1
+                if 0 <= idx < len(self._nth_week_btns):
+                    self._nth_week_btns[idx].setChecked(True)
+            for d in p.get("days", []):
+                if 0 <= d < len(self._nth_day_btns):
+                    self._nth_day_btns[d].setChecked(True)
+        self._on_combo_changed(None)
+
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+#  TemplateEditDialog — edit a single soft event template
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+class TemplateEditDialog(QDialog):
+    """Edit fields for a soft event template."""
+
+    def __init__(self, parent=None, template: SoftEventTemplate | None = None):
+        super().__init__(parent)
+        self._template = template
+        self.setWindowTitle("Edit Template" if template else "New Template")
+        self.setMinimumWidth(400)
+        self.setModal(True)
+
+        layout = QVBoxLayout(self)
+        layout.setSpacing(10)
+        layout.setContentsMargins(14, 12, 14, 12)
+
+        layout.addWidget(QLabel("Title"))
+        self._title_edit = QLineEdit()
+        self._title_edit.setPlaceholderText("e.g. Weekly Review")
+        if template:
+            self._title_edit.setText(template.title)
+        layout.addWidget(self._title_edit)
+
+        layout.addWidget(QLabel("Note (shown on every occurrence)"))
+        self._note_edit = QTextEdit()
+        self._note_edit.setMaximumHeight(80)
+        self._note_edit.setPlaceholderText("Optional universal note…")
+        if template:
+            self._note_edit.setPlainText(template.note)
+        layout.addWidget(self._note_edit)
+
+        color_row = QHBoxLayout()
+        color_row.addWidget(QLabel("Color"))
+        self._color = template.color if template else "#a6e3a1"
+        self._color_btn = QPushButton(self._color)
+        self._color_btn.setFixedSize(100, 28)
+        self._update_color_btn()
+        self._color_btn.clicked.connect(self._pick_color)
+        color_row.addWidget(self._color_btn)
+        color_row.addStretch()
+        layout.addLayout(color_row)
+
+        self._rec_widget = RecurrenceWidget()
+        if template:
+            self._rec_widget.set_recurrence(template.recurrence)
+        layout.addWidget(self._rec_widget)
+
+        sep = QFrame()
+        sep.setObjectName("separator")
+        sep.setFrameShape(QFrame.Shape.HLine)
+        layout.addWidget(sep)
+
+        btn_row = QHBoxLayout()
+        btn_row.addStretch()
+        cancel = QPushButton("Cancel")
+        cancel.setObjectName("secondary")
+        cancel.clicked.connect(self.reject)
+        btn_row.addWidget(cancel)
+        save = QPushButton("Save")
+        save.setDefault(True)
+        save.clicked.connect(self._on_save)
+        btn_row.addWidget(save)
+        layout.addLayout(btn_row)
+
+    def _update_color_btn(self):
+        self._color_btn.setText(self._color)
+        self._color_btn.setStyleSheet(
+            f"background-color: {self._color}; color: #000; font-weight: bold; "
+            f"border-radius: 4px; border: 1px solid #555;"
+        )
+
+    def _pick_color(self):
+        from PyQt6.QtGui import QColor
+        c = QColorDialog.getColor(QColor(self._color), self, "Pick Template Color")
+        if c.isValid():
+            self._color = c.name()
+            self._update_color_btn()
+
+    def _on_save(self):
+        if not self._title_edit.text().strip():
+            QMessageBox.warning(self, "Missing Title", "Please enter a title.")
+            return
+        self.accept()
+
+    def get_data(self) -> dict:
+        return {
+            "title":      self._title_edit.text().strip(),
+            "note":       self._note_edit.toPlainText(),
+            "color":      self._color,
+            "recurrence": self._rec_widget.get_recurrence(),
+        }
+
+
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+#  ViewLogDialog — read-only log viewer for a template
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+class ViewLogDialog(QDialog):
+    """Read-only view of all log entries for a soft event template."""
+
+    def __init__(self, store: SoftEventStore, template: SoftEventTemplate, parent=None):
+        super().__init__(parent)
+        self.setWindowTitle(f"Log — {template.title}")
+        self.setMinimumSize(440, 400)
+        self.setModal(True)
+
+        layout = QVBoxLayout(self)
+        layout.setContentsMargins(14, 12, 14, 12)
+
+        logs = store.get_logs_for_template(template.id)
+        text_parts = []
+        for log in logs:
+            text_parts.append(f"=== {log.log_date} ===")
+            text_parts.append(log.log_text)
+            text_parts.append("")
+
+        viewer = QTextEdit()
+        viewer.setReadOnly(True)
+        viewer.setPlainText(
+            "\n".join(text_parts) if text_parts else "No log entries yet.")
+        layout.addWidget(viewer, 1)
+
+        close_btn = QPushButton("Close")
+        close_btn.setObjectName("secondary")
+        close_btn.clicked.connect(self.accept)
+        btn_row = QHBoxLayout()
+        btn_row.addStretch()
+        btn_row.addWidget(close_btn)
+        layout.addLayout(btn_row)
+
+
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+#  SoftEventManagerDialog
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+class SoftEventManagerDialog(QDialog):
+    """Manage soft event templates — list, add, edit, delete, view log."""
+
+    def __init__(self, soft_events_store: SoftEventStore, parent=None):
+        super().__init__(parent)
+        self.store = soft_events_store
+        self.setWindowTitle("Soft Events — Template Manager")
+        self.setMinimumSize(500, 420)
+        self.setModal(True)
+        self._build_ui()
+        self._load()
+
+    def _build_ui(self):
+        layout = QVBoxLayout(self)
+        layout.setSpacing(10)
+        layout.setContentsMargins(14, 12, 14, 12)
+
+        layout.addWidget(QLabel(
+            "Soft events are lightweight recurring reminders with per-day logs."
+        ))
+
+        self._list = QListWidget()
+        layout.addWidget(self._list, 1)
+
+        btn_row = QHBoxLayout()
+        new_btn = QPushButton("New")
+        new_btn.clicked.connect(self._add)
+        btn_row.addWidget(new_btn)
+        edit_btn = QPushButton("Edit")
+        edit_btn.setObjectName("secondary")
+        edit_btn.clicked.connect(self._edit)
+        btn_row.addWidget(edit_btn)
+        del_btn = QPushButton("Delete")
+        del_btn.setObjectName("destructive")
+        del_btn.clicked.connect(self._delete)
+        btn_row.addWidget(del_btn)
+        log_btn = QPushButton("View Log")
+        log_btn.setObjectName("secondary")
+        log_btn.clicked.connect(self._view_log)
+        btn_row.addWidget(log_btn)
+        btn_row.addStretch()
+        close_btn = QPushButton("Close")
+        close_btn.setObjectName("secondary")
+        close_btn.clicked.connect(self.accept)
+        btn_row.addWidget(close_btn)
+        layout.addLayout(btn_row)
+
+    def _load(self):
+        self._list.clear()
+        self._templates = self.store.get_templates()
+        for tpl in self._templates:
+            item = QListWidgetItem(f"● {tpl.title}")
+            # Tint the bullet with the template's own color
+            from PyQt6.QtGui import QColor, QBrush
+            item.setForeground(QBrush(QColor(tpl.color)))
+            item.setData(Qt.ItemDataRole.UserRole, tpl.id)
+            self._list.addItem(item)
+
+    def _selected_template(self) -> SoftEventTemplate | None:
+        row = self._list.currentRow()
+        if 0 <= row < len(self._templates):
+            return self._templates[row]
+        return None
+
+    def _add(self):
+        dlg = TemplateEditDialog(self)
+        if dlg.exec() == QDialog.DialogCode.Accepted:
+            self.store.add_template(**dlg.get_data())
+            self._load()
+
+    def _edit(self):
+        tpl = self._selected_template()
+        if not tpl:
+            return
+        dlg = TemplateEditDialog(self, tpl)
+        if dlg.exec() == QDialog.DialogCode.Accepted:
+            data = dlg.get_data()
+            tpl.title      = data["title"]
+            tpl.note       = data["note"]
+            tpl.color      = data["color"]
+            tpl.recurrence = data["recurrence"]
+            self.store.update_template(tpl)
+            self._load()
+
+    def _delete(self):
+        tpl = self._selected_template()
+        if not tpl:
+            return
+        reply = QMessageBox.question(
+            self, "Delete Template",
+            f"Delete '{tpl.title}'? Log entries will be preserved.",
+            QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
+        )
+        if reply == QMessageBox.StandardButton.Yes:
+            self.store.delete_template(tpl.id)
+            self._load()
+
+    def _view_log(self):
+        tpl = self._selected_template()
+        if not tpl:
+            return
+        ViewLogDialog(self.store, tpl, self).exec()
+```
+
+### `src\ui\modules\dashboard_panel.py`
+
+```python
+"""Dashboard panel — overview of tasks, upcoming deadlines, and productivity stats.
+
+New in this version:
+  • SideIncomeGoalSection — prominent month-browsable side income goal tracker
+    with a color-coded progress bar (red → green → blue glow at major goal).
+  • Goal data stored in side_income_goals table via FinanceStore.set_goal()
+  • "Coming Up (Next 7 Days)" section for soft event reminders
+  • Store injection — all stores passed in from main_window
+"""
+
+import calendar as _calendar
+from datetime import date, datetime, timedelta
+
+from PyQt6.QtCore import Qt, QRectF, QTimer
+from PyQt6.QtGui import QPainter, QColor, QBrush, QPen, QFont, QRadialGradient
+from PyQt6.QtWidgets import (
+    QWidget, QVBoxLayout, QHBoxLayout, QGridLayout,
+    QLabel, QFrame, QScrollArea, QProgressBar,
+    QPushButton, QDialog, QDialogButtonBox, QDoubleSpinBox,
+    QFormLayout, QSizePolicy, QComboBox, QTextEdit,
+)
+
+from src.config import load_config
+from src.data.todo_store import TodoStore, PRIORITY_LABELS
+from src.data.calendar_store import CalendarStore
+from src.data.finance_store import FinanceStore
+from src.data.soft_events_store import SoftEventStore
+from src.ui.widgets.nav_button import NavButton
+
+
+def _priority_colors(palette: dict) -> dict:
+    """Return priority-level colours drawn from the current theme palette."""
+    return {
+        0: palette.get("muted",  "#a6adc8"),
+        1: palette.get("green",  "#a6e3a1"),
+        2: palette.get("yellow", "#f9e2af"),
+        3: palette.get("red",    "#f38ba8"),
+    }
+
+# Sentinel → palette key map for store-layer color strings
+SENTINEL_COLORS = {"birthday": "red", "holiday": "yellow", "trip": "accent"}
+
+_MONTH_NAMES = [
+    "", "January", "February", "March", "April", "May", "June",
+    "July", "August", "September", "October", "November", "December",
+]
+
+
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+#  StatCard
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+class StatCard(QFrame):
+    """A compact stat card with a big number and label."""
+
+    def __init__(self, value: str, label: str, color: str = "#cdd6f4", parent=None):
+        super().__init__(parent)
+        self.setStyleSheet(
+            "StatCard { border: 1px solid palette(mid); border-radius: 6px; padding: 8px; }"
+        )
+        layout = QVBoxLayout(self)
+        layout.setContentsMargins(12, 10, 12, 10)
+        layout.setSpacing(2)
+
+        val = QLabel(value)
+        val.setStyleSheet(f"font-size: 24px; font-weight: bold; color: {color};")
+        val.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        layout.addWidget(val)
+        self._value_label = val
+
+        lbl = QLabel(label)
+        lbl.setObjectName("subtitle")
+        lbl.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        lbl.setStyleSheet("font-size: 11px;")
+        layout.addWidget(lbl)
+
+    def update_value(self, value: str, color: str | None = None):
+        self._value_label.setText(value)
+        if color:
+            self._value_label.setStyleSheet(
+                f"font-size: 24px; font-weight: bold; color: {color};"
+            )
+
+
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+#  UpcomingItem
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+class UpcomingItem(QFrame):
+    """A single upcoming deadline / event in the dashboard."""
+
+    def __init__(self, title: str, subtitle: str, color: str,
+                 days_label: str, parent=None):
+        super().__init__(parent)
+        layout = QHBoxLayout(self)
+        layout.setContentsMargins(8, 4, 8, 4)
+        layout.setSpacing(8)
+
+        dot = QLabel("\u25cf")
+        dot.setStyleSheet(f"color: {color}; font-size: 14px;")
+        dot.setFixedWidth(16)
+        layout.addWidget(dot)
+
+        info = QVBoxLayout()
+        info.setSpacing(0)
+        t = QLabel(title)
+        t.setStyleSheet("font-weight: bold; font-size: 12px;")
+        info.addWidget(t)
+        s = QLabel(subtitle)
+        s.setObjectName("subtitle")
+        s.setStyleSheet("font-size: 10px;")
+        info.addWidget(s)
+        layout.addLayout(info, 1)
+
+        badge = QLabel(days_label)
+        badge.setStyleSheet(
+            f"color: {color}; font-size: 10px; font-weight: bold; "
+            f"padding: 2px 6px; border: 1px solid {color}; border-radius: 3px;"
+        )
+        layout.addWidget(badge)
+
+
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+#  GoalBar — custom painted bar with color states
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+class GoalBar(QWidget):
+    """Paints a progress bar that changes color based on goal thresholds.
+
+    States:
+      current < min_goal  → red/orange gradient fill
+      current >= min_goal → green fill
+      current >= major_goal → blue fill + subtle outer glow
+    """
+
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.setMinimumHeight(28)
+        self.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
+        self._current = 0.0
+        self._min_goal = 1.0
+        self._major_goal = 2.0
+        self._palette: dict = {}
+
+    def set_values(self, current: float, min_goal: float, major_goal: float):
+        self._current   = max(current, 0.0)
+        self._min_goal  = max(min_goal, 0.01)
+        self._major_goal = max(major_goal, min_goal + 0.01)
+        self.update()
+
+    def set_palette(self, palette: dict):
+        self._palette = palette
+        self.update()
+
+    def paintEvent(self, event):
+        painter = QPainter(self)
+        painter.setRenderHint(QPainter.RenderHint.Antialiasing)
+
+        w = self.width()
+        bar_h = 20
+        bar_y = (self.height() - bar_h) // 2
+        radius = bar_h / 2
+
+        at_major = self._current >= self._major_goal
+        at_min   = self._current >= self._min_goal
+
+        cap = self._major_goal * 1.05
+        fill_ratio = min(self._current / cap, 1.0)
+
+        if at_major:
+            fill_color = QColor(self._palette.get("accent", "#89b4fa"))
+        elif at_min:
+            fill_color = QColor(self._palette.get("green", "#a6e3a1"))
+        else:
+            ratio_to_min = self._current / self._min_goal
+            r_start = QColor("#e55050")
+            r_end   = QColor("#f9a040")
+            r = int(r_start.red()   + (r_end.red()   - r_start.red())   * ratio_to_min)
+            g = int(r_start.green() + (r_end.green() - r_start.green()) * ratio_to_min)
+            b = int(r_start.blue()  + (r_end.blue()  - r_start.blue())  * ratio_to_min)
+            fill_color = QColor(r, g, b)
+
+        bg = QColor(self._palette.get("surface", "#313244"))
+        painter.setPen(Qt.PenStyle.NoPen)
+        painter.setBrush(QBrush(bg))
+        painter.drawRoundedRect(0, bar_y, w, bar_h, radius, radius)
+
+        if at_major and fill_ratio > 0:
+            glow = QColor(fill_color)
+            glow.setAlpha(60)
+            painter.setBrush(QBrush(glow))
+            painter.drawRoundedRect(-3, bar_y - 3, w + 6, bar_h + 6, radius + 3, radius + 3)
+
+        fill_w = max(int(w * fill_ratio), 0)
+        if fill_w > 0:
+            painter.setBrush(QBrush(fill_color))
+            painter.setPen(Qt.PenStyle.NoPen)
+            painter.drawRoundedRect(0, bar_y, fill_w, bar_h, radius, radius)
+
+        min_x = int(w * (self._min_goal / cap))
+        if 0 < min_x < w:
+            marker_pen = QPen(QColor("#ffffff"), 2)
+            painter.setPen(marker_pen)
+            painter.drawLine(min_x, bar_y - 2, min_x, bar_y + bar_h + 2)
+
+        major_x = int(w * (self._major_goal / cap))
+        if 0 < major_x < w:
+            gold = QColor(self._palette.get("yellow", "#f9e2af"))
+            painter.setPen(QPen(gold, 2))
+            painter.drawLine(major_x, bar_y - 4, major_x, bar_y + bar_h + 4)
+
+        painter.end()
+
+
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+#  GoalEditDialog
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+class GoalEditDialog(QDialog):
+    """Set minimum and major monthly side income goals.
+
+    Input can be entered in USD or JPY — get_goals() always returns USD.
+    """
+
+    def __init__(self, min_goal: float, major_goal: float,
+                 year: int, month: int, rate: float, parent=None):
+        super().__init__(parent)
+        self._rate = max(rate, 1.0)
+        self.setWindowTitle(f"Set Goals \u2014 {_MONTH_NAMES[month]} {year}")
+        self.setMinimumWidth(380)
+        self.setModal(True)
+
+        layout = QVBoxLayout(self)
+        layout.setSpacing(10)
+
+        layout.addWidget(QLabel(
+            f"Set side income goals for {_MONTH_NAMES[month]} {year}.\n"
+            "Only Side Job income counts toward these goals."
+        ))
+
+        cur_row = QHBoxLayout()
+        cur_row.addWidget(QLabel("Enter goals in:"))
+        self._cur_combo = QComboBox()
+        self._cur_combo.addItems(["USD ($)", "JPY (\u00a5)"])
+        self._cur_combo.currentIndexChanged.connect(self._on_currency_changed)
+        cur_row.addWidget(self._cur_combo); cur_row.addStretch()
+        layout.addLayout(cur_row)
+
+        form = QFormLayout(); form.setSpacing(8)
+
+        self._min_spin = QDoubleSpinBox()
+        self._min_spin.setRange(0, 99_999_999)
+        self._min_spin.valueChanged.connect(self._update_hints)
+        form.addRow("Minimum Goal:", self._min_spin)
+        self._min_hint = QLabel()
+        self._min_hint.setStyleSheet("color: palette(mid); font-size: 10px;")
+        form.addRow("", self._min_hint)
+
+        self._major_spin = QDoubleSpinBox()
+        self._major_spin.setRange(0, 99_999_999)
+        self._major_spin.valueChanged.connect(self._update_hints)
+        form.addRow("Major Goal:", self._major_spin)
+        self._major_hint = QLabel()
+        self._major_hint.setStyleSheet("color: palette(mid); font-size: 10px;")
+        form.addRow("", self._major_hint)
+
+        layout.addLayout(form)
+
+        btn_box = QDialogButtonBox(
+            QDialogButtonBox.StandardButton.Ok |
+            QDialogButtonBox.StandardButton.Cancel
+        )
+        btn_box.accepted.connect(self._validate_and_accept)
+        btn_box.rejected.connect(self.reject)
+        layout.addWidget(btn_box)
+
+        self._apply_usd_mode()
+        self._min_spin.setValue(min_goal)
+        self._major_spin.setValue(major_goal)
+        self._update_hints()
+
+    def _apply_usd_mode(self):
+        for sp in (self._min_spin, self._major_spin):
+            sp.setDecimals(0); sp.setSingleStep(100); sp.setPrefix("$ ")
+
+    def _apply_jpy_mode(self):
+        for sp in (self._min_spin, self._major_spin):
+            sp.setDecimals(0); sp.setSingleStep(10_000); sp.setPrefix("\u00a5 ")
+
+    def _on_currency_changed(self, idx: int):
+        min_v   = self._min_spin.value()
+        major_v = self._major_spin.value()
+        if idx == 0:
+            self._apply_usd_mode()
+            if min_v > 5000:
+                self._min_spin.setValue(round(min_v   / self._rate))
+                self._major_spin.setValue(round(major_v / self._rate))
+        else:
+            self._apply_jpy_mode()
+            if min_v < 5000:
+                self._min_spin.setValue(round(min_v   * self._rate))
+                self._major_spin.setValue(round(major_v * self._rate))
+        self._update_hints()
+
+    def _update_hints(self):
+        rate = self._rate
+        if self._cur_combo.currentIndex() == 0:
+            min_jpy   = int(self._min_spin.value()   * rate)
+            major_jpy = int(self._major_spin.value() * rate)
+            self._min_hint.setText(f"\u2248 \u00a5{min_jpy:,} JPY")
+            self._major_hint.setText(f"\u2248 \u00a5{major_jpy:,} JPY")
+        else:
+            min_usd   = self._min_spin.value()   / rate if rate else 0
+            major_usd = self._major_spin.value() / rate if rate else 0
+            self._min_hint.setText(f"\u2248 ${min_usd:,.2f} USD")
+            self._major_hint.setText(f"\u2248 ${major_usd:,.2f} USD")
+
+    def _validate_and_accept(self):
+        if self._major_spin.value() <= self._min_spin.value():
+            from PyQt6.QtWidgets import QMessageBox
+            QMessageBox.warning(self, "Invalid Goals",
+                "Major goal must be greater than minimum goal.")
+            return
+        self.accept()
+
+    def get_goals(self) -> tuple[float, float]:
+        """Always returns (min_usd, major_usd)."""
+        if self._cur_combo.currentIndex() == 1:
+            rate = self._rate
+            return self._min_spin.value() / rate, self._major_spin.value() / rate
+        return self._min_spin.value(), self._major_spin.value()
+
+
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+#  SideIncomeGoalSection
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+class SideIncomeGoalSection(QFrame):
+    """Prominent side income goal tracker with month navigation and color-coded bar."""
+
+    def __init__(self, finance_store: FinanceStore, parent=None):
+        super().__init__(parent)
+        self.store = finance_store
+        self._palette: dict = {}
+        self._year  = date.today().year
+        self._month = date.today().month
+        self._rate  = 150.0
+
+        self.setObjectName("goalSection")
+        self._build_ui()
+        self._load_rate()
+        self._refresh()
+
+    def set_palette(self, palette: dict):
+        self._palette = palette
+        self._bar.set_palette(palette)
+        # Refresh painter-based nav buttons with new palette colors
+        self._prev_btn.refresh(palette)
+        self._next_btn.refresh(palette)
+        self._refresh()
+
+    def _load_rate(self):
+        cfg = load_config()
+        self._rate = float(cfg.get("usd_jpy_fallback_rate", 150.0))
+
+    def _build_ui(self):
+        outer = QVBoxLayout(self)
+        outer.setContentsMargins(14, 12, 14, 12)
+        outer.setSpacing(8)
+
+        hdr = QHBoxLayout()
+
+        # ── Use NavButton for painter-drawn arrows (no font/padding issues) ──
+        self._prev_btn = NavButton("left", size=26, tooltip="Previous month")
+        self._prev_btn.clicked.connect(self._prev_month)
+        hdr.addWidget(self._prev_btn)
+
+        self._month_lbl = QLabel()
+        self._month_lbl.setStyleSheet("font-size:14px;font-weight:bold;")
+        self._month_lbl.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        hdr.addWidget(self._month_lbl, 1)
+
+        self._next_btn = NavButton("right", size=26, tooltip="Next month")
+        self._next_btn.clicked.connect(self._next_month)
+        hdr.addWidget(self._next_btn)
+
+        hdr.addSpacing(10)
+
+        self._edit_btn = QPushButton("Edit Goals")
+        self._edit_btn.setObjectName("secondary")
+        self._edit_btn.setFixedHeight(26)
+        self._edit_btn.clicked.connect(self._edit_goals)
+        hdr.addWidget(self._edit_btn)
+
+        outer.addLayout(hdr)
+
+        self._bar = GoalBar()
+        outer.addWidget(self._bar)
+
+        self._amount_lbl = QLabel()
+        self._amount_lbl.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self._amount_lbl.setStyleSheet("font-size:12px;")
+        outer.addWidget(self._amount_lbl)
+
+        self._sub_lbl = QLabel()
+        self._sub_lbl.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self._sub_lbl.setStyleSheet("font-size:10px;")
+        outer.addWidget(self._sub_lbl)
+
+        self._no_goal_lbl = QLabel(
+            "No goals set for this month. Click \u2018Edit Goals\u2019 to get started."
+        )
+        self._no_goal_lbl.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self._no_goal_lbl.setStyleSheet("font-size:11px;")
+        self._no_goal_lbl.setWordWrap(True)
+        outer.addWidget(self._no_goal_lbl)
+
+    def _refresh(self):
+        self._load_rate()
+        self._month_lbl.setText(f"{_MONTH_NAMES[self._month]} {self._year} \u2014 Side Income Goal")
+
+        goal = self.store.get_goal(self._year, self._month)
+        earned_usd = self.store.get_side_income(self._year, self._month, self._rate)
+        earned_jpy = int(earned_usd * self._rate)
+
+        if goal is None:
+            self._bar.setVisible(False)
+            self._amount_lbl.setVisible(False)
+            self._sub_lbl.setVisible(False)
+            self._no_goal_lbl.setVisible(True)
+            return
+
+        self._bar.setVisible(True)
+        self._amount_lbl.setVisible(True)
+        self._sub_lbl.setVisible(True)
+        self._no_goal_lbl.setVisible(False)
+
+        self._bar.set_values(earned_usd, goal.min_goal, goal.major_goal)
+        self._bar.set_palette(self._palette)
+
+        min_jpy   = int(goal.min_goal   * self._rate)
+        major_jpy = int(goal.major_goal * self._rate)
+
+        pct_min = min(earned_usd / goal.min_goal * 100, 999) if goal.min_goal > 0 else 0
+        pct_major = min(earned_usd / goal.major_goal * 100, 999) if goal.major_goal > 0 else 0
+
+        if earned_usd >= goal.major_goal:
+            status = "\u2605 Major Goal Reached!"
+            status_color = self._palette.get("accent", "#89b4fa")
+        elif earned_usd >= goal.min_goal:
+            status = "\u2714 Minimum Goal Reached"
+            status_color = self._palette.get("green", "#a6e3a1")
+        else:
+            remaining_usd = goal.min_goal - earned_usd
+            remaining_jpy = int(remaining_usd * self._rate)
+            status = f"${remaining_usd:,.0f} / \u00a5{remaining_jpy:,} until minimum"
+            status_color = self._palette.get("red", "#f38ba8")
+
+        self._amount_lbl.setText(
+            f"${earned_usd:,.2f}  \u00a5{earned_jpy:,}"
+            f"   \u2014   {pct_min:.0f}% of min  \u00b7  {pct_major:.0f}% of major"
+        )
+        self._amount_lbl.setStyleSheet("font-size:12px;font-weight:bold;")
+
+        self._sub_lbl.setText(
+            f"Min: ${goal.min_goal:,.0f} (\u00a5{min_jpy:,})   "
+            f"\u00b7   Major: ${goal.major_goal:,.0f} (\u00a5{major_jpy:,})"
+            f"   \u00b7   {status}"
+        )
+        self._sub_lbl.setStyleSheet(f"font-size:10px;color:{status_color};")
+
+    def _prev_month(self):
+        if self._month == 1:
+            self._month = 12; self._year -= 1
+        else:
+            self._month -= 1
+        self._refresh()
+
+    def _next_month(self):
+        if self._month == 12:
+            self._month = 1; self._year += 1
+        else:
+            self._month += 1
+        self._refresh()
+
+    def _edit_goals(self):
+        goal = self.store.get_goal(self._year, self._month)
+        min_g   = goal.min_goal   if goal else 0.0
+        major_g = goal.major_goal if goal else 0.0
+
+        dlg = GoalEditDialog(
+            min_g, major_g, self._year, self._month, self._rate, self
+        )
+        if dlg.exec() == QDialog.DialogCode.Accepted:
+            min_goal, major_goal = dlg.get_goals()
+            self.store.set_goal(self._year, self._month, min_goal, major_goal)
+            self._refresh()
+
+
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+#  SoftEventLogDialog — per-day log editor for a soft event
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+class SoftEventLogDialog(QDialog):
+    """Edit the per-day log for a soft event occurrence."""
+
+    def __init__(self, parent, soft_events_store: SoftEventStore,
+                 template, log_date: date):
+        super().__init__(parent)
+        self._store = soft_events_store
+        self._template = template
+        self._log_date = log_date
+        self._palette: dict = getattr(parent, '_palette', {})
+
+        date_str = log_date.isoformat()
+        self.setWindowTitle(f"{template.title} \u2014 {date_str}")
+        self.setMinimumSize(420, 360)
+        self.setModal(True)
+
+        layout = QVBoxLayout(self)
+        layout.setSpacing(10)
+        layout.setContentsMargins(16, 14, 16, 14)
+
+        # Template universal note (read-only)
+        if template.note:
+            note_lbl = QLabel(template.note)
+            note_lbl.setWordWrap(True)
+            muted = self._palette.get("muted", "#7f849c")
+            note_lbl.setStyleSheet(f"color: {muted}; font-style: italic; font-size: 11px;")
+            layout.addWidget(note_lbl)
+
+            sep = QFrame()
+            sep.setObjectName("separator")
+            sep.setFrameShape(QFrame.Shape.HLine)
+            layout.addWidget(sep)
+
+        # Editable log text
+        self._log_entry = self._store.get_or_create_log(template.id, date_str)
+        self._editor = QTextEdit()
+        self._editor.setPlainText(self._log_entry.log_text)
+        layout.addWidget(self._editor, 1)
+
+        # Buttons
+        btn_row = QHBoxLayout()
+        btn_row.addStretch()
+        cancel_btn = QPushButton("Cancel")
+        cancel_btn.setObjectName("secondary")
+        cancel_btn.clicked.connect(self.reject)
+        btn_row.addWidget(cancel_btn)
+        save_btn = QPushButton("Save")
+        save_btn.clicked.connect(self._save)
+        btn_row.addWidget(save_btn)
+        layout.addLayout(btn_row)
+
+    def _save(self):
+        self._log_entry.log_text = self._editor.toPlainText()
+        self._store.update_log(self._log_entry)
+        self.accept()
+
+
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+#  ComingUpRow — a single soft event in the Coming Up section
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+class _ComingUpRow(QFrame):
+    """A single soft event reminder row."""
+
+    def __init__(self, template, occurrence_date: date,
+                 relative_label: str, parent_panel, parent=None):
+        super().__init__(parent)
+        self._template = template
+        self._date = occurrence_date
+        self._panel = parent_panel
+        self.setCursor(Qt.CursorShape.PointingHandCursor)
+
+        layout = QHBoxLayout(self)
+        layout.setContentsMargins(6, 3, 6, 3)
+        layout.setSpacing(6)
+
+        dot = QLabel("\u25cf")
+        dot.setStyleSheet(f"color: {template.color}; font-size: 12px;")
+        dot.setFixedWidth(14)
+        layout.addWidget(dot)
+
+        title = QLabel(template.title)
+        title.setStyleSheet("font-size: 12px; font-weight: bold;")
+        layout.addWidget(title, 1)
+
+        rel = QLabel(relative_label)
+        rel.setObjectName("subtitle")
+        rel.setStyleSheet("font-size: 10px;")
+        rel.setAlignment(Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter)
+        layout.addWidget(rel)
+
+    def mousePressEvent(self, ev):
+        dlg = SoftEventLogDialog(
+            self._panel, self._panel.soft_events_store,
+            self._template, self._date,
+        )
+        dlg.exec()
+
+
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+#  DashboardPanel
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+class DashboardPanel(QWidget):
+
+    def __init__(self, todo_store=None, calendar_store=None,
+                 finance_store=None, soft_events_store=None, parent=None):
+        super().__init__(parent)
+        self.todo_store     = todo_store     or TodoStore()
+        self.calendar_store = calendar_store or CalendarStore()
+        self.finance_store  = finance_store  or FinanceStore()
+        self.soft_events_store = soft_events_store or SoftEventStore()
+        self._palette: dict = {}
+        self._build_ui()
+        self._refresh()
+
+        # Auto-refresh every 60 seconds
+        self._auto_timer = QTimer(self)
+        self._auto_timer.setInterval(60_000)
+        self._auto_timer.timeout.connect(self._refresh)
+        self._auto_timer.start()
+
+    def showEvent(self, event):
+        """Refresh immediately whenever the Dashboard tab becomes visible."""
+        super().showEvent(event)
+        self._refresh()
+
+    def set_palette(self, palette: dict):
+        self._palette = palette
+        self._goal_section.set_palette(palette)
+        self._refresh()
+
+    def _build_ui(self):
+        layout = QVBoxLayout(self)
+        layout.setContentsMargins(16, 12, 16, 12)
+        layout.setSpacing(12)
+
+        # ── Header ──
+        header = QHBoxLayout()
+        title = QLabel("Dashboard")
+        title.setObjectName("sectionTitle")
+        header.addWidget(title)
+        header.addStretch()
+        self.date_label = QLabel("")
+        self.date_label.setObjectName("subtitle")
+        header.addWidget(self.date_label)
+        layout.addLayout(header)
+
+        # ── Side Income Goal Section ──
+        self._goal_section = SideIncomeGoalSection(self.finance_store)
+        self._goal_section.setStyleSheet(
+            "#goalSection {"
+            "  border: 1px solid palette(mid);"
+            "  border-radius: 8px;"
+            "}"
+        )
+        layout.addWidget(self._goal_section)
+
+        # ── Stat cards row ──
+        self._cards_layout = QHBoxLayout()
+        self._cards_layout.setSpacing(10)
+
+        self.card_pending       = StatCard("0", "Pending Tasks")
+        self.card_done_today    = StatCard("0", "Done Today")
+        self.card_overdue       = StatCard("0", "Overdue", "#f38ba8")
+        self.card_events_week   = StatCard("0", "Events This Week")
+        self.card_earned_month  = StatCard("$0", "Earned This Month")
+
+        for card in [
+            self.card_pending, self.card_done_today, self.card_overdue,
+            self.card_events_week, self.card_earned_month,
+        ]:
+            self._cards_layout.addWidget(card)
+
+        layout.addLayout(self._cards_layout)
+
+        # ── Task completion progress bar ──
+        progress_row = QHBoxLayout()
+        progress_row.setSpacing(8)
+        progress_lbl = QLabel("Task Completion:")
+        progress_lbl.setObjectName("subtitle")
+        progress_row.addWidget(progress_lbl)
+        self.progress_bar = QProgressBar()
+        self.progress_bar.setFixedHeight(18)
+        self.progress_bar.setTextVisible(True)
+        self.progress_bar.setFormat("%p% complete")
+        progress_row.addWidget(self.progress_bar, 1)
+        self.progress_pct_label = QLabel("")
+        self.progress_pct_label.setObjectName("subtitle")
+        progress_row.addWidget(self.progress_pct_label)
+        layout.addLayout(progress_row)
+
+        # ── Two-column area ──
+        columns = QHBoxLayout()
+        columns.setSpacing(12)
+
+        # Left: upcoming deadlines
+        left = QVBoxLayout()
+        upcoming_title = QLabel("Upcoming Deadlines & Events")
+        upcoming_title.setStyleSheet("font-weight: bold; font-size: 13px;")
+        left.addWidget(upcoming_title)
+
+        self._upcoming_container = QWidget()
+        self._upcoming_layout = QVBoxLayout(self._upcoming_container)
+        self._upcoming_layout.setContentsMargins(0, 0, 0, 0)
+        self._upcoming_layout.setSpacing(3)
+
+        upcoming_scroll = QScrollArea()
+        upcoming_scroll.setWidgetResizable(True)
+        upcoming_scroll.setWidget(self._upcoming_container)
+        upcoming_scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+        upcoming_scroll.setMinimumHeight(160)   # guarantee ~4-5 rows always visible
+        left.addWidget(upcoming_scroll, 1)
+
+        # ── Coming Up (Next 7 Days) section ──
+        coming_up_title = QLabel("Coming Up (Next 7 Days)")
+        coming_up_title.setStyleSheet("font-weight: bold; font-size: 13px;")
+        left.addWidget(coming_up_title)
+
+        self._coming_up_container = QWidget()
+        self._coming_up_layout = QVBoxLayout(self._coming_up_container)
+        self._coming_up_layout.setContentsMargins(0, 0, 0, 0)
+        self._coming_up_layout.setSpacing(2)
+
+        coming_up_scroll = QScrollArea()
+        coming_up_scroll.setWidgetResizable(True)
+        coming_up_scroll.setWidget(self._coming_up_container)
+        coming_up_scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+        coming_up_scroll.setFrameShape(QFrame.Shape.NoFrame)
+        coming_up_scroll.setMaximumHeight(180)  # cap at ~5 rows; scrollable if more
+        left.addWidget(coming_up_scroll)
+
+        columns.addLayout(left, 3)
+
+        # Right: priority + category breakdown
+        right = QVBoxLayout()
+
+        priority_title = QLabel("Tasks by Priority")
+        priority_title.setStyleSheet("font-weight: bold; font-size: 13px;")
+        right.addWidget(priority_title)
+
+        self._priority_container = QWidget()
+        self._priority_layout = QVBoxLayout(self._priority_container)
+        self._priority_layout.setContentsMargins(0, 0, 0, 0)
+        self._priority_layout.setSpacing(4)
+        right.addWidget(self._priority_container)
+
+        right.addSpacing(12)
+
+        cat_title = QLabel("Tasks by Category")
+        cat_title.setStyleSheet("font-weight: bold; font-size: 13px;")
+        right.addWidget(cat_title)
+
+        self._category_container = QWidget()
+        self._category_layout = QVBoxLayout(self._category_container)
+        self._category_layout.setContentsMargins(0, 0, 0, 0)
+        self._category_layout.setSpacing(4)
+        right.addWidget(self._category_container)
+
+        right.addStretch()
+        columns.addLayout(right, 2)
+
+        layout.addLayout(columns, 1)
+
+    def _refresh(self):
+        green  = self._palette.get("green",  "#a6e3a1")
+        red    = self._palette.get("red",    "#f38ba8")
+        accent = self._palette.get("accent", "#4a9eff")
+        yellow = self._palette.get("yellow", "#f9e2af")
+
+        today = date.today()
+        self.date_label.setText(today.strftime("%A, %B %d, %Y"))
+
+        # Refresh goal section
+        self._goal_section._refresh()
+
+        # Task stats
+        counts = self.todo_store.get_counts()
+        all_tasks     = self.todo_store.get_all(include_done=True)
+        pending_tasks = [t for t in all_tasks if not t.done and not t.deleted]
+        done_tasks    = [t for t in all_tasks if t.done and not t.deleted]
+
+        overdue = [
+            t for t in pending_tasks
+            if t.due_date and t.due_date < today.isoformat()
+        ]
+
+        today_str = today.isoformat()
+        done_today = [
+            t for t in done_tasks
+            if t.updated_at and t.updated_at[:10] == today_str
+        ]
+
+        self.card_pending.update_value(str(counts["pending"]), accent)
+        self.card_done_today.update_value(str(len(done_today)), green)
+        self.card_overdue.update_value(str(len(overdue)), red if overdue else green)
+
+        # Events this week
+        week_start = today - timedelta(days=today.weekday())
+        week_end = week_start + timedelta(days=6)
+        week_events = self.calendar_store.get_events(
+            week_start.isoformat(), week_end.isoformat() + "T23:59:59"
+        )
+        self.card_events_week.update_value(str(len(week_events)), accent)
+
+        # Earned this month
+        month_start = today.replace(day=1).isoformat()
+        month_earned = self.finance_store.get_summary(month_start, today.isoformat())
+        self.card_earned_month.update_value(
+            f"${month_earned['earned']:,.0f}", green
+        )
+
+        # Progress bar
+        total = counts["total"]
+        done  = counts["done"]
+        if total > 0:
+            pct = int(done / total * 100)
+            self.progress_bar.setValue(pct)
+            self.progress_pct_label.setText(f"{done}/{total}")
+        else:
+            self.progress_bar.setValue(0)
+            self.progress_pct_label.setText("No tasks")
+
+        self.progress_bar.setStyleSheet(f"""
+            QProgressBar {{
+                border: 1px solid palette(mid);
+                border-radius: 4px;
+                text-align: center;
+                font-size: 11px;
+            }}
+            QProgressBar::chunk {{
+                background-color: {accent};
+                border-radius: 3px;
+            }}
+        """)
+
+        # Upcoming deadlines (extended: 30 days, 12 items)
+        self._clear_layout(self._upcoming_layout)
+        upcoming_items: list[tuple[int, QWidget]] = []
+
+        for task in sorted(pending_tasks, key=lambda t: t.due_date or "9999"):
+            if task.due_date:
+                try:
+                    due = date.fromisoformat(task.due_date)
+                    delta = (due - today).days
+                    if delta < 0:
+                        days_text, color = f"{-delta}d overdue", red
+                    elif delta == 0:
+                        days_text, color = "Today", yellow
+                    elif delta == 1:
+                        days_text, color = "Tomorrow", yellow
+                    elif delta <= 7:
+                        days_text, color = f"In {delta}d", accent
+                    else:
+                        days_text, color = f"In {delta}d", green
+                    cat = f"Task \u00b7 {task.category}" if task.category else "Task"
+                    upcoming_items.append((delta, UpcomingItem(
+                        task.title, cat, color, days_text
+                    )))
+                except ValueError:
+                    pass
+
+        # Major events — 30-day lookahead, 12 items
+        # Collect IDs so regular get_events() below doesn't duplicate them.
+        majors = self.calendar_store.get_next_major_events(today, limit=12)
+        thirty_days = today + timedelta(days=30)
+        major_event_ids: set[str] = set()
+
+        for ev_date, ev_title, category, color, item_id, is_birthday in majors:
+            if ev_date > thirty_days:
+                continue
+            delta = (ev_date - today).days
+            if delta == 0:   days_text = "Today"
+            elif delta == 1: days_text = "Tomorrow"
+            else:            days_text = f"In {delta}d"
+            # Resolve sentinel colors
+            resolved = self._palette.get(SENTINEL_COLORS.get(color, "accent"), color)
+            upcoming_items.append((delta, UpcomingItem(
+                ev_title, category.title(), resolved, days_text
+            )))
+            # Track real event IDs (birthdays have no calendar_events row to skip)
+            if not is_birthday:
+                major_event_ids.add(item_id)
+
+        # Regular events for the next 7 days — skip any already shown via majors
+        next_week = today + timedelta(days=7)
+        upcoming_events = self.calendar_store.get_events(
+            today.isoformat(), next_week.isoformat() + "T23:59:59"
+        )
+        for ev in upcoming_events:
+            # Skip events that were already added from get_next_major_events()
+            if ev.id in major_event_ids:
+                continue
+            try:
+                ev_date = datetime.fromisoformat(ev.start_time).date()
+                delta = (ev_date - today).days
+                if delta == 0:   days_text = "Today"
+                elif delta == 1: days_text = "Tomorrow"
+                else:            days_text = f"In {delta}d"
+                time_str = ""
+                if not ev.all_day:
+                    time_str = datetime.fromisoformat(ev.start_time).strftime("%H:%M")
+                sub = f"Event \u00b7 {time_str}" if time_str else "Event \u00b7 All day"
+                upcoming_items.append((delta, UpcomingItem(
+                    ev.title, sub, ev.color, days_text
+                )))
+            except (ValueError, AttributeError):
+                pass
+
+        for _, widget in sorted(upcoming_items, key=lambda x: x[0]):
+            self._upcoming_layout.addWidget(widget)
+
+        if not upcoming_items:
+            no_items = QLabel("No upcoming deadlines or events")
+            no_items.setObjectName("subtitle")
+            self._upcoming_layout.addWidget(no_items)
+
+        self._upcoming_layout.addStretch()
+
+        # ── Coming Up (Next 7 Days) — soft events ──
+        self._clear_layout(self._coming_up_layout)
+        try:
+            soft_upcoming = self.soft_events_store.get_upcoming(today, days_ahead=7)
+        except Exception:
+            soft_upcoming = []
+
+        if soft_upcoming:
+            for occ_date, tpl in soft_upcoming:
+                delta = (occ_date - today).days
+                if delta == 0:
+                    rel_text = "Today"
+                elif delta == 1:
+                    rel_text = "Tomorrow"
+                elif delta <= 6:
+                    rel_text = f"Next {occ_date.strftime('%A')}"
+                else:
+                    rel_text = f"In {delta} days"
+                row = _ComingUpRow(tpl, occ_date, rel_text, self)
+                self._coming_up_layout.addWidget(row)
+        else:
+            muted = self._palette.get("muted", "#7f849c")
+            no_soft = QLabel("No reminders in the next 7 days.")
+            no_soft.setStyleSheet(f"color: {muted}; font-size: 11px; padding: 4px 0;")
+            self._coming_up_layout.addWidget(no_soft)
+
+        self._coming_up_layout.addStretch()
+
+        # Priority breakdown
+        self._clear_layout(self._priority_layout)
+        priority_counts = {0: 0, 1: 0, 2: 0, 3: 0}
+        for task in pending_tasks:
+            priority_counts[task.priority] = priority_counts.get(task.priority, 0) + 1
+
+        max_count = max(priority_counts.values()) if any(priority_counts.values()) else 1
+        pcolors = _priority_colors(self._palette)
+        for pri in [3, 2, 1, 0]:
+            count = priority_counts[pri]
+            row = QHBoxLayout()
+            label = QLabel(PRIORITY_LABELS[pri])
+            label.setFixedWidth(55)
+            label.setStyleSheet(f"font-size: 11px; color: {pcolors[pri]};")
+            row.addWidget(label)
+
+            bar = QFrame()
+            width = max(int(count / max_count * 120), 2) if max_count > 0 else 2
+            bar.setFixedSize(width, 14)
+            bar.setStyleSheet(
+                f"background-color: {pcolors[pri]}; border-radius: 2px;"
+            )
+            row.addWidget(bar)
+
+            cnt = QLabel(str(count))
+            cnt.setObjectName("subtitle")
+            cnt.setFixedWidth(25)
+            row.addWidget(cnt)
+            row.addStretch()
+
+            container = QWidget()
+            container.setLayout(row)
+            self._priority_layout.addWidget(container)
+
+        # Category breakdown
+        self._clear_layout(self._category_layout)
+        cat_counts: dict[str, int] = {}
+        for task in pending_tasks:
+            cat = task.category or "Uncategorized"
+            cat_counts[cat] = cat_counts.get(cat, 0) + 1
+
+        if cat_counts:
+            max_cat = max(cat_counts.values())
+            bar_colors = [accent, green, "#cba6f7", "#fab387", yellow, "#94e2d5"]
+            for i, (cat, count) in enumerate(
+                sorted(cat_counts.items(), key=lambda x: -x[1])
+            ):
+                row = QHBoxLayout()
+                label = QLabel(cat)
+                label.setFixedWidth(80)
+                label.setStyleSheet("font-size: 11px;")
+                row.addWidget(label)
+
+                bar = QFrame()
+                width = max(int(count / max_cat * 100), 2) if max_cat > 0 else 2
+                bar.setFixedSize(width, 14)
+                color = bar_colors[i % len(bar_colors)]
+                bar.setStyleSheet(f"background-color: {color}; border-radius: 2px;")
+                row.addWidget(bar)
+
+                cnt = QLabel(str(count))
+                cnt.setObjectName("subtitle")
+                cnt.setFixedWidth(25)
+                row.addWidget(cnt)
+                row.addStretch()
+
+                container = QWidget()
+                container.setLayout(row)
+                self._category_layout.addWidget(container)
+        else:
+            no_cats = QLabel("No pending tasks")
+            no_cats.setObjectName("subtitle")
+            self._category_layout.addWidget(no_cats)
+
+    @staticmethod
+    def _clear_layout(layout):
+        while layout.count():
+            child = layout.takeAt(0)
+            if child.widget():
+                child.widget().deleteLater()
+```
+
+### `src\ui\modules\debug_panel.py`
+
+```python
+"""Debug / Council Sandbox panel.
+
+Always the final panel in the sidebar (Ctrl+0).  Provides:
+  • A free-form prompt box to run any text through the LLM Council
+  • Per-member response cards showing each model's individual answer + timing
+  • A synthesised result box at the bottom with copy-to-clipboard
+  • Graceful fallback to single-model mode when the council is not configured
+
+This panel intentionally has no persistent state — it is a live debug
+surface, not a data store.
+"""
+
+from __future__ import annotations
+
+from PyQt6.QtCore import Qt, QTimer
+from PyQt6.QtGui import QFont
+from PyQt6.QtWidgets import (
+    QWidget, QVBoxLayout, QHBoxLayout, QLabel, QPushButton,
+    QPlainTextEdit, QTextEdit, QScrollArea, QFrame, QSizePolicy,
+    QApplication, QComboBox,
+)
+
+from src.utils.llm import (
+    LLMResult, CouncilResult,
+    LLMSignals, CouncilSignals,
+    load_llm_client, load_council_config,
+    COUNCIL_SYNTHESIS_MODES, get_request_concurrency,
+)
+
+# ── Module-level palette (updated by set_palette) ─────────────────────────────
+_PALETTE: dict = {}
+
+
+def _p(key: str, fallback: str = "") -> str:
+    return _PALETTE.get(key, fallback)
+
+
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+#  Member card widget
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+class _MemberCard(QFrame):
+    """Displays a single council member's response."""
+
+    def __init__(self, index: int, result: LLMResult, parent=None):
+        super().__init__(parent)
+        self.setObjectName("MemberCard")
+        self._apply_style()
+
+        layout = QVBoxLayout(self)
+        layout.setContentsMargins(10, 8, 10, 8)
+        layout.setSpacing(4)
+
+        # Header row
+        short_model = result.model.split("/")[-1].replace(":free", "").replace(":nitro", "")
+        header = QHBoxLayout()
+        model_lbl = QLabel(f"  Model {index + 1}  ·  {short_model}")
+        model_lbl.setStyleSheet(
+            f"font-size:11px;font-weight:bold;"
+            f"color:{_p('accent','#89b4fa')};"
+        )
+        header.addWidget(model_lbl)
+        header.addStretch()
+
+        timing_lbl = QLabel(result.timing_summary())
+        timing_lbl.setStyleSheet(
+            f"font-size:10px;color:{_p('muted','#6c7086')};"
+        )
+        header.addWidget(timing_lbl)
+        layout.addLayout(header)
+
+        # Response text
+        body = QTextEdit()
+        body.setReadOnly(True)
+        body.setPlainText(result.text.strip())
+        body.setMinimumHeight(100)
+        body.setMaximumHeight(200)
+        body.setStyleSheet(
+            f"QTextEdit{{border:1px solid {_p('border','#45475a')};"
+            f"border-radius:4px;"
+            f"background-color:{_p('bg','#1e1e2e')};"
+            f"color:{_p('fg','#cdd6f4')};"
+            f"font-size:12px;padding:4px;}}"
+        )
+        layout.addWidget(body)
+
+        self.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred)
+
+    def _apply_style(self):
+        self.setStyleSheet(
+            f"MemberCard{{border:1px solid {_p('border','#45475a')};"
+            f"border-radius:6px;"
+            f"background-color:{_p('surface','#313244')};}}"
+        )
+
+
+class _FailedCard(QFrame):
+    """Displayed when a council member errored out."""
+
+    def __init__(self, model: str, parent=None):
+        super().__init__(parent)
+        self.setObjectName("FailedCard")
+        self.setStyleSheet(
+            f"FailedCard{{border:1px solid {_p('red','#f38ba8')};"
+            f"border-radius:6px;"
+            f"background-color:{_p('surface','#313244')};}}"
+        )
+
+        layout = QVBoxLayout(self)
+        layout.setContentsMargins(10, 8, 10, 8)
+
+        short = model.split("/")[-1].replace(":free", "").replace(":nitro", "")
+        lbl = QLabel(f"✗  {short}  —  failed to respond")
+        lbl.setStyleSheet(
+            f"font-size:11px;color:{_p('red','#f38ba8')};"
+        )
+        layout.addWidget(lbl)
+        self.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred)
+
+
+class _PendingCard(QFrame):
+    """Placeholder card shown while a council member is in flight."""
+
+    def __init__(self, name: str, parent=None):
+        super().__init__(parent)
+        self.setObjectName("PendingCard")
+        self.setStyleSheet(
+            f"PendingCard{{border:1px dashed {_p('border','#45475a')};"
+            f"border-radius:6px;"
+            f"background-color:{_p('surface','#313244')};}}"
+        )
+        layout = QVBoxLayout(self)
+        layout.setContentsMargins(10, 8, 10, 8)
+        lbl = QLabel(f"●  {name}  —  thinking…")
+        lbl.setStyleSheet(
+            f"font-size:11px;font-style:italic;color:{_p('muted','#7f849c')};"
+        )
+        layout.addWidget(lbl)
+        self.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred)
+        self._name = name
+
+
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+#  Debug Panel
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+class DebugPanel(QWidget):
+    """LLM Council debug / sandbox panel — always the last nav item."""
+
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self._busy           = False
+        self._llm_signals:     LLMSignals    | None = None
+        self._council_signals: CouncilSignals| None = None
+        # Progressive-result tracking (populated as council runs)
+        self._member_cards:  dict[str, QWidget] = {}
+        self._member_order:  list[str]          = []
+        self._member_index:  int                = 0
+        self._build_ui()
+
+    # ── Palette ─────────────────────────────────────────────────────────────
+
+    def set_palette(self, palette: dict):
+        global _PALETTE
+        _PALETTE = palette
+        self._refresh_styles()
+
+    def _refresh_styles(self):
+        self._header_lbl.setStyleSheet(
+            f"font-size:15px;font-weight:bold;color:{_p('fg')};"
+        )
+        self._status_lbl.setStyleSheet(
+            f"font-size:11px;color:{_p('muted')};"
+        )
+        self._synth_lbl.setStyleSheet(
+            f"font-size:12px;font-weight:bold;color:{_p('accent')};"
+        )
+        self._synth_box.setStyleSheet(
+            f"QTextEdit{{border:2px solid {_p('accent','#89b4fa')};"
+            f"border-radius:6px;"
+            f"background-color:{_p('surface','#313244')};"
+            f"color:{_p('fg','#cdd6f4')};"
+            f"font-size:13px;padding:8px;}}"
+        )
+
+    # ── Build UI ─────────────────────────────────────────────────────────────
+
+    def _build_ui(self):
+        root = QVBoxLayout(self)
+        root.setContentsMargins(16, 12, 16, 12)
+        root.setSpacing(10)
+
+        # ── Top bar ──────────────────────────────────────────────────────────
+        top_bar = QHBoxLayout()
+
+        self._header_lbl = QLabel("🔬  Debug / Council Sandbox")
+        self._header_lbl.setObjectName("sectionTitle")
+        top_bar.addWidget(self._header_lbl)
+        top_bar.addStretch()
+
+        self._mode_combo = QComboBox()
+        self._mode_combo.addItems(["Auto", "Council", "Single Model"])
+        self._mode_combo.setToolTip(
+            "Auto: use Council if configured, else single model\n"
+            "Council: force council mode (requires council config)\n"
+            "Single Model: always use the primary model"
+        )
+        self._mode_combo.setMaximumWidth(140)
+        top_bar.addWidget(QLabel("Mode:"))
+        top_bar.addWidget(self._mode_combo)
+
+        root.addLayout(top_bar)
+
+        # ── Prompt area ───────────────────────────────────────────────────────
+        prompt_lbl = QLabel("Prompt")
+        prompt_lbl.setObjectName("subtitle")
+        root.addWidget(prompt_lbl)
+
+        self._prompt_edit = QPlainTextEdit()
+        self._prompt_edit.setPlaceholderText(
+            "Type a prompt here and click Run to send it to the council…"
+        )
+        self._prompt_edit.setFixedHeight(90)
+        root.addWidget(self._prompt_edit)
+
+        # ── Run / Clear row ───────────────────────────────────────────────────
+        btn_row = QHBoxLayout()
+
+        self._run_btn = QPushButton("▶  Run")
+        self._run_btn.setFixedHeight(32)
+        self._run_btn.clicked.connect(self._run)
+        btn_row.addWidget(self._run_btn)
+
+        self._clear_btn = QPushButton("Clear")
+        self._clear_btn.setObjectName("secondary")
+        self._clear_btn.setFixedHeight(32)
+        self._clear_btn.clicked.connect(self._clear)
+        btn_row.addWidget(self._clear_btn)
+
+        btn_row.addStretch()
+
+        self._status_lbl = QLabel("Idle")
+        self._status_lbl.setAlignment(Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter)
+        btn_row.addWidget(self._status_lbl)
+
+        root.addLayout(btn_row)
+
+        # ── Separator ────────────────────────────────────────────────────────
+        sep = QFrame()
+        sep.setObjectName("separator")
+        sep.setFrameShape(QFrame.Shape.HLine)
+        root.addWidget(sep)
+
+        # ── Member responses (scrollable) ─────────────────────────────────────
+        members_lbl = QLabel("Member Responses")
+        members_lbl.setObjectName("subtitle")
+        root.addWidget(members_lbl)
+
+        self._members_scroll = QScrollArea()
+        self._members_scroll.setWidgetResizable(True)
+        self._members_scroll.setFrameShape(QFrame.Shape.NoFrame)
+        self._members_scroll.setHorizontalScrollBarPolicy(
+            Qt.ScrollBarPolicy.ScrollBarAlwaysOff
+        )
+        self._members_scroll.setMinimumHeight(120)
+        self._members_scroll.setMaximumHeight(320)
+
+        self._members_container = QWidget()
+        self._members_layout = QVBoxLayout(self._members_container)
+        self._members_layout.setContentsMargins(0, 0, 0, 0)
+        self._members_layout.setSpacing(8)
+        self._members_layout.addStretch()
+
+        self._members_scroll.setWidget(self._members_container)
+        root.addWidget(self._members_scroll, 1)
+
+        # ── Synthesised result ────────────────────────────────────────────────
+        sep2 = QFrame()
+        sep2.setObjectName("separator")
+        sep2.setFrameShape(QFrame.Shape.HLine)
+        root.addWidget(sep2)
+
+        synth_hdr = QHBoxLayout()
+        self._synth_lbl = QLabel("Synthesised Result")
+        self._synth_lbl.setObjectName("subtitle")
+        synth_hdr.addWidget(self._synth_lbl)
+        synth_hdr.addStretch()
+
+        self._copy_btn = QPushButton("Copy")
+        self._copy_btn.setObjectName("secondary")
+        self._copy_btn.setFixedHeight(26)
+        self._copy_btn.setFixedWidth(60)
+        self._copy_btn.setEnabled(False)
+        self._copy_btn.clicked.connect(self._copy_result)
+        synth_hdr.addWidget(self._copy_btn)
+        root.addLayout(synth_hdr)
+
+        self._synth_box = QTextEdit()
+        self._synth_box.setReadOnly(True)
+        self._synth_box.setPlaceholderText(
+            "Synthesised answer will appear here after a council run…"
+        )
+        self._synth_box.setMinimumHeight(100)
+        font = QFont()
+        font.setPixelSize(13)
+        self._synth_box.setFont(font)
+        root.addWidget(self._synth_box, 1)
+
+        self._refresh_styles()
+
+    # ── Run logic ────────────────────────────────────────────────────────────
+
+    def _run(self):
+        if self._busy:
+            return
+
+        prompt = self._prompt_edit.toPlainText().strip()
+        if not prompt:
+            self._set_status("Enter a prompt first.")
+            return
+
+        messages = [{"role": "user", "content": prompt}]
+        mode     = self._mode_combo.currentText()
+
+        # Determine whether to use council or single model
+        council = load_council_config() if mode != "Single Model" else None
+        client  = None if council else load_llm_client()
+
+        if mode == "Council" and council is None:
+            self._set_status("Council not configured — check Network → AI tab.")
+            return
+
+        if council is None and client is None:
+            self._set_status("No API key configured — check Network → AI tab.")
+            return
+
+        self._busy = True
+        self._run_btn.setEnabled(False)
+        self._clear_results()
+        self._synth_box.clear()
+        self._copy_btn.setEnabled(False)
+
+        # Per-name widget tracking so we can swap pending → final in place
+        self._member_cards: dict[str, QWidget] = {}
+        self._member_order: list[str] = []
+        self._member_index: int = 0
+
+        if council:
+            # The mode dropdown is bound to COUNCIL_SYNTHESIS_MODES; only
+            # pass it through if it's a real council mode (the dropdown also
+            # contains the "Single Model" sentinel which is handled above).
+            from src.utils.llm import COUNCIL_SYNTHESIS_MODES as _MODES
+            chosen_mode = mode if mode in _MODES else council.default_mode
+            slots = get_request_concurrency()
+            self._set_status(
+                f"Running council (3 passes · {chosen_mode} · {slots} slots)…"
+            )
+            # Track per-member status: name -> "started" | "ok" | "failed"
+            self._member_status: dict[str, str] = {}
+            self._council_signals = CouncilSignals()
+            self._council_signals.result.connect(self._on_council_result)
+            self._council_signals.error.connect(self._on_error)
+            self._council_signals.member_started.connect(self._on_member_started)
+            self._council_signals.member_completed.connect(self._on_member_completed)
+            self._council_signals.member_failed.connect(self._on_member_failed)
+            self._council_signals.synthesis_started.connect(self._on_synthesis_started)
+            council.complete_async(
+                messages,
+                mode=chosen_mode,
+                on_result=self._council_signals.result.emit,
+                on_error=self._council_signals.error.emit,
+                on_member_started=self._council_signals.member_started.emit,
+                on_member_completed=self._council_signals.member_completed.emit,
+                on_member_failed=self._council_signals.member_failed.emit,
+                on_synthesis_started=self._council_signals.synthesis_started.emit,
+                max_tokens=1200,
+                temperature=0.45,
+            )
+        else:
+            self._set_status("Running single model…")
+            self._llm_signals = LLMSignals()
+            self._llm_signals.result.connect(self._on_single_result)
+            self._llm_signals.error.connect(self._on_error)
+            client.complete_async(
+                messages,
+                on_result=self._llm_signals.result.emit,
+                on_error=self._llm_signals.error.emit,
+                max_tokens=1200,
+                temperature=0.45,
+            )
+
+    # ── Progressive handlers ─────────────────────────────────────────────────
+
+    def _swap_card(self, name: str, new_card: QWidget):
+        """Replace the current card for `name` with `new_card`, preserving order."""
+        old = self._member_cards.get(name)
+        if old is not None:
+            idx = self._members_layout.indexOf(old)
+            if idx >= 0:
+                self._members_layout.removeWidget(old)
+                old.deleteLater()
+                self._members_layout.insertWidget(idx, new_card)
+                self._member_cards[name] = new_card
+                return
+        # First time we're seeing this name — append before the trailing stretch
+        self._members_layout.insertWidget(
+            self._members_layout.count() - 1, new_card
+        )
+        self._member_cards[name] = new_card
+        self._member_order.append(name)
+
+    def _on_member_started(self, name: str):
+        if not self._busy:
+            return
+        if name not in self._member_cards:
+            self._swap_card(name, _PendingCard(name))
+        self._set_status(f"{name}: thinking…")
+
+    def _on_member_completed(self, name: str, result: LLMResult):
+        if not self._busy:
+            return
+        # Use a sequential index that grows as completions arrive
+        idx = self._member_index
+        self._member_index += 1
+        self._swap_card(name, _MemberCard(idx, result))
+        self._set_status(f"{name}: ✓ ({result.timing_summary()})")
+
+    def _on_member_failed(self, name: str, err: str):
+        if not self._busy:
+            return
+        self._swap_card(name, _FailedCard(f"{name}: {err}"))
+        self._set_status(f"{name}: ✗ {err[:60]}")
+
+    def _on_synthesis_started(self):
+        if not self._busy:
+            return
+        self._set_status("Synthesising…")
+
+    # ── Result handlers ──────────────────────────────────────────────────────
+
+    def _on_council_result(self, result: CouncilResult):
+        self._busy = False
+        self._run_btn.setEnabled(True)
+
+        # Backfill any cards we may have missed (e.g. signals dropped or
+        # caller didn't wire the per-member callbacks). This keeps the panel
+        # correct even when the progressive path is bypassed.
+        for i, member in enumerate(result.members):
+            if member.model not in self._member_cards:
+                self._swap_card(member.model, _MemberCard(i, member))
+
+        for failed_entry in result.failed:
+            label = failed_entry.split(":", 1)[0].strip() or "?"
+            if label not in self._member_cards:
+                self._swap_card(label, _FailedCard(failed_entry))
+
+        # Show synthesis (or quick-pick winner — both live on result.final)
+        self._synth_box.setPlainText(result.final.text.strip())
+        if result.mode == "Quick":
+            self._synth_lbl.setText("Quick-Picked Result  ·  Multi-Pass")
+        else:
+            self._synth_lbl.setText("Synthesised Result  ·  Multi-Pass")
+        self._copy_btn.setEnabled(True)
+        self._set_status(result.summary())
+
+    def _on_single_result(self, result: LLMResult):
+        self._busy = False
+        self._run_btn.setEnabled(True)
+
+        # Show as a single member card
+        card = _MemberCard(0, result)
+        self._members_layout.insertWidget(
+            self._members_layout.count() - 1, card
+        )
+
+        # In single-model mode the result IS the synthesis
+        self._synth_box.setPlainText(result.text.strip())
+        self._synth_lbl.setText("Result  ·  Single Model")
+        self._copy_btn.setEnabled(True)
+        self._set_status(result.timing_summary())
+
+    def _on_error(self, err: str):
+        self._busy = False
+        self._run_btn.setEnabled(True)
+        self._set_status(f"Error: {err}")
+
+    # ── Helpers ──────────────────────────────────────────────────────────────
+
+    def _clear_results(self):
+        """Remove all member cards (keep the trailing stretch)."""
+        while self._members_layout.count() > 1:
+            item = self._members_layout.takeAt(0)
+            if item.widget():
+                item.widget().deleteLater()
+        self._member_cards = {}
+        self._member_order = []
+        self._member_index = 0
+
+    def _clear(self):
+        self._prompt_edit.clear()
+        self._clear_results()
+        self._synth_box.clear()
+        self._synth_lbl.setText("Synthesised Result")
+        self._copy_btn.setEnabled(False)
+        self._set_status("Idle")
+
+    def _copy_result(self):
+        text = self._synth_box.toPlainText()
+        if text:
+            QApplication.clipboard().setText(text)
+            self._set_status("Copied to clipboard.")
+            QTimer.singleShot(2500, lambda: self._set_status("Idle"))
+
+    def _set_status(self, msg: str):
+        self._status_lbl.setText(msg)
+```
+
+### `src\ui\modules\expenses_panel.py`
+
+```python
+"""Expenses panel — receipts, ledger, item-price catalogue, monthly templates.
+
+Three sub-tabs:
+
+  Ledger      One-row-per-expense table with period/category filters and a
+              quick-add bar at the top for fast non-receipt entries (rent,
+              utilities, etc.). Double-click a row to edit; rows that came
+              from a receipt open the receipt editor with line items.
+
+  Receipts    Full receipt editor with a line-item table. Item-name fields
+              autocomplete from the catalogue, autofilling unit_price from
+              the last seen price. Subtotal/tax/total are computed live.
+              Save writes the receipt + a mirrored ledger transaction.
+
+  Catalogue   Searchable view of every expense item we've ever seen,
+              with last/avg/min/max price stats so the user can quickly
+              answer "what did eggs cost last time?".
+
+Receipts mirror into `transactions` (`type='expense'`) so existing
+summary, goal, and chart aggregates continue to work without changes.
+Standalone expenses go through the same FinanceStore.add_transaction
+path used by the earlier Earnings panel.
+"""
+
+from __future__ import annotations
+
+import calendar as _cal
+from datetime import date, timedelta
+
+from PyQt6.QtCore import Qt, QDate, QStringListModel, QTimer, pyqtSignal
+from PyQt6.QtGui import QColor, QBrush
+from PyQt6.QtWidgets import (
+    QAbstractItemView, QCheckBox, QComboBox, QCompleter, QDateEdit, QDialog,
+    QDialogButtonBox, QDoubleSpinBox, QFormLayout, QFrame, QGridLayout,
+    QHBoxLayout, QHeaderView, QInputDialog, QLabel, QLineEdit, QMessageBox,
+    QPlainTextEdit, QPushButton, QScrollArea, QSizePolicy, QSpinBox,
+    QSplitter, QTabWidget, QTableWidget, QTableWidgetItem, QTreeWidget,
+    QTreeWidgetItem, QVBoxLayout, QWidget,
+)
+
+from src.config import load_config, save_config
+from src.data.finance_store import FinanceStore, Transaction
+from src.data.expenses_store import (
+    ExpensesStore, Receipt, ReceiptItem, ExpenseItem,
+    EXPENSE_CATEGORIES, PAYMENT_METHODS,
+)
+
+
+_FALLBACK_RATE = 150.0
+_MONTH_NAMES = ["", "January", "February", "March", "April", "May", "June",
+                "July", "August", "September", "October", "November", "December"]
+
+
+# ── Default monthly recurring expense templates (moved from finance_panel) ────
+_DEFAULT_MONTHLY_PRESETS: list[dict] = [
+    {"name": "Rent",                "amount": 0, "currency": "JPY", "category": "Rent / Housing"},
+    {"name": "Kids Extracurriculars","amount": 0, "currency": "JPY", "category": "Education"},
+    {"name": "Schooling",           "amount": 0, "currency": "JPY", "category": "Education"},
+    {"name": "Power",               "amount": 0, "currency": "JPY", "category": "Utilities"},
+    {"name": "Water",               "amount": 0, "currency": "JPY", "category": "Utilities"},
+    {"name": "Internet",            "amount": 0, "currency": "JPY", "category": "Subscriptions"},
+    {"name": "Phone",               "amount": 0, "currency": "JPY", "category": "Subscriptions"},
+    {"name": "Gas",                 "amount": 0, "currency": "JPY", "category": "Utilities"},
+]
+
+
+def _load_categories() -> list[str]:
+    cats = load_config().get("expense_categories_v2", [])
+    return cats if cats else list(EXPENSE_CATEGORIES)
+
+
+def _save_categories(cats: list[str]) -> None:
+    cfg = load_config()
+    cfg["expense_categories_v2"] = cats
+    save_config(cfg)
+
+
+def _vendor_history(store: ExpensesStore, limit: int = 200) -> list[str]:
+    """Distinct list of vendors we've seen, most recent first."""
+    seen: dict[str, str] = {}   # vendor -> latest date
+    for r in store.get_receipts():
+        v = (r.vendor or "").strip()
+        if not v:
+            continue
+        prev = seen.get(v)
+        if prev is None or r.date > prev:
+            seen[v] = r.date
+    return [v for v, _ in sorted(seen.items(), key=lambda kv: kv[1], reverse=True)][:limit]
+
+
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+#  Smart spinbox: select-all on focus + trim trailing zeros
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+class SmartDoubleSpinBox(QDoubleSpinBox):
+    """A QDoubleSpinBox that:
+
+    - Selects all text on focus-in (so tabbing through the form lets the
+      user start typing immediately and overwrite the leading 0).
+    - Drops trailing ".00" / ".0" so whole-number values display as
+      integers (e.g. 1 instead of 1.00).
+    """
+
+    def focusInEvent(self, event):
+        super().focusInEvent(event)
+        # Defer until the spinbox is fully focused so the line-edit's own
+        # focus handling doesn't immediately collapse the selection.
+        QTimer.singleShot(0, self._select_all)
+
+    def _select_all(self):
+        le = self.lineEdit()
+        if le is not None:
+            le.selectAll()
+
+    def textFromValue(self, value: float) -> str:
+        text = super().textFromValue(value)
+        if "." in text:
+            text = text.rstrip("0").rstrip(".")
+        return text
+
+
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+#  Item-name field with catalog autocomplete + price autofill
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+# Separator used in autocomplete labels — picked so it can't appear in a
+# legitimate item name. Keep this unique so we can defensively strip any
+# accidental price-suffix the completer left behind.
+_AC_SEP = "  ·  "
+
+
+class ItemNameEdit(QLineEdit):
+    """Line edit that autocompletes against the expense-item catalogue.
+
+    When the user picks a known item from the dropdown, the configured
+    `price_target` spinbox autofills with that item's last-seen price.
+    Pressing Tab on a visible suggestion accepts it (and moves focus on).
+    """
+    item_picked = pyqtSignal(object)   # emits ExpenseItem on selection
+
+    def __init__(self, store: ExpensesStore, parent=None):
+        super().__init__(parent)
+        self._store = store
+        self._items: list[ExpenseItem] = []
+        self._model = QStringListModel(self)
+        completer = QCompleter(self._model, self)
+        completer.setCaseSensitivity(Qt.CaseSensitivity.CaseInsensitive)
+        completer.setFilterMode(Qt.MatchFlag.MatchContains)
+        completer.setCompletionMode(QCompleter.CompletionMode.PopupCompletion)
+        self.setCompleter(completer)
+        completer.activated.connect(self._on_completer_activated)
+        self.textEdited.connect(self._refresh_suggestions)
+        self.price_target: QDoubleSpinBox | None = None
+        self._refresh_suggestions("")
+
+    def _refresh_suggestions(self, text: str):
+        # When the completer inserts a full label (e.g. "Eggs  ·  ¥298") into
+        # the field, textEdited fires with that label string.  Refreshing with
+        # it would clobber _label_map before _on_completer_activated can use it,
+        # leaving the price text stuck in the field.
+        if _AC_SEP in text:
+            return
+        self._items = self._store.search_items(text or "", limit=20)
+        self._label_map: dict[str, ExpenseItem] = {}
+        labels = []
+        for it in self._items:
+            sym = "¥" if it.last_currency == "JPY" else "$"
+            lbl = f"{it.name}{_AC_SEP}{sym}{it.last_price:,.0f}"
+            labels.append(lbl)
+            self._label_map[lbl] = it
+        self._model.setStringList(labels)
+
+    def _on_completer_activated(self, label: str):
+        it = getattr(self, "_label_map", {}).get(label)
+        if it is None:
+            for candidate in self._items:
+                if label.startswith(candidate.name + _AC_SEP):
+                    it = candidate
+                    break
+        if it is None:
+            return
+        self.setText(it.name)
+        if self.price_target:
+            self.price_target.setValue(float(it.last_price))
+        self.item_picked.emit(it)
+
+    def keyPressEvent(self, event):
+        # Tab while the completion popup is visible should accept the
+        # currently-highlighted (or first) suggestion before moving focus
+        # on. Without this Tab just shifts focus and the suggestion is lost.
+        completer = self.completer()
+        if (event.key() in (Qt.Key.Key_Tab, Qt.Key.Key_Backtab)
+                and completer is not None
+                and completer.popup() is not None
+                and completer.popup().isVisible()):
+            popup = completer.popup()
+            idx = popup.currentIndex()
+            if not idx.isValid() and completer.completionCount() > 0:
+                idx = completer.completionModel().index(0, 0)
+            if idx.isValid():
+                label = idx.data() or ""
+                popup.hide()
+                self._on_completer_activated(label)
+                # Fall through so Tab/Backtab still moves focus
+        super().keyPressEvent(event)
+
+    def cleaned_text(self) -> str:
+        """Return the field text with any stray autocomplete price suffix
+        stripped. A defensive last line of defence in case the completer
+        left a label like "Yakisoba  ·  ¥299" behind."""
+        t = self.text()
+        if _AC_SEP in t:
+            t = t.split(_AC_SEP, 1)[0]
+        return t.strip()
+
+
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+#  Receipt editor dialog (used for both New and Edit)
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+class ReceiptEditorDialog(QDialog):
+    """Header + line-item editor for a single receipt.
+
+    Use `Receipt(...)` for a fresh receipt or pass in an existing one.
+    `result_receipt` is None until the dialog is accepted.
+    """
+
+    def __init__(self, store: ExpensesStore, receipt: Receipt | None = None,
+                 categories: list[str] | None = None, parent=None):
+        super().__init__(parent)
+        self._store = store
+        self._categories = categories or _load_categories()
+        self._editing = receipt is not None
+        self._receipt = receipt or Receipt(
+            id="", date=date.today().isoformat(),
+        )
+        self.result_receipt: Receipt | None = None
+
+        self.setWindowTitle("Edit Receipt" if self._editing else "New Receipt")
+        self.setMinimumSize(720, 540)
+        self._build_ui()
+        self._populate()
+        self._recompute_totals()
+
+    # ── UI ─────────────────────────────────────────────────────────────────────
+
+    def _build_ui(self):
+        root = QVBoxLayout(self)
+        root.setSpacing(10)
+
+        # ── Header form: 2-column grid for fast tabbing ────────────────
+        hdr = QGridLayout()
+        hdr.setHorizontalSpacing(10); hdr.setVerticalSpacing(6)
+
+        self.date_edit = QDateEdit(); self.date_edit.setCalendarPopup(True)
+        self.date_edit.setDisplayFormat("yyyy-MM-dd")
+        hdr.addWidget(QLabel("Date:"),     0, 0)
+        hdr.addWidget(self.date_edit,      0, 1)
+
+        self.vendor_edit = QLineEdit()
+        self.vendor_edit.setPlaceholderText("e.g. Aeon, Lawson, JR East…")
+        # Autocomplete vendor from history
+        v_completer = QCompleter(_vendor_history(self._store), self)
+        v_completer.setCaseSensitivity(Qt.CaseSensitivity.CaseInsensitive)
+        v_completer.setFilterMode(Qt.MatchFlag.MatchContains)
+        self.vendor_edit.setCompleter(v_completer)
+        hdr.addWidget(QLabel("Vendor:"),   0, 2)
+        hdr.addWidget(self.vendor_edit,    0, 3)
+
+        self.cat_combo = QComboBox()
+        self.cat_combo.addItems(self._categories)
+        hdr.addWidget(QLabel("Category:"), 1, 0)
+        hdr.addWidget(self.cat_combo,      1, 1)
+
+        self.cur_combo = QComboBox()
+        self.cur_combo.addItems(["JPY", "USD"])
+        self.cur_combo.currentTextChanged.connect(self._on_currency_changed)
+        hdr.addWidget(QLabel("Currency:"), 1, 2)
+        hdr.addWidget(self.cur_combo,      1, 3)
+
+        self.pay_combo = QComboBox()
+        self.pay_combo.addItems(PAYMENT_METHODS)
+        hdr.addWidget(QLabel("Paid by:"),  2, 0)
+        hdr.addWidget(self.pay_combo,      2, 1)
+
+        self.tax_spin = SmartDoubleSpinBox()
+        self.tax_spin.setRange(0.0, 9_999_999.0)
+        self.tax_spin.setDecimals(0)
+        self.tax_spin.setPrefix("¥ ")
+        self.tax_spin.valueChanged.connect(self._recompute_totals)
+        hdr.addWidget(QLabel("Tax (incl.):"), 2, 2)
+        hdr.addWidget(self.tax_spin,          2, 3)
+
+        root.addLayout(hdr)
+
+        # ── Items table ──────────────────────────────────────────────
+        itm_lbl = QLabel("Items"); itm_lbl.setObjectName("subtitle")
+        root.addWidget(itm_lbl)
+
+        self.items_table = QTableWidget()
+        self.items_table.setColumnCount(6)
+        self.items_table.setHorizontalHeaderLabels(
+            ["Item", "Qty", "Unit Price", "Per 100g", "Line Total", ""]
+        )
+        hh = self.items_table.horizontalHeader()
+        hh.setSectionResizeMode(0, QHeaderView.ResizeMode.Stretch)
+        for col in (1, 2, 3, 4, 5):
+            hh.setSectionResizeMode(col, QHeaderView.ResizeMode.ResizeToContents)
+        self.items_table.verticalHeader().setVisible(False)
+        self.items_table.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectRows)
+        # Cells host inline widgets, so disable inline editing (we provide
+        # the widgets directly).
+        self.items_table.setEditTriggers(QAbstractItemView.EditTrigger.NoEditTriggers)
+        root.addWidget(self.items_table, 1)
+
+        row_btns = QHBoxLayout()
+        add_btn = QPushButton("+ Add Item"); add_btn.setObjectName("secondary")
+        add_btn.clicked.connect(lambda: self._append_row(ReceiptItem(
+            id="", receipt_id="", name="", qty=1.0, unit_price=0.0)))
+        row_btns.addWidget(add_btn)
+
+        paste_btn = QPushButton("Paste Lines…"); paste_btn.setObjectName("secondary")
+        paste_btn.setToolTip(
+            "Paste a block of text — one item per line, "
+            "tab- or comma-separated: name, qty, unit_price"
+        )
+        paste_btn.clicked.connect(self._paste_lines)
+        row_btns.addWidget(paste_btn)
+
+        row_btns.addStretch()
+
+        self.subtotal_lbl = QLabel("Subtotal: ¥0")
+        self.subtotal_lbl.setObjectName("subtitle")
+        row_btns.addWidget(self.subtotal_lbl)
+
+        self.total_lbl = QLabel("Total: ¥0")
+        self.total_lbl.setStyleSheet("font-size:15px;font-weight:bold;")
+        row_btns.addWidget(self.total_lbl)
+        root.addLayout(row_btns)
+
+        # ── Notes ─────────────────────────────────────────────────────
+        self.notes_edit = QPlainTextEdit()
+        self.notes_edit.setPlaceholderText(
+            "Notes (optional) — e.g. trip name, project tag, splitwise reference…"
+        )
+        self.notes_edit.setMaximumHeight(60)
+        root.addWidget(self.notes_edit)
+
+        # ── Action buttons ────────────────────────────────────────────
+        btns = QHBoxLayout(); btns.addStretch()
+        if self._editing:
+            del_btn = QPushButton("Delete"); del_btn.setObjectName("destructive")
+            del_btn.clicked.connect(self._delete)
+            btns.addWidget(del_btn)
+        cancel = QPushButton("Cancel"); cancel.setObjectName("secondary")
+        cancel.clicked.connect(self.reject)
+        btns.addWidget(cancel)
+        save_new = QPushButton("Save && New"); save_new.setObjectName("secondary")
+        save_new.setToolTip("Save this receipt and start a fresh one")
+        save_new.clicked.connect(self._save_and_new)
+        if self._editing:
+            save_new.setVisible(False)
+        btns.addWidget(save_new)
+        save = QPushButton("Save"); save.setDefault(True)
+        save.clicked.connect(self._save_and_close)
+        btns.addWidget(save)
+        root.addLayout(btns)
+
+    # ── Population / state ─────────────────────────────────────────────────────
+
+    def _populate(self):
+        r = self._receipt
+        try:
+            y, m, d = (int(x) for x in r.date.split("-"))
+            self.date_edit.setDate(QDate(y, m, d))
+        except Exception:
+            self.date_edit.setDate(QDate.currentDate())
+        self.vendor_edit.setText(r.vendor)
+        idx = self.cat_combo.findText(r.category)
+        if idx >= 0:
+            self.cat_combo.setCurrentIndex(idx)
+        elif r.category:
+            self.cat_combo.addItem(r.category)
+            self.cat_combo.setCurrentText(r.category)
+        self.cur_combo.setCurrentText(r.currency or "JPY")
+        if r.payment_method:
+            self.pay_combo.setCurrentText(r.payment_method)
+        self.tax_spin.setValue(float(r.tax or 0.0))
+        self.notes_edit.setPlainText(r.notes or "")
+
+        # Items: ensure at least one editable row exists
+        items = list(r.items) or [ReceiptItem(
+            id="", receipt_id="", name="", qty=1.0, unit_price=0.0)]
+        for item in items:
+            self._append_row(item)
+
+        # Apply currency to spinbox prefixes after populating
+        self._on_currency_changed(self.cur_combo.currentText())
+
+    def _on_currency_changed(self, cur: str):
+        prefix = "¥ " if cur == "JPY" else "$ "
+        decimals = 0 if cur == "JPY" else 2
+        step     = 1 if cur == "JPY" else 0.10
+        self.tax_spin.setPrefix(prefix)
+        self.tax_spin.setDecimals(decimals)
+        self.tax_spin.setSingleStep(step)
+        for r in range(self.items_table.rowCount()):
+            for col in (2, 3):
+                w = self.items_table.cellWidget(r, col)
+                if isinstance(w, QDoubleSpinBox):
+                    w.setPrefix(prefix)
+                    w.setDecimals(decimals)
+                    w.setSingleStep(step)
+        self._recompute_totals()
+
+    def _append_row(self, item: ReceiptItem):
+        cur = self.cur_combo.currentText() if hasattr(self, "cur_combo") else "JPY"
+        prefix = "¥ " if cur == "JPY" else "$ "
+        decimals = 0 if cur == "JPY" else 2
+        step     = 1 if cur == "JPY" else 0.10
+
+        row = self.items_table.rowCount()
+        self.items_table.insertRow(row)
+
+        name_edit = ItemNameEdit(self._store)
+        name_edit.setText(item.name)
+        self.items_table.setCellWidget(row, 0, name_edit)
+
+        qty_spin = SmartDoubleSpinBox()
+        qty_spin.setRange(0.0, 9_999.0); qty_spin.setDecimals(2)
+        qty_spin.setSingleStep(1.0); qty_spin.setValue(float(item.qty or 1.0))
+        qty_spin.setMinimumWidth(70)
+        self.items_table.setCellWidget(row, 1, qty_spin)
+
+        up_spin = SmartDoubleSpinBox()
+        up_spin.setRange(0.0, 9_999_999.0)
+        up_spin.setDecimals(decimals); up_spin.setSingleStep(step)
+        up_spin.setPrefix(prefix); up_spin.setValue(float(item.unit_price or 0.0))
+        up_spin.setMinimumWidth(110)
+        self.items_table.setCellWidget(row, 2, up_spin)
+        # Wire item-name picker to autofill price
+        name_edit.price_target = up_spin
+
+        # Optional "per 100g" helper. When the user enters a value here it
+        # auto-fills unit_price as per_100g / 100 and qty becomes the weight
+        # in grams; not persisted (it's a calculator helper, the underlying
+        # storage is still qty × unit_price).
+        per100_spin = SmartDoubleSpinBox()
+        per100_spin.setRange(0.0, 9_999_999.0)
+        per100_spin.setDecimals(decimals); per100_spin.setSingleStep(step)
+        per100_spin.setPrefix(prefix); per100_spin.setValue(0.0)
+        per100_spin.setMinimumWidth(110)
+        per100_spin.setToolTip(
+            "Optional: price per 100g.\n"
+            "Filling this auto-sets Unit Price to (Per 100g ÷ 100) — "
+            "treat Qty as grams."
+        )
+        per100_spin.valueChanged.connect(
+            lambda v, up=up_spin: up.setValue(v / 100.0) if v > 0 else None
+        )
+        self.items_table.setCellWidget(row, 3, per100_spin)
+
+        # Read-only line total — styled to match neighbouring spinboxes so
+        # alignment and background are uniform across the row.
+        line_edit = QLineEdit("0")
+        line_edit.setReadOnly(True)
+        line_edit.setAlignment(Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter)
+        line_edit.setMinimumWidth(110)
+        line_edit.setFocusPolicy(Qt.FocusPolicy.NoFocus)
+        line_edit.setStyleSheet(
+            "QLineEdit{background:transparent;border:none;padding-right:6px;}"
+        )
+        self.items_table.setCellWidget(row, 4, line_edit)
+
+        del_btn = QPushButton("🗑")
+        del_btn.setFixedSize(28, 26)
+        del_btn.setObjectName("secondary")
+        del_btn.setToolTip("Remove this row")
+        del_btn.clicked.connect(lambda _=False, w=name_edit: self._remove_row(w))
+        self.items_table.setCellWidget(row, 5, del_btn)
+
+        # Stash the original ReceiptItem so we keep its id on save
+        name_edit.setProperty("_orig_id", item.id or "")
+
+        qty_spin.valueChanged.connect(self._recompute_totals)
+        up_spin.valueChanged.connect(self._recompute_totals)
+        # Recompute when item-name picker fills the price
+        name_edit.item_picked.connect(lambda _=None: self._recompute_totals())
+        self._recompute_totals()
+
+    def _remove_row(self, name_edit_widget):
+        for r in range(self.items_table.rowCount()):
+            if self.items_table.cellWidget(r, 0) is name_edit_widget:
+                self.items_table.removeRow(r)
+                break
+        if self.items_table.rowCount() == 0:
+            self._append_row(ReceiptItem(
+                id="", receipt_id="", name="", qty=1.0, unit_price=0.0))
+        self._recompute_totals()
+
+    def _paste_lines(self):
+        """Bulk-paste a block of items. Each line may be tab- or comma-
+        separated; missing fields default to qty=1, unit_price=0."""
+        text, ok = QInputDialog.getMultiLineText(
+            self, "Paste Items",
+            "One item per line. Format:  name [, qty [, unit_price]]\n"
+            "Tab or comma-separated. Lines starting with # are ignored.",
+            "",
+        )
+        if not ok or not text.strip():
+            return
+        added = 0
+        for raw in text.splitlines():
+            line = raw.strip()
+            if not line or line.startswith("#"):
+                continue
+            parts = [p.strip() for p in (line.split("\t")
+                     if "\t" in line else line.split(","))]
+            name = parts[0] if parts else ""
+            if not name:
+                continue
+            try:
+                qty = float(parts[1]) if len(parts) > 1 and parts[1] else 1.0
+            except ValueError:
+                qty = 1.0
+            try:
+                up = float(parts[2]) if len(parts) > 2 and parts[2] else 0.0
+            except ValueError:
+                up = 0.0
+            self._append_row(ReceiptItem(
+                id="", receipt_id="", name=name, qty=qty, unit_price=up))
+            added += 1
+        if added == 0:
+            QMessageBox.information(self, "Paste Items", "No usable lines found.")
+
+    # ── Totals ─────────────────────────────────────────────────────────────────
+
+    def _recompute_totals(self):
+        cur = self.cur_combo.currentText() if hasattr(self, "cur_combo") else "JPY"
+        sym = "¥" if cur == "JPY" else "$"
+        decimals = 0 if cur == "JPY" else 2
+
+        subtotal = 0.0
+        for r in range(self.items_table.rowCount()):
+            qty_spin = self.items_table.cellWidget(r, 1)
+            up_spin  = self.items_table.cellWidget(r, 2)
+            line_w   = self.items_table.cellWidget(r, 4)
+            if not (qty_spin and up_spin and line_w):
+                continue
+            line = float(qty_spin.value()) * float(up_spin.value())
+            subtotal += line
+            line_w.setText(
+                f"{sym}{line:,.0f}" if decimals == 0 else f"{sym}{line:,.2f}"
+            )
+        tax = float(self.tax_spin.value())
+        total = subtotal + tax
+        self.subtotal_lbl.setText(
+            f"Subtotal: {sym}{subtotal:,.0f}" if decimals == 0
+            else f"Subtotal: {sym}{subtotal:,.2f}"
+        )
+        self.total_lbl.setText(
+            f"Total: {sym}{total:,.0f}" if decimals == 0
+            else f"Total: {sym}{total:,.2f}"
+        )
+
+    # ── Save / Delete ──────────────────────────────────────────────────────────
+
+    def _collect(self) -> tuple[Receipt, list[ReceiptItem]]:
+        qd = self.date_edit.date()
+        cur = self.cur_combo.currentText()
+        items: list[ReceiptItem] = []
+        for r in range(self.items_table.rowCount()):
+            name_edit = self.items_table.cellWidget(r, 0)
+            qty_spin  = self.items_table.cellWidget(r, 1)
+            up_spin   = self.items_table.cellWidget(r, 2)
+            if not (name_edit and qty_spin and up_spin):
+                continue
+            name = (name_edit.cleaned_text() if hasattr(name_edit, "cleaned_text")
+                    else name_edit.text().strip())
+            if not name:
+                continue
+            qty = float(qty_spin.value())
+            up  = float(up_spin.value())
+            items.append(ReceiptItem(
+                id=name_edit.property("_orig_id") or "",
+                receipt_id=self._receipt.id or "",
+                name=name, qty=qty, unit_price=up,
+                line_total=qty * up,
+                sort_order=r,
+            ))
+        subtotal = sum(it.line_total for it in items)
+        tax = float(self.tax_spin.value())
+        total = subtotal + tax
+        rec = Receipt(
+            id=self._receipt.id,
+            date=f"{qd.year():04d}-{qd.month():02d}-{qd.day():02d}",
+            vendor=self.vendor_edit.text().strip(),
+            category=self.cat_combo.currentText(),
+            currency=cur,
+            subtotal=subtotal,
+            tax=tax,
+            total=total,
+            payment_method=self.pay_combo.currentText(),
+            notes=self.notes_edit.toPlainText().strip(),
+            transaction_id=self._receipt.transaction_id,
+        )
+        return rec, items
+
+    def _validate(self, rec: Receipt, items: list[ReceiptItem]) -> bool:
+        if rec.total <= 0 and not items:
+            QMessageBox.warning(self, "Empty Receipt",
+                "Add at least one line item or a non-zero total.")
+            return False
+        return True
+
+    def _save_and_close(self):
+        rec, items = self._collect()
+        if not self._validate(rec, items):
+            return
+        self.result_receipt = self._store.save_receipt(rec, items)
+        self.accept()
+
+    def _save_and_new(self):
+        rec, items = self._collect()
+        if not self._validate(rec, items):
+            return
+        self._store.save_receipt(rec, items)
+        # Reset for a fresh entry without closing the dialog
+        self._receipt = Receipt(id="", date=date.today().isoformat(),
+                                category=rec.category, currency=rec.currency,
+                                payment_method=rec.payment_method)
+        self.vendor_edit.clear()
+        self.tax_spin.setValue(0.0)
+        self.notes_edit.clear()
+        self.items_table.setRowCount(0)
+        self._append_row(ReceiptItem(
+            id="", receipt_id="", name="", qty=1.0, unit_price=0.0))
+        self._recompute_totals()
+
+    def _delete(self):
+        if QMessageBox.question(self, "Delete Receipt",
+                "Permanently remove this receipt?",
+                QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
+                ) != QMessageBox.StandardButton.Yes:
+            return
+        if self._receipt.id:
+            self._store.delete_receipt(self._receipt.id)
+        self.result_receipt = None
+        self.reject()
+
+
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+#  Quick-expense dialog (single-line, no receipt detail)
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+class QuickExpenseDialog(QDialog):
+    """A minimal one-shot expense entry — date, amount, currency, category,
+    description. For things like rent, gas, or any bill that doesn't need
+    line-item breakdown."""
+
+    def __init__(self, categories: list[str], txn: Transaction | None = None,
+                 parent=None):
+        super().__init__(parent)
+        self._editing = txn is not None
+        self.txn = txn
+        self.setWindowTitle("Edit Expense" if self._editing else "Quick Expense")
+        self.setMinimumWidth(380)
+
+        layout = QVBoxLayout(self)
+        form = QFormLayout(); form.setSpacing(8)
+
+        self.date_edit = QDateEdit(); self.date_edit.setCalendarPopup(True)
+        self.date_edit.setDisplayFormat("yyyy-MM-dd")
+        if txn:
+            try:
+                y, m, d = (int(x) for x in txn.date.split("-"))
+                self.date_edit.setDate(QDate(y, m, d))
+            except Exception:
+                self.date_edit.setDate(QDate.currentDate())
+        else:
+            self.date_edit.setDate(QDate.currentDate())
+        form.addRow("Date:", self.date_edit)
+
+        self.cur_combo = QComboBox(); self.cur_combo.addItems(["JPY", "USD"])
+        if txn:
+            self.cur_combo.setCurrentText(txn.currency)
+        self.cur_combo.currentTextChanged.connect(self._on_currency_changed)
+        form.addRow("Currency:", self.cur_combo)
+
+        self.amount_spin = SmartDoubleSpinBox()
+        self.amount_spin.setRange(0.0, 99_999_999.0)
+        if txn:
+            self.amount_spin.setValue(txn.amount)
+        form.addRow("Amount:", self.amount_spin)
+
+        self.cat_combo = QComboBox(); self.cat_combo.addItems(categories)
+        if txn:
+            idx = self.cat_combo.findText(txn.category)
+            if idx >= 0:
+                self.cat_combo.setCurrentIndex(idx)
+            else:
+                self.cat_combo.addItem(txn.category)
+                self.cat_combo.setCurrentText(txn.category)
+        form.addRow("Category:", self.cat_combo)
+
+        self.desc_edit = QLineEdit()
+        self.desc_edit.setPlaceholderText("e.g. Rent November, Gas — round trip")
+        if txn:
+            self.desc_edit.setText(txn.description)
+        form.addRow("Description:", self.desc_edit)
+
+        layout.addLayout(form)
+
+        sep = QFrame(); sep.setObjectName("separator")
+        sep.setFrameShape(QFrame.Shape.HLine); layout.addWidget(sep)
+
+        btns = QDialogButtonBox(
+            QDialogButtonBox.StandardButton.Save | QDialogButtonBox.StandardButton.Cancel)
+        btns.accepted.connect(self.accept); btns.rejected.connect(self.reject)
+        layout.addWidget(btns)
+
+        self._on_currency_changed(self.cur_combo.currentText())
+
+    def _on_currency_changed(self, cur: str):
+        if cur == "JPY":
+            self.amount_spin.setPrefix("¥ "); self.amount_spin.setDecimals(0)
+            self.amount_spin.setSingleStep(100)
+        else:
+            self.amount_spin.setPrefix("$ "); self.amount_spin.setDecimals(2)
+            self.amount_spin.setSingleStep(1.0)
+
+    def get_data(self) -> dict:
+        qd = self.date_edit.date()
+        return {
+            "date":        f"{qd.year():04d}-{qd.month():02d}-{qd.day():02d}",
+            "amount":      float(self.amount_spin.value()),
+            "txn_type":    "expense",
+            "category":    self.cat_combo.currentText(),
+            "description": self.desc_edit.text().strip(),
+            "currency":    self.cur_combo.currentText(),
+            "is_job_pay":  False,
+        }
+
+
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+#  Monthly recurring expense templates (moved from finance_panel)
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+class MonthlyExpenseTemplatesDialog(QDialog):
+    """Add / edit / delete recurring expense templates."""
+
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.setWindowTitle("Manage Monthly Expense Templates")
+        self.setMinimumSize(560, 420)
+        self._build_ui(); self._refresh()
+
+    @staticmethod
+    def _load() -> list[dict]:
+        presets = load_config().get("monthly_expense_presets", [])
+        return presets if presets else list(_DEFAULT_MONTHLY_PRESETS)
+
+    @staticmethod
+    def _save(presets: list[dict]):
+        cfg = load_config(); cfg["monthly_expense_presets"] = presets
+        save_config(cfg)
+
+    def _build_ui(self):
+        layout = QVBoxLayout(self); layout.setSpacing(10)
+        info = QLabel(
+            "These templates power the Monthly Expenses bulk-log dialog.\n"
+            "Set typical amounts here — adjust per-month when logging.")
+        info.setObjectName("subtitle"); info.setWordWrap(True)
+        layout.addWidget(info)
+
+        self.table = QTableWidget()
+        self.table.setColumnCount(4)
+        self.table.setHorizontalHeaderLabels(
+            ["Name", "Default Amount", "Currency", "Category"])
+        hh = self.table.horizontalHeader()
+        hh.setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
+        hh.setSectionResizeMode(2, QHeaderView.ResizeMode.ResizeToContents)
+        self.table.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectRows)
+        self.table.setEditTriggers(QAbstractItemView.EditTrigger.NoEditTriggers)
+        layout.addWidget(self.table, 1)
+
+        sep = QFrame(); sep.setObjectName("separator")
+        sep.setFrameShape(QFrame.Shape.HLine); layout.addWidget(sep)
+
+        form = QFormLayout(); form.setSpacing(6)
+        self._name_edit = QLineEdit()
+        self._name_edit.setPlaceholderText("e.g. Gym Membership")
+        form.addRow("Name:", self._name_edit)
+        amt_row = QHBoxLayout(); amt_row.setSpacing(6)
+        self._amount_spin = SmartDoubleSpinBox()
+        self._amount_spin.setRange(0, 9_999_999); self._amount_spin.setDecimals(0)
+        self._amount_spin.setSingleStep(1000); self._amount_spin.setValue(0)
+        amt_row.addWidget(self._amount_spin, 1)
+        self._currency_combo = QComboBox(); self._currency_combo.addItems(["JPY", "USD"])
+        self._currency_combo.currentTextChanged.connect(self._on_cur)
+        amt_row.addWidget(self._currency_combo)
+        form.addRow("Default Amount:", amt_row)
+        self._cat_combo = QComboBox(); self._cat_combo.addItems(_load_categories())
+        form.addRow("Category:", self._cat_combo)
+        layout.addLayout(form)
+
+        btn_row = QHBoxLayout()
+        add_btn = QPushButton("Add Template"); add_btn.clicked.connect(self._add)
+        btn_row.addWidget(add_btn)
+        edit_btn = QPushButton("Edit Selected"); edit_btn.setObjectName("secondary")
+        edit_btn.clicked.connect(self._edit_selected); btn_row.addWidget(edit_btn)
+        del_btn = QPushButton("Delete Selected"); del_btn.setObjectName("destructive")
+        del_btn.clicked.connect(self._delete_selected); btn_row.addWidget(del_btn)
+        btn_row.addStretch()
+        reset_btn = QPushButton("Reset Defaults"); reset_btn.setObjectName("secondary")
+        reset_btn.clicked.connect(self._reset_defaults); btn_row.addWidget(reset_btn)
+        close_btn = QPushButton("Done"); close_btn.clicked.connect(self.accept)
+        btn_row.addWidget(close_btn)
+        layout.addLayout(btn_row)
+
+    def _on_cur(self, cur: str):
+        if cur == "JPY":
+            self._amount_spin.setDecimals(0); self._amount_spin.setSingleStep(1000)
+        else:
+            self._amount_spin.setDecimals(2); self._amount_spin.setSingleStep(10)
+
+    def _refresh(self):
+        ps = self._load()
+        self.table.setRowCount(len(ps))
+        for i, p in enumerate(ps):
+            self.table.setItem(i, 0, QTableWidgetItem(p["name"]))
+            sym = "¥" if p["currency"] == "JPY" else "$"
+            amt = int(p["amount"]) if p["currency"] == "JPY" else p["amount"]
+            self.table.setItem(i, 1, QTableWidgetItem(f"{sym}{amt:,}"))
+            self.table.setItem(i, 2, QTableWidgetItem(p["currency"]))
+            self.table.setItem(i, 3, QTableWidgetItem(p["category"]))
+
+    def _add(self):
+        name = self._name_edit.text().strip()
+        if not name:
+            QMessageBox.warning(self, "Missing Name", "Please enter a name."); return
+        ps = self._load()
+        ps.append({
+            "name": name,
+            "amount": self._amount_spin.value(),
+            "currency": self._currency_combo.currentText(),
+            "category": self._cat_combo.currentText(),
+        })
+        self._save(ps); self._name_edit.clear(); self._refresh()
+
+    def _edit_selected(self):
+        rows = self.table.selectionModel().selectedRows()
+        if not rows: return
+        idx = rows[0].row()
+        ps = self._load()
+        if idx >= len(ps): return
+        p = ps[idx]
+        self._name_edit.setText(p["name"])
+        self._amount_spin.setValue(p["amount"])
+        self._currency_combo.setCurrentText(p["currency"])
+        self._cat_combo.setCurrentText(p["category"])
+        ps.pop(idx); self._save(ps); self._refresh()
+
+    def _delete_selected(self):
+        rows = self.table.selectionModel().selectedRows()
+        if not rows: return
+        if QMessageBox.question(
+            self, "Delete", "Delete selected template(s)?",
+            QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
+        ) == QMessageBox.StandardButton.Yes:
+            ps = self._load()
+            for r in sorted(rows, key=lambda x: -x.row()):
+                if r.row() < len(ps): ps.pop(r.row())
+            self._save(ps); self._refresh()
+
+    def _reset_defaults(self):
+        if QMessageBox.question(
+            self, "Reset", "Reset templates to defaults?",
+            QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
+        ) == QMessageBox.StandardButton.Yes:
+            self._save(list(_DEFAULT_MONTHLY_PRESETS)); self._refresh()
+
+
+class MonthlyExpensesDialog(QDialog):
+    """Bulk-log a month of recurring bills, tagged [Monthly] for tax export."""
+
+    def __init__(self, finance_store: FinanceStore, parent=None):
+        super().__init__(parent)
+        self.fs = finance_store
+        self.setWindowTitle("Monthly Expenses")
+        self.setMinimumSize(620, 480)
+        self._year  = date.today().year
+        self._month = date.today().month
+        self._rows: list[dict] = []
+        self._build_ui(); self._reload()
+
+    def _build_ui(self):
+        layout = QVBoxLayout(self); layout.setSpacing(10)
+        nav = QHBoxLayout()
+        prev_btn = QPushButton("←"); prev_btn.setObjectName("secondary")
+        prev_btn.setFixedSize(28, 28); prev_btn.clicked.connect(self._prev)
+        nav.addWidget(prev_btn)
+        self._month_lbl = QLabel(); self._month_lbl.setStyleSheet("font-weight:bold;")
+        self._month_lbl.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        nav.addWidget(self._month_lbl, 1)
+        next_btn = QPushButton("→"); next_btn.setObjectName("secondary")
+        next_btn.setFixedSize(28, 28); next_btn.clicked.connect(self._next)
+        nav.addWidget(next_btn)
+        layout.addLayout(nav)
+
+        self._warn_lbl = QLabel(""); self._warn_lbl.setObjectName("subtitle")
+        self._warn_lbl.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        layout.addWidget(self._warn_lbl)
+
+        scroll = QScrollArea(); scroll.setWidgetResizable(True)
+        scroll.setFrameShape(QFrame.Shape.NoFrame)
+        self._rows_widget = QWidget()
+        self._rows_layout = QVBoxLayout(self._rows_widget)
+        self._rows_layout.setSpacing(4)
+        scroll.setWidget(self._rows_widget)
+        layout.addWidget(scroll, 1)
+
+        sep = QFrame(); sep.setObjectName("separator")
+        sep.setFrameShape(QFrame.Shape.HLine); layout.addWidget(sep)
+
+        totals_row = QHBoxLayout(); totals_row.addStretch()
+        self._total_lbl = QLabel("Total: ¥0  /  $0.00")
+        self._total_lbl.setStyleSheet("font-weight:bold;")
+        totals_row.addWidget(self._total_lbl)
+        layout.addLayout(totals_row)
+
+        btn_row = QHBoxLayout()
+        manage_btn = QPushButton("Manage Templates"); manage_btn.setObjectName("secondary")
+        manage_btn.clicked.connect(self._manage); btn_row.addWidget(manage_btn)
+        check_all = QPushButton("Check All"); check_all.setObjectName("secondary")
+        check_all.clicked.connect(lambda: self._set_all(True)); btn_row.addWidget(check_all)
+        uncheck = QPushButton("Uncheck All"); uncheck.setObjectName("secondary")
+        uncheck.clicked.connect(lambda: self._set_all(False)); btn_row.addWidget(uncheck)
+        btn_row.addStretch()
+        cancel = QPushButton("Cancel"); cancel.setObjectName("secondary")
+        cancel.clicked.connect(self.reject); btn_row.addWidget(cancel)
+        log_btn = QPushButton("Log Selected"); log_btn.clicked.connect(self._log)
+        btn_row.addWidget(log_btn)
+        layout.addLayout(btn_row)
+
+    def _reload(self):
+        while self._rows_layout.count():
+            item = self._rows_layout.takeAt(0)
+            if item.widget(): item.widget().deleteLater()
+        self._rows = []
+        for p in MonthlyExpenseTemplatesDialog._load():
+            row = QWidget(); rl = QHBoxLayout(row)
+            rl.setContentsMargins(0, 0, 0, 0); rl.setSpacing(8)
+            chk = QCheckBox(); chk.setChecked(True); chk.setFixedWidth(22)
+            rl.addWidget(chk)
+            name = QLabel(p["name"]); rl.addWidget(name, 1)
+            amt = SmartDoubleSpinBox()
+            if p["currency"] == "JPY":
+                amt.setRange(0, 9_999_999); amt.setDecimals(0); amt.setPrefix("¥ ")
+                amt.setSingleStep(1000)
+            else:
+                amt.setRange(0, 99_999); amt.setDecimals(2); amt.setPrefix("$ ")
+                amt.setSingleStep(10)
+            amt.setValue(p["amount"]); amt.setMinimumWidth(120)
+            amt.valueChanged.connect(self._update_total)
+            chk.toggled.connect(self._update_total)
+            rl.addWidget(amt)
+            cur = QLabel(p["currency"]); cur.setFixedWidth(40); rl.addWidget(cur)
+            cat = QLabel(p["category"]); cat.setObjectName("subtitle")
+            cat.setFixedWidth(140); rl.addWidget(cat)
+            self._rows_layout.addWidget(row)
+            self._rows.append({"check": chk, "amount": amt, "preset": p})
+        self._rows_layout.addStretch()
+        self._update_label(); self._update_total()
+
+    def _update_label(self):
+        self._month_lbl.setText(f"{_MONTH_NAMES[self._month]} {self._year}")
+        if self.fs.has_monthly_tag(self._year, self._month):
+            self._warn_lbl.setText("⚠ Already logged for this month — duplicates may be created.")
+        else:
+            self._warn_lbl.setText("")
+
+    def _update_total(self):
+        total_jpy = 0.0
+        rate = float(load_config().get("usd_jpy_fallback_rate", _FALLBACK_RATE)) or _FALLBACK_RATE
+        for r in self._rows:
+            if not r["check"].isChecked(): continue
+            v = r["amount"].value()
+            total_jpy += v if r["preset"]["currency"] == "JPY" else v * rate
+        total_usd = total_jpy / rate if rate else 0
+        self._total_lbl.setText(f"Total: ¥{int(total_jpy):,}  /  ${total_usd:,.2f}")
+
+    def _set_all(self, state: bool):
+        for r in self._rows: r["check"].setChecked(state)
+
+    def _prev(self):
+        if self._month == 1: self._month = 12; self._year -= 1
+        else: self._month -= 1
+        self._update_label()
+
+    def _next(self):
+        if self._month == 12: self._month = 1; self._year += 1
+        else: self._month += 1
+        self._update_label()
+
+    def _manage(self):
+        MonthlyExpenseTemplatesDialog(self).exec(); self._reload()
+
+    def _log(self):
+        sel = [r for r in self._rows if r["check"].isChecked()]
+        if not sel:
+            QMessageBox.warning(self, "Nothing Selected", "Check at least one row."); return
+        last_day = _cal.monthrange(self._year, self._month)[1]
+        log_date = date(self._year, self._month, last_day).isoformat()
+        n = 0
+        for r in sel:
+            v = r["amount"].value()
+            if v <= 0: continue
+            p = r["preset"]
+            self.fs.add_transaction(
+                date=log_date, amount=v, txn_type="expense",
+                category=p["category"], description=f"[Monthly] {p['name']}",
+                currency=p["currency"], is_job_pay=False,
+            )
+            n += 1
+        QMessageBox.information(self, "Logged",
+            f"Logged {n} expense(s) for {_MONTH_NAMES[self._month]} {self._year}.")
+        self.accept()
+
+
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+#  ExpensesPanel — top-level UI
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+class ExpensesPanel(QWidget):
+    """The dedicated Expenses tab — receipts, ledger, and item catalogue."""
+
+    def __init__(self, finance_store: FinanceStore | None = None,
+                 expenses_store: ExpensesStore | None = None,
+                 parent=None):
+        super().__init__(parent)
+        self.fs = finance_store or FinanceStore()
+        self.store = expenses_store or ExpensesStore(self.fs)
+        self._palette: dict = {}
+        self._txn_ids: list[str] = []
+        self._build_ui()
+        self._refresh()
+
+    def set_palette(self, palette: dict):
+        self._palette = palette
+        self._refresh()
+
+    def showEvent(self, event):
+        super().showEvent(event); self._refresh()
+
+    # ── UI ─────────────────────────────────────────────────────────────────────
+
+    def _build_ui(self):
+        outer = QVBoxLayout(self)
+        outer.setContentsMargins(16, 12, 16, 12); outer.setSpacing(8)
+
+        header = QHBoxLayout()
+        title = QLabel("Expenses"); title.setObjectName("sectionTitle")
+        header.addWidget(title)
+        sub = QLabel("All outgoing transactions, receipts, and item history")
+        sub.setObjectName("subtitle")
+        header.addWidget(sub); header.addStretch()
+
+        new_rec_btn = QPushButton("+ Receipt")
+        new_rec_btn.setToolTip("Open the receipt editor (line items, vendor, etc.)")
+        new_rec_btn.clicked.connect(self._new_receipt)
+        header.addWidget(new_rec_btn)
+
+        new_exp_btn = QPushButton("+ Quick Expense")
+        new_exp_btn.setObjectName("secondary")
+        new_exp_btn.setToolTip("Log a one-line expense without line items (rent, gas, etc.)")
+        new_exp_btn.clicked.connect(self._new_quick_expense)
+        header.addWidget(new_exp_btn)
+
+        monthly_btn = QPushButton("Monthly Bills")
+        monthly_btn.setObjectName("secondary")
+        monthly_btn.setToolTip("Bulk-log recurring monthly expenses (rent, utilities…)")
+        monthly_btn.clicked.connect(self._open_monthly)
+        header.addWidget(monthly_btn)
+
+        cats_btn = QPushButton("Categories")
+        cats_btn.setObjectName("secondary")
+        cats_btn.setToolTip("Add or remove expense categories")
+        cats_btn.clicked.connect(self._manage_categories)
+        header.addWidget(cats_btn)
+
+        outer.addLayout(header)
+
+        self._tabs = QTabWidget()
+        self._tabs.addTab(self._build_ledger_tab(),  "Ledger")
+        self._tabs.addTab(self._build_receipts_tab(),"Receipts")
+        self._tabs.addTab(self._build_catalog_tab(), "Item Catalogue")
+        outer.addWidget(self._tabs, 1)
+
+    # ── Ledger tab ─────────────────────────────────────────────────────────────
+
+    def _build_ledger_tab(self) -> QWidget:
+        w = QWidget(); v = QVBoxLayout(w)
+        v.setContentsMargins(0, 8, 0, 0); v.setSpacing(6)
+
+        # Filters — search first (far left), then period pills, then date range
+        f = QHBoxLayout(); f.setSpacing(6)
+
+        self.search_edit = QLineEdit()
+        self.search_edit.setPlaceholderText("Search vendor / description…")
+        self.search_edit.setMinimumWidth(180)
+        self.search_edit.setMaximumWidth(240)
+        self.search_edit.textChanged.connect(self._refresh)
+        f.addWidget(self.search_edit)
+
+        f.addSpacing(4)
+
+        # Compact acronym period pills
+        _pill_style = (
+            "QPushButton{border-radius:10px;padding:0 8px;"
+            "font-size:11px;font-weight:bold;min-width:32px;max-width:42px;}"
+        )
+        for label, tip, fn in [
+            ("TM", "This Month", self._filter_this_month),
+            ("LM", "Last Month", self._filter_last_month),
+            ("TY", "This Year",  self._filter_this_year),
+            ("AT", "All Time",   self._filter_all_time),
+        ]:
+            b = QPushButton(label); b.setObjectName("secondary")
+            b.setFixedHeight(24); b.setToolTip(tip)
+            b.setStyleSheet(_pill_style)
+            b.clicked.connect(fn); f.addWidget(b)
+
+        f.addSpacing(6); f.addWidget(QLabel("Cat:"))
+        self.cat_filter = QComboBox()
+        self.cat_filter.addItem("All")
+        self.cat_filter.addItems(_load_categories())
+        self.cat_filter.currentTextChanged.connect(self._refresh)
+        f.addWidget(self.cat_filter)
+
+        f.addSpacing(6); f.addWidget(QLabel("From:"))
+        today = date.today()
+        self.from_edit = QDateEdit(); self.from_edit.setCalendarPopup(True)
+        self.from_edit.setDisplayFormat("yyyy-MM-dd")
+        self.from_edit.setMinimumWidth(108)
+        self.from_edit.setDate(QDate(today.year, today.month, 1))
+        self.from_edit.dateChanged.connect(self._refresh)
+        f.addWidget(self.from_edit)
+        f.addWidget(QLabel("To:"))
+        self.to_edit = QDateEdit(); self.to_edit.setCalendarPopup(True)
+        self.to_edit.setDisplayFormat("yyyy-MM-dd")
+        self.to_edit.setMinimumWidth(108)
+        self.to_edit.setDate(QDate(today.year, today.month, today.day))
+        self.to_edit.dateChanged.connect(self._refresh)
+        f.addWidget(self.to_edit)
+        f.addStretch()
+        v.addLayout(f)
+
+        # Splitter: table | summary panel
+        split = QSplitter(Qt.Orientation.Horizontal)
+
+        self.table = QTableWidget()
+        self.table.setColumnCount(7)
+        self.table.setHorizontalHeaderLabels(
+            ["Date", "Category", "Amount", "¥ Amount", "Description", "Receipt", ""]
+        )
+        hh = self.table.horizontalHeader()
+        hh.setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
+        for col in (0, 1, 2, 3, 5, 6):
+            hh.setSectionResizeMode(col, QHeaderView.ResizeMode.ResizeToContents)
+        self.table.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectRows)
+        self.table.setEditTriggers(QAbstractItemView.EditTrigger.NoEditTriggers)
+        self.table.setAlternatingRowColors(True)
+        self.table.doubleClicked.connect(self._edit_row)
+        split.addWidget(self.table)
+
+        summary = QWidget(); sl = QVBoxLayout(summary)
+        sl.setContentsMargins(12, 8, 12, 8); sl.setSpacing(6)
+        st = QLabel("Period Summary"); st.setObjectName("sectionTitle")
+        sl.addWidget(st)
+        self.total_lbl = QLabel("Total: $0")
+        self.total_lbl.setStyleSheet("font-size:18px;font-weight:bold;")
+        sl.addWidget(self.total_lbl)
+        self.count_lbl = QLabel("0 entries"); self.count_lbl.setObjectName("subtitle")
+        sl.addWidget(self.count_lbl)
+        sep = QFrame(); sep.setObjectName("separator")
+        sep.setFrameShape(QFrame.Shape.HLine); sl.addWidget(sep)
+        ct = QLabel("By Category"); ct.setStyleSheet("font-weight:bold;")
+        sl.addWidget(ct)
+        self._cat_box = QWidget(); self._cat_layout = QVBoxLayout(self._cat_box)
+        self._cat_layout.setContentsMargins(0, 0, 0, 0); self._cat_layout.setSpacing(2)
+        sl.addWidget(self._cat_box)
+        sl.addStretch()
+        split.addWidget(summary)
+        split.setSizes([700, 280])
+        v.addWidget(split, 1)
+
+        # Bottom: delete, export
+        bot = QHBoxLayout()
+        del_btn = QPushButton("Delete Selected"); del_btn.setObjectName("destructive")
+        del_btn.clicked.connect(self._delete_selected)
+        bot.addWidget(del_btn); bot.addStretch()
+        v.addLayout(bot)
+
+        return w
+
+    # ── Receipts tab ───────────────────────────────────────────────────────────
+
+    def _build_receipts_tab(self) -> QWidget:
+        w = QWidget(); v = QVBoxLayout(w)
+        v.setContentsMargins(0, 8, 0, 0); v.setSpacing(6)
+
+        bar = QHBoxLayout()
+        bar.addWidget(QLabel("Filter:"))
+        self.rcpt_search = QLineEdit()
+        self.rcpt_search.setPlaceholderText("Vendor or category…")
+        self.rcpt_search.textChanged.connect(self._refresh_receipts)
+        bar.addWidget(self.rcpt_search, 1)
+        new_btn = QPushButton("+ New Receipt")
+        new_btn.clicked.connect(self._new_receipt); bar.addWidget(new_btn)
+        v.addLayout(bar)
+
+        self.rcpt_table = QTableWidget()
+        self.rcpt_table.setColumnCount(6)
+        self.rcpt_table.setHorizontalHeaderLabels(
+            ["Date", "Vendor", "Category", "Items", "Total", "Currency"]
+        )
+        hh = self.rcpt_table.horizontalHeader()
+        hh.setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
+        for col in (0, 3, 4, 5):
+            hh.setSectionResizeMode(col, QHeaderView.ResizeMode.ResizeToContents)
+        self.rcpt_table.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectRows)
+        self.rcpt_table.setEditTriggers(QAbstractItemView.EditTrigger.NoEditTriggers)
+        self.rcpt_table.setAlternatingRowColors(True)
+        self.rcpt_table.doubleClicked.connect(self._edit_receipt_row)
+        v.addWidget(self.rcpt_table, 1)
+
+        return w
+
+    # ── Catalogue tab ──────────────────────────────────────────────────────────
+
+    def _build_catalog_tab(self) -> QWidget:
+        w = QWidget(); v = QVBoxLayout(w)
+        v.setContentsMargins(0, 8, 0, 0); v.setSpacing(6)
+
+        bar = QHBoxLayout()
+        bar.addWidget(QLabel("Search:"))
+        self.cat_search = QLineEdit()
+        self.cat_search.setPlaceholderText("Item name (e.g. eggs, milk, rent)…")
+        self.cat_search.textChanged.connect(self._refresh_catalog)
+        bar.addWidget(self.cat_search, 1)
+        bar.addWidget(QLabel("Sort:"))
+        self.cat_sort = QComboBox()
+        self.cat_sort.addItems(["Name", "Most Seen", "Most Recent", "Highest Price"])
+        self.cat_sort.currentTextChanged.connect(self._refresh_catalog)
+        bar.addWidget(self.cat_sort)
+        v.addLayout(bar)
+
+        # Tree widget: top-level rows are items; child rows are per-vendor
+        # price breakdowns, loaded lazily on first expand.
+        self.cat_tree = QTreeWidget()
+        self.cat_tree.setColumnCount(7)
+        self.cat_tree.setHeaderLabels(
+            ["Item", "Last Price", "Avg", "Min", "Max", "Times Seen", "Last Date"]
+        )
+        hh = self.cat_tree.header()
+        hh.setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
+        for col in (1, 2, 3, 4, 5, 6):
+            hh.setSectionResizeMode(col, QHeaderView.ResizeMode.ResizeToContents)
+        self.cat_tree.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectRows)
+        self.cat_tree.setEditTriggers(QAbstractItemView.EditTrigger.NoEditTriggers)
+        self.cat_tree.setAlternatingRowColors(True)
+        self.cat_tree.setRootIsDecorated(True)
+        self.cat_tree.itemExpanded.connect(self._on_catalog_item_expanded)
+        v.addWidget(self.cat_tree, 1)
+
+        bot = QHBoxLayout()
+        del_btn = QPushButton("Remove Selected"); del_btn.setObjectName("destructive")
+        del_btn.setToolTip("Drop this item from the catalogue (won't affect past receipts)")
+        del_btn.clicked.connect(self._delete_catalog_item)
+        bot.addWidget(del_btn); bot.addStretch()
+        v.addLayout(bot)
+
+        return w
+
+    # ── Filters ────────────────────────────────────────────────────────────────
+
+    def _set_range(self, start: date, end: date):
+        self.from_edit.blockSignals(True); self.to_edit.blockSignals(True)
+        self.from_edit.setDate(QDate(start.year, start.month, start.day))
+        self.to_edit.setDate(QDate(end.year, end.month, end.day))
+        self.from_edit.blockSignals(False); self.to_edit.blockSignals(False)
+        self._refresh()
+
+    def _filter_this_month(self):
+        t = date.today(); self._set_range(t.replace(day=1), t)
+
+    def _filter_last_month(self):
+        t = date.today(); first = t.replace(day=1)
+        last_prev = first - timedelta(days=1)
+        self._set_range(last_prev.replace(day=1), last_prev)
+
+    def _filter_this_year(self):
+        t = date.today(); self._set_range(t.replace(month=1, day=1), t)
+
+    def _filter_all_time(self):
+        self._set_range(date(2000, 1, 1), date.today())
+
+    # ── Refreshers ─────────────────────────────────────────────────────────────
+
+    def _refresh(self):
+        self._refresh_ledger()
+        self._refresh_receipts()
+        self._refresh_catalog()
+
+    def _refresh_ledger(self):
+        rate = float(load_config().get("usd_jpy_fallback_rate", _FALLBACK_RATE)) or _FALLBACK_RATE
+        qs = self.from_edit.date(); qe = self.to_edit.date()
+        start = f"{qs.year():04d}-{qs.month():02d}-{qs.day():02d}"
+        end   = f"{qe.year():04d}-{qe.month():02d}-{qe.day():02d}"
+        cat = self.cat_filter.currentText()
+        query = self.search_edit.text().strip().lower()
+
+        txns = [t for t in self.fs.get_transactions(start, end, "expense")]
+        if cat != "All":
+            txns = [t for t in txns if t.category == cat]
+        if query:
+            txns = [t for t in txns
+                    if query in t.description.lower()
+                    or query in t.category.lower()]
+
+        red = self._palette.get("red", "#f38ba8")
+        receipt_clr = self._palette.get("accent", "#89b4fa")
+
+        self.table.setRowCount(len(txns)); self._txn_ids = []
+        for i, t in enumerate(txns):
+            self._txn_ids.append(t.id)
+            self.table.setItem(i, 0, QTableWidgetItem(t.date))
+            self.table.setItem(i, 1, QTableWidgetItem(t.category))
+
+            sym = "¥" if t.currency == "JPY" else "$"
+            amt_str = (f"-{sym}{int(t.amount):,}" if t.currency == "JPY"
+                       else f"-{sym}{t.amount:,.2f}")
+            ai = QTableWidgetItem(amt_str)
+            ai.setForeground(QBrush(QColor(red)))
+            ai.setTextAlignment(Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter)
+            self.table.setItem(i, 2, ai)
+
+            jpy_v = int(t.amount) if t.currency == "JPY" else int(t.amount * rate)
+            ji = QTableWidgetItem(f"-¥{jpy_v:,}")
+            ji.setForeground(QBrush(QColor(red)))
+            ji.setTextAlignment(Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter)
+            self.table.setItem(i, 3, ji)
+
+            self.table.setItem(i, 4, QTableWidgetItem(t.description))
+
+            # Receipt indicator: pull receipt_id from the row directly
+            from src.data.database import get_connection
+            conn = get_connection()
+            try:
+                row = conn.execute(
+                    "SELECT receipt_id FROM transactions WHERE id=?", (t.id,)
+                ).fetchone()
+            finally:
+                conn.close()
+            rid = row["receipt_id"] if row and row["receipt_id"] else ""
+            label = "● View" if rid else ""
+            ri = QTableWidgetItem(label)
+            if rid:
+                ri.setForeground(QBrush(QColor(receipt_clr)))
+            self.table.setItem(i, 5, ri)
+            # Stash the receipt id on the row so double-click can find it
+            self.table.setItem(i, 6, QTableWidgetItem(rid))
+
+        # Hide the receipt-id helper column
+        self.table.setColumnHidden(6, True)
+
+        # Summary
+        total_usd = 0.0
+        by_cat: dict[str, float] = {}
+        for t in txns:
+            usd = t.amount / rate if t.currency == "JPY" else t.amount
+            total_usd += usd
+            by_cat[t.category] = by_cat.get(t.category, 0.0) + usd
+        self.total_lbl.setText(f"Total: ${total_usd:,.2f}  /  ¥{int(total_usd * rate):,}")
+        self.total_lbl.setStyleSheet(f"font-size:18px;font-weight:bold;color:{red};")
+        self.count_lbl.setText(f"{len(txns)} entries")
+        while self._cat_layout.count():
+            child = self._cat_layout.takeAt(0)
+            if child.widget(): child.widget().deleteLater()
+        if by_cat:
+            mx = max(by_cat.values()) or 1.0
+            for cat_name, amt in sorted(by_cat.items(), key=lambda kv: -kv[1]):
+                pct = int(amt / mx * 100)
+                lbl = QLabel(
+                    f"{cat_name:<22}  ${amt:,.2f}   {pct:>3}%"
+                )
+                lbl.setStyleSheet("font-family:monospace;font-size:11px;")
+                self._cat_layout.addWidget(lbl)
+        else:
+            ph = QLabel("No expenses in this period")
+            ph.setObjectName("subtitle"); self._cat_layout.addWidget(ph)
+
+    def _refresh_receipts(self):
+        if not hasattr(self, "rcpt_table"):
+            return
+        q = self.rcpt_search.text().strip().lower() if hasattr(self, "rcpt_search") else ""
+        receipts = self.store.get_receipts()
+        if q:
+            receipts = [r for r in receipts
+                        if q in (r.vendor or "").lower()
+                        or q in (r.category or "").lower()
+                        or any(q in (it.name or "").lower() for it in r.items)]
+        self.rcpt_table.setRowCount(len(receipts))
+        self._receipt_ids: list[str] = []
+        for i, r in enumerate(receipts):
+            self._receipt_ids.append(r.id)
+            self.rcpt_table.setItem(i, 0, QTableWidgetItem(r.date))
+            self.rcpt_table.setItem(i, 1, QTableWidgetItem(r.vendor))
+            self.rcpt_table.setItem(i, 2, QTableWidgetItem(r.category))
+            self.rcpt_table.setItem(i, 3, QTableWidgetItem(str(len(r.items))))
+            sym = "¥" if r.currency == "JPY" else "$"
+            tot = (f"{sym}{int(r.total):,}" if r.currency == "JPY"
+                   else f"{sym}{r.total:,.2f}")
+            ti = QTableWidgetItem(tot)
+            ti.setTextAlignment(Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter)
+            self.rcpt_table.setItem(i, 4, ti)
+            self.rcpt_table.setItem(i, 5, QTableWidgetItem(r.currency))
+
+    # ── Catalogue helpers ──────────────────────────────────────────────────────
+
+    @staticmethod
+    def _fmt_price(val: float, currency: str) -> str:
+        sym = "¥" if currency == "JPY" else "$"
+        return f"{sym}{val:,.0f}" if currency == "JPY" else f"{sym}{val:,.2f}"
+
+    def _refresh_catalog(self):
+        if not hasattr(self, "cat_tree"):
+            return
+        q = self.cat_search.text().strip() if hasattr(self, "cat_search") else ""
+        sort_label = self.cat_sort.currentText() if hasattr(self, "cat_sort") else "Name"
+        sort_key = {
+            "Name": "name", "Most Seen": "seen",
+            "Most Recent": "recent", "Highest Price": "price",
+        }.get(sort_label, "name")
+        items = self.store.search_items(q, limit=500) if q else self.store.get_all_items(sort_by=sort_key)
+
+        self.cat_tree.blockSignals(True)
+        self.cat_tree.clear()
+
+        for it in items:
+            fp = self._fmt_price
+            node = QTreeWidgetItem([
+                it.name,
+                fp(it.last_price, it.last_currency),
+                fp(it.avg_price,  it.last_currency),
+                fp(it.min_price,  it.last_currency),
+                fp(it.max_price,  it.last_currency),
+                str(it.times_seen),
+                it.last_seen_date,
+            ])
+            node.setData(0, Qt.ItemDataRole.UserRole, it.id)
+            node.setData(0, Qt.ItemDataRole.UserRole + 1, it.name)
+            # Placeholder child so Qt shows the expand arrow; populated lazily.
+            node.setData(0, Qt.ItemDataRole.UserRole + 2, False)  # expanded flag
+            if it.times_seen > 0:
+                placeholder = QTreeWidgetItem(["Loading…"])
+                node.addChild(placeholder)
+            self.cat_tree.addTopLevelItem(node)
+
+        self.cat_tree.blockSignals(False)
+
+    def _on_catalog_item_expanded(self, node: QTreeWidgetItem):
+        already_loaded = node.data(0, Qt.ItemDataRole.UserRole + 2)
+        if already_loaded:
+            return
+        node.setData(0, Qt.ItemDataRole.UserRole + 2, True)
+        item_name = node.data(0, Qt.ItemDataRole.UserRole + 1)
+        if not item_name:
+            return
+
+        vendors = self.store.get_item_all_prices(item_name)
+
+        # Remove placeholder
+        while node.childCount():
+            node.removeChild(node.child(0))
+
+        if not vendors:
+            empty = QTreeWidgetItem(["  (no receipt data found)"])
+            node.addChild(empty)
+            return
+
+        for v in vendors:
+            sym = "¥" if v["currency"] == "JPY" else "$"
+            fmt_p = lambda x: f"{x:,.0f}" if v["currency"] == "JPY" else f"{x:,.2f}"
+
+            # Individual prices as a compact space-separated list in the "Last Price" column
+            price_list = "  ".join(f"{sym}{fmt_p(p)}" for p in v["prices"])
+
+            child = QTreeWidgetItem([
+                f"  ▸ {v['vendor']}",
+                price_list,
+                f"{sym}{fmt_p(v['avg_price'])}",
+                f"{sym}{fmt_p(v['min_price'])}",
+                f"{sym}{fmt_p(v['max_price'])}",
+                str(v["times_seen"]),
+                v["last_date"],
+            ])
+            node.addChild(child)
+
+    # ── Actions ────────────────────────────────────────────────────────────────
+
+    def _new_receipt(self):
+        dlg = ReceiptEditorDialog(self.store, parent=self)
+        if dlg.exec() == QDialog.DialogCode.Accepted:
+            self._refresh()
+
+    def _new_quick_expense(self):
+        dlg = QuickExpenseDialog(_load_categories(), parent=self)
+        if dlg.exec() == QDialog.DialogCode.Accepted:
+            self.fs.add_transaction(**dlg.get_data())
+            self._refresh()
+
+    def _open_monthly(self):
+        if MonthlyExpensesDialog(self.fs, self).exec() == QDialog.DialogCode.Accepted:
+            self._refresh()
+
+    def _manage_categories(self):
+        cats = _load_categories()
+        text, ok = QInputDialog.getMultiLineText(
+            self, "Expense Categories",
+            "One category per line. Empty lines are ignored.",
+            "\n".join(cats),
+        )
+        if not ok:
+            return
+        new_cats = [c.strip() for c in text.splitlines() if c.strip()]
+        if not new_cats:
+            QMessageBox.warning(self, "Empty", "At least one category is required.")
+            return
+        _save_categories(new_cats)
+        # Rebuild filter combo
+        self.cat_filter.blockSignals(True)
+        self.cat_filter.clear(); self.cat_filter.addItem("All")
+        self.cat_filter.addItems(new_cats)
+        self.cat_filter.blockSignals(False)
+        self._refresh()
+
+    def _edit_row(self, index):
+        row = index.row()
+        if row < 0 or row >= len(self._txn_ids):
+            return
+        rid = (self.table.item(row, 6) or QTableWidgetItem("")).text()
+        if rid:
+            rec = self.store.get_receipt(rid)
+            if rec:
+                dlg = ReceiptEditorDialog(self.store, receipt=rec, parent=self)
+                if dlg.exec() == QDialog.DialogCode.Accepted:
+                    self._refresh()
+                return
+        # Standalone transaction — open the quick-expense editor
+        txn = next((t for t in self.fs.get_transactions()
+                    if t.id == self._txn_ids[row]), None)
+        if not txn:
+            return
+        dlg = QuickExpenseDialog(_load_categories(), txn=txn, parent=self)
+        if dlg.exec() == QDialog.DialogCode.Accepted:
+            d = dlg.get_data()
+            txn.date = d["date"]; txn.amount = d["amount"]
+            txn.category = d["category"]; txn.description = d["description"]
+            txn.currency = d["currency"]
+            self.fs.update_transaction(txn)
+            self._refresh()
+
+    def _edit_receipt_row(self, index):
+        row = index.row()
+        if row < 0 or row >= len(self._receipt_ids):
+            return
+        rec = self.store.get_receipt(self._receipt_ids[row])
+        if not rec:
+            return
+        dlg = ReceiptEditorDialog(self.store, receipt=rec, parent=self)
+        if dlg.exec() == QDialog.DialogCode.Accepted or dlg.result_receipt is None:
+            self._refresh()
+
+    def _delete_selected(self):
+        rows = self.table.selectionModel().selectedRows()
+        if not rows: return
+        if QMessageBox.question(
+            self, "Delete", f"Delete {len(rows)} entry/entries?",
+            QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
+        ) != QMessageBox.StandardButton.Yes:
+            return
+        for idx in rows:
+            r = idx.row()
+            if r >= len(self._txn_ids): continue
+            rid = (self.table.item(r, 6) or QTableWidgetItem("")).text()
+            if rid:
+                self.store.delete_receipt(rid)
+            else:
+                self.fs.delete_transaction(self._txn_ids[r])
+        self._refresh()
+
+    def _delete_catalog_item(self):
+        selected = [
+            node for node in self.cat_tree.selectedItems()
+            if node.parent() is None  # top-level items only
+        ]
+        if not selected:
+            return
+        if QMessageBox.question(
+            self, "Remove",
+            f"Remove {len(selected)} item(s) from the catalogue?\n"
+            "Past receipts won't be affected, but the price history is dropped.",
+            QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
+        ) != QMessageBox.StandardButton.Yes:
+            return
+        for node in selected:
+            item_id = node.data(0, Qt.ItemDataRole.UserRole)
+            if item_id:
+                self.store.delete_item(item_id)
+        self._refresh_catalog()
+
+```
+
+### `src\ui\modules\finance_charts.py`
+
+```python
+"""Finance charts — custom painted graphs for earnings data visualization.
+
+Uses QPainter for zero-dependency chart rendering: line chart, bar chart,
+pie chart, and activity stacked bar chart.
+
+Tabs:
+  Finance          — monthly line chart, earnings by source bar, category pie
+  Expense Breakdown — monthly expense trend + category bar chart
+  Activity         — stacked daily bar chart of time spent per quick category
+"""
+
+import calendar
+from datetime import date, timedelta
+from math import cos, sin, pi
+
+from PyQt6.QtCore import Qt, QRectF, QPointF
+from PyQt6.QtGui import (
+    QPainter, QPen, QColor, QBrush, QFont, QPainterPath, QLinearGradient,
+)
+from PyQt6.QtWidgets import (
+    QWidget, QVBoxLayout, QHBoxLayout,
+    QLabel, QComboBox, QFrame, QSizePolicy, QTabWidget,
+)
+
+from src.data.finance_store import FinanceStore
+from src.data.activity_store import ActivityStore, ACTIVITY_COLORS, DEFAULT_COLOR, QUICK_CATEGORIES
+from src.config import load_config
+
+CHART_COLORS = [
+    "#4a9eff", "#a6e3a1", "#cba6f7", "#fab387", "#f9e2af",
+    "#94e2d5", "#f38ba8", "#f5c2e7", "#89b4fa", "#74c7ec",
+]
+
+
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+#  LineChart
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+class LineChart(QWidget):
+    """Monthly earnings line chart with gradient area fill."""
+
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.setMinimumHeight(200)
+        self.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
+        self._data: list[tuple[str, float]] = []
+        self._title = "Monthly Earnings"
+        self._color = QColor("#4a9eff")
+
+    def set_data(self, data: list[tuple[str, float]], color: str = "#4a9eff"):
+        self._data = data
+        self._color = QColor(color)
+        self.update()
+
+    def paintEvent(self, event):
+        if not self._data:
+            return
+        painter = QPainter(self)
+        painter.setRenderHint(QPainter.RenderHint.Antialiasing)
+
+        w = self.width()
+        h = self.height()
+        margin_left = 60
+        margin_right = 20
+        margin_top = 30
+        margin_bottom = 40
+        chart_w = w - margin_left - margin_right
+        chart_h = h - margin_top - margin_bottom
+
+        if chart_w < 50 or chart_h < 50:
+            painter.end()
+            return
+
+        painter.setPen(QPen(QColor("#cdd6f4")))
+        font = QFont()
+        font.setBold(True)
+        font.setPixelSize(13)
+        painter.setFont(font)
+        painter.drawText(margin_left, 18, self._title)
+
+        values = [d[1] for d in self._data]
+        max_val = max(values) if values else 1
+        if max_val == 0:
+            max_val = 1
+
+        n = len(self._data)
+        if n < 2:
+            painter.end()
+            return
+
+        font.setBold(False)
+        font.setPixelSize(10)
+        painter.setFont(font)
+        grid_pen = QPen(QColor("#45475a"), 1, Qt.PenStyle.DotLine)
+        label_pen = QPen(QColor("#a6adc8"))
+
+        num_grid = 4
+        for i in range(num_grid + 1):
+            y = margin_top + chart_h - (i / num_grid * chart_h)
+            val = max_val * i / num_grid
+            painter.setPen(grid_pen)
+            painter.drawLine(int(margin_left), int(y), int(w - margin_right), int(y))
+            painter.setPen(label_pen)
+            painter.drawText(
+                QRectF(0, y - 8, margin_left - 6, 16),
+                Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter,
+                f"${val:,.0f}",
+            )
+
+        points = []
+        step = chart_w / (n - 1)
+        for i, (label, val) in enumerate(self._data):
+            x = margin_left + i * step
+            y = margin_top + chart_h - (val / max_val * chart_h)
+            points.append(QPointF(x, y))
+            painter.setPen(label_pen)
+            painter.drawText(
+                QRectF(x - 20, h - margin_bottom + 6, 40, 16),
+                Qt.AlignmentFlag.AlignCenter,
+                label,
+            )
+
+        area_path = QPainterPath()
+        area_path.moveTo(points[0].x(), margin_top + chart_h)
+        for pt in points:
+            area_path.lineTo(pt)
+        area_path.lineTo(points[-1].x(), margin_top + chart_h)
+        area_path.closeSubpath()
+
+        # Gradient fill: opaque at the line, transparent at the baseline
+        gradient = QLinearGradient(0, margin_top, 0, margin_top + chart_h)
+        top_color = QColor(self._color)
+        top_color.setAlpha(90)
+        bot_color = QColor(self._color)
+        bot_color.setAlpha(8)
+        gradient.setColorAt(0.0, top_color)
+        gradient.setColorAt(1.0, bot_color)
+        painter.fillPath(area_path, QBrush(gradient))
+
+        line_pen = QPen(self._color, 2)
+        painter.setPen(line_pen)
+        for i in range(len(points) - 1):
+            painter.drawLine(points[i], points[i + 1])
+
+        painter.setBrush(QBrush(self._color))
+        painter.setPen(Qt.PenStyle.NoPen)
+        for pt in points:
+            painter.drawEllipse(pt, 4, 4)
+
+        painter.end()
+
+
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+#  BarChart
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+class BarChart(QWidget):
+    """Vertical bar chart with gradient fill per bar."""
+
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.setMinimumHeight(200)
+        self.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
+        self._data: list[tuple[str, float]] = []
+        self._title = ""
+        self._colors: list[str] = CHART_COLORS
+
+    def set_data(self, data: list[tuple[str, float]], title: str = "",
+                 colors: list[str] | None = None):
+        self._data = data
+        self._title = title
+        if colors:
+            self._colors = colors
+        self.update()
+
+    def paintEvent(self, event):
+        if not self._data:
+            return
+        painter = QPainter(self)
+        painter.setRenderHint(QPainter.RenderHint.Antialiasing)
+
+        w = self.width()
+        h = self.height()
+        margin_left = 60
+        margin_right = 20
+        margin_top = 30
+        margin_bottom = 50
+        chart_w = w - margin_left - margin_right
+        chart_h = h - margin_top - margin_bottom
+
+        if chart_w < 50 or chart_h < 50:
+            painter.end()
+            return
+
+        painter.setPen(QPen(QColor("#cdd6f4")))
+        font = QFont()
+        font.setBold(True)
+        font.setPixelSize(13)
+        painter.setFont(font)
+        if self._title:
+            painter.drawText(margin_left, 18, self._title)
+
+        values = [d[1] for d in self._data]
+        max_val = max(values) if values else 1
+        if max_val == 0:
+            max_val = 1
+
+        n = len(self._data)
+        if n == 0:
+            painter.end()
+            return
+
+        bar_gap = 6
+        bar_w = max((chart_w - bar_gap * (n + 1)) / n, 8)
+
+        font.setBold(False)
+        font.setPixelSize(10)
+        painter.setFont(font)
+        grid_pen = QPen(QColor("#45475a"), 1, Qt.PenStyle.DotLine)
+        label_pen = QPen(QColor("#a6adc8"))
+
+        for i in range(5):
+            y = margin_top + chart_h - (i / 4 * chart_h)
+            val = max_val * i / 4
+            painter.setPen(grid_pen)
+            painter.drawLine(int(margin_left), int(y), int(w - margin_right), int(y))
+            painter.setPen(label_pen)
+            painter.drawText(
+                QRectF(0, y - 8, margin_left - 6, 16),
+                Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter,
+                f"${val:,.0f}",
+            )
+
+        for i, (label, val) in enumerate(self._data):
+            x = margin_left + bar_gap + i * (bar_w + bar_gap)
+            bar_h = (val / max_val) * chart_h
+            y = margin_top + chart_h - bar_h
+            color = QColor(self._colors[i % len(self._colors)])
+
+            # Gradient: lighter shade at top, base color at bottom
+            gradient = QLinearGradient(x, y, x, y + bar_h)
+            top_color = color.lighter(140)
+            top_color.setAlpha(220)
+            gradient.setColorAt(0.0, top_color)
+            gradient.setColorAt(1.0, color)
+
+            painter.setPen(Qt.PenStyle.NoPen)
+            painter.setBrush(QBrush(gradient))
+            painter.drawRoundedRect(QRectF(x, y, bar_w, bar_h), 3, 3)
+            painter.setPen(label_pen)
+            display_label = label if len(label) <= 8 else label[:7] + ".."
+            painter.drawText(
+                QRectF(x - 4, margin_top + chart_h + 4, bar_w + 8, 30),
+                Qt.AlignmentFlag.AlignHCenter | Qt.AlignmentFlag.AlignTop,
+                display_label,
+            )
+            painter.drawText(
+                QRectF(x - 4, y - 16, bar_w + 8, 14),
+                Qt.AlignmentFlag.AlignCenter,
+                f"${val:,.0f}",
+            )
+
+        painter.end()
+
+
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+#  PieChart
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+class PieChart(QWidget):
+    """Donut/pie chart for category distribution."""
+
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.setMinimumSize(200, 200)
+        self.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
+        self._data: list[tuple[str, float]] = []
+        self._title = ""
+        self._colors = CHART_COLORS
+
+    def set_data(self, data: list[tuple[str, float]], title: str = ""):
+        self._data = data
+        self._title = title
+        self.update()
+
+    def paintEvent(self, event):
+        if not self._data:
+            return
+        painter = QPainter(self)
+        painter.setRenderHint(QPainter.RenderHint.Antialiasing)
+
+        w = self.width()
+        h = self.height()
+        margin = 20
+        legend_width = 120
+        chart_area = min(w - margin * 2 - legend_width, h - margin * 2 - 20)
+        if chart_area < 60:
+            painter.end()
+            return
+
+        painter.setPen(QPen(QColor("#cdd6f4")))
+        font = QFont()
+        font.setBold(True)
+        font.setPixelSize(13)
+        painter.setFont(font)
+        if self._title:
+            painter.drawText(margin, 18, self._title)
+
+        radius = chart_area / 2
+        cx = margin + radius
+        cy = margin + 24 + radius
+        inner_radius = radius * 0.55
+
+        total = sum(v for _, v in self._data)
+        if total == 0:
+            painter.end()
+            return
+
+        start_angle = 90 * 16
+        rect = QRectF(cx - radius, cy - radius, radius * 2, radius * 2)
+        inner_rect = QRectF(cx - inner_radius, cy - inner_radius,
+                            inner_radius * 2, inner_radius * 2)
+
+        font.setBold(False)
+        font.setPixelSize(10)
+        painter.setFont(font)
+
+        for i, (label, val) in enumerate(self._data):
+            span = int(val / total * 360 * 16)
+            color = QColor(self._colors[i % len(self._colors)])
+            painter.setPen(Qt.PenStyle.NoPen)
+            painter.setBrush(QBrush(color))
+            path = QPainterPath()
+            path.moveTo(cx, cy)
+            path.arcTo(rect, start_angle / 16, span / 16)
+            path.lineTo(cx, cy)
+            painter.drawPath(path)
+            start_angle += span
+
+        painter.setBrush(QBrush(QColor("#1e1e2e")))
+        painter.drawEllipse(inner_rect)
+
+        painter.setPen(QPen(QColor("#cdd6f4")))
+        font.setPixelSize(16)
+        font.setBold(True)
+        painter.setFont(font)
+        painter.drawText(inner_rect, Qt.AlignmentFlag.AlignCenter, f"${total:,.0f}")
+
+        font.setPixelSize(10)
+        font.setBold(False)
+        painter.setFont(font)
+        legend_x = cx + radius + 16
+        legend_y = cy - radius + 10
+
+        for i, (label, val) in enumerate(self._data):
+            color = QColor(self._colors[i % len(self._colors)])
+            y = legend_y + i * 18
+            if y > h - 10:
+                break
+            painter.setPen(Qt.PenStyle.NoPen)
+            painter.setBrush(QBrush(color))
+            painter.drawRoundedRect(QRectF(legend_x, y, 10, 10), 2, 2)
+            pct = val / total * 100 if total > 0 else 0
+            painter.setPen(QPen(QColor("#a6adc8")))
+            painter.drawText(
+                QRectF(legend_x + 14, y - 2, legend_width - 14, 16),
+                Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter,
+                f"{label} ({pct:.0f}%)",
+            )
+
+        painter.end()
+
+
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+#  StackedActivityChart — daily stacked bar (hours)
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+class StackedActivityChart(QWidget):
+    """Stacked bar chart: one bar per day, segments per quick category."""
+
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.setMinimumHeight(260)
+        self.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
+        self._days: list[tuple[str, dict[str, float]]] = []
+        self._categories: list[str] = []
+        self._title = "Daily Activity Breakdown"
+        self._palette: dict = {}
+
+    def set_data(self, days: list[tuple[str, dict[str, float]]],
+                 categories: list[str], title: str = "Daily Activity Breakdown"):
+        self._days = days
+        self._categories = categories
+        self._title = title
+        self.update()
+
+    def set_palette(self, palette: dict):
+        self._palette = palette
+        self.update()
+
+    def paintEvent(self, event):
+        painter = QPainter(self)
+        painter.setRenderHint(QPainter.RenderHint.Antialiasing)
+
+        w = self.width()
+        h = self.height()
+        margin_left   = 52
+        margin_right  = 16
+        margin_top    = 30
+        margin_bottom = 54
+        chart_w = w - margin_left - margin_right
+        chart_h = h - margin_top - margin_bottom
+
+        fg_color = QColor(self._palette.get("fg", "#cdd6f4"))
+        muted_c  = QColor(self._palette.get("muted", "#7f849c"))
+        grid_c   = QColor(self._palette.get("border", "#45475a"))
+
+        if chart_w < 60 or chart_h < 60:
+            painter.end()
+            return
+
+        font = QFont(); font.setBold(True); font.setPixelSize(13)
+        painter.setFont(font)
+        painter.setPen(QPen(fg_color))
+        painter.drawText(margin_left, 18, self._title)
+
+        if not self._days:
+            font.setBold(False); font.setPixelSize(11); painter.setFont(font)
+            painter.setPen(QPen(muted_c))
+            painter.drawText(
+                QRectF(margin_left, margin_top, chart_w, chart_h),
+                Qt.AlignmentFlag.AlignCenter, "No activity data for this period"
+            )
+            painter.end()
+            return
+
+        max_mins = max(
+            sum(cats.values()) for _, cats in self._days
+        ) if self._days else 1
+        if max_mins == 0:
+            max_mins = 60
+
+        max_hours = (int(max_mins // 60) + 1)
+        max_mins_axis = max_hours * 60
+
+        font.setBold(False); font.setPixelSize(9); painter.setFont(font)
+        grid_pen = QPen(grid_c, 1, Qt.PenStyle.DotLine)
+
+        for hh in range(max_hours + 1):
+            y = margin_top + chart_h - (hh / max_hours * chart_h)
+            painter.setPen(grid_pen)
+            painter.drawLine(int(margin_left), int(y), int(w - margin_right), int(y))
+            painter.setPen(QPen(muted_c))
+            painter.drawText(
+                QRectF(0, y - 8, margin_left - 4, 16),
+                Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter,
+                f"{hh}h",
+            )
+
+        n = len(self._days)
+        bar_gap = 8
+        bar_w = max((chart_w - bar_gap * (n + 1)) / n, 10)
+
+        for i, (day_label, cat_mins) in enumerate(self._days):
+            x = margin_left + bar_gap + i * (bar_w + bar_gap)
+            y_cursor = margin_top + chart_h
+
+            for cat in self._categories:
+                mins = cat_mins.get(cat, 0.0)
+                if mins <= 0:
+                    continue
+                seg_h = (mins / max_mins_axis) * chart_h
+                color = QColor(ACTIVITY_COLORS.get(cat, DEFAULT_COLOR))
+
+                # Subtle gradient on each segment
+                gradient = QLinearGradient(x, y_cursor - seg_h, x, y_cursor)
+                top_c = color.lighter(130); top_c.setAlpha(230)
+                gradient.setColorAt(0.0, top_c)
+                gradient.setColorAt(1.0, color)
+
+                painter.setPen(Qt.PenStyle.NoPen)
+                painter.setBrush(QBrush(gradient))
+                painter.drawRoundedRect(
+                    QRectF(x, y_cursor - seg_h, bar_w, seg_h), 2, 2
+                )
+                if seg_h >= 16:
+                    lbl_font = QFont(); lbl_font.setPixelSize(9)
+                    painter.setFont(lbl_font)
+                    text_c = QColor("#11111b") if color.lightness() > 128 else QColor("#cdd6f4")
+                    painter.setPen(QPen(text_c))
+                    short = cat[:4]
+                    painter.drawText(
+                        QRectF(x + 2, y_cursor - seg_h + 2, bar_w - 4, seg_h - 4),
+                        Qt.AlignmentFlag.AlignCenter, short
+                    )
+                y_cursor -= seg_h
+
+            font.setBold(False); font.setPixelSize(10); painter.setFont(font)
+            painter.setPen(QPen(muted_c))
+            painter.drawText(
+                QRectF(x - 4, margin_top + chart_h + 4, bar_w + 8, 20),
+                Qt.AlignmentFlag.AlignHCenter | Qt.AlignmentFlag.AlignTop,
+                day_label,
+            )
+
+        legend_y = h - 18
+        legend_x = margin_left
+        font.setPixelSize(9); painter.setFont(font)
+        for cat in self._categories:
+            color = QColor(ACTIVITY_COLORS.get(cat, DEFAULT_COLOR))
+            painter.setPen(Qt.PenStyle.NoPen)
+            painter.setBrush(QBrush(color))
+            painter.drawRoundedRect(QRectF(legend_x, legend_y, 9, 9), 2, 2)
+            painter.setPen(QPen(muted_c))
+            painter.drawText(
+                QRectF(legend_x + 11, legend_y - 2, 65, 14),
+                Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter,
+                cat[:8],
+            )
+            legend_x += 78
+            if legend_x > w - 60:
+                break
+
+        painter.end()
+
+
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+#  ActivityChartsPanel — the Activity tab content
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+class ActivityChartsPanel(QWidget):
+    """Activity stacked bar chart view."""
+
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.store = ActivityStore()
+        self._palette: dict = {}
+        self._build_ui()
+        self._refresh()
+
+    def set_palette(self, palette: dict):
+        self._palette = palette
+        self._chart.set_palette(palette)
+        self._refresh()
+
+    def _build_ui(self):
+        layout = QVBoxLayout(self)
+        layout.setContentsMargins(16, 12, 16, 12)
+        layout.setSpacing(10)
+
+        header = QHBoxLayout()
+        title = QLabel("Activity Charts")
+        title.setObjectName("sectionTitle")
+        header.addWidget(title)
+        header.addStretch()
+
+        header.addWidget(QLabel("Period:"))
+        self.period_combo = QComboBox()
+        self.period_combo.addItems(["This Week", "Last Week", "Last 4 Weeks"])
+        self.period_combo.currentTextChanged.connect(self._refresh)
+        header.addWidget(self.period_combo)
+        layout.addLayout(header)
+
+        self._chart = StackedActivityChart()
+        layout.addWidget(self._chart, 1)
+
+        self._summary_lbl = QLabel("")
+        self._summary_lbl.setStyleSheet("font-size:11px;")
+        self._summary_lbl.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        layout.addWidget(self._summary_lbl)
+
+    def _refresh(self):
+        today = date.today()
+        period = self.period_combo.currentText()
+        cfg = load_config()
+        quick_cats = cfg.get("activity_quick_categories", list(QUICK_CATEGORIES))
+
+        if period == "This Week":
+            week_start = today - timedelta(days=today.weekday())
+            days_range = [(week_start + timedelta(days=i)) for i in range(7)]
+        elif period == "Last Week":
+            week_start = today - timedelta(days=today.weekday() + 7)
+            days_range = [(week_start + timedelta(days=i)) for i in range(7)]
+        else:
+            start = today - timedelta(days=27)
+            days_range = [(start + timedelta(days=i)) for i in range(28)]
+
+        day_data: list[tuple[str, dict[str, float]]] = []
+        total_by_cat: dict[str, float] = {c: 0.0 for c in quick_cats}
+
+        for d in days_range:
+            acts = self.store.get_for_date(d.isoformat())
+            cat_mins: dict[str, float] = {c: 0.0 for c in quick_cats}
+            for a in acts:
+                if a.activity in cat_mins:
+                    mins = max(a.duration_minutes, 0)
+                    cat_mins[a.activity] += mins
+                    total_by_cat[a.activity] += mins
+            if period == "Last 4 Weeks":
+                label = d.strftime("%m/%d")
+            else:
+                label = d.strftime("%a")
+            day_data.append((label, cat_mins))
+
+        self._chart.set_data(day_data, quick_cats)
+        self._chart.set_palette(self._palette)
+
+        total_mins = sum(total_by_cat.values())
+        h, m = divmod(int(total_mins), 60)
+        parts = [f"{c}: {int(v)//60}h{int(v)%60:02d}m"
+                 for c, v in total_by_cat.items() if v > 0]
+        summary = f"Total: {h}h {m}m   |   " + "  ·  ".join(parts) if parts else "No data"
+        self._summary_lbl.setText(summary)
+
+
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+#  _ExpenseBreakdownContent — monthly expense trend + category bars
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+class _ExpenseBreakdownContent(QWidget):
+    """Expense charts: monthly trend line + category breakdown bar."""
+
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.store = FinanceStore()
+        self._palette: dict = {}
+        self._build_ui()
+        self._refresh()
+
+    def set_palette(self, palette: dict):
+        self._palette = palette
+        self._refresh()
+
+    def _build_ui(self):
+        layout = QVBoxLayout(self)
+        layout.setContentsMargins(16, 12, 16, 12)
+        layout.setSpacing(10)
+
+        header = QHBoxLayout()
+        title = QLabel("Expense Breakdown")
+        title.setObjectName("sectionTitle")
+        header.addWidget(title)
+        header.addStretch()
+
+        header.addWidget(QLabel("Period:"))
+        self.period_combo = QComboBox()
+        self.period_combo.addItems([
+            "Last 6 Months", "Last 12 Months", "This Year", "All Time"
+        ])
+        self.period_combo.currentTextChanged.connect(self._refresh)
+        header.addWidget(self.period_combo)
+        layout.addLayout(header)
+
+        self.line_chart = LineChart()
+        self.line_chart.setMinimumHeight(200)
+        layout.addWidget(self.line_chart, 2)
+
+        self.bar_chart = BarChart()
+        self.bar_chart.setMinimumHeight(200)
+        layout.addWidget(self.bar_chart, 2)
+
+        self._summary_lbl = QLabel("")
+        self._summary_lbl.setObjectName("subtitle")
+        self._summary_lbl.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        layout.addWidget(self._summary_lbl)
+
+    def _get_date_range(self) -> tuple[str, str]:
+        today = date.today()
+        period = self.period_combo.currentText()
+        if period == "Last 6 Months":
+            start = today - timedelta(days=180)
+        elif period == "Last 12 Months":
+            start = today - timedelta(days=365)
+        elif period == "This Year":
+            start = today.replace(month=1, day=1)
+        else:
+            start = date(2020, 1, 1)
+        return start.isoformat(), today.isoformat()
+
+    def _refresh(self):
+        red = self._palette.get("red", "#f38ba8")
+        start, end = self._get_date_range()
+        txns = self.store.get_transactions(start, end)
+
+        # Monthly expense totals for line chart
+        monthly: dict[str, float] = {}
+        for t in txns:
+            if t.type == "expense":
+                key = t.date[:7]
+                monthly[key] = monthly.get(key, 0) + (
+                    t.amount if t.currency == "USD" else t.amount / 150.0
+                )
+
+        all_months = sorted(monthly.keys())
+        if not all_months:
+            today = date.today()
+            for i in range(5, -1, -1):
+                m = today - timedelta(days=30 * i)
+                all_months.append(m.strftime("%Y-%m"))
+
+        line_data = []
+        for m in all_months:
+            short_label = m[5:]
+            try:
+                month_num = int(short_label)
+                short_label = calendar.month_abbr[month_num]
+            except (ValueError, IndexError):
+                pass
+            line_data.append((short_label, monthly.get(m, 0)))
+
+        self.line_chart._title = "Monthly Expenses"
+        self.line_chart.set_data(line_data, red)
+
+        # Expense-by-category bar chart
+        expense_by_cat: dict[str, float] = {}
+        for t in txns:
+            if t.type == "expense":
+                usd = t.amount if t.currency == "USD" else t.amount / 150.0
+                expense_by_cat[t.category] = expense_by_cat.get(t.category, 0) + usd
+
+        bar_data = sorted(expense_by_cat.items(), key=lambda x: -x[1])[:10]
+        # Use warm colors to distinguish expense charts from income charts
+        expense_colors = [
+            "#f38ba8", "#fab387", "#f9e2af", "#cba6f7", "#eba0ac",
+            "#f5c2e7", "#94e2d5", "#a6e3a1", "#89b4fa", "#74c7ec",
+        ]
+        self.bar_chart.set_data(
+            [(cat, amt) for cat, amt in bar_data],
+            title="Expenses by Category",
+            colors=expense_colors,
+        )
+
+        total = sum(v for v in expense_by_cat.values())
+        self._summary_lbl.setText(
+            f"Total expenses: ${total:,.2f}  across {len(expense_by_cat)} categories"
+            if expense_by_cat else "No expense data for this period"
+        )
+        self.update()
+
+
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+#  FinanceChartsPanel — tabbed container
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+class FinanceChartsPanel(QWidget):
+    """Tabbed charts panel: Finance, Expense Breakdown, and Activity tabs."""
+
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self._palette: dict = {}
+        self._build_ui()
+
+    def set_palette(self, palette: dict):
+        self._palette = palette
+        self._finance_tab.set_palette(palette)
+        self._expense_tab.set_palette(palette)
+        self._activity_tab.set_palette(palette)
+
+    def showEvent(self, event):
+        super().showEvent(event)
+        self.refresh()
+
+    def _build_ui(self):
+        layout = QVBoxLayout(self)
+        layout.setContentsMargins(0, 0, 0, 0)
+
+        self._tabs = QTabWidget()
+        self._tabs.setDocumentMode(True)
+
+        self._finance_tab = _FinanceChartsContent()
+        self._tabs.addTab(self._finance_tab, "Finance")
+
+        self._expense_tab = _ExpenseBreakdownContent()
+        self._tabs.addTab(self._expense_tab, "Expense Breakdown")
+
+        self._activity_tab = ActivityChartsPanel()
+        self._tabs.addTab(self._activity_tab, "Activity")
+
+        layout.addWidget(self._tabs)
+
+    def refresh(self):
+        self._finance_tab._refresh()
+        self._expense_tab._refresh()
+        self._activity_tab._refresh()
+
+
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+#  _FinanceChartsContent — income + expense overview charts
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+class _FinanceChartsContent(QWidget):
+    """Finance overview: monthly income line chart, income-by-source bar,
+    and spending-distribution pie — all reading the full transactions table."""
+
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.store = FinanceStore()
+        self._palette: dict = {}
+        self._build_ui()
+        self._refresh()
+
+    def set_palette(self, palette: dict):
+        self._palette = palette
+        self._refresh()
+
+    def _build_ui(self):
+        layout = QVBoxLayout(self)
+        layout.setContentsMargins(16, 12, 16, 12)
+        layout.setSpacing(10)
+
+        header = QHBoxLayout()
+        title = QLabel("Financial Charts")
+        title.setObjectName("sectionTitle")
+        header.addWidget(title)
+        header.addStretch()
+
+        header.addWidget(QLabel("Period:"))
+        self.period_combo = QComboBox()
+        self.period_combo.addItems([
+            "Last 6 Months", "Last 12 Months", "This Year", "All Time"
+        ])
+        self.period_combo.currentTextChanged.connect(self._refresh)
+        header.addWidget(self.period_combo)
+        layout.addLayout(header)
+
+        self.line_chart = LineChart()
+        self.line_chart.setMinimumHeight(220)
+        layout.addWidget(self.line_chart, 2)
+
+        bottom = QHBoxLayout()
+        bottom.setSpacing(12)
+
+        self.bar_chart = BarChart()
+        self.bar_chart.setMinimumHeight(200)
+        bottom.addWidget(self.bar_chart, 3)
+
+        self.pie_chart = PieChart()
+        self.pie_chart.setMinimumHeight(200)
+        bottom.addWidget(self.pie_chart, 2)
+
+        layout.addLayout(bottom, 2)
+
+    def _get_date_range(self) -> tuple[str, str]:
+        today = date.today()
+        period = self.period_combo.currentText()
+        if period == "Last 6 Months":
+            start = today - timedelta(days=180)
+        elif period == "Last 12 Months":
+            start = today - timedelta(days=365)
+        elif period == "This Year":
+            start = today.replace(month=1, day=1)
+        else:
+            start = date(2020, 1, 1)
+        return start.isoformat(), today.isoformat()
+
+    def _refresh(self):
+        green = self._palette.get("green", "#a6e3a1")
+
+        start, end = self._get_date_range()
+        # Fetch ALL transactions (income + expense) so we correctly aggregate
+        # data from both the Earnings tab and the Expenses tab.
+        txns = self.store.get_transactions(start, end)
+
+        # Monthly income totals (all sources: Main Job + Side Job)
+        monthly: dict[str, float] = {}
+        for t in txns:
+            month_key = t.date[:7]
+            if t.type == "income":
+                # Normalize to USD for consistent charting
+                usd = t.amount if t.currency == "USD" else t.amount / 150.0
+                monthly[month_key] = monthly.get(month_key, 0) + usd
+
+        all_months = sorted(monthly.keys())
+        if not all_months:
+            today = date.today()
+            for i in range(5, -1, -1):
+                m = today - timedelta(days=30 * i)
+                all_months.append(m.strftime("%Y-%m"))
+
+        line_data = []
+        for m in all_months:
+            short_label = m[5:]
+            try:
+                month_num = int(short_label)
+                short_label = calendar.month_abbr[month_num]
+            except (ValueError, IndexError):
+                pass
+            line_data.append((short_label, monthly.get(m, 0)))
+
+        self.line_chart._title = "Monthly Income (All Sources)"
+        self.line_chart.set_data(line_data, green)
+
+        # Income-by-source bar — includes both Main Job and Side Job
+        income_by_cat: dict[str, float] = {}
+        for t in txns:
+            if t.type == "income":
+                usd = t.amount if t.currency == "USD" else t.amount / 150.0
+                income_by_cat[t.category] = income_by_cat.get(t.category, 0) + usd
+
+        bar_data = sorted(income_by_cat.items(), key=lambda x: -x[1])[:8]
+        self.bar_chart.set_data(
+            [(cat, amt) for cat, amt in bar_data],
+            title="Income by Source",
+        )
+
+        # Spending-distribution pie (expense only)
+        expense_by_cat: dict[str, float] = {}
+        for t in txns:
+            if t.type == "expense":
+                usd = t.amount if t.currency == "USD" else t.amount / 150.0
+                expense_by_cat[t.category] = expense_by_cat.get(t.category, 0) + usd
+        pie_data = sorted(expense_by_cat.items(), key=lambda x: -x[1])[:8]
+        self.pie_chart.set_data(pie_data, title="Spending by Category")
+        self.update()
+
+```
+
+### `src\ui\modules\finance_panel.py`
+
+```python
+"""Earnings Tracker module UI — income side only.
+
+This panel covers Main Job pay, Side Job income, presets, the
+monthly side-income goal, the period summary (income only), and the
+USD↔JPY exchange-rate badge. Anything expense-related now lives in
+the dedicated Expenses panel (`src/ui/modules/expenses_panel.py`).
+
+The TaxExportDialog stays here because it spans both income and
+expenses for 確定申告 export.
+"""
+
+import threading
+import urllib.request
+import json
+import csv
+from datetime import date, timedelta
+from pathlib import Path
+
+from PyQt6.QtCore import Qt, QDate, pyqtSignal, QObject
+from PyQt6.QtGui import QColor, QBrush, QPainter, QPen
+from PyQt6.QtWidgets import (
+    QWidget, QVBoxLayout, QHBoxLayout, QSplitter, QFileDialog,
+    QLabel, QPushButton, QDialog, QLineEdit, QComboBox,
+    QDateEdit, QDoubleSpinBox, QTableWidget, QTableWidgetItem,
+    QHeaderView, QFrame, QMessageBox, QScrollArea,
+    QFormLayout, QSizePolicy, QAbstractItemView, QInputDialog,
+    QDialogButtonBox, QCheckBox, QGridLayout, QSpinBox, QButtonGroup, QRadioButton
+)
+
+from src.config import load_config, save_config
+from src.data.finance_store import (
+    FinanceStore, Transaction, JobPreset,
+    INCOME_CATEGORIES, PAY_UNITS,
+)
+
+# UI labels for pay_unit values
+_PAY_UNIT_LABELS = {
+    "flat":   "Flat (per log)",
+    "hour":   "Per hour",
+    "minute": "Per minute",
+}
+_PAY_UNIT_BY_LABEL = {v: k for k, v in _PAY_UNIT_LABELS.items()}
+
+_FALLBACK_RATE = 150.0
+
+# Monthly expense template defaults and the bulk-log dialog now live in
+# src/ui/modules/expenses_panel.py.
+
+# Dropdown / DateEdit styling lives in the global theme stylesheet
+# (src/ui/themes/styles.py). Local overrides here used to strip the SVG
+# arrow images and leave blank drop-down buttons; relying on the theme
+# keeps arrows visible and lets palette switches re-skin every widget.
+
+
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+#  Exchange Rate Manager
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+class RateSignals(QObject):
+    updated = pyqtSignal(float)
+    error   = pyqtSignal(str)
+
+
+class ExchangeRateManager:
+    _API_URL = "https://open.er-api.com/v6/latest/USD"
+
+    def __init__(self):
+        self.signals   = RateSignals()
+        self._rate     = _FALLBACK_RATE
+        self._fetching = False
+
+    @property
+    def rate(self) -> float:
+        return self._rate
+
+    def set_fallback(self, rate: float):
+        self._rate = max(rate, 1.0)
+
+    def refresh(self):
+        if self._fetching: return
+        self._fetching = True
+        def _fetch():
+            try:
+                req = urllib.request.Request(
+                    self._API_URL, headers={"User-Agent": "LocalSync/1.0"})
+                with urllib.request.urlopen(req, timeout=8) as resp:
+                    data = json.loads(resp.read().decode())
+                rate = float(data["rates"]["JPY"])
+                self._rate = rate
+                self.signals.updated.emit(rate)
+            except Exception as e:
+                self.signals.error.emit(str(e))
+            finally:
+                self._fetching = False
+        threading.Thread(target=_fetch, daemon=True).start()
+
+
+_rate_mgr = ExchangeRateManager()
+
+
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+#  Goal Progress Bar
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+class GoalProgressBar(QWidget):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.setMinimumHeight(36)
+        self.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
+        self._current = 0.0; self._base = 1000.0; self._extra = 2000.0
+        self._green = "#a6e3a1"; self._gold = "#f9e2af"; self._accent = "#4a9eff"
+
+    def set_values(self, current, base, extra,
+                   green="#a6e3a1", gold="#f9e2af", accent="#4a9eff"):
+        self._current = max(current, 0.0)
+        self._base    = max(base, 1.0)
+        self._extra   = max(extra, self._base + 1.0)
+        self._green = green; self._gold = gold; self._accent = accent
+        self.update()
+
+    def paintEvent(self, event):
+        painter = QPainter(self)
+        painter.setRenderHint(QPainter.RenderHint.Antialiasing)
+        w = self.width(); bar_h = 18; bar_y = (self.height() - bar_h) // 2
+        cap = self._extra * 1.05
+        painter.setPen(Qt.PenStyle.NoPen)
+        painter.setBrush(QBrush(QColor("#313244")))
+        painter.drawRoundedRect(0, bar_y, w, bar_h, bar_h // 2, bar_h // 2)
+        fill_w = int(w * min(self._current / cap, 1.0))
+        if fill_w > 0:
+            fc = QColor(self._gold   if self._current >= self._extra else
+                        self._green  if self._current >= self._base  else
+                        self._accent)
+            painter.setBrush(QBrush(fc))
+            painter.drawRoundedRect(0, bar_y, fill_w, bar_h, bar_h // 2, bar_h // 2)
+        bx = int(w * self._base  / cap)
+        ex = int(w * self._extra / cap)
+        painter.setPen(QPen(QColor("#cdd6f4"), 2))
+        painter.drawLine(bx, bar_y - 3, bx, bar_y + bar_h + 3)
+        painter.setPen(QPen(QColor(self._gold), 2))
+        painter.drawLine(ex, bar_y - 3, ex, bar_y + bar_h + 3)
+        painter.end()
+
+
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+#  CategoryBar (summary panel)
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+class CategoryBar(QWidget):
+    def __init__(self, label, amount_usd, max_amount, rate,
+                 bar_color="#4a9eff", parent=None):
+        super().__init__(parent)
+        layout = QHBoxLayout(self)
+        layout.setContentsMargins(0, 2, 0, 2); layout.setSpacing(8)
+        name_label = QLabel(label); name_label.setFixedWidth(130)
+        layout.addWidget(name_label)
+        bar = QFrame()
+        pct = (amount_usd / max_amount * 100) if max_amount > 0 else 0
+        bar.setStyleSheet(
+            f"background-color:{bar_color};border-radius:3px;min-height:14px;")
+        bar.setFixedWidth(max(int(pct * 1.5), 4))
+        layout.addWidget(bar)
+        jpy = int(amount_usd * rate)
+        amt = QLabel(f"${amount_usd:,.0f}  \u00a5{jpy:,}")
+        amt.setObjectName("subtitle")
+        amt.setAlignment(Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter)
+        amt.setFixedWidth(140)
+        layout.addWidget(amt); layout.addStretch()
+
+
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+#  PresetManagerDialog — with category selector
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+class PresetManagerDialog(QDialog):
+    def __init__(self, store: FinanceStore, parent=None):
+        super().__init__(parent)
+        self.store = store
+        self.setWindowTitle("Manage Job Presets")
+        self.setMinimumSize(480, 380)
+        self._preset_ids: list[str] = []
+        self._build_ui(); self._refresh()
+
+    def _build_ui(self):
+        layout = QVBoxLayout(self); layout.setSpacing(10)
+
+        self.table = QTableWidget()
+        self.table.setColumnCount(4)
+        self.table.setHorizontalHeaderLabels(
+            ["Name", "Amount (USD)", "Category", "Unit"])
+        self.table.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
+        self.table.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectRows)
+        self.table.setEditTriggers(QAbstractItemView.EditTrigger.NoEditTriggers)
+        self.table.setAlternatingRowColors(True)
+        layout.addWidget(self.table)
+
+        sep = QFrame(); sep.setFrameShape(QFrame.Shape.HLine)
+        sep.setObjectName("separator"); layout.addWidget(sep)
+
+        form = QFormLayout(); form.setSpacing(6)
+
+        self.name_edit = QLineEdit()
+        self.name_edit.setPlaceholderText("e.g. Article Submission")
+        form.addRow("Name:", self.name_edit)
+
+        self.amount_spin = QDoubleSpinBox()
+        self.amount_spin.setRange(0.01, 999_999.99)
+        self.amount_spin.setDecimals(2); self.amount_spin.setPrefix("$ ")
+        self.amount_spin.setValue(300.00)
+        self._amount_label = QLabel("Amount (USD):")
+        form.addRow(self._amount_label, self.amount_spin)
+
+        self.cat_combo = QComboBox()
+        self.cat_combo.addItems(INCOME_CATEGORIES)  # Main Job / Side Job
+        form.addRow("Category:", self.cat_combo)
+
+        self.unit_combo = QComboBox()
+        for u in PAY_UNITS:
+            self.unit_combo.addItem(_PAY_UNIT_LABELS[u])
+        self.unit_combo.setToolTip(
+            "Flat: a fixed payment (e.g. per project / submission).\n"
+            "Per hour: rate is per hour worked (e.g. transcription, hourly side job).\n"
+            "Per minute: rate is per minute worked (e.g. audio-minute work)."
+        )
+        self.unit_combo.currentTextChanged.connect(self._on_unit_changed)
+        form.addRow("Pay Unit:", self.unit_combo)
+
+        layout.addLayout(form)
+
+        btn_row = QHBoxLayout()
+        add_btn = QPushButton("Add Preset"); add_btn.clicked.connect(self._add_preset)
+        btn_row.addWidget(add_btn)
+        edit_btn = QPushButton("Edit Selected"); edit_btn.setObjectName("secondary")
+        edit_btn.clicked.connect(self._edit_selected); btn_row.addWidget(edit_btn)
+        del_btn = QPushButton("Delete Selected"); del_btn.setObjectName("destructive")
+        del_btn.clicked.connect(self._delete_selected); btn_row.addWidget(del_btn)
+        btn_row.addStretch()
+        close_btn = QPushButton("Close"); close_btn.setObjectName("secondary")
+        close_btn.clicked.connect(self.accept); btn_row.addWidget(close_btn)
+        layout.addLayout(btn_row)
+
+    def _on_unit_changed(self, label: str):
+        unit = _PAY_UNIT_BY_LABEL.get(label, "flat")
+        if unit == "hour":
+            self._amount_label.setText("Rate (USD / hour):")
+        elif unit == "minute":
+            self._amount_label.setText("Rate (USD / minute):")
+        else:
+            self._amount_label.setText("Amount (USD):")
+
+    def _refresh(self):
+        presets = self.store.get_presets()
+        self._preset_ids = [p.id for p in presets]
+        self.table.setRowCount(len(presets))
+        for i, p in enumerate(presets):
+            unit = (p.pay_unit or "flat").lower()
+            suffix = {"hour": " / hr", "minute": " / min"}.get(unit, "")
+            self.table.setItem(i, 0, QTableWidgetItem(p.name))
+            self.table.setItem(i, 1, QTableWidgetItem(f"${p.amount_usd:,.2f}{suffix}"))
+            self.table.setItem(i, 2, QTableWidgetItem(p.category))
+            self.table.setItem(i, 3, QTableWidgetItem(_PAY_UNIT_LABELS.get(unit, unit)))
+
+    def _add_preset(self):
+        name = self.name_edit.text().strip()
+        if not name:
+            QMessageBox.warning(self, "Missing Name", "Please enter a preset name.")
+            return
+        self.store.add_preset(
+            name=name,
+            amount_usd=self.amount_spin.value(),
+            category=self.cat_combo.currentText(),
+            pay_unit=_PAY_UNIT_BY_LABEL.get(self.unit_combo.currentText(), "flat"),
+        )
+        self.name_edit.clear(); self._refresh()
+
+    def _edit_selected(self):
+        rows = self.table.selectionModel().selectedRows()
+        if not rows: return
+        idx = rows[0].row()
+        if idx >= len(self._preset_ids): return
+        presets = self.store.get_presets()
+        preset = next((p for p in presets if p.id == self._preset_ids[idx]), None)
+        if not preset: return
+        self.name_edit.setText(preset.name)
+        self.amount_spin.setValue(preset.amount_usd)
+        self.cat_combo.setCurrentText(preset.category)
+        self.unit_combo.setCurrentText(_PAY_UNIT_LABELS.get(preset.pay_unit or "flat",
+                                                            _PAY_UNIT_LABELS["flat"]))
+        self.store.delete_preset(preset.id); self._refresh()
+
+    def _delete_selected(self):
+        rows = self.table.selectionModel().selectedRows()
+        if not rows: return
+        if QMessageBox.question(
+                self, "Delete Preset", "Delete selected preset(s)?",
+                QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No
+                ) == QMessageBox.StandardButton.Yes:
+            for r in rows:
+                if r.row() < len(self._preset_ids):
+                    self.store.delete_preset(self._preset_ids[r.row()])
+            self._refresh()
+
+
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+#  GoalSettingsDialog — USD or JPY input
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+class GoalSettingsDialog(QDialog):
+    """Set monthly side-income goals.  Input can be in USD or JPY."""
+
+    def __init__(self, base: float, extra: float, parent=None):
+        super().__init__(parent)
+        self.setWindowTitle("Set Monthly Goals"); self.setMinimumWidth(360)
+        self._rate = _rate_mgr.rate
+        layout = QVBoxLayout(self); layout.setSpacing(10)
+
+        info = QLabel(
+            "Goals track Side Job income only.\n"
+            "Main Job pay does not count toward goals.")
+        info.setObjectName("subtitle"); info.setWordWrap(True); layout.addWidget(info)
+
+        # Currency selector
+        cur_row = QHBoxLayout()
+        cur_row.addWidget(QLabel("Enter goals in:"))
+        self._cur_combo = QComboBox()
+        self._cur_combo.addItems(["USD ($)", "JPY (\u00a5)"])
+        self._cur_combo.currentIndexChanged.connect(self._on_currency_changed)
+        cur_row.addWidget(self._cur_combo); cur_row.addStretch()
+        layout.addLayout(cur_row)
+
+        form = QFormLayout(); form.setSpacing(8)
+
+        self.min_spin = QDoubleSpinBox()
+        self.min_spin.setRange(1, 99_999_999)
+        self.min_spin.valueChanged.connect(self._update_hints)
+        form.addRow("Minimum Goal:", self.min_spin)
+
+        self._min_hint = QLabel()
+        self._min_hint.setObjectName("subtitle")
+        self._min_hint.setStyleSheet("font-size:10px;")
+        form.addRow("", self._min_hint)
+
+        self.major_spin = QDoubleSpinBox()
+        self.major_spin.setRange(1, 99_999_999)
+        self.major_spin.valueChanged.connect(self._update_hints)
+        form.addRow("Extra Goal:", self.major_spin)
+
+        self._major_hint = QLabel()
+        self._major_hint.setObjectName("subtitle")
+        self._major_hint.setStyleSheet("font-size:10px;")
+        form.addRow("", self._major_hint)
+
+        layout.addLayout(form)
+
+        sep = QFrame(); sep.setObjectName("separator")
+        sep.setFrameShape(QFrame.Shape.HLine); layout.addWidget(sep)
+
+        btn_row = QHBoxLayout(); btn_row.addStretch()
+        cancel_btn = QPushButton("Cancel"); cancel_btn.setObjectName("secondary")
+        cancel_btn.clicked.connect(self.reject); btn_row.addWidget(cancel_btn)
+        save_btn = QPushButton("Save"); save_btn.clicked.connect(self._validate_and_accept)
+        btn_row.addWidget(save_btn); layout.addLayout(btn_row)
+
+        # Initialise spinboxes with USD values
+        self._apply_usd_mode()
+        self.min_spin.setValue(base)
+        self.major_spin.setValue(extra)
+        self._update_hints()
+
+    def _apply_usd_mode(self):
+        for sp in (self.min_spin, self.major_spin):
+            sp.setDecimals(0); sp.setSingleStep(100); sp.setPrefix("$ ")
+
+    def _apply_jpy_mode(self):
+        for sp in (self.min_spin, self.major_spin):
+            sp.setDecimals(0); sp.setSingleStep(10_000); sp.setPrefix("\u00a5 ")
+
+    def _on_currency_changed(self, idx: int):
+        rate = self._rate
+        # Convert current values to the new currency
+        base_usd  = self.min_spin.value()
+        extra_usd = self.major_spin.value()
+        if idx == 0:   # switching to USD
+            self._apply_usd_mode()
+            # If previous values look like JPY (large), convert; otherwise keep
+            if base_usd > 5000:
+                self.min_spin.setValue(round(base_usd / rate))
+                self.major_spin.setValue(round(extra_usd / rate))
+        else:           # switching to JPY
+            self._apply_jpy_mode()
+            if base_usd < 5000:
+                self.min_spin.setValue(round(base_usd * rate))
+                self.major_spin.setValue(round(extra_usd * rate))
+        self._update_hints()
+
+    def _update_hints(self):
+        rate = self._rate
+        if self._cur_combo.currentIndex() == 0:  # USD mode
+            b_jpy = int(self.min_spin.value() * rate)
+            e_jpy = int(self.major_spin.value() * rate)
+            self._min_hint.setText(f"\u2248 \u00a5{b_jpy:,} JPY")
+            self._major_hint.setText(f"\u2248 \u00a5{e_jpy:,} JPY")
+        else:                                     # JPY mode
+            b_usd = self.min_spin.value() / rate if rate else 0
+            e_usd = self.major_spin.value() / rate if rate else 0
+            self._min_hint.setText(f"\u2248 ${b_usd:,.2f} USD")
+            self._major_hint.setText(f"\u2248 ${e_usd:,.2f} USD")
+
+    def _validate_and_accept(self):
+        if self.major_spin.value() <= self.min_spin.value():
+            QMessageBox.warning(self, "Invalid Goals",
+                "Major goal must be greater than minimum goal."); return
+        self.accept()
+
+    def get_goals(self) -> tuple[float, float]:
+        """Always return (min_usd, major_usd)."""
+        rate = self._rate if self._rate else _FALLBACK_RATE
+        if self._cur_combo.currentIndex() == 1:   # JPY → convert to USD
+            return self.min_spin.value() / rate, self.major_spin.value() / rate
+        return self.min_spin.value(), self.major_spin.value()
+
+
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+#  IncomeDialog
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+class IncomeDialog(QDialog):
+    """New / edit dialog scoped to income transactions only.
+
+    The full income+expense dialog moved to expenses_panel.QuickExpenseDialog
+    (for expenses) and ReceiptEditorDialog (for receipts). Earnings now only
+    creates / edits Main Job and Side Job rows.
+    """
+
+    def __init__(self, parent=None, txn: Transaction | None = None):
+        super().__init__(parent)
+        self.setWindowTitle("Edit Earning" if txn else "New Earning")
+        self.setMinimumWidth(420)
+        self.txn = txn
+        self._build_ui()
+
+    def _build_ui(self):
+        layout = QVBoxLayout(self); layout.setSpacing(10)
+        form = QFormLayout(); form.setSpacing(8)
+
+        self.currency_combo = QComboBox()
+        self.currency_combo.addItems(["USD", "JPY"])
+        if self.txn: self.currency_combo.setCurrentText(self.txn.currency)
+        self.currency_combo.currentTextChanged.connect(self._on_currency_changed)
+        form.addRow("Currency:", self.currency_combo)
+
+        self.amount_spin = QDoubleSpinBox()
+        self.amount_spin.setRange(0.01, 99_999_999.99); self.amount_spin.setDecimals(2)
+        if self.txn: self.amount_spin.setValue(self.txn.amount)
+        form.addRow("Amount:", self.amount_spin)
+
+        self.date_edit = QDateEdit(); self.date_edit.setCalendarPopup(True)
+        self.date_edit.setDisplayFormat("yyyy-MM-dd")
+        if self.txn:
+            y, mo, d = (int(x) for x in self.txn.date.split("-"))
+            self.date_edit.setDate(QDate(y, mo, d))
+        else:
+            t = date.today()
+            self.date_edit.setDate(QDate(t.year, t.month, t.day))
+        form.addRow("Date:", self.date_edit)
+
+        self.cat_combo = QComboBox()
+        self.cat_combo.addItems(INCOME_CATEGORIES)   # Main Job / Side Job
+        if self.txn:
+            idx = self.cat_combo.findText(self.txn.category)
+            if idx >= 0:
+                self.cat_combo.setCurrentIndex(idx)
+            else:
+                self.cat_combo.addItem(self.txn.category)
+                self.cat_combo.setCurrentText(self.txn.category)
+        form.addRow("Source:", self.cat_combo)
+
+        self.desc_edit = QLineEdit()
+        self.desc_edit.setPlaceholderText("Client, project, invoice #\u2026")
+        if self.txn: self.desc_edit.setText(self.txn.description)
+        form.addRow("Description:", self.desc_edit)
+
+        self.rate_hint = QLabel(""); self.rate_hint.setObjectName("subtitle")
+        form.addRow("", self.rate_hint)
+
+        layout.addLayout(form)
+        sep = QFrame(); sep.setObjectName("separator")
+        sep.setFrameShape(QFrame.Shape.HLine); layout.addWidget(sep)
+
+        btn_box = QDialogButtonBox(
+            QDialogButtonBox.StandardButton.Save | QDialogButtonBox.StandardButton.Cancel)
+        btn_box.accepted.connect(self.accept); btn_box.rejected.connect(self.reject)
+        layout.addWidget(btn_box)
+
+        self._on_currency_changed(self.currency_combo.currentText())
+
+    def _on_currency_changed(self, currency: str):
+        rate = _rate_mgr.rate
+        if currency == "JPY":
+            self.amount_spin.setPrefix("\u00a5 "); self.amount_spin.setDecimals(0)
+            self.amount_spin.setSingleStep(1000)
+            self.rate_hint.setText(f"Rate: 1 USD = \u00a5{rate:,.0f}")
+        else:
+            self.amount_spin.setPrefix("$ "); self.amount_spin.setDecimals(2)
+            self.amount_spin.setSingleStep(10)
+            self.rate_hint.setText(f"Rate: \u00a5{rate:,.0f} = 1 USD")
+
+    def get_data(self) -> dict:
+        qd = self.date_edit.date()
+        category = self.cat_combo.currentText()
+        return {
+            "date":        f"{qd.year():04d}-{qd.month():02d}-{qd.day():02d}",
+            "amount":      self.amount_spin.value(),
+            "txn_type":    "income",
+            "category":    category,
+            "description": self.desc_edit.text().strip(),
+            "currency":    self.currency_combo.currentText(),
+            "is_job_pay":  (category == "Main Job"),
+        }
+
+
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+#  PresetButton
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+class PresetButton(QWidget):
+    clicked = pyqtSignal(object, float)   # (preset, units)
+
+    def __init__(self, preset: JobPreset, rate: float, palette: dict | None = None,
+                 parent=None):
+        super().__init__(parent)
+        self.preset = preset
+        layout = QVBoxLayout(self)
+        layout.setContentsMargins(5, 3, 5, 3); layout.setSpacing(1)
+        name_lbl = QLabel(preset.name)
+        name_lbl.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        name_lbl.setStyleSheet("font-weight:bold;font-size:11px;")
+        layout.addWidget(name_lbl)
+
+        unit  = (preset.pay_unit or "flat").lower()
+        unit_suffix = {"hour": " / hr", "minute": " / min"}.get(unit, "")
+        jpy = int(preset.amount_usd * rate)
+        amt_lbl = QLabel(f"${preset.amount_usd:,.2f}{unit_suffix}  \u00a5{jpy:,}")
+        amt_lbl.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        amt_lbl.setObjectName("subtitle"); layout.addWidget(amt_lbl)
+        cat_lbl = QLabel(preset.category)
+        cat_lbl.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        cat_lbl.setStyleSheet("font-size:9px;")
+        cat_lbl.setObjectName("subtitle"); layout.addWidget(cat_lbl)
+
+        # Time entry shown only for hour/minute presets
+        self._units_spin: QDoubleSpinBox | None = None
+        if unit in ("hour", "minute"):
+            time_row = QHBoxLayout(); time_row.setContentsMargins(0, 0, 0, 0)
+            time_row.setSpacing(4)
+            self._units_spin = QDoubleSpinBox()
+            self._units_spin.setDecimals(2)
+            self._units_spin.setRange(0.0, 99_999.0)
+            self._units_spin.setFixedHeight(20)
+            if unit == "hour":
+                self._units_spin.setSingleStep(0.25); self._units_spin.setValue(1.0)
+                self._units_spin.setSuffix(" h")
+            else:
+                self._units_spin.setSingleStep(5); self._units_spin.setValue(60.0)
+                self._units_spin.setSuffix(" m")
+            time_row.addWidget(self._units_spin, 1)
+            layout.addLayout(time_row)
+
+        log_btn = QPushButton("+ Log"); log_btn.setFixedHeight(22)
+        log_btn.clicked.connect(self._emit_clicked)
+        layout.addWidget(log_btn)
+
+        p = palette or {}
+        bg     = p.get("surface",   "#1e1e2e")
+        hover  = p.get("hover",     "#313244")
+        border = p.get("border",    "#45475a")
+        self.setStyleSheet(
+            f"PresetButton{{border:1px solid {border};border-radius:6px;"
+            f"background-color:{bg};}}"
+            f"PresetButton:hover{{background-color:{hover};}}")
+        self.setFixedWidth(140)
+
+    def _emit_clicked(self):
+        units = self._units_spin.value() if self._units_spin else 1.0
+        self.clicked.emit(self.preset, float(units))
+
+"""Task 8 Fix C — TaxExportDialog.
+
+Paste this class into finance_panel.py BEFORE the FinancePanel class.
+Then add the export button in FinancePanel._build_header() as shown below.
+"""
+
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+#  TaxExportDialog — 確定申告 CSV export
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+class TaxExportDialog(QDialog):
+    """Export transaction data for 確定申告 (annual tax filing)."""
+
+    def __init__(self, parent, finance_store):
+        super().__init__(parent)
+        self.store = finance_store
+        self.setWindowTitle("Export for 確定申告")
+        self.setMinimumWidth(400)
+        self.setModal(True)
+
+        layout = QVBoxLayout(self)
+        layout.setSpacing(12)
+        layout.setContentsMargins(16, 14, 16, 14)
+
+        layout.addWidget(QLabel("Export transaction data for tax filing."))
+
+        # Year selector
+        year_row = QHBoxLayout()
+        year_row.addWidget(QLabel("Year:"))
+        self._year_spin = QSpinBox()
+        self._year_spin.setRange(2020, 2035)
+        self._year_spin.setValue(date.today().year)
+        year_row.addWidget(self._year_spin)
+        year_row.addStretch()
+        layout.addLayout(year_row)
+
+        # Filter radio buttons
+        self._filter_group = QButtonGroup(self)
+        self._radio_all = QRadioButton("All transactions")
+        self._radio_all.setChecked(True)
+        self._radio_monthly = QRadioButton("[Monthly] tagged only")
+        self._filter_group.addButton(self._radio_all)
+        self._filter_group.addButton(self._radio_monthly)
+        layout.addWidget(self._radio_all)
+        layout.addWidget(self._radio_monthly)
+
+        sep = QFrame()
+        sep.setObjectName("separator")
+        sep.setFrameShape(QFrame.Shape.HLine)
+        layout.addWidget(sep)
+
+        # Export button
+        btn_row = QHBoxLayout()
+        btn_row.addStretch()
+        cancel_btn = QPushButton("Cancel")
+        cancel_btn.setObjectName("secondary")
+        cancel_btn.clicked.connect(self.reject)
+        btn_row.addWidget(cancel_btn)
+        export_btn = QPushButton("Export CSV")
+        export_btn.clicked.connect(self._export)
+        btn_row.addWidget(export_btn)
+        layout.addLayout(btn_row)
+
+    def _export(self):
+        year = self._year_spin.value()
+        start = f"{year}-01-01"
+        end = f"{year}-12-31"
+
+        txns = self.store.get_transactions(start, end)
+
+        # Apply filter
+        if self._radio_monthly.isChecked():
+            txns = [t for t in txns if "[Monthly]" in t.description]
+
+        if not txns:
+            QMessageBox.information(self, "No Data",
+                f"No matching transactions found for {year}.")
+            return
+
+        # File dialog
+        default_name = f"確定申告_{year}.csv"
+        path, _ = QFileDialog.getSaveFileName(
+            self, "Save CSV", str(Path.home() / default_name),
+            "CSV Files (*.csv);;All Files (*)",
+        )
+        if not path:
+            return
+
+        # Get rate for conversion
+        from src.config import load_config
+        cfg = load_config()
+        rate = float(cfg.get("usd_jpy_fallback_rate", 150.0))
+
+        try:
+            with open(path, "w", newline="", encoding="utf-8-sig") as f:
+                writer = csv.writer(f)
+                writer.writerow([
+                    "Date", "Type", "Category", "Description",
+                    "Amount (Original)", "Currency",
+                    "Amount (USD)", "Amount (JPY)", "Is Job Pay",
+                ])
+                for t in txns:
+                    if t.currency == "JPY":
+                        amt_jpy = t.amount
+                        amt_usd = t.amount / rate if rate else 0
+                    else:
+                        amt_usd = t.amount
+                        amt_jpy = t.amount * rate
+                    writer.writerow([
+                        t.date, t.type, t.category, t.description,
+                        t.amount, t.currency,
+                        f"{amt_usd:.2f}", f"{amt_jpy:.0f}",
+                        "Yes" if t.is_job_pay else "No",
+                    ])
+
+            QMessageBox.information(self, "Exported",
+                f"Exported {len(txns)} transaction(s) to:\n{path}")
+            self.accept()
+        except OSError as e:
+            QMessageBox.warning(self, "Error", f"Failed to write file:\n{e}")
+
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+#  FinancePanel
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+class FinancePanel(QWidget):
+
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.store = FinanceStore()
+        self._palette: dict = {}
+        self._cfg = load_config()
+        self._txn_ids: list[str] = []
+        fallback = float(self._cfg.get("usd_jpy_fallback_rate", _FALLBACK_RATE))
+        _rate_mgr.set_fallback(fallback)
+        _rate_mgr.signals.updated.connect(self._on_rate_updated)
+        _rate_mgr.signals.error.connect(self._on_rate_error)
+        self._build_ui()
+        self._refresh()
+        _rate_mgr.refresh()
+
+    def set_palette(self, palette: dict):
+        self._palette = palette
+        if hasattr(self, "_goal_container"):
+            self._apply_goal_section_style()
+        self._refresh()
+
+    def _apply_goal_section_style(self):
+        bg     = self._palette.get("header_bg", "#1e1e2e")
+        border = self._palette.get("border",    "#45475a")
+        self._goal_container.setStyleSheet(
+            f"QFrame#goalSectionFrame{{background-color:{bg};"
+            f"border:1px solid {border};border-radius:8px;padding:4px;}}"
+            f"QFrame#goalSectionFrame QLabel{{background-color:transparent;}}"
+            f"QFrame#goalSectionFrame QCheckBox{{background-color:transparent;}}"
+        )
+
+    def showEvent(self, event):
+        super().showEvent(event)
+        self._refresh()
+
+    # ── UI Construction ───────────────────────────────────────────────────────
+
+    def _build_ui(self):
+        layout = QVBoxLayout(self)
+        layout.setContentsMargins(12, 8, 12, 8); layout.setSpacing(5)
+        layout.addLayout(self._build_header())
+        layout.addWidget(self._build_quick_log_bar())
+        layout.addLayout(self._build_filter_row())
+        layout.addWidget(self._build_goal_section())
+        content = QSplitter(Qt.Orientation.Horizontal)
+        content.addWidget(self._build_table())
+        content.addWidget(self._build_summary_panel())
+        content.setSizes([560, 280])
+        layout.addWidget(content, 1)
+        layout.addWidget(self._build_rate_bar())
+
+    def _build_header(self) -> QHBoxLayout:
+        header = QHBoxLayout()
+        title_col = QVBoxLayout(); title_col.setSpacing(1)
+        title = QLabel("Earnings Tracker"); title.setObjectName("sectionTitle")
+        title_col.addWidget(title)
+        sub = QLabel("Income — Main Job & Side Jobs"); sub.setObjectName("subtitle")
+        title_col.addWidget(sub)
+        header.addLayout(title_col); header.addStretch()
+
+        badge_col = QVBoxLayout(); badge_col.setSpacing(0)
+        self.all_time_usd_label = QLabel("$0")
+        self.all_time_usd_label.setStyleSheet(
+            "font-size:22px;font-weight:bold;padding:1px 10px 0 10px;")
+        badge_col.addWidget(self.all_time_usd_label)
+        self.all_time_jpy_label = QLabel("¥0")
+        self.all_time_jpy_label.setStyleSheet("font-size:11px;padding:0 10px 1px 10px;")
+        self.all_time_jpy_label.setObjectName("subtitle")
+        badge_col.addWidget(self.all_time_jpy_label)
+        header.addLayout(badge_col)
+        caption = QLabel("earned\nall-time"); caption.setObjectName("subtitle")
+        caption.setStyleSheet("font-size:10px;")
+        caption.setAlignment(Qt.AlignmentFlag.AlignVCenter)
+        header.addWidget(caption); header.addSpacing(10)
+
+        btn_earn = QPushButton("+ Earning"); btn_earn.setToolTip("Log a new earning")
+        btn_earn.setFixedHeight(26)
+        btn_earn.clicked.connect(self._add_earning); header.addWidget(btn_earn)
+        btn_del = QPushButton("Delete"); btn_del.setObjectName("destructive")
+        btn_del.setToolTip("Delete selected row(s)")
+        btn_del.setFixedHeight(26)
+        btn_del.clicked.connect(self._delete_transaction); header.addWidget(btn_del)
+        export_btn = QPushButton("Export 確定申告 📊")
+        export_btn.setObjectName("secondary")
+        export_btn.setFixedHeight(26)
+        export_btn.setToolTip("Export transactions for tax filing (covers income + expenses)")
+        export_btn.clicked.connect(self._open_tax_export)
+        header.addWidget(export_btn)
+        return header
+    def _build_quick_log_bar(self) -> QWidget:
+        container = QWidget()
+        outer = QVBoxLayout(container)
+        outer.setContentsMargins(0, 2, 0, 2); outer.setSpacing(3)
+
+        title_row = QHBoxLayout()
+        lbl = QLabel("Quick Log \u2014 Job Pay")
+        lbl.setStyleSheet("font-weight:bold;font-size:11px;")
+        title_row.addWidget(lbl); title_row.addStretch()
+
+        manage_btn = QPushButton("\u2699 Manage Presets")
+        manage_btn.setObjectName("secondary")
+        manage_btn.clicked.connect(self._open_preset_manager)
+        title_row.addWidget(manage_btn)
+
+        outer.addLayout(title_row)
+
+        self._preset_scroll = QScrollArea()
+        self._preset_scroll.setWidgetResizable(True); self._preset_scroll.setFixedHeight(124)
+        self._preset_scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAsNeeded)
+        self._preset_scroll.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+        self._preset_row_widget = QWidget()
+        self._preset_row_layout = QHBoxLayout(self._preset_row_widget)
+        self._preset_row_layout.setContentsMargins(2, 2, 2, 2)
+        self._preset_row_layout.setSpacing(6); self._preset_row_layout.addStretch()
+        self._preset_scroll.setWidget(self._preset_row_widget)
+        outer.addWidget(self._preset_scroll)
+
+        sep = QFrame(); sep.setObjectName("separator")
+        sep.setFrameShape(QFrame.Shape.HLine); outer.addWidget(sep)
+        return container
+
+    def _build_filter_row(self) -> QHBoxLayout:
+        row = QHBoxLayout(); row.setSpacing(5)
+        _pill_style = (
+            "QPushButton{border-radius:10px;padding:0 7px;"
+            "font-size:11px;font-weight:bold;min-width:30px;max-width:40px;}"
+        )
+        for label, tip, fn in [
+            ("TM", "This Month", self._filter_this_month),
+            ("LM", "Last Month",  self._filter_last_month),
+            ("TY", "This Year",   self._filter_this_year),
+            ("AT", "All Time",    self._filter_all_time),
+        ]:
+            btn = QPushButton(label); btn.setObjectName("secondary")
+            btn.setFixedHeight(24); btn.setToolTip(tip)
+            btn.setStyleSheet(_pill_style)
+            btn.clicked.connect(fn); row.addWidget(btn)
+        row.addSpacing(8); row.addWidget(QLabel("Source:"))
+        self.filter_source = QComboBox()
+        self.filter_source.addItems(["All", "Main Job", "Side Job"])
+        self.filter_source.currentTextChanged.connect(self._refresh)
+        row.addWidget(self.filter_source)
+        row.addSpacing(6); row.addWidget(QLabel("From:"))
+        today = date.today()
+        self.filter_start = QDateEdit(); self.filter_start.setCalendarPopup(True)
+        self.filter_start.setDisplayFormat("yyyy-MM-dd")
+        self.filter_start.setMinimumWidth(115)
+        self.filter_start.setDate(QDate(today.year, today.month, 1))
+        self.filter_start.dateChanged.connect(self._refresh); row.addWidget(self.filter_start)
+        row.addWidget(QLabel("To:"))
+        self.filter_end = QDateEdit(); self.filter_end.setCalendarPopup(True)
+        self.filter_end.setDisplayFormat("yyyy-MM-dd")
+        self.filter_end.setMinimumWidth(115)
+        self.filter_end.setDate(QDate(today.year, today.month, today.day))
+        self.filter_end.dateChanged.connect(self._refresh); row.addWidget(self.filter_end)
+        row.addStretch()
+        return row
+
+    def _build_goal_section(self) -> QWidget:
+        container = QFrame(); container.setFrameShape(QFrame.Shape.NoFrame)
+        container.setObjectName("goalSectionFrame")
+        self._goal_container = container
+        self._apply_goal_section_style()
+        vbox = QVBoxLayout(container)
+        vbox.setContentsMargins(8, 4, 8, 4); vbox.setSpacing(3)
+        title_row = QHBoxLayout()
+        self._goal_title_label = QLabel("Month\u2019s Goal \u2014 Side Income")
+        self._goal_title_label.setStyleSheet("font-weight:bold;font-size:13px;background-color:transparent;")
+        title_row.addWidget(self._goal_title_label); title_row.addStretch()
+        self._goal_include_main = QCheckBox("+ Main Job")
+        self._goal_include_main.setStyleSheet("font-size:10px;background-color:transparent;")
+        self._goal_include_main.setToolTip("Include Main Job income in goal progress")
+        self._goal_include_main.stateChanged.connect(self._on_goal_mode_changed)
+        title_row.addWidget(self._goal_include_main)
+        title_row.addSpacing(6)
+        self.goal_status_label = QLabel(""); self.goal_status_label.setObjectName("subtitle")
+        self.goal_status_label.setStyleSheet("background-color:transparent;")
+        title_row.addWidget(self.goal_status_label)
+        set_btn = QPushButton("\u2699 Set Goals"); set_btn.setObjectName("secondary")
+        set_btn.setFixedHeight(24); set_btn.clicked.connect(self._open_goal_settings)
+        title_row.addWidget(set_btn); vbox.addLayout(title_row)
+        self.goal_bar = GoalProgressBar(); vbox.addWidget(self.goal_bar)
+        legend_row = QHBoxLayout()
+        self.goal_base_label    = QLabel("Base: $0");    self.goal_base_label.setObjectName("subtitle")
+        self.goal_extra_label   = QLabel("Extra: $0");   self.goal_extra_label.setObjectName("subtitle")
+        self.goal_current_label = QLabel("Progress: $0"); self.goal_current_label.setObjectName("subtitle")
+        for lbl in (self.goal_base_label, self.goal_extra_label, self.goal_current_label):
+            lbl.setStyleSheet("background-color:transparent;")
+        legend_row.addWidget(self.goal_base_label)
+        legend_row.addSpacing(16); legend_row.addWidget(self.goal_extra_label)
+        legend_row.addStretch(); legend_row.addWidget(self.goal_current_label)
+        vbox.addLayout(legend_row)
+        return container
+
+    def _open_tax_export(self):
+        TaxExportDialog(self, self.store).exec()
+
+    def _build_table(self) -> QWidget:
+        self.table = QTableWidget(); self.table.setColumnCount(6)
+        self.table.setHorizontalHeaderLabels(
+            ["Date", "Type", "Category", "Amount", "\u00a5 Amount", "Description"])
+        hh = self.table.horizontalHeader()
+        hh.setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
+        for col in (0, 1, 3, 4):
+            hh.setSectionResizeMode(col, QHeaderView.ResizeMode.ResizeToContents)
+        self.table.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectRows)
+        self.table.setEditTriggers(QAbstractItemView.EditTrigger.NoEditTriggers)
+        self.table.setAlternatingRowColors(True)
+        self.table.doubleClicked.connect(self._edit_transaction)
+        return self.table
+
+    def _build_summary_panel(self) -> QWidget:
+        w = QWidget(); self.summary_layout = QVBoxLayout(w)
+        self.summary_layout.setContentsMargins(10, 8, 10, 8); self.summary_layout.setSpacing(5)
+        period_title = QLabel("Period Summary"); period_title.setObjectName("sectionTitle")
+        self.summary_layout.addWidget(period_title)
+        self.earned_usd_label = QLabel("Earned: $0")
+        self.earned_usd_label.setStyleSheet("font-size:15px;font-weight:bold;")
+        self.summary_layout.addWidget(self.earned_usd_label)
+        self.earned_jpy_label = QLabel("\u00a50"); self.earned_jpy_label.setObjectName("subtitle")
+        self.earned_jpy_label.setStyleSheet("font-size:13px;padding-left:2px;")
+        self.summary_layout.addWidget(self.earned_jpy_label)
+        self.txn_count_label = QLabel("0 earnings"); self.txn_count_label.setObjectName("subtitle")
+        self.summary_layout.addWidget(self.txn_count_label)
+        sep2 = QFrame(); sep2.setObjectName("separator")
+        sep2.setFrameShape(QFrame.Shape.HLine); self.summary_layout.addWidget(sep2)
+        cat_title = QLabel("By Source"); cat_title.setStyleSheet("font-weight:bold;font-size:13px;")
+        self.summary_layout.addWidget(cat_title)
+        self.cat_bars_container = QWidget()
+        self.cat_bars_layout = QVBoxLayout(self.cat_bars_container)
+        self.cat_bars_layout.setContentsMargins(0, 0, 0, 0); self.cat_bars_layout.setSpacing(2)
+        self.summary_layout.addWidget(self.cat_bars_container)
+        self.summary_layout.addStretch()
+        return w
+
+    def _build_rate_bar(self) -> QWidget:
+        bar = QFrame(); bar.setFrameShape(QFrame.Shape.NoFrame)
+        row = QHBoxLayout(bar); row.setContentsMargins(0, 2, 0, 2); row.setSpacing(8)
+        self.rate_label = QLabel(f"USD \u2192 JPY: \u00a5{_rate_mgr.rate:,.0f}  (fallback)")
+        self.rate_label.setObjectName("subtitle"); row.addWidget(self.rate_label)
+        refresh_btn = QPushButton("\u21bb Refresh Rate"); refresh_btn.setObjectName("secondary")
+        refresh_btn.setFixedHeight(22); refresh_btn.clicked.connect(self._refresh_rate)
+        row.addWidget(refresh_btn); row.addStretch()
+        return bar
+
+    # ── Date filters ─────────────────────────────────────────────────────────
+
+    def _set_date_range(self, start: date, end: date):
+        self.filter_start.blockSignals(True); self.filter_end.blockSignals(True)
+        self.filter_start.setDate(QDate(start.year, start.month, start.day))
+        self.filter_end.setDate(QDate(end.year, end.month, end.day))
+        self.filter_start.blockSignals(False); self.filter_end.blockSignals(False)
+        self._refresh()
+
+    def _filter_this_month(self):
+        import calendar as _cal
+        today = date.today()
+        last_day = _cal.monthrange(today.year, today.month)[1]
+        self._set_date_range(today.replace(day=1), today.replace(day=last_day))
+
+    def _filter_last_month(self):
+        today = date.today(); fp = today.replace(day=1); lp = fp - timedelta(days=1)
+        self._set_date_range(lp.replace(day=1), lp)
+
+    def _filter_this_year(self):
+        today = date.today(); self._set_date_range(today.replace(month=1, day=1), today)
+
+    def _filter_all_time(self):
+        self._set_date_range(date(2000, 1, 1), date.today())
+
+    # ── Rate ─────────────────────────────────────────────────────────────────
+
+    def _refresh_rate(self):
+        self.rate_label.setText("Fetching rate\u2026"); _rate_mgr.refresh()
+
+    def _on_rate_updated(self, rate: float):
+        self._cfg["usd_jpy_fallback_rate"] = rate; save_config(self._cfg)
+        self.rate_label.setText(f"USD \u2192 JPY: \u00a5{rate:,.2f}  (live)")
+        self._refresh()
+
+    def _on_rate_error(self, msg: str):
+        self.rate_label.setText(
+            f"USD \u2192 JPY: \u00a5{_rate_mgr.rate:,.0f}  (offline \u2013 {msg[:40]})")
+
+    # ── Presets ───────────────────────────────────────────────────────────────
+
+    def _rebuild_preset_buttons(self):
+        while self._preset_row_layout.count() > 1:
+            item = self._preset_row_layout.takeAt(0)
+            if item.widget(): item.widget().deleteLater()
+        presets = self.store.get_presets(); rate = _rate_mgr.rate
+        for preset in presets:
+            btn = PresetButton(preset, rate, self._palette)
+            btn.clicked.connect(self._log_preset)
+            self._preset_row_layout.insertWidget(
+                self._preset_row_layout.count() - 1, btn)
+        if not presets:
+            ph = QLabel("No presets yet \u2014 click \u2699 Manage Presets to add one.")
+            ph.setObjectName("subtitle"); self._preset_row_layout.insertWidget(0, ph)
+
+    def _update_month_gate(self):
+        """Disable Quick Log preset buttons when viewing a non-current month."""
+        qs = self.filter_start.date()
+        today = date.today()
+        is_current = (qs.year() == today.year and qs.month() == today.month)
+
+        for i in range(self._preset_row_layout.count()):
+            w = self._preset_row_layout.itemAt(i).widget()
+            if w and isinstance(w, PresetButton):
+                w.setEnabled(is_current)
+                w.setToolTip("" if is_current else "Switch to the current month to log income")
+
+    def _log_preset(self, preset: JobPreset, units: float = 1.0):
+        self.store.log_preset(
+            preset, units=units, on_date=date.today().isoformat()
+        )
+        self._refresh()
+
+    def _open_preset_manager(self):
+        PresetManagerDialog(self.store, self).exec()
+        self._rebuild_preset_buttons(); self._refresh()
+
+    # ── Goals ─────────────────────────────────────────────────────────────────
+
+    def _open_goal_settings(self):
+        base  = float(self._cfg.get("monthly_base_goal",  500.0))
+        extra = float(self._cfg.get("monthly_extra_goal", 1000.0))
+        dlg = GoalSettingsDialog(base, extra, self)
+        if dlg.exec():
+            nb, ne = dlg.get_goals()
+            self._cfg["monthly_base_goal"] = nb; self._cfg["monthly_extra_goal"] = ne
+            save_config(self._cfg); self._refresh()
+
+    def _on_goal_mode_changed(self):
+        include_main = self._goal_include_main.isChecked()
+        self._goal_title_label.setText(
+            "Month’s Goal — All Income" if include_main
+            else "Month’s Goal — Side Income"
+        )
+        self._update_goal_section()
+
+    def _update_goal_section(self):
+        base  = float(self._cfg.get("monthly_base_goal",  500.0))
+        extra = float(self._cfg.get("monthly_extra_goal", 1000.0))
+        rate  = _rate_mgr.rate
+        green  = self._palette.get("green",  "#a6e3a1")
+        gold   = "#f9e2af"
+        accent = self._palette.get("accent", "#4a9eff")
+        today = date.today()
+        include_main = getattr(self, "_goal_include_main", None) and self._goal_include_main.isChecked()
+        start = today.replace(day=1).isoformat()
+        end   = today.isoformat()
+        if include_main:
+            current = self.store.get_period_income_usd(start, end, rate)
+        else:
+            current = self.store.get_goal_income(start, end, rate)
+        self.goal_bar.set_values(current, base, extra, green, gold, accent)
+        jpy_b = int(base * rate); jpy_e = int(extra * rate); jpy_c = int(current * rate)
+        self.goal_base_label.setText(f"\u25cf Base: ${base:,.0f}  \u00a5{jpy_b:,}")
+        self.goal_extra_label.setText(f"\u2605 Extra: ${extra:,.0f}  \u00a5{jpy_e:,}")
+        self.goal_current_label.setText(f"Progress: ${current:,.0f}  \u00a5{jpy_c:,}")
+        if current >= extra:
+            self.goal_status_label.setText("\u2605 Extra goal reached!")
+            self.goal_status_label.setStyleSheet(f"color:{gold};font-weight:bold;")
+        elif current >= base:
+            self.goal_status_label.setText("\u2713 Base goal reached!")
+            self.goal_status_label.setStyleSheet(f"color:{green};font-weight:bold;")
+        else:
+            pct = int(current / base * 100) if base > 0 else 0
+            self.goal_status_label.setText(
+                f"{pct}% \u2014 ${base - current:,.0f} to base goal")
+            self.goal_status_label.setStyleSheet(f"color:{accent};")
+
+    # ── Refresh ───────────────────────────────────────────────────────────────
+
+    def _get_filters(self) -> tuple[str, str]:
+        qs = self.filter_start.date(); qe = self.filter_end.date()
+        start = f"{qs.year():04d}-{qs.month():02d}-{qs.day():02d}"
+        end   = f"{qe.year():04d}-{qe.month():02d}-{qe.day():02d}"
+        return start, end
+
+    def _refresh(self):
+        self._cfg = load_config(); rate = _rate_mgr.rate
+        start, end = self._get_filters()
+        # Income-only — expenses live in the Expenses tab now.
+        txns = self.store.get_transactions(start, end, "income")
+        source = self.filter_source.currentText() if hasattr(self, "filter_source") else "All"
+        def _is_main_job(t):
+            return bool(t.is_job_pay) or t.category == "Main Job"
+        if source == "Main Job":
+            txns = [t for t in txns if _is_main_job(t)]
+        elif source == "Side Job":
+            txns = [t for t in txns if not _is_main_job(t)]
+
+        green  = self._palette.get("green",  "#a6e3a1")
+        red    = self._palette.get("red",    "#f38ba8")
+        gold   = "#f9e2af"
+
+        atUSD = self.store.get_all_time_earned_usd(rate)
+        self.all_time_usd_label.setText(f"${atUSD:,.0f}")
+        self.all_time_usd_label.setStyleSheet(
+            f"color:{green};font-size:22px;font-weight:bold;padding:1px 10px 0 10px;")
+        self.all_time_jpy_label.setText(f"\u00a5{int(atUSD * rate):,}")
+
+        self.table.setRowCount(len(txns)); self._txn_ids = []
+        for ri, txn in enumerate(txns):
+            self._txn_ids.append(txn.id)
+            self.table.setItem(ri, 0, QTableWidgetItem(txn.date))
+            if bool(txn.is_job_pay) or txn.category == "Main Job":
+                type_text, clr = "Main Job", QColor(gold)
+            else:
+                type_text, clr = "Side Job", QColor(green)
+            ti = QTableWidgetItem(type_text); ti.setForeground(QBrush(clr))
+            self.table.setItem(ri, 1, ti)
+            self.table.setItem(ri, 2, QTableWidgetItem(txn.category))
+            sym = "\u00a5" if txn.currency == "JPY" else "$"
+            amt_str = (f"+{sym}{int(txn.amount):,}" if txn.currency == "JPY"
+                       else f"+{sym}{txn.amount:,.2f}")
+            ai = QTableWidgetItem(amt_str); ai.setForeground(QBrush(clr))
+            ai.setTextAlignment(Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter)
+            self.table.setItem(ri, 3, ai)
+            jpy_v = int(txn.amount) if txn.currency == "JPY" else int(txn.amount * rate)
+            ji = QTableWidgetItem(f"+\u00a5{jpy_v:,}"); ji.setForeground(QBrush(clr))
+            ji.setTextAlignment(Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter)
+            self.table.setItem(ri, 4, ji)
+            self.table.setItem(ri, 5, QTableWidgetItem(txn.description))
+
+        # Income-only summary
+        earned_usd = sum(t.amount / rate if t.currency == "JPY" else t.amount
+                         for t in txns)
+        self.earned_usd_label.setText(f"Earned: ${earned_usd:,.2f}")
+        self.earned_usd_label.setStyleSheet(f"color:{green};font-size:15px;font-weight:bold;")
+        self.earned_jpy_label.setText(f"\u00a5{int(earned_usd * rate):,}")
+        self.txn_count_label.setText(f"{len(txns)} earning(s) in period")
+
+        while self.cat_bars_layout.count():
+            child = self.cat_bars_layout.takeAt(0)
+            if child.widget(): child.widget().deleteLater()
+        by_cat: dict[str, float] = {}
+        for t in txns:
+            usd = t.amount / rate if t.currency == "JPY" else t.amount
+            by_cat[t.category] = by_cat.get(t.category, 0.0) + usd
+        if by_cat:
+            mx = max(by_cat.values())
+            bar_colors = [self._palette.get("accent","#4a9eff"), green,
+                          "#cba6f7","#fab387","#f9e2af","#94e2d5",red,"#f5c2e7"]
+            for i, (cat, amt) in enumerate(sorted(by_cat.items(), key=lambda x: -x[1])):
+                self.cat_bars_layout.addWidget(
+                    CategoryBar(cat, amt, mx, rate, bar_colors[i % len(bar_colors)]))
+        else:
+            nd = QLabel("No earnings in this period"); nd.setObjectName("subtitle")
+            self.cat_bars_layout.addWidget(nd)
+
+        self._update_goal_section()
+        self._rebuild_preset_buttons()
+        self._update_month_gate()
+
+    # ── CRUD ───────────────────────────────────────────────────────────────────
+
+    def _add_earning(self):
+        dlg = IncomeDialog(self)
+        if dlg.exec(): self.store.add_transaction(**dlg.get_data()); self._refresh()
+
+    def _edit_transaction(self, index):
+        row = index.row()
+        if row < 0 or row >= len(self._txn_ids): return
+        txn = next((t for t in self.store.get_transactions()
+                    if t.id == self._txn_ids[row]), None)
+        if not txn: return
+        dlg = IncomeDialog(self, txn=txn)
+        if dlg.exec():
+            d = dlg.get_data()
+            txn.date = d["date"]; txn.amount = d["amount"]; txn.type = d["txn_type"]
+            txn.category = d["category"]; txn.description = d["description"]
+            txn.currency = d["currency"]; txn.is_job_pay = d["is_job_pay"]
+            self.store.update_transaction(txn); self._refresh()
+
+    def _delete_transaction(self):
+        rows = self.table.selectionModel().selectedRows()
+        if not rows: return
+        if QMessageBox.question(
+                self, "Delete", f"Delete {len(rows)} entry/entries?",
+                QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No
+                ) == QMessageBox.StandardButton.Yes:
+            for idx in rows:
+                if idx.row() < len(self._txn_ids):
+                    self.store.delete_transaction(self._txn_ids[idx.row()])
+            self._refresh()
+
+```
+
+### `src\ui\modules\journey_panel.py`
+
+```python
+"""Journey Panel — goal-driven step tutoring with Council AI.
+
+v0.4.0 — Major overhaul
+───────────────────────
+  • Council retry guardrails: if council call fails, error is shown gracefully
+    and state is never left broken (running flag always cleared)
+  • Roadmap generation failure now reports to UI instead of silently failing
+  • Template steps used as fallback when LLM roadmap gen fails
+  • DDG search replaced with proper HTML scraping from lite.duckduckgo.com
+  • 20+ new journey templates (Space, WoW, Game Dev, Cybersecurity, etc.)
+  • Roadmap widget: wider nodes, gradient progress fill, better typography
+  • Council progress: animated spinner card instead of tiny italic label
+  • Overview tab: better visual hierarchy, informative empty states
+  • Robustness: guards against journey/step deletion mid-council-run
+
+Tabs
+────
+  📋 Overview  : Roadmap flow → selected-step detail → council synthesis/checklist
+  ⚔  Council   : All session comparison cards + quest log
+  ✏  Workspace : Notes, hints, Convene Council, Complete Step, Update Roadmap
+
+Dependencies: markdown (pip install markdown), stdlib urllib
+"""
+
+from __future__ import annotations
+
+import html as _html_mod
+import json
+import logging
+import re
+import threading
+import urllib.parse
+import urllib.request
+from datetime import datetime, timedelta, timezone
+from typing import Optional
+
+try:
+    import markdown as _md_lib
+    _HAS_MARKDOWN = True
+except ImportError:
+    _HAS_MARKDOWN = False
+
+from PyQt6.QtCore import Qt, QTimer, pyqtSignal, QRectF
+from PyQt6.QtGui import (
+    QColor, QFont, QPainter, QPen, QBrush, QPainterPath,
+    QLinearGradient, QConicalGradient,
+)
+from PyQt6.QtWidgets import (
+    QWidget, QVBoxLayout, QHBoxLayout, QLabel, QPushButton,
+    QTextEdit, QTextBrowser, QScrollArea, QFrame, QSplitter,
+    QDialog, QLineEdit, QCheckBox, QStackedWidget, QTabWidget,
+    QToolButton, QMessageBox, QMenu, QComboBox, QSizePolicy,
+)
+
+from src.data.journey_store import (
+    JourneyStore, Journey, JourneyStep, CouncilSession,
+    Roadmap, RoadmapStep,
+    JOURNEY_DOMAINS, DOMAIN_COLORS,
+)
+from src.utils.llm import (
+    LLMClient, LLMCouncil, CouncilResult,
+    load_llm_client, load_council_config,
+)
+
+logger = logging.getLogger(__name__)
+
+_FALLBACK = {
+    "bg": "#1e1e2e", "surface": "#313244", "border": "#45475a",
+    "fg": "#cdd6f4", "muted": "#7f849c", "hover": "#3b3d54",
+    "accent": "#89b4fa", "accent_fg": "#1e1e2e",
+    "accent_hover": "#a0c5ff", "accent_pressed": "#74a4ea",
+    "red": "#f38ba8", "red_hover": "#f5a0b8",
+    "green": "#a6e3a1", "yellow": "#f9e2af",
+    "header_bg": "#181825", "alt_row": "#252538",
+}
+
+_TAB_OVERVIEW  = 0
+_TAB_COUNCIL   = 1
+_TAB_WORKSPACE = 2
+
+# ── Journey templates ─────────────────────────────────────────────────────────
+
+JOURNEY_TEMPLATES: dict[str, dict | None] = {
+    # ─── Coding ───────────────────────────────────────────────────────────
+    "── Coding ──": None,
+    "Learn Python (Beginner → Intermediate)": {
+        "domain": "Coding",
+        "goal": (
+            "Build solid Python foundations progressing from environment setup through "
+            "core language features (data types, control flow, functions, OOP) to practical "
+            "skills including file I/O, error handling, and a capstone project."
+        ),
+        "steps": [
+            "Environment Setup & Hello World",
+            "Variables, Types & Basic I/O",
+            "Control Flow: Conditionals & Loops",
+            "Functions, Scope & Recursion",
+            "Lists, Dicts, Tuples & Sets",
+            "File I/O & Exception Handling",
+            "Object-Oriented Programming Fundamentals",
+            "Modules, Packages & the Standard Library",
+            "Capstone Project",
+        ],
+    },
+    "Learn JavaScript & Modern Web Dev": {
+        "domain": "Coding",
+        "goal": (
+            "Master JavaScript from fundamentals through modern ES6+ features, DOM "
+            "manipulation, async programming, and the Fetch API."
+        ),
+        "steps": [
+            "Setup, Browser DevTools & Hello JS",
+            "Variables, Types & Operators",
+            "Functions, Scope & Closures",
+            "Arrays, Objects & Destructuring",
+            "DOM Manipulation & Events",
+            "Promises & Async/Await",
+            "Fetch API & Working with REST",
+            "ES6+ Features & Modern Patterns",
+            "Mini Project: Interactive Web App",
+        ],
+    },
+    "Build a REST API": {
+        "domain": "Coding",
+        "goal": (
+            "Design and implement a production-ready REST API with routing, "
+            "database integration, authentication, validation, testing, and deployment."
+        ),
+        "steps": [
+            "API Design & OpenAPI Specification",
+            "Project Setup, Framework & Routing",
+            "Database Schema & ORM Integration",
+            "CRUD Endpoints Implementation",
+            "Authentication & JWT / Session Management",
+            "Input Validation & Error Handling",
+            "Unit & Integration Testing",
+            "Documentation & Deployment",
+        ],
+    },
+    "Build a Desktop App with PyQt": {
+        "domain": "Coding",
+        "goal": (
+            "Learn to build polished desktop applications using Python and PyQt6. "
+            "Cover layouts, signals/slots, custom widgets, themes, database integration, "
+            "threading, and packaging for distribution."
+        ),
+        "steps": [
+            "PyQt6 Setup & First Window",
+            "Layouts, Widgets & Signals/Slots",
+            "Menus, Toolbars & Status Bars",
+            "Custom Widgets & QPainter Drawing",
+            "Stylesheets & Theming (QSS)",
+            "Database Integration (SQLite + Models)",
+            "Threading & Background Workers",
+            "Dialogs, Settings & User Preferences",
+            "Packaging & Distribution (PyInstaller)",
+        ],
+    },
+    "Game Dev with Python (Pygame → 2D Game)": {
+        "domain": "Coding",
+        "goal": (
+            "Build a complete 2D game using Python and Pygame. Learn game loops, "
+            "sprite handling, collision detection, audio, particle effects, level "
+            "design, and publishing to itch.io."
+        ),
+        "steps": [
+            "Pygame Setup & Game Loop Basics",
+            "Drawing, Surfaces & Coordinate Systems",
+            "Player Movement & Input Handling",
+            "Sprites, Animation & Sprite Groups",
+            "Collision Detection & Physics",
+            "Sound Effects & Music Integration",
+            "Tile Maps & Level Design",
+            "UI: Menus, HUD & Score Systems",
+            "Particle Effects & Polish",
+            "Packaging & Publishing to itch.io",
+        ],
+    },
+    "Cybersecurity Fundamentals": {
+        "domain": "Coding",
+        "goal": (
+            "Learn core cybersecurity concepts from networking and Linux fundamentals "
+            "through web vulnerabilities, penetration testing methodology, CTF challenges, "
+            "and responsible disclosure."
+        ),
+        "steps": [
+            "Networking Fundamentals (TCP/IP, DNS, HTTP)",
+            "Linux Command Line for Security",
+            "Cryptography Basics (Hashing, Encryption, TLS)",
+            "OWASP Top 10 Web Vulnerabilities",
+            "Reconnaissance & Information Gathering",
+            "Vulnerability Scanning (Nmap, Nikto)",
+            "Exploitation Basics (Metasploit, manual)",
+            "Privilege Escalation Techniques",
+            "CTF Challenges & Practice Labs",
+            "Report Writing & Responsible Disclosure",
+        ],
+    },
+    # ─── Space & Astronomy ────────────────────────────────────────────────
+    "── Space & Astronomy ──": None,
+    "Amateur Astronomy (Beginner Stargazer)": {
+        "domain": "Academic",
+        "goal": (
+            "Go from zero to confident amateur astronomer. Learn to navigate the night "
+            "sky, understand celestial mechanics, choose and use telescopes, photograph "
+            "the cosmos, and track satellites and deep-sky objects."
+        ),
+        "steps": [
+            "The Night Sky: Constellations & Star Maps",
+            "Celestial Mechanics: How the Sky Moves",
+            "Naked-Eye Astronomy: Planets, Meteors & the Moon",
+            "Binoculars & Your First Telescope",
+            "Understanding Magnification, Aperture & Mounts",
+            "Observing the Moon & Planets in Detail",
+            "Deep-Sky Objects: Nebulae, Galaxies & Star Clusters",
+            "Astrophotography Basics (Phone & DSLR)",
+            "Satellite Tracking & ISS Observation",
+            "Joining the Community: Star Parties & Citizen Science",
+        ],
+    },
+    "Space Exploration History & Future": {
+        "domain": "Academic",
+        "goal": (
+            "Deep-dive into humanity's journey to space — from the earliest rocket "
+            "pioneers through Apollo, the Shuttle era, ISS operations, and the current "
+            "commercial space revolution. Understand propulsion, orbital mechanics, "
+            "and the roadmap to Mars and beyond."
+        ),
+        "steps": [
+            "The Pioneers: Tsiolkovsky, Goddard & von Braun",
+            "The Space Race: Sputnik to Apollo 11",
+            "Apollo Deep Dive: Missions, Technology & Legacy",
+            "Space Shuttle Program & Space Station Mir",
+            "The International Space Station (ISS)",
+            "Rocket Science 101: Propulsion & Orbital Mechanics",
+            "The Commercial Era: SpaceX, Blue Origin & Beyond",
+            "Mars Exploration: Rovers, Plans & Challenges",
+            "Artemis & Return to the Moon",
+            "The Future: Starship, Space Habitats & Interstellar",
+        ],
+    },
+    "Astrophysics for Enthusiasts": {
+        "domain": "Academic",
+        "goal": (
+            "Understand the physics of the cosmos at an enthusiast level — stellar "
+            "evolution, black holes, dark matter, the Big Bang, exoplanets, and the "
+            "large-scale structure of the universe."
+        ),
+        "steps": [
+            "Light, Spectra & How We See the Universe",
+            "Stars: Birth, Life & Death",
+            "Neutron Stars, Pulsars & Magnetars",
+            "Black Holes: Theory, Observation & Hawking Radiation",
+            "Galaxies: Types, Collisions & Supermassive Black Holes",
+            "Cosmology: The Big Bang & Cosmic Microwave Background",
+            "Dark Matter & Dark Energy",
+            "Exoplanets & the Search for Life",
+            "Gravitational Waves & Multi-Messenger Astronomy",
+        ],
+    },
+    # ─── World of Warcraft ────────────────────────────────────────────────
+    "── World of Warcraft ──": None,
+    "WoW: Mythic+ Keystone Mastery": {
+        "domain": "General",
+        "goal": (
+            "Push Mythic+ keystones from beginner (+2) to high keys (+15 and beyond). "
+            "Master dungeon routes, affix strategies, class-specific tips, group "
+            "coordination, and the mental game of pushing keys."
+        ),
+        "steps": [
+            "M+ Fundamentals: Timers, Affixes & Loot",
+            "Understanding Your Role (Tank/Healer/DPS)",
+            "Dungeon Routes & MDT/Keystone.guru Planning",
+            "Interrupt & CC Rotations by Dungeon",
+            "Seasonal Affix Strategy & Adaptation",
+            "Consumables, Enchants & Gear Optimization",
+            "Communication & Group Coordination",
+            "Common Wipe Points & How to Prevent Them",
+            "Pushing Higher: +15 → +20 Strategies",
+            "The Mental Game: Tilt, Focus & Improvement",
+        ],
+    },
+    "WoW: Goldmaking & Auction House": {
+        "domain": "Business / Freelance",
+        "goal": (
+            "Build a sustainable WoW gold-making operation. Learn the auction house, "
+            "crafting profits, farming routes, TSM addon mastery, cross-realm arbitrage, "
+            "and long-term market strategy."
+        ),
+        "steps": [
+            "Goldmaking Mindset & Setting Goals",
+            "Understanding the Auction House Economy",
+            "TradeSkillMaster (TSM) Setup & Operations",
+            "Raw Material Farming Routes",
+            "Crafting for Profit: Identifying Margins",
+            "Flipping & Market Sniping",
+            "Transmog & Legacy Content Markets",
+            "Multi-Character Profession Setup",
+            "Long-Term Investment & Patch Speculation",
+        ],
+    },
+    "WoW Lore: Complete Story Guide": {
+        "domain": "General",
+        "goal": (
+            "Understand the full Warcraft story from the Titans and Old Gods through "
+            "every expansion's narrative. Explore character arcs, faction conflicts, "
+            "cosmic forces, and the evolving worldbuilding."
+        ),
+        "steps": [
+            "The Cosmic Forces & Titans' Ordering of Azeroth",
+            "Old Gods, Trolls & the Rise of the Night Elves",
+            "The Burning Legion & War of the Ancients",
+            "Warcraft I–III: Orcs, Humans & the Frozen Throne",
+            "Classic → Burning Crusade → Wrath of the Lich King",
+            "Cataclysm → Mists of Pandaria → Warlords of Draenor",
+            "Legion → Battle for Azeroth → Shadowlands",
+            "Dragonflight → The War Within & Beyond",
+            "Major Character Arcs: Arthas, Sylvanas, Thrall & More",
+        ],
+    },
+    "WoW: Raiding from Normal to Mythic": {
+        "domain": "General",
+        "goal": (
+            "Progress from Normal raiding to Mythic-ready performance. Learn boss "
+            "mechanics, raid awareness, log analysis, consumable optimization, and "
+            "what it takes to join a competitive raid team."
+        ),
+        "steps": [
+            "Raiding Basics: Roles, Ready Checks & Loot",
+            "Boss Mechanics Fundamentals (Soak, Spread, Stack)",
+            "UI & Addon Setup for Raiding (WeakAuras, DBM/BW)",
+            "Normal → Heroic Progression Strategy",
+            "Reading Combat Logs (Warcraft Logs & WipeFest)",
+            "Class Optimization: Sim, Gear & Rotation",
+            "Raid Awareness & Positioning Drills",
+            "Mythic Raiding: What Changes & How to Prepare",
+            "Joining & Trialing with a Mythic Guild",
+        ],
+    },
+    # ─── Language Learning ────────────────────────────────────────────────
+    "── Language Learning ──": None,
+    "Learn Japanese (N5 → N4)": {
+        "domain": "Language Learning",
+        "goal": (
+            "Achieve solid N5 and introductory N4 Japanese: master hiragana, katakana, "
+            "core N5 kanji and grammar, reach 500+ vocabulary, and hold basic conversations."
+        ),
+        "steps": [
+            "Hiragana: Full Mastery",
+            "Katakana: Full Mastery",
+            "Greetings, Self-Introduction & Basic Phrases",
+            "Numbers, Time & Dates",
+            "Core N5 Grammar",
+            "Essential Vocabulary (500 words, SRS)",
+            "N5 Kanji (80 characters)",
+            "Simple Dialogues & Listening Practice",
+            "N4 Grammar Introduction",
+        ],
+    },
+    "Japanese Culture & Daily Life": {
+        "domain": "Language Learning",
+        "goal": (
+            "Go beyond textbook Japanese and understand daily life, work culture, "
+            "social norms, seasonal traditions, and how to navigate living in Japan "
+            "as a foreigner."
+        ),
+        "steps": [
+            "Social Norms: Keigo, Bowing & Business Cards",
+            "Navigating Trains, Buses & IC Cards",
+            "Combini Culture & Everyday Shopping",
+            "Japanese Work Culture & Office Etiquette",
+            "Seasonal Events: Hanami, Obon, New Year & Festivals",
+            "Food Culture: Izakaya, Ramen, Etiquette & Ordering",
+            "Healthcare, Banks & City Hall (役所) Basics",
+            "Apartment Living: Trash, Neighbors & Rules",
+            "Making Friends & Community Integration",
+        ],
+    },
+    # ─── Business / Freelance ─────────────────────────────────────────────
+    "── Business / Freelance ──": None,
+    "Build a Freelance Business from Zero": {
+        "domain": "Business / Freelance",
+        "goal": (
+            "Go from zero to first paying client: define your niche, build a portfolio, "
+            "price your services confidently, set up outreach, and win contracts."
+        ),
+        "steps": [
+            "Niche Definition & Skill Audit",
+            "Ideal Client Research",
+            "Portfolio: 3 Sample Projects",
+            "Pricing Strategy & Service Packages",
+            "Platform Setup & Profile Optimisation",
+            "First Outreach Campaign (20 contacts)",
+            "Proposal & Contract Templates",
+            "Client Onboarding & Delivery System",
+        ],
+    },
+    "Personal Finance & Investing Basics": {
+        "domain": "Business / Freelance",
+        "goal": (
+            "Build a solid personal finance foundation — budgeting, emergency funds, "
+            "debt management, index fund investing, tax optimization, and long-term "
+            "wealth building strategies."
+        ),
+        "steps": [
+            "Net Worth Snapshot & Financial Goals",
+            "Budgeting Systems (50/30/20, Zero-Based, Envelope)",
+            "Emergency Fund: How Much & Where to Keep It",
+            "Debt Payoff Strategy (Avalanche vs. Snowball)",
+            "Investment Basics: Stocks, Bonds, ETFs & Index Funds",
+            "Tax-Advantaged Accounts (401k, IRA, NISA / iDeCo)",
+            "Asset Allocation & Portfolio Construction",
+            "Automation: Auto-Invest & Bill Pay",
+            "Annual Review & Rebalancing Strategy",
+        ],
+    },
+    # ─── Health & Fitness ─────────────────────────────────────────────────
+    "── Health & Fitness ──": None,
+    "Beginner Strength Training (12 Weeks)": {
+        "domain": "Health & Fitness",
+        "goal": (
+            "Build a sustainable strength training foundation in 12 weeks: master the 5 "
+            "compound movements, establish progressive overload habits, and see gains."
+        ),
+        "steps": [
+            "Baseline Assessment & Goal Setting",
+            "The Big 5 Movements — Form & Safety",
+            "Weeks 1-2: Foundation Program",
+            "Nutrition Basics & Protein Targets",
+            "Progressive Overload Principles",
+            "Weeks 3-6: Building Phase",
+            "Recovery, Sleep & Deload Strategy",
+            "Weeks 7-12: Strength Phase",
+            "Progress Assessment & Next Cycle",
+        ],
+    },
+    # ─── Creative ─────────────────────────────────────────────────────────
+    "── Creative ──": None,
+    "Music Production (DAW to First Track)": {
+        "domain": "Creative",
+        "goal": (
+            "Go from zero music production knowledge to finishing your first complete "
+            "track. Learn your DAW, synthesis, sampling, mixing fundamentals, and "
+            "arrangement techniques."
+        ),
+        "steps": [
+            "Choose Your DAW & Learn the Interface",
+            "Audio Basics: Sample Rate, Bit Depth, MIDI",
+            "Beat Making: Drums, Rhythm & Groove",
+            "Synthesis 101: Oscillators, Filters & Envelopes",
+            "Sampling, Chopping & Creative Reuse",
+            "Chord Progressions & Melody Writing",
+            "Song Arrangement & Structure",
+            "Mixing Basics: Levels, EQ, Compression & Reverb",
+            "Finish & Export Your First Track",
+        ],
+    },
+    "Digital Art & Illustration": {
+        "domain": "Creative",
+        "goal": (
+            "Learn digital art from fundamentals through to polished illustration. "
+            "Cover drawing tablets, software, line art, color theory, shading, and "
+            "building a portfolio."
+        ),
+        "steps": [
+            "Hardware & Software Setup (Tablet + App)",
+            "Digital Brushes & Tool Fundamentals",
+            "Line Art: Clean Lines & Confident Strokes",
+            "Shape Language & Basic Forms",
+            "Color Theory & Digital Color Picking",
+            "Light, Shadow & Rendering",
+            "Composition & Visual Storytelling",
+            "Character Design Fundamentals",
+            "Building a Portfolio & Sharing Your Work",
+        ],
+    },
+    "Worldbuilding for Writers & Game Designers": {
+        "domain": "Creative",
+        "goal": (
+            "Create a rich, internally consistent fictional world. Cover geography, "
+            "cultures, magic/technology systems, history, politics, economics, and "
+            "how to make worldbuilding serve your story or game."
+        ),
+        "steps": [
+            "Scope & Purpose: What Is Your World For?",
+            "Geography, Climate & Maps",
+            "Cultures, Societies & Social Structures",
+            "Magic Systems or Technology Frameworks",
+            "History & Timeline Construction",
+            "Politics, Factions & Power Structures",
+            "Economics, Trade & Daily Life",
+            "Language, Naming Conventions & Flavor",
+            "Connecting Your World to Narrative or Gameplay",
+        ],
+    },
+}
+
+# ── Tutor system prompt ───────────────────────────────────────────────────────
+
+_TUTOR_SYSTEM = (
+    "You are an expert tutor, mentor, and educator providing a detailed, "
+    "lesson-plan style tutoring session. Your advice must be thorough — not a brief summary.\n\n"
+    "For every step you advise on, include:\n"
+    "1. Clear explanation of the core concepts\n"
+    "2. Step-by-step instructions the learner can follow right now\n"
+    "3. Concrete examples, code snippets, exercises, or practice tasks\n"
+    "4. Common mistakes and misconceptions to avoid\n"
+    "5. How to know the step is genuinely complete (success criteria)\n"
+    "6. A rough time estimate\n\n"
+    "Be generous with depth. This is a tutoring session, not a quick answer. "
+    "Respond using markdown — headers (##), bold, bullet lists, and code blocks."
+)
+
+# ── Web search ────────────────────────────────────────────────────────────────
+
+def _ddg_search(query: str, timeout: int = 10) -> str:
+    """Search DuckDuckGo via the lite HTML interface for actual results.
+
+    The previous instant-answer API (?format=json) only returned results for
+    very specific factual queries and was essentially useless for tutorial and
+    learning content.  This scrapes lite.duckduckgo.com which returns real
+    search results even for broad queries.
+    """
+    # First try the lite HTML search for real results
+    try:
+        encoded = urllib.parse.quote_plus(query)
+        url = f"https://lite.duckduckgo.com/lite/?q={encoded}"
+        req = urllib.request.Request(url, headers={
+            "User-Agent": "LocalSync/1.0 (Desktop App)",
+            "Accept": "text/html",
+        })
+        with urllib.request.urlopen(req, timeout=timeout) as resp:
+            html = resp.read().decode("utf-8", errors="replace")
+
+        # Extract result snippets from the lite HTML
+        # Lite page uses <td> elements with class "result-snippet" for descriptions
+        snippets: list[str] = []
+
+        # Method 1: Extract from result-snippet spans/tds
+        for pattern in [
+            r'class="result-snippet"[^>]*>(.*?)</(?:td|span)>',
+            r'<a class="result-link"[^>]*>([^<]+)</a>',
+        ]:
+            matches = re.findall(pattern, html, re.DOTALL | re.IGNORECASE)
+            for m in matches:
+                clean = re.sub(r'<[^>]+>', '', m).strip()
+                clean = _html_mod.unescape(clean)
+                if len(clean) > 30 and clean not in snippets:
+                    snippets.append(clean[:300])
+                if len(snippets) >= 4:
+                    break
+            if len(snippets) >= 4:
+                break
+
+        # Method 2: Fallback — grab text between <td> tags that look like snippets
+        if not snippets:
+            td_matches = re.findall(
+                r'<td[^>]*>\s*(.{40,400}?)\s*</td>', html, re.DOTALL)
+            for m in td_matches:
+                clean = re.sub(r'<[^>]+>', '', m).strip()
+                clean = _html_mod.unescape(clean)
+                # Filter out navigation / header text
+                if (len(clean) > 40
+                        and not clean.startswith("1.")
+                        and "DuckDuckGo" not in clean):
+                    snippets.append(clean[:300])
+                if len(snippets) >= 3:
+                    break
+
+        if snippets:
+            return "\n".join(snippets[:4])
+    except Exception as exc:
+        logger.debug("DDG lite search failed for %r: %s", query, exc)
+
+    # Fallback: try the instant answer API (occasionally works for factual queries)
+    try:
+        url = ("https://api.duckduckgo.com/?q="
+               + urllib.parse.quote_plus(query)
+               + "&format=json&no_html=1&skip_disambig=1")
+        req = urllib.request.Request(url, headers={"User-Agent": "LocalSync/1.0"})
+        with urllib.request.urlopen(req, timeout=timeout) as resp:
+            data = json.loads(resp.read().decode("utf-8"))
+        parts: list[str] = []
+        abstract = data.get("AbstractText", "").strip()
+        if abstract:
+            parts.append(abstract[:400])
+        for topic in data.get("RelatedTopics", [])[:3]:
+            txt = topic.get("Text", "").strip() if isinstance(topic, dict) else ""
+            if txt:
+                parts.append(txt[:200])
+        return "\n".join(parts) if parts else ""
+    except Exception as exc:
+        logger.debug("DDG instant answer failed for %r: %s", query, exc)
+        return ""
+
+
+def _generate_search_queries(client: LLMClient, journey_title: str,
+                              step_title: str, domain: str) -> list[str]:
+    prompt = (
+        f"Journey: {journey_title}\nStep: {step_title}\nDomain: {domain}\n\n"
+        "List exactly 2 concise web search queries (one per line, no numbering) "
+        "for the most useful current information to tutor this step."
+    )
+    try:
+        r = client.complete([{"role": "user", "content": prompt}],
+                            max_tokens=80, temperature=0.3)
+        return [ln.strip().lstrip("-\u2022*").strip()
+                for ln in r.text.strip().splitlines() if ln.strip()][:3]
+    except Exception:
+        return []
+
+
+# ── Context builder ───────────────────────────────────────────────────────────
+
+def _build_context(
+    journey: Journey, steps: list[JourneyStep], current_step: JourneyStep,
+    web_snippets: dict, todo_store=None, activity_store=None, calendar_store=None,
+) -> str:
+    roadmap = journey.roadmap
+    L: list[str] = [
+        "=" * 44, "  JOURNEY CONTEXT", "=" * 44, "",
+        f"Journey : {journey.title}",
+        f"Domain  : {journey.domain}",
+        f"Goal    : {journey.goal_description}", "",
+    ]
+    if roadmap.steps:
+        L.append("-- Planned Roadmap --")
+        if roadmap.overview:
+            L.append(f"  {roadmap.overview}")
+        for rs in roadmap.steps:
+            status = "done" if any(
+                s.title.strip().lower() == rs.title.strip().lower()
+                and s.status == "completed" for s in steps) else ""
+            marker = "\u2713" if status == "done" else (
+                ">" if rs.title.strip().lower() == current_step.title.strip().lower()
+                else " ")
+            detour = " [DETOUR]" if rs.is_detour else ""
+            L.append(f"  [{marker}] Step {rs.number}: {rs.title}{detour}")
+        L.append("")
+    done = [s for s in steps if s.status == "completed"]
+    if done:
+        L.append("-- Completed Steps --")
+        for s in done:
+            L.append(f"  \u2713 Step {s.step_number}: {s.title}")
+            if s.user_notes:
+                L.append(f"    Notes: {s.user_notes[:200]}")
+        L.append("")
+    L += [
+        "-- CURRENT STEP (provide thorough tutoring) --",
+        f"  Step {current_step.step_number}: {current_step.title}",
+    ]
+    if current_step.user_notes:
+        L.append(f"  Learner notes: {current_step.user_notes[:500]}")
+    if current_step.user_next_suggestions:
+        L.append(f"  Hints: {current_step.user_next_suggestions[:400]}")
+    L.append("")
+    try:
+        if todo_store:
+            todos = [t for t in todo_store.get_all(include_done=False)][:8]
+            if todos:
+                L.append("-- Open Tasks --")
+                for t in todos:
+                    due = f" due {t.due_date}" if getattr(t, "due_date", None) else ""
+                    L.append(f"  \u2022 {t.title}{due}")
+                L.append("")
+    except Exception:
+        pass
+    try:
+        if calendar_store:
+            now_ts = datetime.now(timezone.utc)
+            events = calendar_store.get_events(
+                start=now_ts.isoformat(),
+                end=(now_ts + timedelta(days=7)).isoformat())[:6]
+            if events:
+                L.append("-- Upcoming Calendar --")
+                for ev in events:
+                    L.append(f"  \u2022 {ev.title} [{ev.start_time[:10]}]")
+                L.append("")
+    except Exception:
+        pass
+    try:
+        if activity_store:
+            week_ago = (datetime.now() - timedelta(days=7)).date().isoformat()
+            acts = [a for a in activity_store.get_all() if a.date >= week_ago]
+            if acts:
+                totals: dict[str, float] = {}
+                for a in acts:
+                    try:
+                        s2 = datetime.strptime(a.start_time, "%H:%M")
+                        e2 = datetime.strptime(a.end_time,   "%H:%M")
+                        totals[a.activity] = totals.get(a.activity, 0) + (e2-s2).seconds/3600
+                    except Exception:
+                        pass
+                L.append("-- Activity This Week --")
+                for act, hrs in sorted(totals.items(), key=lambda x: -x[1])[:5]:
+                    L.append(f"  \u2022 {act}: {hrs:.1f}h")
+                L.append("")
+    except Exception:
+        pass
+    if web_snippets:
+        L.append("-- Web Search --")
+        for q, snip in web_snippets.items():
+            if snip:
+                L += [f'  "{q}"', f"  {snip[:400]}", ""]
+    L += ["=" * 44, "  END OF CONTEXT", "=" * 44]
+    return "\n".join(L)
+
+
+# ── Structured content parser ─────────────────────────────────────────────────
+
+def _parse_structured(text: str) -> tuple[list[str], list[str], str]:
+    checklist: list[str] = []
+    resources: list[str] = []
+    roadmap_lines: list[str] = []
+    section = None
+    for line in text.splitlines():
+        s = line.strip()
+        u = s.upper().rstrip(":")
+        if u in ("CHECKLIST", "TASKS", "ACTION ITEMS", "TO DO", "TODO"):
+            section = "c"; continue
+        if u in ("RESOURCES", "REFERENCES", "TOOLS", "FURTHER READING"):
+            section = "r"; continue
+        if u in ("ROADMAP", "NEXT STEPS", "WHAT COMES NEXT", "COMING UP"):
+            section = "m"; continue
+        if not s:
+            continue
+        task = s.lstrip("-\u2022*0123456789.) ").strip()
+        if not task:
+            continue
+        if section == "c":
+            checklist.append(task)
+        elif section == "r":
+            resources.append(task)
+        elif section == "m":
+            roadmap_lines.append(s)
+    return checklist[:10], resources[:8], " ".join(roadmap_lines).strip()
+
+
+def _run_structured_call(
+    client: LLMClient, synthesis: str,
+    journey: Journey, step: JourneyStep,
+) -> tuple[list[str], list[str], str]:
+    prompt = (
+        f'Structured action plan for Step {step.step_number}: "{step.title}"\n'
+        f'Journey: "{journey.title}" ({journey.domain})\n\n'
+        f"Council synthesis:\n{synthesis[:1600]}\n\n"
+        "Produce exactly THREE sections. Use these EXACT headers on their own lines:\n\n"
+        "CHECKLIST:\n"
+        "(6-10 concrete actionable tasks. One per line starting with '- ')\n\n"
+        "RESOURCES:\n"
+        "(4-6 specific resources: docs, books, tools. One per line starting with '- ')\n\n"
+        "ROADMAP:\n"
+        "(3-5 sentences: what comes after this step, previewing the next 2-3 steps)\n\n"
+        "Return ONLY these three sections."
+    )
+    try:
+        r = client.complete([{"role": "user", "content": prompt}],
+                            max_tokens=800, temperature=0.3)
+        return _parse_structured(r.text)
+    except Exception as exc:
+        logger.debug("Structured call failed: %s", exc)
+        return [], [], ""
+
+
+# ── Roadmap generation ────────────────────────────────────────────────────────
+
+def _generate_roadmap(client: LLMClient, journey: Journey) -> Roadmap:
+    prompt = (
+        f'Design a complete learning roadmap:\n\n'
+        f'Title  : {journey.title}\n'
+        f'Domain : {journey.domain}\n'
+        f'Goal   : {journey.goal_description}\n\n'
+        "Create 6-10 steps that logically progress from foundations to mastery.\n\n"
+        "Return VALID JSON only (no markdown fences, no extra text):\n"
+        '{\n'
+        '  "overview": "2-3 sentence description of the full learning path",\n'
+        '  "steps": [\n'
+        '    {\n'
+        '      "number": 1,\n'
+        '      "title": "Action-oriented step title (5-8 words)",\n'
+        '      "description": "1-2 sentences on what this step covers and why",\n'
+        '      "objectives": ["Objective 1", "Objective 2"]\n'
+        '    }\n'
+        '  ]\n'
+        '}\n'
+    )
+    try:
+        r    = client.complete([{"role": "user", "content": prompt}],
+                               max_tokens=1400, temperature=0.4)
+        text = r.text.strip()
+        if text.startswith("```"):
+            text = text.split("```")[1]
+            if text.lower().startswith("json"):
+                text = text[4:]
+            text = text.strip()
+        data  = json.loads(text)
+        steps = [
+            RoadmapStep(
+                number=s.get("number", i + 1),
+                title=s.get("title", f"Step {i+1}"),
+                description=s.get("description", ""),
+                objectives=s.get("objectives", []),
+            )
+            for i, s in enumerate(data.get("steps", []))
+        ]
+        return Roadmap(overview=data.get("overview", ""), steps=steps)
+    except Exception as exc:
+        logger.warning("Roadmap generation failed: %s", exc)
+        return Roadmap(overview="")
+
+
+def _update_roadmap_from_pivot(
+    client: LLMClient, journey: Journey, steps: list[JourneyStep],
+    pivot_request: str,
+) -> Roadmap:
+    """Re-generate the roadmap based on a pivot request from the workspace."""
+    current_roadmap = journey.roadmap
+    done_titles = [s.title for s in steps if s.status == "completed"]
+    prompt = (
+        f'Update this learning roadmap based on a pivot request.\n\n'
+        f'Journey: {journey.title}\n'
+        f'Goal   : {journey.goal_description}\n\n'
+        f'Completed steps (do NOT remove these):\n'
+        + "\n".join(f"  - {t}" for t in done_titles) + "\n\n"
+        f'Pivot request from learner:\n{pivot_request}\n\n'
+        f'Current roadmap overview:\n{current_roadmap.overview}\n\n'
+        "Rewrite the roadmap to incorporate the pivot. "
+        "Keep completed steps unchanged. Adjust or add future steps as needed.\n"
+        "Mark any newly added detour steps with \"is_detour\": true.\n\n"
+        "Return VALID JSON only:\n"
+        '{\n'
+        '  "overview": "Updated overview reflecting the pivot",\n'
+        '  "steps": [\n'
+        '    {\n'
+        '      "number": 1,\n'
+        '      "title": "...",\n'
+        '      "description": "...",\n'
+        '      "objectives": [...],\n'
+        '      "is_detour": false\n'
+        '    }\n'
+        '  ]\n'
+        '}\n'
+    )
+    try:
+        r    = client.complete([{"role": "user", "content": prompt}],
+                               max_tokens=1400, temperature=0.4)
+        text = r.text.strip()
+        if text.startswith("```"):
+            text = text.split("```")[1]
+            if text.lower().startswith("json"):
+                text = text[4:]
+            text = text.strip()
+        data  = json.loads(text)
+        steps_out = [
+            RoadmapStep(
+                number=s.get("number", i + 1),
+                title=s.get("title", f"Step {i+1}"),
+                description=s.get("description", ""),
+                objectives=s.get("objectives", []),
+                is_detour=bool(s.get("is_detour", False)),
+                branch_from=s.get("branch_from"),
+            )
+            for i, s in enumerate(data.get("steps", []))
+        ]
+        return Roadmap(overview=data.get("overview", ""), steps=steps_out)
+    except Exception as exc:
+        logger.warning("Roadmap pivot failed: %s", exc)
+        return current_roadmap
+
+
+# ── Council pipeline (uses existing LLMCouncil) ───────────────────────────────
+
+def _run_council(
+    journey: Journey, steps: list[JourneyStep], current_step: JourneyStep,
+    llm_client: LLMClient, council: LLMCouncil, journey_store: JourneyStore,
+    todo_store=None, activity_store=None, calendar_store=None, on_progress=None,
+) -> CouncilSession:
+    def _prog(msg: str):
+        if on_progress:
+            on_progress(msg)
+
+    # Optional web search
+    web_snippets: dict[str, str] = {}
+    web_queries:  list[str]      = []
+    if journey.web_search_enabled:
+        _prog("\U0001f310 Generating search queries\u2026")
+        web_queries = _generate_search_queries(
+            llm_client, journey.title, current_step.title, journey.domain)
+        if web_queries:
+            _prog(f"\U0001f50d Searching ({len(web_queries)} queries)\u2026")
+            for q in web_queries:
+                snip = _ddg_search(q)
+                if snip:
+                    web_snippets[q] = snip
+
+    _prog("\U0001f4cb Assembling context\u2026")
+    context = _build_context(journey, steps, current_step, web_snippets,
+                             todo_store, activity_store, calendar_store)
+
+    user_q = (
+        f"Provide a comprehensive tutoring session for Step {current_step.step_number}: "
+        f'"{current_step.title}".\n\n'
+        "Be thorough and educational — include concepts, examples, exercises, "
+        "common mistakes, and success criteria. Aim for a full lesson-plan response. "
+        "Use markdown formatting."
+    )
+
+    messages = [
+        {"role": "system", "content": _TUTOR_SYSTEM + "\n\n" + context},
+        {"role": "user",   "content": user_q},
+    ]
+
+    # Fan-out via LightCouncil. The model is server-locked so we use the
+    # configured pass count (3) and the council's default mode (Deliberate
+    # or Quick, set in Network → AI tab).
+    mode_label = getattr(council, "default_mode", "Deliberate")
+    n_passes   = 3
+    _prog(f"\u2694  Convening council ({n_passes} passes · {mode_label})\u2026")
+
+    synthesis_text  = ""
+    synthesis_model = ""
+    member_records:  list[dict] = []
+
+    try:
+        result: CouncilResult = council.complete(
+            messages, max_tokens=1400, temperature=0.6)
+
+        # Extract synthesis (or quick-pick winner — both live on result.final)
+        synthesis_text  = (result.final.text or "").strip()
+        synthesis_model = result.final.model or mode_label
+
+        # Build member records
+        for r in result.members:
+            label = (r.model or "").split("/")[-1].replace(":free", "").replace(":nitro", "")
+            member_records.append({
+                "label":    label,
+                "model":    r.model,
+                "response": r.text or "",
+                "ok":       True,
+            })
+        # `failed` items are strings like "Precise: Connection failed"
+        for failed_entry in result.failed:
+            failed_label = failed_entry.split(":", 1)[0].strip() or "unknown"
+            member_records.append({
+                "label":    failed_label,
+                "model":    failed_label,
+                "response": f"[Pass did not respond: {failed_entry}]",
+                "ok":       False,
+            })
+
+        ok_count   = len(result.members)
+        fail_count = len(result.failed)
+        status_parts = [f"\u2713 {ok_count} pass(es) responded"]
+        if fail_count:
+            status_parts.append(f"\u26a0 {fail_count} failed")
+        _prog("  " + ", ".join(status_parts))
+
+        # If synthesis is empty, compose from individual members as fallback
+        if not synthesis_text and result.members:
+            parts = []
+            for r in result.members:
+                if r.text and r.text.strip():
+                    short_name = (r.model or "").split("/")[-1]
+                    parts.append(f"## {short_name}\n\n{r.text.strip()}")
+            if parts:
+                synthesis_text = "\n\n---\n\n".join(parts)
+                synthesis_text = (
+                    "_Note: Synthesis returned empty — showing individual pass "
+                    "responses below._\n\n" + synthesis_text
+                )
+
+    except Exception as exc:
+        logger.warning("council.complete() failed: %s", exc)
+        # Fallback: try a single direct call against the configured llama.cpp host
+        _prog("  \u26a0 Council error, trying single pass\u2026")
+        try:
+            r = llm_client.complete(messages, max_tokens=1400, temperature=0.6)
+            synthesis_text  = r.text or ""
+            synthesis_model = r.model or "single"
+            member_records.append({
+                "label":    "single",
+                "model":    synthesis_model,
+                "response": synthesis_text,
+                "ok":       True,
+            })
+        except Exception as exc2:
+            synthesis_text = (
+                f"## Council Unavailable\n\n"
+                f"All passes failed to respond.\n\n"
+                f"Council error: {exc}\n\nFallback error: {exc2}"
+            )
+
+    if not synthesis_text:
+        synthesis_text = (
+            "## No Response\n\n"
+            "The council returned an empty response. "
+            "Try convening again, or check the llama.cpp server status in "
+            "Network \u2192 AI."
+        )
+
+    # Structured content call — use the same llama.cpp host as the council.
+    # The previous implementation tried to instantiate a per-call LLMClient
+    # with `api_key=` and `model=` arguments that no longer exist on
+    # LightCouncil after the llama.cpp refactor.
+    _prog("\U0001f4cb Building action plan\u2026")
+    checklist, resources, roadmap_text = _run_structured_call(
+        llm_client, synthesis_text, journey, current_step)
+
+    _prog("\U0001f4be Saving\u2026")
+    session = journey_store.save_council_session(
+        step_id=current_step.id, synthesis=synthesis_text,
+        synthesis_model=synthesis_model,
+        synthesis_mode=getattr(council, "default_mode", "Deliberate"),
+        web_search_used=bool(web_snippets), web_search_queries=web_queries,
+        member_records=member_records,
+        step_checklist=checklist, step_resources=resources, roadmap_text=roadmap_text,
+    )
+    _prog("\u2705 Complete")
+    return session
+
+
+# ── HTML renderer ─────────────────────────────────────────────────────────────
+
+def _to_html(text: str, p: dict) -> str:
+    bg     = p.get("bg",      "#1e1e2e")
+    fg     = p.get("fg",      "#cdd6f4")
+    muted  = p.get("muted",   "#7f849c")
+    accent = p.get("accent",  "#89b4fa")
+    green  = p.get("green",   "#a6e3a1")
+    border = p.get("border",  "#45475a")
+    if _HAS_MARKDOWN:
+        body = _md_lib.markdown(text, extensions=["nl2br", "fenced_code", "tables"])
+    else:
+        body = "<p>" + _html_mod.escape(text).replace("\n\n", "</p><p>") + "</p>"
+    return (
+        "<html><head><style>"
+        f"body{{background:{bg};color:{fg};font-family:'Segoe UI','Meiryo UI',sans-serif;"
+        f"font-size:13px;line-height:1.75;margin:16px;}}"
+        f"h1,h2{{color:{accent};border-bottom:1px solid {border};"
+        f"padding-bottom:5px;margin-top:20px;}}"
+        f"h3{{color:{accent};margin-top:14px;}}"
+        f"code{{background:{border};color:{green};padding:2px 6px;"
+        f"border-radius:4px;font-family:'Consolas','Courier New',monospace;font-size:12px;}}"
+        f"pre{{background:{border};padding:14px;border-radius:8px;overflow-x:auto;margin:10px 0;}}"
+        f"pre code{{background:transparent;padding:0;}}"
+        f"blockquote{{border-left:3px solid {accent};margin-left:0;padding-left:14px;color:{muted};}}"
+        f"a{{color:{accent};}}"
+        f"li{{margin:5px 0;}}ul,ol{{padding-left:20px;}}"
+        f"strong{{color:{accent};}}em{{color:{muted};font-style:italic;}}"
+        f"table{{border-collapse:collapse;width:100%;margin:10px 0;}}"
+        f"th,td{{border:1px solid {border};padding:8px 12px;}}"
+        f"th{{background:{border};color:{accent};}}"
+        f"p{{margin:8px 0;}}hr{{border:none;border-top:1px solid {border};margin:14px 0;}}"
+        "</style></head>"
+        f"<body>{body}</body></html>"
+    )
+
+
+def _tab_style(p: dict) -> str:
+    bg=p.get("bg","#1e1e2e"); surface=p.get("surface","#313244")
+    border=p.get("border","#45475a"); fg=p.get("fg","#cdd6f4")
+    muted=p.get("muted","#7f849c"); accent=p.get("accent","#89b4fa")
+    hover=p.get("hover","#3b3d54")
+    return (
+        f"QTabWidget::pane{{background:{bg};border:1px solid {border};"
+        f"border-top:none;border-radius:0 0 10px 10px;}}"
+        f"QTabBar::tab{{background:{surface};color:{muted};"
+        f"border:1px solid {border};border-bottom:none;"
+        f"padding:10px 24px;font-size:11px;font-weight:bold;letter-spacing:1px;"
+        f"border-radius:6px 6px 0 0;margin-right:3px;min-width:90px;}}"
+        f"QTabBar::tab:selected{{background:{bg};color:{accent};"
+        f"border-bottom:2px solid {accent};}}"
+        f"QTabBar::tab:hover:!selected{{background:{hover};color:{fg};}}"
+        f"QTabWidget QScrollArea{{background:transparent;border:none;}}"
+    )
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
+#  Custom widgets
+# ═══════════════════════════════════════════════════════════════════════════════
+
+class RoadmapWidget(QWidget):
+    """Horizontal roadmap flow — single row, scrollable, polished nodes.
+
+    Each node is a rounded rect with gradient fill based on status,
+    step-number badge, title, and status label below.
+    Clicking a node selects it (accent ring) and emits node_selected(index).
+    """
+    node_selected = pyqtSignal(int)   # 0-based index into roadmap.steps
+
+    _NW     = 180   # node width (wider for readability)
+    _NH     = 68    # node height
+    _GAP    = 32    # gap between nodes (arrow space)
+    _PAD_X  = 14
+    _PAD_Y  = 10
+    _LABEL_H = 18   # height for status text below nodes
+    _R      = 10    # corner radius
+    _BR     = 11    # badge radius
+
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self._roadmap:      Roadmap           = Roadmap(overview="")
+        self._steps:        list[JourneyStep] = []
+        self._palette:      dict              = dict(_FALLBACK)
+        self._selected_idx: int               = -1
+        self._hovered_idx:  int               = -1
+        self.setMouseTracking(True)
+        self.setCursor(Qt.CursorShape.PointingHandCursor)
+        self._update_size()
+
+    def set_palette(self, p: dict):
+        self._palette = p; self.update()
+
+    def set_data(self, roadmap: Roadmap, steps: list[JourneyStep],
+                 selected_idx: int = -1):
+        self._roadmap      = roadmap
+        self._steps        = steps
+        self._selected_idx = selected_idx
+        self._update_size(); self.update()
+
+    def set_selected(self, idx: int):
+        self._selected_idx = idx; self.update()
+
+    def _update_size(self):
+        n = len(self._roadmap.steps)
+        w = self._PAD_X*2 + n*self._NW + max(n-1, 0)*self._GAP if n else 100
+        h = self._PAD_Y*2 + self._NH + self._LABEL_H
+        self.setMinimumSize(w, h)
+        self.setFixedHeight(h)
+
+    def _node_x(self, i: int) -> int:
+        return self._PAD_X + i * (self._NW + self._GAP)
+
+    def _step_status(self, rs: RoadmapStep) -> str:
+        title_l = rs.title.strip().lower()
+        for s in self._steps:
+            if s.title.strip().lower() == title_l:
+                return s.status
+        return "unstarted"
+
+    def paintEvent(self, _):
+        n = len(self._roadmap.steps)
+        if n == 0:
+            return
+        p  = QPainter(self)
+        p.setRenderHint(QPainter.RenderHint.Antialiasing)
+        ny = self._PAD_Y
+
+        accent  = QColor(self._palette.get("accent",  "#89b4fa"))
+        green   = QColor(self._palette.get("green",   "#a6e3a1"))
+        surface = QColor(self._palette.get("surface", "#313244"))
+        border  = QColor(self._palette.get("border",  "#45475a"))
+        fg      = QColor(self._palette.get("fg",      "#cdd6f4"))
+        muted   = QColor(self._palette.get("muted",   "#7f849c"))
+        acc_fg  = QColor(self._palette.get("accent_fg","#1e1e2e"))
+        yellow  = QColor(self._palette.get("yellow",  "#f9e2af"))
+        bg_col  = QColor(self._palette.get("bg",      "#1e1e2e"))
+
+        for i, rs in enumerate(self._roadmap.steps):
+            nx       = self._node_x(i)
+            nw, nh   = self._NW, self._NH
+            cy       = ny + nh // 2
+            status   = self._step_status(rs)
+            selected = (i == self._selected_idx)
+            hov      = (i == self._hovered_idx)
+            detour   = rs.is_detour
+
+            # ── Node fill with gradient ──
+            if status == "completed":
+                grad = QLinearGradient(nx, ny, nx + nw, ny + nh)
+                g1 = green.lighter(105) if hov else green
+                g2 = green.darker(115)
+                grad.setColorAt(0, g1); grad.setColorAt(1, g2)
+                text_c = QColor("#1e1e2e")
+                bord_c = green.darker(120)
+            elif status == "active":
+                grad = QLinearGradient(nx, ny, nx + nw, ny + nh)
+                a1 = accent.lighter(115) if hov else accent
+                a2 = accent.darker(110)
+                grad.setColorAt(0, a1); grad.setColorAt(1, a2)
+                text_c = acc_fg
+                bord_c = accent.lighter(150)
+            else:
+                grad = QLinearGradient(nx, ny, nx + nw, ny + nh)
+                s1 = surface.lighter(115) if hov else surface
+                s2 = surface.darker(105)
+                grad.setColorAt(0, s1); grad.setColorAt(1, s2)
+                text_c = fg if hov else muted
+                bord_c = (yellow if detour else
+                          (accent if selected else
+                           (border.lighter(130) if hov else border)))
+
+            # Selection ring
+            if selected:
+                sel = QColor(accent); sel.setAlpha(50)
+                p.setBrush(QBrush(sel)); p.setPen(Qt.PenStyle.NoPen)
+                p.drawRoundedRect(nx-6, ny-6, nw+12, nh+12, self._R+4, self._R+4)
+
+            # Active glow
+            if status == "active":
+                glow = QColor(accent); glow.setAlpha(25)
+                p.setBrush(QBrush(glow)); p.setPen(Qt.PenStyle.NoPen)
+                p.drawRoundedRect(nx-4, ny-4, nw+8, nh+8, self._R+2, self._R+2)
+
+            # Node body
+            p.setBrush(QBrush(grad))
+            p.setPen(QPen(bord_c, 2.0 if selected else 1.2))
+            p.drawRoundedRect(nx, ny, nw, nh, self._R, self._R)
+
+            # Detour stripe (top-left corner triangle)
+            if detour:
+                tri = QPainterPath()
+                tri.moveTo(nx, ny)
+                tri.lineTo(nx + 20, ny)
+                tri.lineTo(nx, ny + 20)
+                tri.closeSubpath()
+                p.fillPath(tri, QBrush(yellow))
+
+            # Badge circle with step number
+            br = self._BR
+            bx = nx + 16 + br
+            badge_col = bord_c if status != "completed" else green.darker(130)
+            p.setBrush(QBrush(badge_col)); p.setPen(Qt.PenStyle.NoPen)
+            p.drawEllipse(bx - br, cy - br, br*2, br*2)
+
+            if status == "completed":
+                # Checkmark inside badge
+                p.setPen(QPen(QColor("#1e1e2e"), 2.0, Qt.PenStyle.SolidLine,
+                              Qt.PenCapStyle.RoundCap, Qt.PenJoinStyle.RoundJoin))
+                p.drawLine(bx - 4, cy,     bx - 1, cy + 3)
+                p.drawLine(bx - 1, cy + 3, bx + 4, cy - 3)
+            else:
+                # Step number
+                num_col = QColor("#ffffff") if status != "unstarted" else muted
+                p.setPen(QPen(num_col))
+                p.setFont(QFont("Segoe UI", 8, QFont.Weight.Bold))
+                p.drawText(bx - br, cy - br, br*2, br*2,
+                           Qt.AlignmentFlag.AlignCenter, str(rs.number))
+
+            # Title text (right of badge)
+            tx = bx + br + 8
+            tw = nw - (tx - nx) - 8
+            p.setPen(QPen(text_c))
+            p.setFont(QFont("Segoe UI", 9,
+                            QFont.Weight.Bold if status in ("active","completed")
+                            else QFont.Weight.Normal))
+            fm    = p.fontMetrics()
+            title = rs.title
+            if fm.horizontalAdvance(title) > tw:
+                while title and fm.horizontalAdvance(title + "\u2026") > tw:
+                    title = title[:-1]
+                title += "\u2026"
+            p.drawText(tx, ny, tw, nh,
+                       Qt.AlignmentFlag.AlignVCenter | Qt.AlignmentFlag.AlignLeft,
+                       title)
+
+            # Status label below node
+            status_txt = {
+                "completed": "\u2713 Done",
+                "active":    "\u25b6 In Progress",
+                "unstarted": "Upcoming",
+            }.get(status, "")
+            if detour and status == "unstarted":
+                status_txt = "\u2604 Detour"
+            status_col = (green.darker(120) if status == "completed" else
+                          (accent if status == "active" else
+                           (yellow.darker(130) if detour else muted)))
+            p.setPen(QPen(status_col))
+            p.setFont(QFont("Segoe UI", 7, QFont.Weight.Bold
+                            if status == "active" else QFont.Weight.Normal))
+            p.drawText(nx, ny + nh + 2, nw, self._LABEL_H,
+                       Qt.AlignmentFlag.AlignHCenter, status_txt)
+
+            # Arrow to next node
+            if i < n - 1:
+                ax_start = nx + nw + 3
+                ax_end   = ax_start + self._GAP - 6
+                ay       = cy
+
+                # Arrow line
+                arrow_col = green if status == "completed" else border
+                p.setPen(QPen(arrow_col, 1.8))
+                p.drawLine(ax_start, ay, ax_end - 7, ay)
+
+                # Filled arrowhead
+                tri2 = QPainterPath()
+                tri2.moveTo(ax_end,     ay)
+                tri2.lineTo(ax_end - 8, ay - 5)
+                tri2.lineTo(ax_end - 8, ay + 5)
+                tri2.closeSubpath()
+                p.fillPath(tri2, QBrush(arrow_col))
+        p.end()
+
+    def mouseMoveEvent(self, event):
+        x, y  = event.position().x(), event.position().y()
+        old   = self._hovered_idx
+        self._hovered_idx = -1
+        ny = self._PAD_Y
+        for i, rs in enumerate(self._roadmap.steps):
+            nx = self._node_x(i)
+            if nx <= x <= nx + self._NW and ny <= y <= ny + self._NH:
+                self._hovered_idx = i
+                tip = f"Step {rs.number}: {rs.title}"
+                if rs.description:
+                    tip += f"\n{rs.description}"
+                if rs.objectives:
+                    tip += "\n\nObjectives:\n" + "\n".join(
+                        f"  \u2022 {o}" for o in rs.objectives)
+                if rs.is_detour:
+                    tip += "\n\n[Detour step]"
+                self.setToolTip(tip)
+                break
+        if self._hovered_idx != old:
+            self.update()
+        if self._hovered_idx < 0:
+            self.setToolTip("")
+
+    def leaveEvent(self, _):
+        self._hovered_idx = -1; self.update()
+
+    def mousePressEvent(self, event):
+        if event.button() != Qt.MouseButton.LeftButton:
+            return
+        x, y = event.position().x(), event.position().y()
+        ny   = self._PAD_Y
+        for i in range(len(self._roadmap.steps)):
+            nx = self._node_x(i)
+            if nx <= x <= nx + self._NW and ny <= y <= ny + self._NH:
+                self._selected_idx = i
+                self.update()
+                self.node_selected.emit(i)
+                return
+
+
+class StepTrack(QWidget):
+    step_clicked = pyqtSignal(int)
+
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self._steps:       list[JourneyStep] = []
+        self._palette:     dict              = dict(_FALLBACK)
+        self._hovered_idx: int               = -1
+        self.setFixedHeight(82); self.setMinimumWidth(200)
+        self.setMouseTracking(True)
+
+    def set_palette(self, p: dict): self._palette = p; self.update()
+    def set_steps(self, steps: list[JourneyStep]): self._steps = steps; self.update()
+
+    def _node_cx(self, i: int) -> int:
+        n = len(self._steps); margin = 28
+        spacing = (self.width() - 2 * margin) / max(n - 1, 1) if n > 1 else 0
+        return int(margin + spacing * i)
+
+    def paintEvent(self, _):
+        if not self._steps: return
+        p = QPainter(self); p.setRenderHint(QPainter.RenderHint.Antialiasing)
+        n = len(self._steps); cy = 38; r = 13
+        accent  = QColor(self._palette.get("accent",  "#89b4fa"))
+        muted   = QColor(self._palette.get("muted",   "#7f849c"))
+        green   = QColor(self._palette.get("green",   "#a6e3a1"))
+        surface = QColor(self._palette.get("surface", "#313244"))
+        border  = QColor(self._palette.get("border",  "#45475a"))
+        if n > 1:
+            p.setPen(QPen(border, 2))
+            p.drawLine(self._node_cx(0), cy, self._node_cx(n - 1), cy)
+        for i, step in enumerate(self._steps):
+            cx = self._node_cx(i)
+            done = step.status == "completed"; active = step.status == "active"
+            hov  = (i == self._hovered_idx)
+            if done:
+                col = green.lighter(115) if hov else green
+                p.setBrush(QBrush(col)); p.setPen(QPen(col.darker(120), 1))
+                p.drawEllipse(cx-r, cy-r, r*2, r*2)
+                p.setPen(QPen(QColor("#1e1e2e"), 2, Qt.PenStyle.SolidLine,
+                              Qt.PenCapStyle.RoundCap, Qt.PenJoinStyle.RoundJoin))
+                p.drawLine(cx-5, cy, cx-1, cy+4); p.drawLine(cx-1, cy+4, cx+5, cy-4)
+            elif active:
+                glow = QColor(accent); glow.setAlpha(40)
+                p.setBrush(QBrush(glow)); p.setPen(Qt.PenStyle.NoPen)
+                p.drawEllipse(cx-r-4, cy-r-4, (r+4)*2, (r+4)*2)
+                col = accent.lighter(120) if hov else accent
+                p.setBrush(QBrush(col)); p.setPen(QPen(accent.lighter(160), 2))
+                p.drawEllipse(cx-r, cy-r, r*2, r*2)
+                p.setPen(QPen(QColor(self._palette.get("accent_fg","#1e1e2e"))))
+                p.setFont(QFont("Segoe UI", 8, QFont.Weight.Bold))
+                p.drawText(cx-r, cy-r, r*2, r*2, Qt.AlignmentFlag.AlignCenter,
+                           str(step.step_number))
+            else:
+                col = QColor(self._palette.get("hover","#3b3d54")) if hov else surface
+                p.setBrush(QBrush(col)); p.setPen(QPen(border, 1))
+                p.drawEllipse(cx-r, cy-r, r*2, r*2)
+                p.setPen(QPen(muted)); p.setFont(QFont("Segoe UI", 8))
+                p.drawText(cx-r, cy-r, r*2, r*2, Qt.AlignmentFlag.AlignCenter,
+                           str(step.step_number))
+            p.setPen(QPen(muted if not active else accent))
+            p.setFont(QFont("Segoe UI", 7))
+            short = step.title[:14] + ("\u2026" if len(step.title) > 14 else "")
+            p.drawText(cx-34, cy+r+6, 68, 16, Qt.AlignmentFlag.AlignCenter, short)
+        p.end()
+
+    def mouseMoveEvent(self, event):
+        if not self._steps: return
+        x = event.position().x(); old = self._hovered_idx
+        self._hovered_idx = -1
+        for i in range(len(self._steps)):
+            if abs(x - self._node_cx(i)) <= 16:
+                self._hovered_idx = i; break
+        if self._hovered_idx != old: self.update()
+        if self._hovered_idx >= 0:
+            s   = self._steps[self._hovered_idx]
+            tip = f"Step {s.step_number}: {s.title}\n{s.status.capitalize()}"
+            if s.completed_at: tip += f"\nCompleted {s.completed_at[:10]}"
+            self.setToolTip(tip)
+        else: self.setToolTip("")
+
+    def leaveEvent(self, _): self._hovered_idx = -1; self.update()
+
+    def mousePressEvent(self, event):
+        if not self._steps: return
+        x = event.position().x()
+        for i in range(len(self._steps)):
+            if abs(x - self._node_cx(i)) <= 16:
+                self.step_clicked.emit(i); return
+
+
+class DomainBadge(QLabel):
+    def __init__(self, domain: str, parent=None):
+        super().__init__(domain, parent)
+        self.setMinimumHeight(26)
+        self.setSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Preferred)
+        self.update_domain(domain)
+
+    def update_domain(self, domain: str):
+        self.setText(domain)
+        c = DOMAIN_COLORS.get(domain, "#89dceb")
+        self.setStyleSheet(
+            f"QLabel{{background-color:{c}22;color:{c};"
+            f"border:1px solid {c}66;border-radius:13px;"
+            f"padding:4px 14px;font-size:11px;font-weight:bold;}}")
+
+
+class _MiniProgressBar(QWidget):
+    def __init__(self, done, total, color, track, parent=None):
+        super().__init__(parent)
+        self._done=done; self._total=max(total,1)
+        self._color=QColor(color); self._track=QColor(track)
+        self.setFixedHeight(4)
+
+    def paintEvent(self, _):
+        p=QPainter(self); p.setRenderHint(QPainter.RenderHint.Antialiasing)
+        w=self.width()
+        p.setBrush(QBrush(self._track)); p.setPen(Qt.PenStyle.NoPen)
+        p.drawRoundedRect(0, 0, w, 4, 2, 2)
+        fw = int(w * self._done / self._total)
+        if fw > 0:
+            p.setBrush(QBrush(self._color)); p.drawRoundedRect(0, 0, fw, 4, 2, 2)
+        p.end()
+
+
+class CouncilSpinner(QWidget):
+    """Animated arc spinner for council progress display."""
+
+    def __init__(self, palette: dict, parent=None):
+        super().__init__(parent)
+        self._palette = palette
+        self._angle = 0
+        self._message = "Starting\u2026"
+        self.setFixedHeight(52)
+        self._timer = QTimer(self)
+        self._timer.timeout.connect(self._tick)
+
+    def start(self):
+        self._angle = 0
+        self._timer.start(30)
+        self.show()
+
+    def stop(self):
+        self._timer.stop()
+        self.hide()
+
+    def set_message(self, msg: str):
+        self._message = msg
+        self.update()
+
+    def _tick(self):
+        self._angle = (self._angle + 6) % 360
+        self.update()
+
+    def paintEvent(self, _):
+        p = QPainter(self)
+        p.setRenderHint(QPainter.RenderHint.Antialiasing)
+        accent = QColor(self._palette.get("accent", "#89b4fa"))
+        muted  = QColor(self._palette.get("muted",  "#7f849c"))
+        surface = QColor(self._palette.get("surface", "#313244"))
+        border = QColor(self._palette.get("border", "#45475a"))
+
+        # Background card
+        p.setBrush(QBrush(surface))
+        p.setPen(QPen(border, 1))
+        p.drawRoundedRect(0, 0, self.width(), self.height(), 8, 8)
+
+        # Spinner arc
+        cx, cy = 28, self.height() // 2
+        r = 14
+        pen = QPen(accent, 3, Qt.PenStyle.SolidLine, Qt.PenCapStyle.RoundCap)
+        p.setPen(pen)
+        rect = QRectF(cx - r, cy - r, r * 2, r * 2)
+        p.drawArc(rect, int(self._angle * 16), int(90 * 16))
+
+        # Track ring
+        track_col = QColor(border); track_col.setAlpha(80)
+        p.setPen(QPen(track_col, 2))
+        p.drawEllipse(rect)
+
+        # Message text
+        p.setPen(QPen(muted))
+        p.setFont(QFont("Segoe UI", 11, QFont.Weight.Normal))
+        p.drawText(cx + r + 14, 0, self.width() - cx - r - 20, self.height(),
+                   Qt.AlignmentFlag.AlignVCenter | Qt.AlignmentFlag.AlignLeft,
+                   self._message)
+        p.end()
+
+
+class ChecklistItem(QWidget):
+    toggled = pyqtSignal(str, bool)
+
+    def __init__(self, task: str, checked: bool, palette: dict, parent=None):
+        super().__init__(parent)
+        self._task = task; self._palette = palette
+        layout = QHBoxLayout(self)
+        layout.setContentsMargins(0, 3, 0, 3); layout.setSpacing(10)
+        self._cb = QCheckBox(); self._cb.setChecked(checked)
+        self._cb.stateChanged.connect(
+            lambda st: self.toggled.emit(self._task, st == Qt.CheckState.Checked.value))
+        layout.addWidget(self._cb)
+        lbl = QLabel(task); lbl.setWordWrap(True)
+        lbl.setStyleSheet(self._task_style(checked, palette))
+        self._lbl = lbl; layout.addWidget(lbl, 1)
+        self._cb.stateChanged.connect(
+            lambda st: self._lbl.setStyleSheet(
+                self._task_style(st == Qt.CheckState.Checked.value, self._palette)))
+        self._style_cb(palette)
+
+    @staticmethod
+    def _task_style(checked: bool, p: dict) -> str:
+        c = p.get("muted","#7f849c") if checked else p.get("fg","#cdd6f4")
+        d = "line-through" if checked else "none"
+        return f"color:{c};font-size:12px;text-decoration:{d};"
+
+    def _style_cb(self, p: dict):
+        ac=p.get("accent","#89b4fa"); bd=p.get("border","#45475a"); sf=p.get("surface","#313244")
+        self._cb.setStyleSheet(
+            f"QCheckBox::indicator{{width:16px;height:16px;"
+            f"border:1px solid {bd};border-radius:4px;background:{sf};}}"
+            f"QCheckBox::indicator:checked{{background:{ac};border-color:{ac};}}"
+            f"QCheckBox::indicator:hover{{border-color:{ac};}}")
+
+
+class SectionCard(QFrame):
+    def __init__(self, title: str, icon: str, palette: dict, parent=None):
+        super().__init__(parent)
+        p = palette
+        self.setObjectName("SectionCard")
+        self.setStyleSheet(
+            f"QFrame#SectionCard{{background:{p.get('surface','#313244')};"
+            f"border:1px solid {p.get('border','#45475a')};border-radius:10px;}}")
+        self._layout = QVBoxLayout(self)
+        self._layout.setContentsMargins(16, 12, 16, 14); self._layout.setSpacing(10)
+        hdr = QHBoxLayout()
+        il = QLabel(icon); il.setStyleSheet("font-size:16px;"); il.setFixedWidth(24)
+        hdr.addWidget(il)
+        tl = QLabel(title.upper())
+        tl.setStyleSheet(
+            f"color:{p.get('accent','#89b4fa')};font-size:10px;"
+            f"font-weight:bold;letter-spacing:2px;")
+        hdr.addWidget(tl); hdr.addStretch(); self._layout.addLayout(hdr)
+        div = QFrame(); div.setFrameShape(QFrame.Shape.HLine)
+        div.setStyleSheet(f"background:{p.get('border','#45475a')};max-height:1px;")
+        self._layout.addWidget(div)
+
+    def body_layout(self) -> QVBoxLayout:
+        return self._layout
+
+
+class CouncilorBadge(QWidget):
+    def __init__(self, label: str, color: str, parent=None):
+        super().__init__(parent)
+        self._label = label; self._color = QColor(color); self.setFixedSize(32, 32)
+
+    def paintEvent(self, _):
+        p = QPainter(self); p.setRenderHint(QPainter.RenderHint.Antialiasing)
+        p.setBrush(QBrush(self._color)); p.setPen(Qt.PenStyle.NoPen)
+        p.drawEllipse(0, 0, 32, 32)
+        p.setPen(QPen(QColor("#ffffff")))
+        p.setFont(QFont("Segoe UI", 9, QFont.Weight.Bold))
+        initials = "".join(w[0] for w in self._label.split()[-2:])[:2].upper()
+        p.drawText(0, 0, 32, 32, Qt.AlignmentFlag.AlignCenter, initials); p.end()
+
+
+_COUNCILOR_COLORS = ["#89b4fa","#a6e3a1","#f5c2e7","#fab387",
+                     "#94e2d5","#cba6f7","#89dceb","#f9e2af"]
+
+
+class CouncilMemberCard(QFrame):
+    def __init__(self, label: str, model: str, response: str,
+                 color: str, palette: dict, parent=None):
+        super().__init__(parent)
+        self._expanded = False
+        p = palette
+        self.setObjectName("JourneyCouncilMember")
+        self.setStyleSheet(
+            f"QFrame#JourneyCouncilMember{{background:{p.get('bg','#1e1e2e')};"
+            f"border:1px solid {p.get('border','#45475a')};border-radius:8px;margin:2px 0;}}")
+        outer = QVBoxLayout(self); outer.setContentsMargins(10,8,10,8); outer.setSpacing(0)
+        hdr = QHBoxLayout()
+        hdr.addWidget(CouncilorBadge(label, color)); hdr.addSpacing(8)
+        info = QVBoxLayout()
+        nl = QLabel(label)
+        nl.setStyleSheet(f"color:{p.get('fg','#cdd6f4')};font-weight:bold;font-size:12px;")
+        sm = model.split("/")[-1].replace(":free","").replace(":nitro","")
+        ml = QLabel(sm); ml.setStyleSheet(f"color:{p.get('muted','#7f849c')};font-size:10px;")
+        info.addWidget(nl); info.addWidget(ml); hdr.addLayout(info); hdr.addStretch()
+        self._toggle_btn = QToolButton()
+        self._toggle_btn.setText("\u25b6  Show")
+        self._toggle_btn.setStyleSheet(
+            f"color:{p.get('muted','#7f849c')};font-size:10px;border:none;")
+        self._toggle_btn.clicked.connect(self._toggle)
+        hdr.addWidget(self._toggle_btn); outer.addLayout(hdr)
+        self._browser = QTextBrowser()
+        self._browser.setOpenExternalLinks(True)
+        self._browser.setHtml(_to_html(response or "_No response._", palette))
+        self._browser.setMinimumHeight(150); self._browser.setMaximumHeight(400)
+        self._browser.hide()
+        self._browser.setStyleSheet(
+            f"QTextBrowser{{background:{p.get('surface','#313244')};"
+            f"border:1px solid {p.get('border','#45475a')};border-radius:6px;"
+            f"margin-top:8px;padding:6px;font-size:12px;}}")
+        outer.addWidget(self._browser)
+
+    def _toggle(self):
+        self._expanded = not self._expanded
+        self._browser.setVisible(self._expanded)
+        self._toggle_btn.setText("\u25bc  Hide" if self._expanded else "\u25b6  Show")
+
+
+class CouncilSessionCard(QFrame):
+    def __init__(self, session: CouncilSession, session_num: int,
+                 palette: dict, parent=None):
+        super().__init__(parent)
+        p = palette
+        bg=p.get("bg","#1e1e2e"); surface=p.get("surface","#313244")
+        border=p.get("border","#45475a"); muted=p.get("muted","#7f849c")
+        accent=p.get("accent","#89b4fa"); green=p.get("green","#a6e3a1")
+        bar = accent if session_num % 2 == 1 else green
+        self.setObjectName("JourneySession")
+        self.setStyleSheet(
+            f"QFrame#JourneySession{{background:{surface};"
+            f"border:1px solid {border};border-left:4px solid {bar};"
+            f"border-radius:10px;margin:4px 0;}}")
+        layout = QVBoxLayout(self)
+        layout.setContentsMargins(14,12,14,12); layout.setSpacing(8)
+        hdr = QHBoxLayout()
+        sl = QLabel(f"\u2694  Session #{session_num}")
+        sl.setStyleSheet(f"color:{bar};font-weight:bold;font-size:13px;")
+        hdr.addWidget(sl); hdr.addStretch()
+        ts = QLabel(session.created_at[:16].replace("T","  "))
+        ts.setStyleSheet(f"color:{muted};font-size:10px;"); hdr.addWidget(ts)
+        if session.web_search_used:
+            wl = QLabel("\U0001f310 Web")
+            wl.setStyleSheet(
+                f"color:{green};font-size:10px;"
+                f"border:1px solid {green}44;border-radius:8px;padding:1px 6px;")
+            hdr.addSpacing(4); hdr.addWidget(wl)
+        layout.addLayout(hdr)
+
+        # Synthesis
+        sl2 = QLabel("TUTOR SYNTHESIS")
+        sl2.setStyleSheet(f"color:{muted};font-size:9px;font-weight:bold;letter-spacing:2px;")
+        layout.addWidget(sl2)
+        synth_text = session.synthesis.strip() or "_No synthesis content available._"
+        browser = QTextBrowser()
+        browser.setOpenExternalLinks(True)
+        browser.setHtml(_to_html(synth_text, palette))
+        browser.setMinimumHeight(260)
+        browser.setStyleSheet(
+            f"QTextBrowser{{background:{bg};border:1px solid {border};"
+            f"border-radius:8px;padding:8px;font-size:12px;}}")
+        layout.addWidget(browser)
+
+        if session.web_search_queries:
+            ql = QLabel("\U0001f50d " + " \u00b7 ".join(session.web_search_queries[:3]))
+            ql.setStyleSheet(f"color:{muted};font-size:10px;font-style:italic;")
+            ql.setWordWrap(True); layout.addWidget(ql)
+
+        if session.member_records:
+            n_v = len(session.member_records)
+            vt  = QToolButton()
+            vt.setText(f"\u25b6  Individual Model Responses  ({n_v})")
+            vt.setStyleSheet(f"color:{muted};font-size:11px;border:none;padding:2px;")
+            vt.setCheckable(True); layout.addWidget(vt)
+            vc = QWidget(); vl = QVBoxLayout(vc)
+            vl.setContentsMargins(0,4,0,0); vl.setSpacing(4); vc.hide()
+            for j, rec in enumerate(session.member_records):
+                color = _COUNCILOR_COLORS[j % len(_COUNCILOR_COLORS)]
+                vl.addWidget(CouncilMemberCard(
+                    rec.councilor_label, rec.model, rec.raw_response, color, palette))
+            layout.addWidget(vc)
+            def _tv(checked, c=vc, b=vt, n=n_v):
+                c.setVisible(checked)
+                b.setText(f"\u25bc  Individual Model Responses  ({n})" if checked
+                          else f"\u25b6  Individual Model Responses  ({n})")
+            vt.clicked.connect(_tv)
+
+
+class HistoryStepRow(QFrame):
+    def __init__(self, step: JourneyStep, palette: dict, parent=None):
+        super().__init__(parent)
+        p = palette
+        self._expanded = False; self._has_notes = bool(step.user_notes)
+        self.setObjectName("HistoryRow")
+        self.setStyleSheet(
+            f"QFrame#HistoryRow{{background:{p.get('alt_row','#252538')};"
+            f"border:1px solid {p.get('border','#45475a')};border-radius:6px;}}"
+            f"QFrame#HistoryRow:hover{{border-color:{p.get('muted','#7f849c')};}}")
+        outer = QVBoxLayout(self); outer.setContentsMargins(10,6,10,6); outer.setSpacing(4)
+        top = QHBoxLayout()
+        icon = QLabel("\u2713"); icon.setStyleSheet(f"color:{p.get('green','#a6e3a1')};font-weight:bold;")
+        top.addWidget(icon)
+        tl = QLabel(f"Step {step.step_number}: {step.title}")
+        tl.setStyleSheet(f"color:{p.get('muted','#7f849c')};font-size:11px;"); top.addWidget(tl, 1)
+        if step.completed_at:
+            dl = QLabel(step.completed_at[:10])
+            dl.setStyleSheet(f"color:{p.get('muted','#7f849c')};font-size:10px;"); top.addWidget(dl)
+        if self._has_notes:
+            self._eb = QToolButton()
+            self._eb.setText("\u25b6")
+            self._eb.setStyleSheet(f"color:{p.get('muted','#7f849c')};font-size:9px;border:none;")
+            self._eb.clicked.connect(self._toggle); top.addWidget(self._eb)
+            self._nl = QLabel(step.user_notes[:400])
+            self._nl.setStyleSheet(f"color:{p.get('fg','#cdd6f4')};font-size:11px;padding-left:18px;")
+            self._nl.setWordWrap(True); self._nl.hide()
+            outer.addLayout(top); outer.addWidget(self._nl)
+        else:
+            outer.addLayout(top)
+
+    def _toggle(self):
+        if not self._has_notes: return
+        self._expanded = not self._expanded
+        self._nl.setVisible(self._expanded)
+        self._eb.setText("\u25bc" if self._expanded else "\u25b6")
+
+
+class JourneyListItem(QFrame):
+    clicked = pyqtSignal(str); archived = pyqtSignal(str)
+    deleted = pyqtSignal(str); toggled_pause = pyqtSignal(str)
+
+    def __init__(self, journey: Journey, palette: dict, parent=None):
+        super().__init__(parent)
+        self._journey_id=journey.id; self._journey=journey
+        self._palette=palette; self._selected=False
+        self.setCursor(Qt.CursorShape.PointingHandCursor)
+        self._apply_style(False); self._build(journey)
+        self.setContextMenuPolicy(Qt.ContextMenuPolicy.CustomContextMenu)
+        self.customContextMenuRequested.connect(self._show_context_menu)
+
+    def _build(self, j: Journey):
+        layout = QVBoxLayout(self); layout.setContentsMargins(10,9,10,9); layout.setSpacing(5)
+        top = QHBoxLayout(); top.setSpacing(6)
+        title = QLabel(j.title)
+        title.setStyleSheet(
+            f"color:{self._palette.get('fg','#cdd6f4')};font-weight:bold;font-size:12px;")
+        title.setWordWrap(True); top.addWidget(title, 1)
+        ICONS={"active":"\u2694","paused":"\u23f8","completed":"\U0001f3c6","archived":"\U0001f4e6"}
+        si = QLabel(ICONS.get(j.status,""))
+        si.setFixedWidth(20); si.setAlignment(Qt.AlignmentFlag.AlignTop|Qt.AlignmentFlag.AlignRight)
+        top.addWidget(si); layout.addLayout(top)
+        if j.step_count > 0:
+            layout.addWidget(_MiniProgressBar(j.completed_steps, j.step_count,
+                             DOMAIN_COLORS.get(j.domain,"#89b4fa"),
+                             self._palette.get("border","#45475a")))
+        bot = QHBoxLayout(); bot.setSpacing(8)
+        bot.addWidget(DomainBadge(j.domain)); bot.addStretch()
+        steps_txt = f"{j.completed_steps}/{j.step_count} steps" if j.step_count > 0 else "no steps yet"
+        pl = QLabel(steps_txt)
+        pl.setStyleSheet(f"color:{self._palette.get('muted','#7f849c')};font-size:10px;")
+        bot.addWidget(pl); layout.addLayout(bot)
+
+    def _apply_style(self, selected: bool):
+        p = self._palette
+        bg = p.get("hover","#3b3d54") if selected else "transparent"
+        bd = p.get("accent","#89b4fa") if selected else "transparent"
+        self.setStyleSheet(f"QFrame{{background:{bg};border:1px solid {bd};border-radius:8px;}}")
+
+    def set_selected(self, val: bool): self._selected = val; self._apply_style(val)
+    def set_palette(self, palette: dict): self._palette = palette; self._apply_style(self._selected)
+    def mousePressEvent(self, event):
+        if event.button() == Qt.MouseButton.LeftButton:
+            self.clicked.emit(self._journey_id)
+
+    def _show_context_menu(self, pos):
+        p=self._palette; j=self._journey
+        menu=QMenu(self)
+        menu.setStyleSheet(
+            f"QMenu{{background:{p.get('surface','#313244')};color:{p.get('fg','#cdd6f4')};"
+            f"border:1px solid {p.get('border','#45475a')};border-radius:6px;padding:4px;}}"
+            f"QMenu::item{{padding:5px 18px;border-radius:4px;}}"
+            f"QMenu::item:selected{{background:{p.get('hover','#3b3d54')};}}")
+        pl = "\u25b6  Resume Journey" if j.status=="paused" else "\u23f8  Pause Journey"
+        pa=menu.addAction(pl); menu.addSeparator()
+        ara=menu.addAction("\U0001f4e6  Archive Journey"); menu.addSeparator()
+        da=menu.addAction("\U0001f5d1  Delete Journey")
+        chosen=menu.exec(self.mapToGlobal(pos))
+        if chosen==pa:  self.toggled_pause.emit(self._journey_id)
+        elif chosen==ara: self.archived.emit(self._journey_id)
+        elif chosen==da:  self.deleted.emit(self._journey_id)
+
+
+# ── Dialogs ───────────────────────────────────────────────────────────────────
+
+def _dialog_style(p: dict) -> str:
+    return (
+        f"QDialog{{background:{p.get('bg','#1e1e2e')};color:{p.get('fg','#cdd6f4')};}}"
+        f"QLabel{{color:{p.get('fg','#cdd6f4')};font-size:12px;}}"
+        f"QLineEdit,QTextEdit,QComboBox{{background:{p.get('surface','#313244')};"
+        f"color:{p.get('fg','#cdd6f4')};border:1px solid {p.get('border','#45475a')};"
+        f"border-radius:6px;padding:6px 8px;font-size:12px;}}"
+        f"QLineEdit:focus,QTextEdit:focus{{border-color:{p.get('accent','#89b4fa')};}}"
+        f"QPushButton{{background:{p.get('accent','#89b4fa')};"
+        f"color:{p.get('accent_fg','#1e1e2e')};border:none;border-radius:6px;"
+        f"padding:7px 18px;font-weight:bold;font-size:12px;}}"
+        f"QPushButton:hover{{background:{p.get('accent_hover','#a0c5ff')};}}"
+        f"QPushButton[secondary='true']{{background:{p.get('surface','#313244')};"
+        f"color:{p.get('fg','#cdd6f4')};border:1px solid {p.get('border','#45475a')};"
+        f"font-weight:normal;}}"
+        f"QPushButton[secondary='true']:hover{{background:{p.get('hover','#3b3d54')};}}"
+        f"QCheckBox{{color:{p.get('fg','#cdd6f4')};}}"
+        f"QComboBox::drop-down{{border:none;}}"
+        f"QComboBox QAbstractItemView{{background:{p.get('surface','#313244')};"
+        f"color:{p.get('fg','#cdd6f4')};"
+        f"selection-background-color:{p.get('hover','#3b3d60')};"
+        f"border:1px solid {p.get('border','#45475a')};}}"
+    )
+
+
+class NewJourneyDialog(QDialog):
+    def __init__(self, palette: dict, parent=None):
+        super().__init__(parent)
+        self.setWindowTitle("New Journey"); self.setMinimumWidth(520)
+        self.setModal(True); self.setStyleSheet(_dialog_style(palette))
+        self._palette = palette; self._template_steps: list[str] = []
+        self._build()
+
+    def _build(self):
+        layout = QVBoxLayout(self); layout.setSpacing(12); layout.setContentsMargins(20,20,20,20)
+
+        tl = QLabel("Start from Template (optional)")
+        tl.setStyleSheet(f"color:{self._palette.get('muted','#7f849c')};font-size:11px;font-style:italic;")
+        layout.addWidget(tl)
+        self._template_combo = QComboBox()
+        self._template_combo.addItem("\u2014 Custom Journey \u2014")
+        for name in JOURNEY_TEMPLATES:
+            self._template_combo.addItem(name)
+        self._template_combo.currentTextChanged.connect(self._on_template_changed)
+        layout.addWidget(self._template_combo)
+
+        sep = QFrame(); sep.setFrameShape(QFrame.Shape.HLine)
+        sep.setStyleSheet(f"background:{self._palette.get('border','#45475a')};")
+        layout.addWidget(sep)
+
+        layout.addWidget(QLabel("Journey Title"))
+        self.title_edit = QLineEdit()
+        self.title_edit.setPlaceholderText("e.g. Learn Rust, Build a Freelance Pipeline\u2026")
+        layout.addWidget(self.title_edit)
+
+        layout.addWidget(QLabel("Domain"))
+        self.domain_combo = QComboBox(); self.domain_combo.addItems(JOURNEY_DOMAINS)
+        layout.addWidget(self.domain_combo)
+
+        layout.addWidget(QLabel("Overall Goal / Description"))
+        self.goal_edit = QTextEdit()
+        self.goal_edit.setPlaceholderText(
+            "Describe what you want to achieve. The more detail, the better the AI roadmap.\u2026")
+        self.goal_edit.setFixedHeight(90); layout.addWidget(self.goal_edit)
+
+        layout.addWidget(QLabel("First Step (optional \u2014 AI roadmap will suggest if blank)"))
+        self.step_edit = QLineEdit()
+        self.step_edit.setPlaceholderText("Leave blank to let the AI plan the first step")
+        layout.addWidget(self.step_edit)
+
+        self.web_check = QCheckBox("\U0001f310  Enable web search for council sessions")
+        layout.addWidget(self.web_check)
+
+        btn_row = QHBoxLayout()
+        cancel = QPushButton("Cancel"); cancel.setProperty("secondary", True); cancel.clicked.connect(self.reject)
+        create = QPushButton("\u2694  Begin Journey"); create.clicked.connect(self._accept)
+        btn_row.addWidget(cancel); btn_row.addStretch(); btn_row.addWidget(create)
+        layout.addLayout(btn_row)
+
+    def _on_template_changed(self, name: str):
+        t = JOURNEY_TEMPLATES.get(name)
+        if not t: return
+        self.title_edit.setText(name.split("(")[0].strip())
+        idx = self.domain_combo.findText(t["domain"])
+        if idx >= 0: self.domain_combo.setCurrentIndex(idx)
+        self.goal_edit.setPlainText(t.get("goal",""))
+        self._template_steps = t.get("steps",[])
+        if self._template_steps: self.step_edit.setText(self._template_steps[0])
+
+    def _accept(self):
+        if not self.title_edit.text().strip(): self.title_edit.setFocus(); return
+        self.accept()
+
+    def get_data(self) -> dict:
+        return {
+            "title":          self.title_edit.text().strip(),
+            "domain":         self.domain_combo.currentText(),
+            "goal":           self.goal_edit.toPlainText().strip(),
+            "first_step":     self.step_edit.text().strip(),
+            "web_search":     self.web_check.isChecked(),
+            "template_steps": self._template_steps,
+        }
+
+
+class AddStepDialog(QDialog):
+    def __init__(self, palette: dict, title: str = "Add Step",
+                 prefill_title: str = "", prefill_notes: str = "", parent=None):
+        super().__init__(parent)
+        self.setWindowTitle(title); self.setMinimumWidth(480)
+        self.setModal(True); self.setStyleSheet(_dialog_style(palette))
+        self._pft = prefill_title; self._pfn = prefill_notes; self._build()
+
+    def _build(self):
+        layout = QVBoxLayout(self); layout.setSpacing(12); layout.setContentsMargins(20,20,20,20)
+        layout.addWidget(QLabel("Step Title"))
+        self.title_edit = QLineEdit(); self.title_edit.setPlaceholderText("What is this step called?")
+        if self._pft: self.title_edit.setText(self._pft)
+        layout.addWidget(self.title_edit)
+        layout.addWidget(QLabel("Context / Lesson Focus (optional)"))
+        self.notes_edit = QTextEdit()
+        self.notes_edit.setPlaceholderText(
+            "Describe what this step should cover. More detail \u2192 better tutoring.\u2026")
+        self.notes_edit.setFixedHeight(90)
+        if self._pfn: self.notes_edit.setPlainText(self._pfn)
+        layout.addWidget(self.notes_edit)
+        layout.addWidget(QLabel("Hints for Council (optional)"))
+        self.hints_edit = QTextEdit()
+        self.hints_edit.setPlaceholderText(
+            "Specific angles, resources, or constraints for the council to focus on\u2026")
+        self.hints_edit.setFixedHeight(70); layout.addWidget(self.hints_edit)
+        btn_row = QHBoxLayout()
+        cancel = QPushButton("Cancel"); cancel.setProperty("secondary", True); cancel.clicked.connect(self.reject)
+        ok_btn = QPushButton("\u2694  Set Step"); ok_btn.clicked.connect(self._accept)
+        btn_row.addWidget(cancel); btn_row.addStretch(); btn_row.addWidget(ok_btn)
+        layout.addLayout(btn_row)
+
+    def _accept(self):
+        if not self.title_edit.text().strip(): self.title_edit.setFocus(); return
+        self.accept()
+
+    def get_data(self) -> dict:
+        return {
+            "title": self.title_edit.text().strip(),
+            "notes": self.notes_edit.toPlainText().strip(),
+            "hints": self.hints_edit.toPlainText().strip(),
+        }
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
+#  Main panel
+# ═══════════════════════════════════════════════════════════════════════════════
+
+class JourneyPanel(QWidget):
+
+    def __init__(self, todo_store=None, calendar_store=None,
+                 activity_store=None, notes_store=None, parent=None):
+        super().__init__(parent)
+        self._palette        = dict(_FALLBACK)
+        self._todo_store     = todo_store
+        self._calendar_store = calendar_store
+        self._activity_store = activity_store
+        self._notes_store    = notes_store
+        self._store          = JourneyStore()
+
+        self._active_journey:  Optional[Journey]     = None
+        self._steps:           list[JourneyStep]     = []
+        self._current_step:    Optional[JourneyStep] = None
+        self._selected_rm_idx: int                   = -1   # selected roadmap node idx
+        self._council_running: bool                  = False
+        self._list_items:      list[JourneyListItem] = []
+        self._save_timer:      Optional[QTimer]      = None
+        self._checklist_state: dict                  = {}
+
+        self._build_ui()
+        self._refresh_journey_list()
+
+    # ── UI construction ───────────────────────────────────────────────────────
+
+    def _build_ui(self):
+        root = QHBoxLayout(self); root.setContentsMargins(0,0,0,0); root.setSpacing(0)
+        splitter = QSplitter(Qt.Orientation.Horizontal); splitter.setHandleWidth(2)
+        splitter.addWidget(self._build_left_panel())
+        self._right_stack = QStackedWidget()
+        self._right_stack.addWidget(self._build_empty_right())  # 0
+        self._right_stack.addWidget(self._build_right_panel())  # 1
+        splitter.addWidget(self._right_stack)
+        splitter.setSizes([260, 820])
+        splitter.setStretchFactor(0, 0); splitter.setStretchFactor(1, 1)
+        root.addWidget(splitter)
+        self._apply_palette(self._palette)
+
+    def _build_left_panel(self) -> QWidget:
+        w = QWidget(); w.setObjectName("JourneyLeft"); w.setMinimumWidth(240)
+        layout = QVBoxLayout(w); layout.setContentsMargins(10,14,10,12); layout.setSpacing(8)
+        hdr = QLabel("\u2694  JOURNEYS")
+        hdr.setStyleSheet(
+            f"color:{self._palette.get('accent','#89b4fa')};"
+            f"font-size:12px;font-weight:bold;letter-spacing:2px;")
+        layout.addWidget(hdr)
+        sep = QFrame(); sep.setFrameShape(QFrame.Shape.HLine)
+        sep.setStyleSheet(f"background:{self._palette.get('border','#45475a')};max-height:1px;")
+        layout.addWidget(sep)
+        self._list_scroll = QScrollArea(); self._list_scroll.setWidgetResizable(True)
+        self._list_scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+        self._list_scroll.setFrameShape(QFrame.Shape.NoFrame)
+        self._list_container = QWidget()
+        self._list_layout    = QVBoxLayout(self._list_container)
+        self._list_layout.setContentsMargins(0,0,0,0); self._list_layout.setSpacing(4)
+        self._list_layout.addStretch()
+        self._list_scroll.setWidget(self._list_container)
+        layout.addWidget(self._list_scroll, 1)
+        self._new_btn = QPushButton("\uff0b  New Journey")
+        self._new_btn.clicked.connect(self._on_new_journey)
+        layout.addWidget(self._new_btn)
+        return w
+
+    def _build_empty_right(self) -> QWidget:
+        w = QWidget(); layout = QVBoxLayout(w)
+        layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        icon = QLabel("\U0001f5fa"); icon.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        icon.setStyleSheet("font-size:52px;")
+        msg = QLabel("Select or create a journey\nto begin your quest.")
+        msg.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        msg.setStyleSheet(
+            f"color:{self._palette.get('muted','#7f849c')};font-size:14px;")
+        hint = QLabel(
+            "Use a template to get started quickly,\n"
+            "or create a custom journey from scratch.")
+        hint.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        hint.setStyleSheet(
+            f"color:{self._palette.get('border','#45475a')};font-size:11px;")
+        layout.addWidget(icon); layout.addSpacing(12)
+        layout.addWidget(msg); layout.addSpacing(6)
+        layout.addWidget(hint)
+        return w
+
+    def _build_right_panel(self) -> QWidget:
+        w = QWidget(); outer = QVBoxLayout(w)
+        outer.setContentsMargins(16,12,16,12); outer.setSpacing(8)
+        outer.addWidget(self._build_journey_header())
+        self._step_track = StepTrack()
+        self._step_track.step_clicked.connect(self._on_step_track_clicked)
+        outer.addWidget(self._step_track)
+        sep = QFrame(); sep.setFrameShape(QFrame.Shape.HLine); outer.addWidget(sep)
+        self._tabs = QTabWidget()
+        self._tabs.addTab(self._build_overview_tab(),  "\U0001f4cb  Overview")
+        self._tabs.addTab(self._build_council_tab(),   "\u2694  Council")
+        self._tabs.addTab(self._build_workspace_tab(), "\u270f  Workspace")
+        outer.addWidget(self._tabs, 1)
+        return w
+
+    def _build_journey_header(self) -> QWidget:
+        w = QWidget(); w.setObjectName("JourneyHeader")
+        layout = QVBoxLayout(w); layout.setContentsMargins(0,0,0,4); layout.setSpacing(6)
+        self._title_label = QLabel("Journey")
+        self._title_label.setStyleSheet(
+            f"color:{self._palette.get('fg','#cdd6f4')};font-size:20px;font-weight:bold;")
+        self._title_label.setWordWrap(True); layout.addWidget(self._title_label)
+        meta = QHBoxLayout()
+        self._domain_badge = DomainBadge("General"); meta.addWidget(self._domain_badge)
+        meta.addSpacing(8)
+        self._goal_label = QLabel("")
+        self._goal_label.setStyleSheet(f"color:{self._palette.get('muted','#7f849c')};font-size:11px;")
+        self._goal_label.setWordWrap(True); meta.addWidget(self._goal_label, 1)
+        layout.addLayout(meta)
+        ctrl = QHBoxLayout()
+        self._web_toggle = QCheckBox("\U0001f310  Web Search")
+        self._web_toggle.stateChanged.connect(self._on_web_toggle)
+        ctrl.addWidget(self._web_toggle); ctrl.addStretch()
+        self._pause_btn = QPushButton("\u23f8  Pause")
+        self._pause_btn.setProperty("secondary", True); self._pause_btn.setFixedHeight(30)
+        self._pause_btn.clicked.connect(self._on_toggle_pause)
+        ctrl.addWidget(self._pause_btn); ctrl.addSpacing(6)
+        self._complete_journey_btn = QPushButton("\U0001f3c6  Complete Journey")
+        self._complete_journey_btn.setProperty("secondary", True)
+        self._complete_journey_btn.setFixedHeight(30)
+        self._complete_journey_btn.clicked.connect(self._on_complete_journey)
+        ctrl.addWidget(self._complete_journey_btn); layout.addLayout(ctrl)
+        return w
+
+    # ── Overview tab ──────────────────────────────────────────────────────────
+
+    def _build_overview_tab(self) -> QWidget:
+        w = QWidget(); outer = QVBoxLayout(w)
+        outer.setContentsMargins(0,8,0,0); outer.setSpacing(0)
+        scroll = QScrollArea(); scroll.setWidgetResizable(True)
+        scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+        scroll.setFrameShape(QFrame.Shape.NoFrame)
+        content = QWidget()
+        self._overview_layout = QVBoxLayout(content)
+        self._overview_layout.setContentsMargins(4,4,4,8); self._overview_layout.setSpacing(14)
+        self._overview_layout.addStretch()
+        scroll.setWidget(content); outer.addWidget(scroll, 1)
+        return w
+
+    # ── Council tab ───────────────────────────────────────────────────────────
+
+    def _build_council_tab(self) -> QWidget:
+        w = QWidget(); outer = QVBoxLayout(w)
+        outer.setContentsMargins(0,8,0,0); outer.setSpacing(0)
+        scroll = QScrollArea(); scroll.setWidgetResizable(True)
+        scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+        scroll.setFrameShape(QFrame.Shape.NoFrame)
+        content = QWidget()
+        self._council_layout = QVBoxLayout(content)
+        self._council_layout.setContentsMargins(4,4,4,8); self._council_layout.setSpacing(8)
+        self._sessions_label = QLabel("COUNCIL SESSIONS")
+        self._sessions_label.setStyleSheet(
+            f"color:{self._palette.get('muted','#7f849c')};"
+            f"font-size:9px;font-weight:bold;letter-spacing:2px;")
+        self._sessions_label.hide(); self._council_layout.addWidget(self._sessions_label)
+        self._sessions_container = QWidget()
+        self._sessions_layout = QVBoxLayout(self._sessions_container)
+        self._sessions_layout.setContentsMargins(0,0,0,0); self._sessions_layout.setSpacing(8)
+        self._council_layout.addWidget(self._sessions_container)
+        self._history_label = QLabel("QUEST LOG \u2014 COMPLETED STEPS")
+        self._history_label.setStyleSheet(
+            f"color:{self._palette.get('muted','#7f849c')};"
+            f"font-size:9px;font-weight:bold;letter-spacing:2px;margin-top:8px;")
+        self._history_label.hide(); self._council_layout.addWidget(self._history_label)
+        self._history_container = QWidget()
+        self._history_layout = QVBoxLayout(self._history_container)
+        self._history_layout.setContentsMargins(0,0,0,0); self._history_layout.setSpacing(4)
+        self._council_layout.addWidget(self._history_container)
+        self._council_layout.addStretch()
+        scroll.setWidget(content); outer.addWidget(scroll, 1)
+        return w
+
+    # ── Workspace tab ─────────────────────────────────────────────────────────
+
+    def _build_workspace_tab(self) -> QWidget:
+        w = QWidget(); outer = QVBoxLayout(w)
+        outer.setContentsMargins(0,8,0,0); outer.setSpacing(0)
+        scroll = QScrollArea(); scroll.setWidgetResizable(True)
+        scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+        scroll.setFrameShape(QFrame.Shape.NoFrame)
+        content = QWidget()
+        layout = QVBoxLayout(content)
+        layout.setContentsMargins(4,4,4,8); layout.setSpacing(12)
+
+        card = QFrame(); card.setObjectName("JourneyStepCard")
+        sc = QVBoxLayout(card); sc.setContentsMargins(20,18,20,18); sc.setSpacing(12)
+
+        tr = QHBoxLayout(); tr.setSpacing(10)
+        self._step_icon = QLabel("\U0001f4dc")
+        self._step_icon.setStyleSheet("font-size:22px;"); self._step_icon.setFixedWidth(30)
+        self._step_icon.setAlignment(Qt.AlignmentFlag.AlignTop|Qt.AlignmentFlag.AlignHCenter)
+        tr.addWidget(self._step_icon)
+        tc = QVBoxLayout(); tc.setSpacing(3)
+        self._step_num_label = QLabel("")
+        self._step_num_label.setStyleSheet(
+            f"color:{self._palette.get('muted','#7f849c')};"
+            f"font-size:9px;font-weight:bold;letter-spacing:2px;")
+        self._step_title_label = QLabel("No active step")
+        self._step_title_label.setStyleSheet(
+            f"color:{self._palette.get('accent','#89b4fa')};font-size:16px;font-weight:bold;")
+        self._step_title_label.setWordWrap(True)
+        self._step_title_label.setSizePolicy(
+            QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Preferred)
+        tc.addWidget(self._step_num_label); tc.addWidget(self._step_title_label)
+        tr.addLayout(tc, 1); sc.addLayout(tr)
+
+        div = QFrame(); div.setFrameShape(QFrame.Shape.HLine)
+        div.setStyleSheet(f"background:{self._palette.get('border','#45475a')};max-height:1px;")
+        sc.addWidget(div)
+
+        sc.addWidget(self._mklbl("LESSON NOTES & PROGRESS"))
+        self._notes_edit = QTextEdit()
+        self._notes_edit.setPlaceholderText(
+            "Record what you're learning, questions, code you're writing, "
+            "breakthroughs, and blockers. The more detail, the better the council "
+            "can guide your next step\u2026")
+        self._notes_edit.setMinimumHeight(160)
+        self._notes_edit.textChanged.connect(self._auto_save_notes)
+        sc.addWidget(self._notes_edit)
+
+        sc.addWidget(self._mklbl("HINTS FOR COUNCIL  \u2014  optional"))
+        self._hints_edit = QTextEdit()
+        self._hints_edit.setPlaceholderText(
+            "Specific angles, resources, or constraints to focus on\u2026")
+        self._hints_edit.setMinimumHeight(100)
+        self._hints_edit.textChanged.connect(self._auto_save_notes)
+        sc.addWidget(self._hints_edit)
+
+        # Primary actions
+        btn_row = QHBoxLayout(); btn_row.setSpacing(10)
+        self._council_btn = QPushButton("\u2694  Convene Council")
+        self._council_btn.setFixedHeight(44)
+        self._council_btn.clicked.connect(self._on_convene_council)
+        btn_row.addWidget(self._council_btn, 3)
+        self._complete_btn = QPushButton("\u2713  Complete & Next Step")
+        self._complete_btn.setProperty("secondary", True); self._complete_btn.setFixedHeight(44)
+        self._complete_btn.clicked.connect(self._on_complete_step)
+        btn_row.addWidget(self._complete_btn, 2)
+        sc.addLayout(btn_row)
+
+        # Add step / update roadmap row
+        aux_row = QHBoxLayout(); aux_row.setSpacing(8)
+        self._add_step_btn = QPushButton("\uff0b  Add New Step")
+        self._add_step_btn.setProperty("secondary", True); self._add_step_btn.setFixedHeight(36)
+        self._add_step_btn.clicked.connect(self._on_add_step); self._add_step_btn.hide()
+        aux_row.addWidget(self._add_step_btn)
+        aux_row.addStretch()
+        self._update_rm_btn = QPushButton("\U0001f504  Update Roadmap")
+        self._update_rm_btn.setProperty("secondary", True); self._update_rm_btn.setFixedHeight(36)
+        self._update_rm_btn.setToolTip(
+            "Send your current notes/hints to the AI to update the journey roadmap")
+        self._update_rm_btn.clicked.connect(self._on_update_roadmap)
+        aux_row.addWidget(self._update_rm_btn)
+        sc.addLayout(aux_row)
+
+        # Council progress spinner (replaces the old tiny italic label)
+        self._council_spinner = CouncilSpinner(self._palette)
+        self._council_spinner.hide()
+        sc.addWidget(self._council_spinner)
+
+        # Progress/status line (kept for quick status flashes)
+        self._council_status = QLabel("")
+        self._council_status.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self._council_status.setStyleSheet(
+            f"color:{self._palette.get('muted','#7f849c')};"
+            f"font-size:11px;font-style:italic;padding:4px 0;")
+        self._council_status.hide(); sc.addWidget(self._council_status)
+
+        layout.addWidget(card); layout.addStretch()
+        scroll.setWidget(content); outer.addWidget(scroll, 1)
+        return w
+
+    def _mklbl(self, text: str) -> QLabel:
+        lbl = QLabel(text)
+        lbl.setStyleSheet(
+            f"color:{self._palette.get('muted','#7f849c')};"
+            f"font-size:9px;font-weight:bold;letter-spacing:2px;")
+        return lbl
+
+    # ── Palette ───────────────────────────────────────────────────────────────
+
+    def set_palette(self, palette: dict):
+        self._palette = palette
+        self._apply_palette(palette)
+        if self._current_step or self._active_journey:
+            self._refresh_overview()
+            self._refresh_sessions()
+            self._refresh_history()
+
+    def _apply_palette(self, p: dict):
+        bg=p.get("bg","#1e1e2e"); surface=p.get("surface","#313244")
+        border=p.get("border","#45475a"); fg=p.get("fg","#cdd6f4")
+        muted=p.get("muted","#7f849c"); accent=p.get("accent","#89b4fa")
+        accent_fg=p.get("accent_fg","#1e1e2e"); accent_h=p.get("accent_hover","#a0c5ff")
+        accent_pr=p.get("accent_pressed","#74a4ea"); green=p.get("green","#a6e3a1")
+        hover=p.get("hover","#3b3d54"); header_bg=p.get("header_bg",bg)
+
+        self.setStyleSheet(
+            f"QWidget#JourneyLeft{{background:{header_bg};border-right:1px solid {border};}}"
+            f"QFrame#JourneyStepCard{{background:{surface};border:1px solid {border};"
+            f"border-left:4px solid {accent};border-radius:10px;}}"
+            f"QTextEdit{{background:{bg};color:{fg};border:1px solid {border};"
+            f"border-radius:6px;padding:8px;font-size:13px;"
+            f"selection-background-color:{accent};selection-color:{accent_fg};}}"
+            f"QTextEdit:focus{{border-color:{accent};}}"
+            f"QScrollArea{{background:transparent;border:none;}}"
+            f"QScrollBar:vertical{{background:{bg};width:6px;border-radius:3px;}}"
+            f"QScrollBar::handle:vertical{{background:{border};border-radius:3px;min-height:20px;}}"
+            f"QScrollBar::handle:vertical:hover{{background:{muted};}}"
+            f"QScrollBar::add-line:vertical,QScrollBar::sub-line:vertical{{height:0;}}"
+            f"QScrollBar:horizontal{{background:{bg};height:6px;border-radius:3px;}}"
+            f"QScrollBar::handle:horizontal{{background:{border};border-radius:3px;min-width:20px;}}"
+            f"QScrollBar::add-line:horizontal,QScrollBar::sub-line:horizontal{{width:0;}}"
+            f"QPushButton{{background:{accent};color:{accent_fg};border:none;"
+            f"border-radius:6px;padding:6px 16px;font-size:12px;font-weight:bold;}}"
+            f"QPushButton:hover{{background:{accent_h};}}"
+            f"QPushButton:pressed{{background:{accent_pr};}}"
+            f"QPushButton:disabled{{background:{border};color:{muted};}}"
+            f"QPushButton[secondary='true']{{background:{surface};color:{fg};"
+            f"border:1px solid {border};font-weight:normal;}}"
+            f"QPushButton[secondary='true']:hover{{background:{hover};}}"
+            f"QFrame[frameShape='4']{{background:{border};max-height:1px;}}"
+            f"QCheckBox{{color:{fg};font-size:11px;}}"
+            f"QCheckBox::indicator{{width:14px;height:14px;border:1px solid {border};"
+            f"border-radius:3px;background:{surface};}}"
+            f"QCheckBox::indicator:checked{{background:{accent};border-color:{accent};}}"
+            f"QSplitter::handle{{background:{border};}}"
+            f"QToolButton{{color:{muted};font-size:11px;border:none;"
+            f"background:transparent;padding:2px;}}"
+            f"QToolButton:hover{{color:{fg};}}"
+        )
+        if hasattr(self, "_tabs"):          self._tabs.setStyleSheet(_tab_style(p))
+        if hasattr(self, "_step_track"):    self._step_track.set_palette(p)
+        if hasattr(self, "_roadmap_widget"):self._roadmap_widget.set_palette(p)
+        if hasattr(self, "_title_label"):
+            self._title_label.setStyleSheet(f"color:{fg};font-size:20px;font-weight:bold;")
+        if hasattr(self, "_goal_label"):
+            self._goal_label.setStyleSheet(f"color:{muted};font-size:11px;")
+        if hasattr(self, "_step_num_label"):
+            self._step_num_label.setStyleSheet(
+                f"color:{muted};font-size:9px;font-weight:bold;letter-spacing:2px;")
+        if hasattr(self, "_step_title_label"):
+            self._step_title_label.setStyleSheet(
+                f"color:{accent};font-size:16px;font-weight:bold;")
+        if hasattr(self, "_council_btn"):
+            self._council_btn.setStyleSheet(
+                f"QPushButton{{background:qlineargradient("
+                f"x1:0,y1:0,x2:1,y2:0,stop:0 {accent},stop:1 {green});"
+                f"color:{accent_fg};border:none;border-radius:8px;"
+                f"font-size:13px;font-weight:bold;padding:0 18px;}}"
+                f"QPushButton:hover{{background:qlineargradient("
+                f"x1:0,y1:0,x2:1,y2:0,stop:0 {accent_h},stop:1 {green});}}"
+                f"QPushButton:disabled{{background:{border};color:{muted};}}")
+        if hasattr(self, "_council_spinner"):
+            self._council_spinner._palette = p
+        for item in self._list_items:
+            item.set_palette(p)
+
+    # ── Journey list ──────────────────────────────────────────────────────────
+
+    def _refresh_journey_list(self):
+        while self._list_layout.count():
+            item = self._list_layout.takeAt(0)
+            if item.widget(): item.widget().deleteLater()
+        self._list_items.clear()
+        for j in self._store.list_journeys():
+            item = JourneyListItem(j, self._palette)
+            item.clicked.connect(self._on_journey_selected)
+            item.archived.connect(self._on_archive_journey)
+            item.deleted.connect(self._on_delete_journey)
+            item.toggled_pause.connect(self._on_toggle_pause_by_id)
+            self._list_layout.addWidget(item); self._list_items.append(item)
+        self._list_layout.addStretch()
+        if self._active_journey: self._mark_selected(self._active_journey.id)
+
+    def _mark_selected(self, journey_id: str):
+        for item in self._list_items:
+            item.set_selected(item._journey_id == journey_id)
+
+    # ── Journey loading ───────────────────────────────────────────────────────
+
+    def _on_journey_selected(self, journey_id: str):
+        journey = self._store.get_journey(journey_id)
+        if not journey: return
+        self._active_journey = journey
+        self._mark_selected(journey_id); self._load_journey(journey)
+
+    def _load_journey(self, journey: Journey):
+        self._title_label.setText(journey.title)
+        goal = journey.goal_description
+        self._goal_label.setText(goal[:130] + ("\u2026" if len(goal)>130 else ""))
+        self._domain_badge.update_domain(journey.domain)
+        is_paused = journey.status == "paused"
+        self._pause_btn.setText("\u25b6  Resume" if is_paused else "\u23f8  Pause")
+        self._pause_btn.setEnabled(journey.status in ("active","paused"))
+        self._complete_journey_btn.setEnabled(journey.status not in ("completed","archived"))
+        self._web_toggle.blockSignals(True)
+        self._web_toggle.setChecked(journey.web_search_enabled)
+        self._web_toggle.blockSignals(False)
+        self._steps = self._store.list_steps(journey.id)
+        self._step_track.set_steps(self._steps)
+        active = [s for s in self._steps if s.status == "active"]
+        self._current_step = active[0] if active else None
+        self._checklist_state = dict(self._current_step.checklist_state) if self._current_step else {}
+        # Auto-select current step in roadmap
+        if self._current_step:
+            roadmap = journey.roadmap
+            for i, rs in enumerate(roadmap.steps):
+                if rs.title.strip().lower() == self._current_step.title.strip().lower():
+                    self._selected_rm_idx = i
+                    break
+        else:
+            self._selected_rm_idx = -1
+        self._refresh_workspace()
+        self._refresh_overview()
+        self._refresh_sessions()
+        self._refresh_history()
+        self._right_stack.setCurrentIndex(1)
+
+    def _refresh_workspace(self):
+        step = self._current_step; total = len(self._steps)
+        if step:
+            self._step_num_label.setText(f"STEP {step.step_number} OF {total}")
+            self._step_title_label.setText(step.title)
+            self._notes_edit.blockSignals(True)
+            self._notes_edit.setPlainText(step.user_notes)
+            self._notes_edit.blockSignals(False)
+            self._hints_edit.blockSignals(True)
+            self._hints_edit.setPlainText(step.user_next_suggestions)
+            self._hints_edit.blockSignals(False)
+            self._notes_edit.setEnabled(True); self._hints_edit.setEnabled(True)
+            self._council_btn.setEnabled(True); self._council_btn.show()
+            self._complete_btn.setEnabled(True); self._complete_btn.show()
+            self._add_step_btn.hide(); self._step_icon.setText("\U0001f4dc")
+        else:
+            if total > 0:
+                self._step_num_label.setText(f"ALL {total} STEPS COMPLETE")
+                self._step_title_label.setText("Add a new step or click a roadmap node.")
+                self._step_icon.setText("\U0001f3c6")
+            else:
+                self._step_num_label.setText("NO STEPS YET")
+                self._step_title_label.setText("Add your first step below.")
+                self._step_icon.setText("\U0001f4cb")
+            self._notes_edit.clear(); self._notes_edit.setEnabled(False)
+            self._hints_edit.clear(); self._hints_edit.setEnabled(False)
+            self._council_btn.hide(); self._complete_btn.hide()
+            self._add_step_btn.show()
+
+    # ── Overview tab ──────────────────────────────────────────────────────────
+
+    def _refresh_overview(self):
+        while self._overview_layout.count():
+            item = self._overview_layout.takeAt(0)
+            if item.widget(): item.widget().deleteLater()
+
+        p       = self._palette
+        journey = self._active_journey
+        if not journey:
+            self._overview_layout.addStretch(); return
+
+        roadmap = journey.roadmap
+
+        # ── Roadmap card ───────────────────────────────────────────────────────
+        if roadmap.steps:
+            rm_card = SectionCard("Journey Roadmap", "\U0001f5fa", p)
+            bl = rm_card.body_layout()
+            if roadmap.overview:
+                ov = QLabel(roadmap.overview)
+                ov.setStyleSheet(f"color:{p.get('muted','#7f849c')};font-size:12px;font-style:italic;")
+                ov.setWordWrap(True); bl.addWidget(ov)
+
+            # The roadmap widget in a horizontal scroll area
+            h_scroll = QScrollArea()
+            h_scroll.setWidgetResizable(False)
+            h_scroll.setFrameShape(QFrame.Shape.NoFrame)
+            h_scroll.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+            h_scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAsNeeded)
+            h_scroll.setStyleSheet("QScrollArea{background:transparent;border:none;}")
+
+            self._roadmap_widget = RoadmapWidget()
+            self._roadmap_widget.set_palette(p)
+            self._roadmap_widget.set_data(roadmap, self._steps, self._selected_rm_idx)
+            self._roadmap_widget.node_selected.connect(self._on_roadmap_node_selected)
+            h_scroll.setWidget(self._roadmap_widget)
+            h_scroll.setFixedHeight(self._roadmap_widget.minimumHeight() + 6)
+            bl.addWidget(h_scroll)
+
+            # Detour legend
+            if any(rs.is_detour for rs in roadmap.steps):
+                dl = QLabel(
+                    f"\U0001f7e8 = Detour step (off original plan)")
+                dl.setStyleSheet(f"color:{p.get('yellow','#f9e2af')};font-size:10px;")
+                bl.addWidget(dl)
+
+            self._overview_layout.addWidget(rm_card)
+
+            # ── Selected node detail card ──────────────────────────────────────
+            if 0 <= self._selected_rm_idx < len(roadmap.steps):
+                rs = roadmap.steps[self._selected_rm_idx]
+                self._build_selected_step_card(rs, p)
+
+        elif not self._current_step:
+            # Informative empty state
+            empty_card = SectionCard("Getting Started", "\U0001f680", p)
+            ebl = empty_card.body_layout()
+            msg = QLabel(
+                "Your journey has no roadmap yet.\n\n"
+                "1. Add your first step in the Workspace tab\n"
+                "2. Convene the Council to generate tutoring content\n"
+                "3. The AI will create a roadmap based on your journey goal\n\n"
+                "Or choose a template when creating a new journey for\n"
+                "a pre-built roadmap to get started immediately."
+            )
+            msg.setStyleSheet(f"color:{p.get('fg','#cdd6f4')};font-size:12px;line-height:1.6;")
+            msg.setWordWrap(True)
+            ebl.addWidget(msg)
+            self._overview_layout.addWidget(empty_card)
+            self._overview_layout.addStretch()
+            return
+
+        # ── Council content for current step ──────────────────────────────────
+        if not self._current_step:
+            self._overview_layout.addStretch(); return
+
+        sessions = self._store.list_sessions_for_step(self._current_step.id)
+        if not sessions:
+            no_card = SectionCard("Awaiting Council", "\u2694", p)
+            nbl = no_card.body_layout()
+            msg = QLabel(
+                "No council sessions for this step yet.\n\n"
+                "Go to the Workspace tab and click\n"
+                "\u2694 Convene Council to generate your tutoring session,\n"
+                "checklist, and resource recommendations."
+            )
+            msg.setStyleSheet(f"color:{p.get('muted','#7f849c')};font-size:12px;")
+            msg.setWordWrap(True)
+            nbl.addWidget(msg)
+            self._overview_layout.addWidget(no_card)
+            self._overview_layout.addStretch()
+            return
+
+        latest = sessions[-1]
+        synth  = (latest.synthesis or "").strip()
+
+        # Synthesis card
+        syn_card = SectionCard("Council Tutoring Session", "\u2694", p)
+        bl2 = syn_card.body_layout()
+        display_text = synth if synth else (
+            "_The council completed but returned no synthesis content.\n"
+            "Check your model configuration, or convene again._"
+        )
+        browser = QTextBrowser()
+        browser.setOpenExternalLinks(True)
+        browser.setHtml(_to_html(display_text, p))
+        browser.setMinimumHeight(360)
+        browser.setStyleSheet(
+            f"QTextBrowser{{background:{p.get('bg','#1e1e2e')};"
+            f"border:none;border-radius:6px;padding:4px;font-size:12px;}}")
+        bl2.addWidget(browser)
+        self._overview_layout.addWidget(syn_card)
+
+        # 2-col: checklist + next steps from roadmap
+        row_w = QWidget(); row = QHBoxLayout(row_w)
+        row.setContentsMargins(0,0,0,0); row.setSpacing(12)
+
+        if latest.step_checklist:
+            cl_card = SectionCard("Action Checklist", "\u2714", p)
+            for task in latest.step_checklist:
+                checked = self._checklist_state.get(task, False)
+                ci = ChecklistItem(task, checked, p)
+                ci.toggled.connect(self._on_checklist_toggled)
+                cl_card.body_layout().addWidget(ci)
+            row.addWidget(cl_card, 3)
+
+        next_rs = self._get_next_roadmap_steps(2)
+        if next_rs:
+            ns_card = SectionCard("Up Next from Roadmap", "\u27a1", p)
+            ns_bl = ns_card.body_layout()
+            for rs in next_rs:
+                btn = QPushButton(f"  {rs.number}. {rs.title}")
+                btn.setProperty("secondary", True); btn.setFixedHeight(38)
+                btn.setStyleSheet(
+                    f"QPushButton{{background:{p.get('surface','#313244')};"
+                    f"color:{p.get('fg','#cdd6f4')};border:1px solid {p.get('border','#45475a')};"
+                    f"border-left:3px solid {p.get('accent','#89b4fa')};"
+                    f"border-radius:6px;text-align:left;padding-left:12px;font-size:12px;}}"
+                    f"QPushButton:hover{{background:{p.get('hover','#3b3d54')};}}")
+                btn.clicked.connect(lambda _, r=rs: self._on_roadmap_step_clicked(r))
+                ns_bl.addWidget(btn)
+                if rs.description:
+                    dl = QLabel(rs.description[:90] + ("\u2026" if len(rs.description)>90 else ""))
+                    dl.setStyleSheet(f"color:{p.get('muted','#7f849c')};font-size:10px;padding-left:12px;")
+                    dl.setWordWrap(True); ns_bl.addWidget(dl)
+            row.addWidget(ns_card, 2)
+
+        if latest.step_checklist or next_rs:
+            self._overview_layout.addWidget(row_w)
+
+        if latest.step_resources:
+            rc = SectionCard("Resources & References", "\U0001f4da", p)
+            for res in latest.step_resources:
+                rl = QLabel(f"\u2022  {res}")
+                rl.setStyleSheet(f"color:{p.get('fg','#cdd6f4')};font-size:12px;")
+                rl.setWordWrap(True); rc.body_layout().addWidget(rl)
+            self._overview_layout.addWidget(rc)
+
+        if latest.roadmap_text:
+            nc = SectionCard("What Comes Next", "\U0001f5fa", p)
+            nl = QLabel(latest.roadmap_text)
+            nl.setStyleSheet(f"color:{p.get('fg','#cdd6f4')};font-size:12px;line-height:1.7;")
+            nl.setWordWrap(True); nc.body_layout().addWidget(nl)
+            self._overview_layout.addWidget(nc)
+
+        # Footer
+        fw = QWidget(); fl = QHBoxLayout(fw); fl.setContentsMargins(0,0,0,0)
+        ts_lbl = QLabel(
+            f"Session #{len(sessions)}  \u00b7  "
+            f"{latest.created_at[:16].replace('T','  ')}")
+        ts_lbl.setStyleSheet(f"color:{p.get('muted','#7f849c')};font-size:10px;")
+        fl.addWidget(ts_lbl); fl.addStretch()
+        regen_btn = QPushButton("\u21bb  Regenerate Plan")
+        regen_btn.setProperty("secondary", True); regen_btn.setFixedHeight(28)
+        regen_btn.clicked.connect(self._on_regen_overview); fl.addWidget(regen_btn)
+        self._overview_layout.addWidget(fw)
+        self._overview_layout.addStretch()
+
+    def _build_selected_step_card(self, rs: RoadmapStep, p: dict):
+        """Show the selected roadmap step's detail below the flow."""
+        card = SectionCard(f"Step {rs.number}: {rs.title}",
+                           "\U0001f4cc" if rs.is_detour else "\U0001f4cd", p)
+        bl = card.body_layout()
+
+        if rs.description:
+            dl = QLabel(rs.description)
+            dl.setStyleSheet(f"color:{p.get('fg','#cdd6f4')};font-size:12px;")
+            dl.setWordWrap(True); bl.addWidget(dl)
+
+        if rs.objectives:
+            obj_lbl = QLabel("OBJECTIVES")
+            obj_lbl.setStyleSheet(
+                f"color:{p.get('muted','#7f849c')};font-size:9px;"
+                f"font-weight:bold;letter-spacing:2px;")
+            bl.addWidget(obj_lbl)
+            for obj in rs.objectives:
+                ol = QLabel(f"  \u2022  {obj}")
+                ol.setStyleSheet(f"color:{p.get('fg','#cdd6f4')};font-size:12px;")
+                ol.setWordWrap(True); bl.addWidget(ol)
+
+        if rs.is_detour:
+            det_lbl = QLabel("\U0001f7e8  This is a detour step \u2014 added outside the original plan.")
+            det_lbl.setStyleSheet(f"color:{p.get('yellow','#f9e2af')};font-size:11px;font-style:italic;")
+            bl.addWidget(det_lbl)
+
+        # Action button
+        step_status = "unstarted"
+        for s in self._steps:
+            if s.title.strip().lower() == rs.title.strip().lower():
+                step_status = s.status; break
+
+        btn_row = QHBoxLayout()
+        if step_status == "unstarted":
+            begin_btn = QPushButton(f"\u2694  Begin Step {rs.number}: {rs.title[:40]}")
+            begin_btn.setFixedHeight(40)
+            begin_btn.clicked.connect(lambda _, r=rs: self._on_begin_roadmap_step(r))
+            btn_row.addWidget(begin_btn)
+        elif step_status == "active":
+            ws_btn = QPushButton("\u270f  Go to Workspace")
+            ws_btn.setFixedHeight(40)
+            ws_btn.clicked.connect(lambda: self._tabs.setCurrentIndex(_TAB_WORKSPACE))
+            btn_row.addWidget(ws_btn)
+        else:
+            done_lbl = QLabel("\u2713  Step completed")
+            done_lbl.setStyleSheet(f"color:{p.get('green','#a6e3a1')};font-size:13px;font-weight:bold;")
+            btn_row.addWidget(done_lbl)
+        btn_row.addStretch()
+        bl.addLayout(btn_row)
+        self._overview_layout.addWidget(card)
+
+    def _get_next_roadmap_steps(self, count: int = 2) -> list[RoadmapStep]:
+        if not self._active_journey: return []
+        started = {s.title.strip().lower() for s in self._steps}
+        return [rs for rs in self._active_journey.roadmap.steps
+                if rs.title.strip().lower() not in started][:count]
+
+    # ── Council tab ───────────────────────────────────────────────────────────
+
+    def _refresh_sessions(self):
+        while self._sessions_layout.count():
+            item = self._sessions_layout.takeAt(0)
+            if item.widget(): item.widget().deleteLater()
+        if not self._current_step:
+            self._sessions_label.hide(); return
+        sessions = self._store.list_sessions_for_step(self._current_step.id)
+        if not sessions:
+            self._sessions_label.hide(); return
+        self._sessions_label.show()
+        for i, session in enumerate(reversed(sessions)):
+            num = len(sessions) - i
+            self._sessions_layout.addWidget(
+                CouncilSessionCard(session, num, self._palette))
+
+    def _refresh_history(self):
+        while self._history_layout.count():
+            item = self._history_layout.takeAt(0)
+            if item.widget(): item.widget().deleteLater()
+        done = [s for s in self._steps if s.status == "completed"]
+        if not done: self._history_label.hide(); return
+        self._history_label.show()
+        for step in reversed(done):
+            self._history_layout.addWidget(HistoryStepRow(step, self._palette))
+
+    # ── Checklist ─────────────────────────────────────────────────────────────
+
+    def _on_checklist_toggled(self, task: str, checked: bool):
+        self._checklist_state[task] = checked
+        if self._current_step:
+            self._store.update_checklist_state(self._current_step.id,
+                                               self._checklist_state)
+
+    # ── Auto-save ─────────────────────────────────────────────────────────────
+
+    def _auto_save_notes(self):
+        if not self._current_step: return
+        if self._save_timer is None:
+            self._save_timer = QTimer(self)
+            self._save_timer.setSingleShot(True)
+            self._save_timer.timeout.connect(self._flush_notes)
+        self._save_timer.start(1200)
+
+    def _flush_notes(self):
+        if not self._current_step: return
+        self._store.update_step_notes(
+            self._current_step.id,
+            self._notes_edit.toPlainText(),
+            self._hints_edit.toPlainText())
+
+    # ── Roadmap interaction ───────────────────────────────────────────────────
+
+    def _on_roadmap_node_selected(self, idx: int):
+        """Node clicked in the flow widget — update selection and refresh detail."""
+        self._selected_rm_idx = idx
+        self._refresh_overview()
+
+    def _on_begin_roadmap_step(self, rs: RoadmapStep):
+        """User clicked 'Begin Step N' in the selected-step detail card."""
+        if not self._active_journey: return
+        desc = rs.description
+        if rs.objectives:
+            desc += "\n\nObjectives:\n" + "\n".join(f"\u2022 {o}" for o in rs.objectives)
+        dlg = AddStepDialog(self._palette, title=f"Begin: {rs.title}",
+                            prefill_title=rs.title, prefill_notes=desc, parent=self)
+        if dlg.exec() != QDialog.DialogCode.Accepted: return
+        data = dlg.get_data()
+
+        # If there's a current active step, warn the user
+        if self._current_step and self._current_step.status == "active":
+            reply = QMessageBox.question(
+                self, "Active Step Exists",
+                f"You already have an active step: \"{self._current_step.title}\".\n\n"
+                "Creating a new step will not complete the current one. Continue?",
+                QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.Cancel)
+            if reply != QMessageBox.StandardButton.Yes: return
+
+        new_step = self._store.create_step(
+            self._active_journey.id, title=data["title"],
+            user_notes=data["notes"], suggestions=data["hints"])
+
+        # If this step is not in the roadmap, mark it as a detour
+        roadmap = self._active_journey.roadmap
+        if not roadmap.get_step_by_title(data["title"]):
+            roadmap.add_detour_step(data["title"], data["notes"],
+                                    branch_from=self._current_step.step_number
+                                    if self._current_step else None)
+            self._store.update_roadmap(self._active_journey.id, roadmap)
+
+        self._steps = self._store.list_steps(self._active_journey.id)
+        self._step_track.set_steps(self._steps)
+        self._current_step = new_step; self._checklist_state = {}
+        self._selected_rm_idx = idx_of_step(new_step, self._active_journey.roadmap)
+        self._active_journey = self._store.get_journey(self._active_journey.id)
+        self._refresh_workspace(); self._refresh_sessions()
+        self._refresh_overview(); self._refresh_journey_list()
+        self._tabs.setCurrentIndex(_TAB_WORKSPACE)
+
+    def _on_roadmap_step_clicked(self, rs: RoadmapStep):
+        """'Up Next' button clicked — open AddStepDialog pre-filled."""
+        if not self._active_journey: return
+        desc = rs.description
+        if rs.objectives:
+            desc += "\n\nObjectives:\n" + "\n".join(f"\u2022 {o}" for o in rs.objectives)
+        dlg = AddStepDialog(self._palette, title="Start Next Step",
+                            prefill_title=rs.title, prefill_notes=desc, parent=self)
+        if dlg.exec() != QDialog.DialogCode.Accepted: return
+        data = dlg.get_data()
+        new_step = self._store.create_step(
+            self._active_journey.id, title=data["title"],
+            user_notes=data["notes"], suggestions=data["hints"])
+        self._steps = self._store.list_steps(self._active_journey.id)
+        self._step_track.set_steps(self._steps)
+        self._current_step = new_step; self._checklist_state = {}
+        self._selected_rm_idx = idx_of_step(new_step, self._active_journey.roadmap)
+        self._refresh_workspace(); self._refresh_sessions()
+        self._refresh_overview(); self._refresh_journey_list()
+        self._tabs.setCurrentIndex(_TAB_WORKSPACE)
+
+    # ── Actions ───────────────────────────────────────────────────────────────
+
+    def _on_new_journey(self):
+        dlg = NewJourneyDialog(self._palette, self)
+        if dlg.exec() != QDialog.DialogCode.Accepted: return
+        data    = dlg.get_data()
+        journey = self._store.create_journey(
+            title=data["title"], goal=data["goal"],
+            domain=data["domain"], web_search=data["web_search"])
+        self._refresh_journey_list()
+        self._on_journey_selected(journey.id)
+
+        llm_client = load_llm_client()
+        template_steps = data.get("template_steps", [])
+        first_step_title = data["first_step"]
+
+        if not llm_client:
+            # No LLM — use template steps as roadmap if available
+            if template_steps:
+                roadmap = Roadmap(
+                    overview="Learning path based on template.",
+                    steps=[RoadmapStep(number=i+1, title=t, description="")
+                           for i, t in enumerate(template_steps)])
+                self._store.update_roadmap(journey.id, roadmap)
+            if first_step_title:
+                self._store.create_step(journey.id, title=first_step_title)
+            self._on_journey_selected(journey.id)
+            return
+
+        # Generate roadmap in background
+        self._council_status.setText("Generating roadmap\u2026")
+        self._council_status.show()
+        journey_id = journey.id
+
+        def _gen_roadmap():
+            try:
+                fresh = self._store.get_journey(journey_id)
+                if not fresh:
+                    return
+                roadmap = _generate_roadmap(llm_client, fresh)
+                if not roadmap.steps and template_steps:
+                    # LLM failed — use template steps as fallback
+                    roadmap = Roadmap(
+                        overview="Learning path based on template.",
+                        steps=[RoadmapStep(number=i+1, title=t, description="")
+                               for i, t in enumerate(template_steps)])
+                if roadmap.steps:
+                    self._store.update_roadmap(journey_id, roadmap)
+                QTimer.singleShot(0, lambda: self._on_roadmap_gen_done(journey_id))
+            except Exception as exc:
+                err = str(exc)
+                # Still try template fallback
+                if template_steps:
+                    try:
+                        roadmap = Roadmap(
+                            overview="Learning path based on template.",
+                            steps=[RoadmapStep(number=i+1, title=t, description="")
+                                   for i, t in enumerate(template_steps)])
+                        self._store.update_roadmap(journey_id, roadmap)
+                    except Exception:
+                        pass
+                QTimer.singleShot(0, lambda e=err: self._on_roadmap_gen_error(journey_id, e))
+
+        threading.Thread(target=_gen_roadmap, daemon=True).start()
+
+    def _on_roadmap_gen_done(self, journey_id: str):
+        """Called on main thread after roadmap generation completes."""
+        self._council_status.hide()
+        # Only reload if we're still looking at this journey
+        if self._active_journey and self._active_journey.id == journey_id:
+            self._on_journey_selected(journey_id)
+
+    def _on_roadmap_gen_error(self, journey_id: str, error: str):
+        """Called on main thread if roadmap generation fails."""
+        self._council_status.hide()
+        if self._active_journey and self._active_journey.id == journey_id:
+            self._on_journey_selected(journey_id)
+        logger.warning("Roadmap generation failed for %s: %s", journey_id, error)
+        # Don't show a blocking dialog for this — the template fallback
+        # should have kicked in, and the user can always update the roadmap later
+
+    def _on_add_step(self):
+        if not self._active_journey: return
+        next_rs = self._get_next_roadmap_steps(1)
+        pft = next_rs[0].title if next_rs else ""
+        pfn = ""
+        if next_rs:
+            rs = next_rs[0]
+            pfn = rs.description
+            if rs.objectives:
+                pfn += "\n\nObjectives:\n" + "\n".join(f"\u2022 {o}" for o in rs.objectives)
+        dlg = AddStepDialog(self._palette, title="Add Step",
+                            prefill_title=pft, prefill_notes=pfn, parent=self)
+        if dlg.exec() != QDialog.DialogCode.Accepted: return
+        data = dlg.get_data()
+        # Check if this step is in the roadmap; if not, record as detour
+        roadmap = self._active_journey.roadmap
+        is_on_roadmap = bool(roadmap.get_step_by_title(data["title"]))
+        new_step = self._store.create_step(
+            self._active_journey.id, title=data["title"],
+            user_notes=data["notes"], suggestions=data["hints"])
+        if not is_on_roadmap and roadmap.steps:
+            roadmap.add_detour_step(data["title"], data["notes"],
+                                    branch_from=self._current_step.step_number
+                                    if self._current_step else None)
+            self._store.update_roadmap(self._active_journey.id, roadmap)
+            self._active_journey = self._store.get_journey(self._active_journey.id)
+        self._steps = self._store.list_steps(self._active_journey.id)
+        self._step_track.set_steps(self._steps)
+        self._current_step = new_step; self._checklist_state = {}
+        self._selected_rm_idx = idx_of_step(new_step, self._active_journey.roadmap)
+        self._refresh_workspace(); self._refresh_sessions()
+        self._refresh_overview(); self._refresh_journey_list()
+
+    def _on_web_toggle(self, state: int):
+        if self._active_journey:
+            enabled = (state == Qt.CheckState.Checked.value)
+            self._store.update_journey(self._active_journey.id,
+                                       web_search_enabled=1 if enabled else 0)
+            self._active_journey = self._store.get_journey(self._active_journey.id)
+
+    def _on_step_track_clicked(self, idx: int):
+        if idx < 0 or idx >= len(self._steps): return
+        step = self._steps[idx]
+        status_str = {
+            "completed": f"\u2713 Completed"+(f" {step.completed_at[:10]}" if step.completed_at else ""),
+            "active":    "\u2694 Current Step",
+        }.get(step.status, step.status.capitalize())
+        self._council_status.setText(f"Step {step.step_number}: {step.title}  \u2014  {status_str}")
+        self._council_status.show()
+        QTimer.singleShot(3500, self._council_status.hide)
+
+    def _on_toggle_pause(self):
+        if self._active_journey: self._on_toggle_pause_by_id(self._active_journey.id)
+
+    def _on_toggle_pause_by_id(self, journey_id: str):
+        journey = self._store.get_journey(journey_id)
+        if not journey: return
+        new_status = "active" if journey.status == "paused" else "paused"
+        self._store.update_journey(journey_id, status=new_status)
+        self._refresh_journey_list()
+        if self._active_journey and self._active_journey.id == journey_id:
+            self._active_journey = self._store.get_journey(journey_id)
+            if self._active_journey:
+                self._pause_btn.setText(
+                    "\u25b6  Resume" if self._active_journey.status == "paused"
+                    else "\u23f8  Pause")
+
+    def _on_complete_journey(self):
+        if not self._active_journey: return
+        self._store.update_journey(self._active_journey.id, status="completed")
+        self._refresh_journey_list()
+        self._active_journey = self._store.get_journey(self._active_journey.id)
+        self._pause_btn.setEnabled(False); self._complete_journey_btn.setEnabled(False)
+
+    def _on_archive_journey(self, journey_id: str):
+        self._store.update_journey(journey_id, status="archived")
+        if self._active_journey and self._active_journey.id == journey_id:
+            self._active_journey = None; self._right_stack.setCurrentIndex(0)
+        self._refresh_journey_list()
+
+    def _on_delete_journey(self, journey_id: str):
+        reply = QMessageBox.question(
+            self, "Delete Journey",
+            "Permanently delete this journey and all its steps and council records?",
+            QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.Cancel)
+        if reply != QMessageBox.StandardButton.Yes: return
+        self._store.delete_journey(journey_id)
+        if self._active_journey and self._active_journey.id == journey_id:
+            self._active_journey = None; self._right_stack.setCurrentIndex(0)
+        self._refresh_journey_list()
+
+    def _on_complete_step(self):
+        if not self._current_step: return
+        self._flush_notes()
+        # Pre-fill next step from roadmap
+        next_rs = self._get_next_roadmap_steps(1)
+        pft = next_rs[0].title if next_rs else ""
+        pfn = ""
+        if next_rs:
+            rs  = next_rs[0]
+            pfn = rs.description
+            if rs.objectives:
+                pfn += "\n\nObjectives:\n" + "\n".join(f"\u2022 {o}" for o in rs.objectives)
+        dlg = AddStepDialog(self._palette, title="Define Next Step",
+                            prefill_title=pft, prefill_notes=pfn, parent=self)
+        if dlg.exec() != QDialog.DialogCode.Accepted: return
+        data = dlg.get_data()
+        self._store.complete_step(self._current_step.id)
+        # Record detour if off-roadmap
+        roadmap = self._active_journey.roadmap
+        is_on_roadmap = bool(roadmap.get_step_by_title(data["title"]))
+        new_step = self._store.create_step(
+            self._active_journey.id, title=data["title"],
+            user_notes=data["notes"], suggestions=data["hints"])
+        if not is_on_roadmap and roadmap.steps:
+            roadmap.add_detour_step(data["title"], data["notes"],
+                                    branch_from=self._current_step.step_number)
+            self._store.update_roadmap(self._active_journey.id, roadmap)
+            self._active_journey = self._store.get_journey(self._active_journey.id)
+        self._steps = self._store.list_steps(self._active_journey.id)
+        self._step_track.set_steps(self._steps)
+        self._current_step = new_step; self._checklist_state = {}
+        self._selected_rm_idx = idx_of_step(new_step, self._active_journey.roadmap)
+        self._refresh_workspace(); self._refresh_sessions()
+        self._refresh_overview(); self._refresh_history(); self._refresh_journey_list()
+        self._tabs.setCurrentIndex(_TAB_WORKSPACE)
+
+    def _on_convene_council(self):
+        """Manual council convene — the only trigger for council calls."""
+        if self._council_running: return
+        self._flush_notes()
+        if self._current_step:
+            self._current_step = self._store.get_step(self._current_step.id)
+        self._convene_council_async()
+
+    def _on_update_roadmap(self):
+        """Send current workspace notes+hints to LLM, update the roadmap."""
+        if not self._active_journey: return
+        notes = self._notes_edit.toPlainText().strip()
+        hints = self._hints_edit.toPlainText().strip()
+        pivot = "\n".join(filter(None, [notes, hints]))
+        if not pivot:
+            QMessageBox.information(self, "Update Roadmap",
+                                    "Write notes or hints in the Workspace first, "
+                                    "then click Update Roadmap to reshape the plan.")
+            return
+        llm_client = load_llm_client()
+        if not llm_client:
+            QMessageBox.warning(self, "No LLM",
+                                "Configure API key in Network \u2192 LLM Settings.")
+            return
+        self._update_rm_btn.setEnabled(False)
+        self._update_rm_btn.setText("\u23f3  Updating\u2026")
+        self._council_status.setText("Updating roadmap\u2026"); self._council_status.show()
+        journey = self._active_journey; steps = list(self._steps)
+
+        def _worker():
+            try:
+                new_roadmap = _update_roadmap_from_pivot(llm_client, journey, steps, pivot)
+                if new_roadmap.steps:
+                    self._store.update_roadmap(journey.id, new_roadmap)
+                QTimer.singleShot(0, self._on_roadmap_updated)
+            except Exception as exc:
+                err = str(exc)
+                QTimer.singleShot(0, lambda e=err: self._on_roadmap_update_failed(e))
+
+        threading.Thread(target=_worker, daemon=True).start()
+
+    def _on_roadmap_updated(self):
+        self._update_rm_btn.setEnabled(True); self._update_rm_btn.setText("\U0001f504  Update Roadmap")
+        self._council_status.hide()
+        self._active_journey = self._store.get_journey(self._active_journey.id)
+        if self._active_journey:
+            self._selected_rm_idx = idx_of_step(self._current_step, self._active_journey.roadmap) \
+                if self._current_step else -1
+        self._refresh_overview(); self._refresh_journey_list()
+
+    def _on_roadmap_update_failed(self, msg: str):
+        self._update_rm_btn.setEnabled(True); self._update_rm_btn.setText("\U0001f504  Update Roadmap")
+        self._council_status.hide()
+        QMessageBox.warning(self, "Roadmap Update Failed", msg)
+
+    def _on_regen_overview(self):
+        if not self._current_step: return
+        sessions = self._store.list_sessions_for_step(self._current_step.id)
+        if not sessions: return
+        latest     = sessions[-1]
+        llm_client = load_llm_client()
+        if not llm_client:
+            QMessageBox.warning(self, "No LLM", "Configure API key in Network \u2192 LLM Settings.")
+            return
+
+        def _worker():
+            try:
+                cl, res, rm = _run_structured_call(
+                    llm_client, latest.synthesis, self._active_journey, self._current_step)
+                from src.data.database import get_connection as _gc
+                c = _gc()
+                c.execute(
+                    "UPDATE journey_council_sessions SET "
+                    "step_checklist=?,step_resources=?,roadmap_text=? WHERE id=?",
+                    (json.dumps(cl), json.dumps(res), rm, latest.id))
+                c.commit(); c.close()
+                QTimer.singleShot(0, self._refresh_overview)
+            except Exception as exc:
+                QTimer.singleShot(0, lambda e=str(exc): QMessageBox.warning(
+                    self, "Regen Error", e))
+        threading.Thread(target=_worker, daemon=True).start()
+
+    # ── Council execution ─────────────────────────────────────────────────────
+
+    def _convene_council_async(self):
+        if self._council_running: return
+        if not self._current_step or not self._active_journey: return
+        llm_client = load_llm_client()
+        council    = load_council_config()
+        if not llm_client:
+            self._show_council_error(
+                "No OpenRouter API key configured.\n"
+                "Set it up in Network \u2192 LLM Settings."); return
+        if not council:
+            self._show_council_error(
+                "Council not configured. Enable it in Network \u2192 Council Settings."); return
+
+        self._council_running = True
+        self._council_btn.setEnabled(False)
+        self._council_btn.setText("\u23f3  Convening\u2026")
+        self._council_spinner.start()
+        self._council_spinner.set_message("Starting council\u2026")
+
+        # Capture IDs for safety check after completion
+        journey_id = self._active_journey.id
+        step_id    = self._current_step.id
+        journey    = self._active_journey
+        steps      = list(self._steps)
+        step       = self._current_step
+
+        def _prog(msg: str):
+            QTimer.singleShot(0, lambda m=msg: self._council_spinner.set_message(m))
+
+        def _worker():
+            try:
+                session = _run_council(
+                    journey=journey, steps=steps, current_step=step,
+                    llm_client=llm_client, council=council,
+                    journey_store=self._store,
+                    todo_store=self._todo_store, activity_store=self._activity_store,
+                    calendar_store=self._calendar_store, on_progress=_prog)
+                QTimer.singleShot(0, lambda s=session, jid=journey_id, sid=step_id:
+                                  self._on_council_done(s, jid, sid))
+            except Exception as exc:
+                err = str(exc)
+                QTimer.singleShot(0, lambda e=err: self._show_council_error(e))
+
+        threading.Thread(target=_worker, daemon=True).start()
+
+    def _on_council_done(self, session: CouncilSession,
+                         orig_journey_id: str, orig_step_id: str):
+        """Handle council completion with safety checks."""
+        self._council_running = False
+        self._council_btn.setEnabled(True)
+        self._council_btn.setText("\u2694  Convene Council")
+        self._council_spinner.stop()
+
+        # Safety: verify the journey/step still exist and are still active
+        if not self._active_journey:
+            return
+        if self._active_journey.id != orig_journey_id:
+            # User switched to a different journey while council was running
+            return
+        if not self._current_step or self._current_step.id != orig_step_id:
+            # Step changed during council run — still save was done, just
+            # don't try to refresh with stale references
+            self._refresh_journey_list()
+            return
+
+        fresh = self._store.get_step(self._current_step.id)
+        if fresh:
+            self._current_step = fresh
+            self._checklist_state = dict(fresh.checklist_state)
+        self._refresh_sessions()
+        self._refresh_overview()
+        self._refresh_journey_list()
+        # Switch to Overview to show results
+        self._tabs.setCurrentIndex(_TAB_OVERVIEW)
+
+    def _show_council_error(self, msg: str):
+        self._council_running = False
+        if hasattr(self, "_council_btn"):
+            self._council_btn.setEnabled(True)
+            self._council_btn.setText("\u2694  Convene Council")
+        if hasattr(self, "_council_spinner"):
+            self._council_spinner.stop()
+        if hasattr(self, "_council_status"):
+            self._council_status.hide()
+        QMessageBox.warning(self, "Council Error", msg)
+
+    def _refresh(self):
+        self._refresh_journey_list()
+        if self._active_journey:
+            updated = self._store.get_journey(self._active_journey.id)
+            if updated: self._active_journey = updated
+
+
+# ── Module-level helper ───────────────────────────────────────────────────────
+
+def idx_of_step(step: Optional[JourneyStep], roadmap: Roadmap) -> int:
+    """Return the roadmap index matching the given step title, or -1."""
+    if not step: return -1
+    title_l = step.title.strip().lower()
+    for i, rs in enumerate(roadmap.steps):
+        if rs.title.strip().lower() == title_l:
+            return i
+    return -1
+```
+
+### `src\ui\modules\notes_panel.py`
+
+```python
+"""Notes/Obsidian module UI — tree-based vault browser, markdown editor, REST API integration.
+
+The sidebar uses a QTreeWidget with collapsible folders (triangle toggles)
+that mimics Obsidian's file explorer layout.
+"""
+
+import json
+import logging
+import os
+import subprocess
+import sys
+import threading
+import urllib.parse
+import urllib.request
+from collections import defaultdict
+from pathlib import Path, PurePosixPath
+
+from PyQt6.QtCore import Qt, QTimer
+from PyQt6.QtGui import QFont, QIcon
+from PyQt6.QtWidgets import (
+    QWidget, QVBoxLayout, QHBoxLayout, QSplitter,
+    QTreeWidget, QTreeWidgetItem, QPlainTextEdit, QTextBrowser,
+    QLineEdit, QPushButton, QLabel, QMessageBox, QInputDialog,
+    QFrame, QFileDialog, QStackedWidget,
+)
+
+from src.config import load_config, save_config
+from src.data.notes_store import NotesStore, Note
+from src.sync.deletion_manifest import record_deletion as _record_vault_deletion
+
+logger = logging.getLogger(__name__)
+
+
+class ObsidianAPI:
+    """Minimal client for the Obsidian Local REST API plugin."""
+
+    def __init__(self, base_url: str, api_key: str):
+        self.base_url = base_url.rstrip("/")
+        self.api_key = api_key
+
+    def _headers(self) -> dict:
+        return {
+            "Authorization": f"Bearer {self.api_key}",
+            "Content-Type": "application/json",
+        }
+
+    def is_available(self) -> bool:
+        try:
+            req = urllib.request.Request(
+                f"{self.base_url}/", headers=self._headers(), method="GET",
+            )
+            with urllib.request.urlopen(req, timeout=3) as resp:
+                return resp.status == 200
+        except Exception:
+            return False
+
+    def list_files(self, folder: str = "/") -> list[str]:
+        try:
+            req = urllib.request.Request(
+                f"{self.base_url}/vault{folder}",
+                headers=self._headers(), method="GET",
+            )
+            with urllib.request.urlopen(req, timeout=5) as resp:
+                data = json.loads(resp.read().decode())
+                return data.get("files", [])
+        except Exception as e:
+            logger.warning(f"Obsidian API list_files failed: {e}")
+            return []
+
+    def read_note(self, path: str) -> str:
+        try:
+            encoded_path = urllib.parse.quote(path, safe="/")
+            headers = self._headers()
+            headers["Accept"] = "text/markdown"
+            req = urllib.request.Request(
+                f"{self.base_url}/vault/{encoded_path}",
+                headers=headers, method="GET",
+            )
+            with urllib.request.urlopen(req, timeout=5) as resp:
+                return resp.read().decode("utf-8")
+        except Exception as e:
+            logger.warning(f"Obsidian API read failed: {e}")
+            return ""
+
+    def create_note(self, path: str, content: str) -> bool:
+        try:
+            encoded_path = urllib.parse.quote(path, safe="/")
+            headers = self._headers()
+            headers["Content-Type"] = "text/markdown"
+            req = urllib.request.Request(
+                f"{self.base_url}/vault/{encoded_path}",
+                data=content.encode("utf-8"),
+                headers=headers, method="PUT",
+            )
+            with urllib.request.urlopen(req, timeout=5) as resp:
+                return resp.status in (200, 201, 204)
+        except Exception as e:
+            logger.warning(f"Obsidian API create failed: {e}")
+            return False
+
+    def append_note(self, path: str, content: str) -> bool:
+        try:
+            encoded_path = urllib.parse.quote(path, safe="/")
+            headers = self._headers()
+            headers["Content-Type"] = "text/markdown"
+            req = urllib.request.Request(
+                f"{self.base_url}/vault/{encoded_path}",
+                data=content.encode("utf-8"),
+                headers=headers, method="POST",
+            )
+            with urllib.request.urlopen(req, timeout=5) as resp:
+                return resp.status in (200, 201, 204)
+        except Exception as e:
+            logger.warning(f"Obsidian API append failed: {e}")
+            return False
+
+    def open_in_obsidian(self, path: str):
+        """Open a note in the Obsidian desktop app via URI scheme."""
+        cfg = load_config()
+        vault_path = cfg.get("obsidian_vault_path", "")
+        vault_name = Path(vault_path).name if vault_path else ""
+        # Strip .md extension
+        if path.endswith(".md"):
+            path = path[:-3]
+        encoded_vault = urllib.parse.quote(vault_name, safe="")
+        encoded_file = urllib.parse.quote(path, safe="/")
+        uri = f"obsidian://open?vault={encoded_vault}&file={encoded_file}"
+        try:
+            if sys.platform == "win32":
+                os.startfile(uri)
+            elif sys.platform == "darwin":
+                subprocess.Popen(["open", uri])
+            else:
+                subprocess.Popen(["xdg-open", uri])
+        except Exception as e:
+            logger.warning(f"Failed to open Obsidian: {e}")
+
+
+# ── Tree builder ───────────────────────────────────────
+
+def _build_tree_structure(notes: list[Note]) -> dict:
+    """Build a nested dict from note paths for the tree view.
+
+    Returns: {"_files": [Note, ...], "subfolder": {"_files": [...], ...}}
+    """
+    tree: dict = {"_files": []}
+    for note in sorted(notes, key=lambda n: str(n.path).lower()):
+        parts = PurePosixPath(str(note.path)).parts
+        if len(parts) == 1:
+            # Root-level file
+            tree["_files"].append(note)
+        else:
+            # Navigate into subfolders
+            node = tree
+            for folder in parts[:-1]:
+                if folder not in node:
+                    node[folder] = {"_files": []}
+                node = node[folder]
+            node["_files"].append(note)
+    return tree
+
+
+def _populate_tree_widget(parent_item, tree_dict: dict, expanded_paths: set):
+    """Recursively populate QTreeWidgetItems from the nested dict."""
+    # Add subfolders first (sorted)
+    folders = sorted(k for k in tree_dict if k != "_files")
+    for folder_name in folders:
+        folder_item = QTreeWidgetItem(parent_item)
+        folder_item.setText(0, f"\U0001f4c1 {folder_name}")
+        folder_item.setData(0, Qt.ItemDataRole.UserRole, None)  # Not a file
+        folder_item.setData(0, Qt.ItemDataRole.UserRole + 1, folder_name)
+        font = folder_item.font(0)
+        font.setBold(True)
+        folder_item.setFont(0, font)
+        folder_item.setFlags(
+            folder_item.flags() | Qt.ItemFlag.ItemIsAutoTristate
+        )
+        # Recursively fill
+        _populate_tree_widget(folder_item, tree_dict[folder_name], expanded_paths)
+        # Expand if it was previously expanded
+        if folder_name in expanded_paths:
+            folder_item.setExpanded(True)
+
+    # Add files
+    for note in tree_dict.get("_files", []):
+        file_item = QTreeWidgetItem(parent_item)
+        file_item.setText(0, f"\U0001f4c4 {note.title}")
+        file_item.setData(0, Qt.ItemDataRole.UserRole, str(note.path))
+        file_item.setToolTip(
+            0,
+            f"Tags: {', '.join('#' + t for t in note.tags) if note.tags else 'none'}"
+        )
+
+
+class NotesPanel(QWidget):
+
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.cfg = load_config()
+        self._init_store()
+        self.current_note_path: str | None = None
+        self._expanded_folders: set[str] = set()
+        self._save_timer = QTimer(self)
+        self._save_timer.setSingleShot(True)
+        self._save_timer.setInterval(500)
+        self._save_timer.timeout.connect(self._save_current)
+        self._palette: dict = {}
+        self._preview_mode: bool = False
+        self._obsidian_api: ObsidianAPI | None = None
+        self._obsidian_status = "not configured"
+        self._build_ui()
+        self._refresh_list()
+        self._init_obsidian_api()
+
+    def _init_store(self):
+        vault = self.cfg.get("obsidian_vault_path", "")
+        if vault and Path(vault).exists():
+            self.store = NotesStore(notes_dir=Path(vault))
+            self._mode = "vault"
+        else:
+            self.store = NotesStore()
+            self._mode = "builtin"
+
+    def _init_obsidian_api(self):
+        api_key = self.cfg.get("obsidian_api_key", "")
+        api_url = self.cfg.get("obsidian_api_url", "http://127.0.0.1:27123")
+        if api_key:
+            self._obsidian_api = ObsidianAPI(api_url, api_key)
+            def check():
+                if self._obsidian_api and self._obsidian_api.is_available():
+                    self._obsidian_status = "connected"
+                else:
+                    self._obsidian_status = "unreachable"
+                self._update_status_label()
+            threading.Thread(target=check, daemon=True).start()
+        else:
+            self._obsidian_status = "no API key"
+
+    def _build_ui(self):
+        layout = QHBoxLayout(self)
+        layout.setContentsMargins(0, 0, 0, 0)
+
+        splitter = QSplitter(Qt.Orientation.Horizontal)
+
+        # ── Left sidebar: tree view ──────────────────
+        sidebar = QWidget()
+        sidebar_layout = QVBoxLayout(sidebar)
+        sidebar_layout.setContentsMargins(8, 8, 4, 8)
+        sidebar_layout.setSpacing(4)
+
+        # Header
+        header = QHBoxLayout()
+        title = QLabel("Notes")
+        title.setObjectName("sectionTitle")
+        header.addWidget(title)
+        header.addStretch()
+        self.vault_badge = QLabel("")
+        self.vault_badge.setObjectName("subtitle")
+        header.addWidget(self.vault_badge)
+        sidebar_layout.addLayout(header)
+
+        # Obsidian status row
+        obs_row = QHBoxLayout()
+        obs_row.setSpacing(4)
+        self.obsidian_status_label = QLabel("")
+        self.obsidian_status_label.setObjectName("subtitle")
+        obs_row.addWidget(self.obsidian_status_label)
+        obs_row.addStretch()
+
+        set_vault_btn = QPushButton("Set Vault")
+        set_vault_btn.setObjectName("secondary")
+        set_vault_btn.setFixedHeight(20)
+        set_vault_btn.setStyleSheet("font-size: 10px; padding: 1px 5px;")
+        set_vault_btn.clicked.connect(self._set_vault_path)
+        obs_row.addWidget(set_vault_btn)
+
+        api_btn = QPushButton("API")
+        api_btn.setObjectName("secondary")
+        api_btn.setFixedHeight(20)
+        api_btn.setStyleSheet("font-size: 10px; padding: 1px 5px;")
+        api_btn.setToolTip("Configure Obsidian REST API")
+        api_btn.clicked.connect(self._configure_api)
+        obs_row.addWidget(api_btn)
+
+        sidebar_layout.addLayout(obs_row)
+
+        # Search
+        self.search_box = QLineEdit()
+        self.search_box.setPlaceholderText("Search notes...")
+        self.search_box.setClearButtonEnabled(True)
+        self.search_box.textChanged.connect(self._on_search)
+        sidebar_layout.addWidget(self.search_box)
+
+        # Buttons
+        btn_row = QHBoxLayout()
+        btn_row.setSpacing(3)
+        self.btn_new = QPushButton("+ Note")
+        self.btn_new.clicked.connect(self._new_note)
+        self.btn_folder = QPushButton("+ Folder")
+        self.btn_folder.setObjectName("secondary")
+        self.btn_folder.clicked.connect(self._new_folder)
+        btn_row.addWidget(self.btn_new)
+        btn_row.addWidget(self.btn_folder)
+        sidebar_layout.addLayout(btn_row)
+
+        # Tree widget (replaces the old flat list)
+        self.file_tree = QTreeWidget()
+        self.file_tree.setHeaderHidden(True)
+        self.file_tree.setIndentation(16)
+        self.file_tree.setAnimated(True)
+        self.file_tree.setExpandsOnDoubleClick(False)
+        self.file_tree.setStyleSheet("""
+            QTreeWidget {
+                border: 1px solid palette(mid);
+                border-radius: 4px;
+                padding: 2px;
+                outline: none;
+            }
+            QTreeWidget::item {
+                padding: 2px 0;
+            }
+            QTreeWidget::branch:has-children:!has-siblings:closed,
+            QTreeWidget::branch:closed:has-children:has-siblings {
+                border-image: none;
+                image: none;
+            }
+            QTreeWidget::branch:open:has-children:!has-siblings,
+            QTreeWidget::branch:open:has-children:has-siblings {
+                border-image: none;
+                image: none;
+            }
+        """)
+        self.file_tree.currentItemChanged.connect(self._on_tree_item_selected)
+        self.file_tree.itemExpanded.connect(self._on_item_expanded)
+        self.file_tree.itemCollapsed.connect(self._on_item_collapsed)
+        sidebar_layout.addWidget(self.file_tree, 1)
+
+        self.note_count_label = QLabel("0 notes")
+        self.note_count_label.setObjectName("subtitle")
+        sidebar_layout.addWidget(self.note_count_label)
+
+        # ── Right side: editor ───────────────────────
+        editor_widget = QWidget()
+        editor_layout = QVBoxLayout(editor_widget)
+        editor_layout.setContentsMargins(4, 8, 8, 8)
+        editor_layout.setSpacing(4)
+
+        title_row = QHBoxLayout()
+        self.note_title_label = QLabel("Select or create a note")
+        self.note_title_label.setObjectName("sectionTitle")
+        title_row.addWidget(self.note_title_label, 1)
+
+        self.btn_open_obsidian = QPushButton("Open in Obsidian")
+        self.btn_open_obsidian.setObjectName("secondary")
+        self.btn_open_obsidian.setToolTip("Open this note in the Obsidian app")
+        self.btn_open_obsidian.clicked.connect(self._open_in_obsidian)
+        self.btn_open_obsidian.setVisible(False)
+        title_row.addWidget(self.btn_open_obsidian)
+
+        self.btn_rename = QPushButton("Rename")
+        self.btn_rename.setObjectName("secondary")
+        self.btn_rename.clicked.connect(self._rename_note)
+        self.btn_rename.setVisible(False)
+        title_row.addWidget(self.btn_rename)
+
+        self.btn_delete = QPushButton("Delete")
+        self.btn_delete.setObjectName("destructive")
+        self.btn_delete.clicked.connect(self._delete_note)
+        self.btn_delete.setVisible(False)
+        title_row.addWidget(self.btn_delete)
+
+        self._preview_btn = QPushButton("\U0001f441 Preview")
+        self._preview_btn.setObjectName("secondary")
+        self._preview_btn.setFixedHeight(24)
+        self._preview_btn.clicked.connect(self._toggle_preview)
+        title_row.addWidget(self._preview_btn)
+
+        editor_layout.addLayout(title_row)
+
+        sep = QFrame()
+        sep.setObjectName("separator")
+        sep.setFrameShape(QFrame.Shape.HLine)
+        editor_layout.addWidget(sep)
+        
+        self._preview = QTextBrowser()
+        self._preview.setReadOnly(True)
+        self._preview.setOpenExternalLinks(True)
+        self._preview.setVisible(False)
+
+        self.editor = QPlainTextEdit()
+        self.editor.setPlaceholderText(
+            "Start writing in Markdown...\n\nUse #tags anywhere in your text."
+        )
+        self.editor.setTabStopDistance(28.0)
+        self.editor.textChanged.connect(self._on_text_changed)
+        editor_layout.addWidget(self.editor, 1)
+        editor_layout.addWidget(self._preview, 1)
+
+        footer = QHBoxLayout()
+        self.tag_label = QLabel("")
+        self.tag_label.setObjectName("subtitle")
+        footer.addWidget(self.tag_label, 1)
+        self.word_count_label = QLabel("")
+        self.word_count_label.setObjectName("subtitle")
+        self.word_count_label.setAlignment(Qt.AlignmentFlag.AlignRight)
+        footer.addWidget(self.word_count_label)
+        editor_layout.addLayout(footer)
+
+        splitter.addWidget(sidebar)
+        splitter.addWidget(editor_widget)
+        splitter.setSizes([240, 540])
+        splitter.setStretchFactor(0, 0)
+        splitter.setStretchFactor(1, 1)
+
+        layout.addWidget(splitter)
+        self._update_status_label()
+
+    # ── Tree building ──────────────────────────────────
+
+    def _refresh_list(self, notes=None):
+        """Rebuild the tree from the note store."""
+        # Remember which folders were expanded
+        self._save_expanded_state()
+
+        self.file_tree.blockSignals(True)
+        self.file_tree.clear()
+
+        notes = notes or self.store.list_notes()
+        tree = _build_tree_structure(notes)
+        _populate_tree_widget(self.file_tree.invisibleRootItem(), tree, self._expanded_folders)
+
+        # Expand root-level folders by default on first load
+        if not self._expanded_folders:
+            for i in range(self.file_tree.topLevelItemCount()):
+                item = self.file_tree.topLevelItem(i)
+                if item and item.data(0, Qt.ItemDataRole.UserRole) is None:
+                    item.setExpanded(True)
+
+        self.file_tree.blockSignals(False)
+        self.note_count_label.setText(f"{len(notes)} note{'s' if len(notes) != 1 else ''}")
+
+        # Re-select current note if still present
+        if self.current_note_path:
+            self._select_note_in_tree(self.current_note_path)
+
+        # Reload the open note if its content changed on disk (external edit)
+        self._reload_if_changed_on_disk()
+
+    def _save_expanded_state(self):
+        """Walk the tree and record which folder names are expanded."""
+        self._expanded_folders.clear()
+        self._walk_expanded(self.file_tree.invisibleRootItem())
+
+    def _walk_expanded(self, parent):
+        for i in range(parent.childCount()):
+            child = parent.child(i)
+            if child.data(0, Qt.ItemDataRole.UserRole) is None:  # folder
+                folder_name = child.data(0, Qt.ItemDataRole.UserRole + 1)
+                if child.isExpanded() and folder_name:
+                    self._expanded_folders.add(folder_name)
+                self._walk_expanded(child)
+
+    def _on_item_expanded(self, item):
+        folder_name = item.data(0, Qt.ItemDataRole.UserRole + 1)
+        if folder_name:
+            self._expanded_folders.add(folder_name)
+
+    def _on_item_collapsed(self, item):
+        folder_name = item.data(0, Qt.ItemDataRole.UserRole + 1)
+        if folder_name:
+            self._expanded_folders.discard(folder_name)
+
+    def _select_note_in_tree(self, rel_path: str):
+        """Find and select a note in the tree by its relative path."""
+        self.file_tree.blockSignals(True)
+        item = self._find_tree_item(self.file_tree.invisibleRootItem(), rel_path)
+        if item:
+            self.file_tree.setCurrentItem(item)
+        self.file_tree.blockSignals(False)
+
+    def _find_tree_item(self, parent, rel_path: str):
+        for i in range(parent.childCount()):
+            child = parent.child(i)
+            if child.data(0, Qt.ItemDataRole.UserRole) == rel_path:
+                return child
+            # Recurse into folders
+            if child.data(0, Qt.ItemDataRole.UserRole) is None:
+                found = self._find_tree_item(child, rel_path)
+                if found:
+                    return found
+        return None
+
+    def _reload_if_changed_on_disk(self):
+        """If the currently open note was modified externally, reload it."""
+        if not self.current_note_path:
+            return
+        note = self.store.get_note(self.current_note_path)
+        if not note:
+            return
+        current_text = self.editor.toPlainText()
+        if note.content != current_text:
+            self.editor.blockSignals(True)
+            cursor_pos = self.editor.textCursor().position()
+            self.editor.setPlainText(note.content)
+            # Restore cursor position as close as possible
+            cursor = self.editor.textCursor()
+            cursor.setPosition(min(cursor_pos, len(note.content)))
+            self.editor.setTextCursor(cursor)
+            self.editor.blockSignals(False)
+            self._update_footer(note)
+
+    def set_palette(self, palette: dict):
+        self._palette = palette
+        # If currently in preview mode, re-render with new palette
+        if self._preview_mode:
+            self._render_preview()
+
+    def _toggle_preview(self):
+        self._preview_mode = not self._preview_mode
+        if self._preview_mode:
+            self.editor.setVisible(False)
+            self._preview.setVisible(True)
+            self._preview_btn.setText("\u270f Edit")
+            self._render_preview()
+        else:
+            self._preview.setVisible(False)
+            self.editor.setVisible(True)
+            self._preview_btn.setText("\U0001f441 Preview")
+
+    def _render_preview(self):
+        try:
+            import mistune
+            md = mistune.create_markdown()
+            html = md(self.editor.toPlainText())
+        except ImportError:
+            html = "<p><i>Install mistune for Markdown preview: pip install mistune</i></p>"
+            html += "<pre>" + self.editor.toPlainText().replace("<", "&lt;") + "</pre>"
+
+        bg = self._palette.get("bg", "#1e1e2e")
+        fg = self._palette.get("fg", "#cdd6f4")
+        surface = self._palette.get("surface", "#313244")
+        accent = self._palette.get("accent", "#89b4fa")
+
+        css = (
+            f"<style>"
+            f"body {{ background: {bg}; color: {fg}; font-family: sans-serif; padding: 12px; }}"
+            f"code {{ background: {surface}; padding: 2px 4px; border-radius: 3px; }}"
+            f"pre {{ background: {surface}; padding: 8px; border-radius: 4px; overflow-x: auto; }}"
+            f"a {{ color: {accent}; }}"
+            f"h1, h2, h3 {{ color: {fg}; }}"
+            f"blockquote {{ border-left: 3px solid {accent}; padding-left: 8px; margin-left: 0; }}"
+            f"</style>"
+        )
+        self._preview.setHtml(css + html)
+
+    # ── Status labels ──────────────────────────────────
+
+    def _update_status_label(self):
+        if self._mode == "vault":
+            vault_path = self.cfg.get("obsidian_vault_path", "")
+            vault_name = Path(vault_path).name if vault_path else "?"
+            self.vault_badge.setText(f"Vault: {vault_name}")
+        else:
+            self.vault_badge.setText("Built-in notes")
+        self.obsidian_status_label.setText(f"API: {self._obsidian_status}")
+
+    # ── Vault / API configuration ──────────────────────
+
+    def _set_vault_path(self):
+        current = self.cfg.get("obsidian_vault_path", "")
+        path = QFileDialog.getExistingDirectory(
+            self, "Select Obsidian Vault Folder", current,
+        )
+        if path:
+            self.cfg["obsidian_vault_path"] = path
+            self.cfg["obsidian_sync_enabled"] = True
+            save_config(self.cfg)
+            self._init_store()
+            self._refresh_list()
+            self._update_status_label()
+            QMessageBox.information(
+                self, "Vault Set",
+                f"Obsidian vault set to:\n{path}\n\n"
+                "Notes will now sync from this folder.",
+            )
+
+    def _configure_api(self):
+        current_key = self.cfg.get("obsidian_api_key", "")
+        current_url = self.cfg.get("obsidian_api_url", "http://127.0.0.1:27123")
+        key, ok = QInputDialog.getText(
+            self, "Obsidian REST API Key",
+            "Enter the API key from the Obsidian Local REST API plugin:\n"
+            "(Leave blank to disable API integration)",
+            text=current_key,
+        )
+        if ok:
+            url, ok2 = QInputDialog.getText(
+                self, "Obsidian REST API URL",
+                "API base URL (default: http://127.0.0.1:27123):",
+                text=current_url,
+            )
+            if ok2:
+                self.cfg["obsidian_api_key"] = key.strip()
+                self.cfg["obsidian_api_url"] = url.strip() or "http://127.0.0.1:27123"
+                save_config(self.cfg)
+                self._init_obsidian_api()
+                self._update_status_label()
+
+    def _create_via_api(self):
+        if not self._obsidian_api:
+            QMessageBox.warning(self, "No API", "Obsidian REST API not configured.")
+            return
+        name, ok = QInputDialog.getText(self, "Create via API", "Note name (without .md):")
+        if ok and name.strip():
+            path = f"{name.strip()}.md"
+            content = f"# {name.strip()}\n\n"
+            if self._obsidian_api.create_note(path, content):
+                self._refresh_list()
+                QMessageBox.information(self, "Created", f"Note '{path}' created via API.")
+            else:
+                QMessageBox.warning(self, "Failed", "Could not create note via API.")
+
+    def _open_in_obsidian(self):
+        """Open the current note in Obsidian via obsidian:// URI scheme."""
+        if not self.current_note_path:
+            return
+        vault_path = self.cfg.get("obsidian_vault_path", "")
+        vault_name = Path(vault_path).name if vault_path else ""
+        if not vault_name:
+            QMessageBox.warning(self, "No Vault", "Set an Obsidian vault path first.")
+            return
+        # Strip .md extension — Obsidian URI expects path without it
+        note_path = self.current_note_path
+        if note_path.endswith(".md"):
+            note_path = note_path[:-3]
+        # URL-encode vault name and file path for special characters
+        encoded_vault = urllib.parse.quote(vault_name, safe="")
+        encoded_file = urllib.parse.quote(note_path, safe="/")
+        uri = f"obsidian://open?vault={encoded_vault}&file={encoded_file}"
+        try:
+            if sys.platform == "win32":
+                os.startfile(uri)
+            elif sys.platform == "darwin":
+                subprocess.Popen(["open", uri])
+            else:
+                subprocess.Popen(["xdg-open", uri])
+        except Exception as e:
+            logger.warning(f"Failed to open Obsidian: {e}")
+            QMessageBox.warning(self, "Error", f"Could not open Obsidian:\n{e}")
+
+    # ── Search ─────────────────────────────────────────
+
+    def _on_search(self, query: str):
+        if query.strip():
+            self._refresh_list(self.store.search(query))
+        else:
+            self._refresh_list()
+
+    # ── Note selection ─────────────────────────────────
+
+    def _on_tree_item_selected(self, current, _prev):
+        self._save_current()
+        if current is None:
+            self._clear_editor()
+            return
+        rel_path = current.data(0, Qt.ItemDataRole.UserRole)
+        if rel_path is None:
+            # Folder clicked — toggle expand
+            current.setExpanded(not current.isExpanded())
+            return
+        note = self.store.get_note(rel_path)
+        if note:
+            self.current_note_path = rel_path
+            self.note_title_label.setText(note.title)
+            self.editor.blockSignals(True)
+            self.editor.setPlainText(note.content)
+            self.editor.blockSignals(False)
+            self._update_footer(note)
+            self.btn_rename.setVisible(True)
+            self.btn_delete.setVisible(True)
+            self.btn_open_obsidian.setVisible(self._mode == "vault")
+
+    def _clear_editor(self):
+        self.current_note_path = None
+        self.note_title_label.setText("Select or create a note")
+        self.editor.blockSignals(True)
+        self.editor.clear()
+        self.editor.blockSignals(False)
+        self.tag_label.setText("")
+        self.word_count_label.setText("")
+        self.btn_rename.setVisible(False)
+        self.btn_delete.setVisible(False)
+        self.btn_open_obsidian.setVisible(False)
+        # Reset preview mode if active
+        if self._preview_mode:
+            self._preview_mode = False
+            self._preview.setVisible(False)
+            self.editor.setVisible(True)
+            self._preview_btn.setText("\U0001f441 Preview")
+
+    # ── Editing ────────────────────────────────────────
+
+    def _on_text_changed(self):
+        self._save_timer.start()
+        text = self.editor.toPlainText()
+        words = len(text.split()) if text.strip() else 0
+        self.word_count_label.setText(f"{words} words | {len(text)} chars")
+
+    def _save_current(self):
+        if self.current_note_path is None:
+            return
+        note = self.store.get_note(self.current_note_path)
+        if note:
+            new_content = self.editor.toPlainText()
+            if new_content != note.content:
+                note.content = new_content
+                note.tags = self.store._extract_tags(new_content)
+                self.store.save_note(note)
+                self._update_footer(note)
+
+    def _update_footer(self, note: Note):
+        tags_text = "  ".join(f"#{t}" for t in note.tags) if note.tags else "No tags"
+        self.tag_label.setText(tags_text)
+        text = note.content
+        words = len(text.split()) if text.strip() else 0
+        self.word_count_label.setText(f"{words} words | {len(text)} chars")
+
+    # ── CRUD actions ───────────────────────────────────
+
+    def _new_note(self):
+        name, ok = QInputDialog.getText(self, "New Note", "Note name (without .md):")
+        if ok and name.strip():
+            safe_name = name.strip().replace("/", "-").replace("\\", "-")
+            rel = PurePosixPath(f"{safe_name}.md")
+            note = Note(title=safe_name, content="", path=rel)
+            self.store.save_note(note)
+            self._refresh_list()
+            self._select_note_in_tree(str(rel))
+
+    def _new_folder(self):
+        name, ok = QInputDialog.getText(self, "New Folder", "Folder name:")
+        if ok and name.strip():
+            safe_name = name.strip().replace("/", "-").replace("\\", "-")
+            folder_path = self.store.root / safe_name
+            folder_path.mkdir(parents=True, exist_ok=True)
+            note_name, ok2 = QInputDialog.getText(
+                self, "First Note", f"Note name in '{safe_name}/' (without .md):",
+            )
+            if ok2 and note_name.strip():
+                safe_note = note_name.strip().replace("/", "-").replace("\\", "-")
+                rel = PurePosixPath(safe_name) / f"{safe_note}.md"
+                note = Note(title=safe_note, content="", path=rel)
+                self.store.save_note(note)
+                self._expanded_folders.add(safe_name)
+                self._refresh_list()
+                self._select_note_in_tree(str(rel))
+            else:
+                self._refresh_list()
+
+    def _rename_note(self):
+        if self.current_note_path is None:
+            return
+        old_path = PurePosixPath(self.current_note_path)
+        current_name = old_path.stem
+        new_name, ok = QInputDialog.getText(
+            self, "Rename Note", "New name (without .md):", text=current_name,
+        )
+        if ok and new_name.strip() and new_name.strip() != current_name:
+            safe_name = new_name.strip().replace("/", "-").replace("\\", "-")
+            new_rel = old_path.parent / f"{safe_name}.md"
+            note = self.store.get_note(self.current_note_path)
+            if note:
+                content = note.content
+                # Record old path deletion BEFORE unlinking so sync won't re-create it
+                old_posix = str(PurePosixPath(self.current_note_path))
+                if self._mode == "vault":
+                    _record_vault_deletion(old_posix)
+                self.store.delete_note(self.current_note_path)
+                new_note = Note(title=safe_name, content=content, path=new_rel, tags=note.tags)
+                self.store.save_note(new_note)
+                self.current_note_path = str(new_rel)
+                self.note_title_label.setText(safe_name)
+                self._refresh_list()
+                self._select_note_in_tree(str(new_rel))
+
+    def _delete_note(self):
+        if self.current_note_path is None:
+            return
+        reply = QMessageBox.question(
+            self, "Delete Note",
+            f"Permanently delete '{self.current_note_path}'?",
+            QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
+        )
+        if reply == QMessageBox.StandardButton.Yes:
+            # Record deletion in manifest BEFORE unlinking so sync won't re-create
+            del_posix = str(PurePosixPath(self.current_note_path))
+            if self._mode == "vault":
+                _record_vault_deletion(del_posix)
+            self.store.delete_note(self.current_note_path)
+            self._clear_editor()
+            self._refresh_list()
+```
+
+### `src\ui\modules\todo_panel.py`
+
+```python
+"""Todo list module UI — modern task manager with priorities, categories, and due dates."""
+
+from datetime import date, datetime, timedelta
+
+from PyQt6.QtCore import Qt, QDate
+from PyQt6.QtGui import QColor, QBrush, QFont
+from PyQt6.QtWidgets import (
+    QWidget, QVBoxLayout, QHBoxLayout,
+    QLabel, QPushButton, QDialog, QLineEdit, QComboBox,
+    QDateEdit, QTextEdit, QCheckBox, QFrame, QMessageBox,
+    QListWidget, QListWidgetItem, QScrollArea,
+)
+
+from src.data.todo_store import (
+    TodoStore, TodoItem, PRIORITY_LABELS, DEFAULT_TODO_CATEGORIES,
+)
+
+
+def _priority_colors(palette: dict) -> dict:
+    """Return priority-level colours drawn from the current theme palette.
+
+    Fallbacks match Catppuccin Dark so the panel looks correct before the
+    first set_palette() call.
+    """
+    return {
+        0: palette.get("muted",  "#a6adc8"),
+        1: palette.get("green",  "#a6e3a1"),
+        2: palette.get("yellow", "#f9e2af"),
+        3: palette.get("red",    "#f38ba8"),
+    }
+PRIORITY_ICONS = {0: "", 1: "!", 2: "!!", 3: "!!!"}
+
+
+def _hex_to_rgb(hex_str: str) -> tuple[int, int, int]:
+    """Convert a hex color string like '#f38ba8' to (r, g, b) ints."""
+    h = hex_str.lstrip("#")
+    if len(h) == 6:
+        return int(h[0:2], 16), int(h[2:4], 16), int(h[4:6], 16)
+    return (200, 100, 100)  # fallback
+
+
+class TodoDialog(QDialog):
+    """Dialog to add/edit a todo item."""
+
+    def __init__(self, parent=None, item: TodoItem | None = None):
+        super().__init__(parent)
+        self.setWindowTitle("Edit Task" if item else "New Task")
+        self.setMinimumWidth(360)
+        self.item = item
+        self._build_ui()
+
+    def _build_ui(self):
+        layout = QVBoxLayout(self)
+        layout.setSpacing(8)
+        layout.setContentsMargins(12, 10, 12, 10)
+
+        layout.addWidget(QLabel("Title"))
+        self.title_edit = QLineEdit()
+        self.title_edit.setPlaceholderText("What needs to be done?")
+        if self.item:
+            self.title_edit.setText(self.item.title)
+        layout.addWidget(self.title_edit)
+
+        row = QHBoxLayout()
+        row.setSpacing(8)
+
+        col1 = QVBoxLayout()
+        col1.addWidget(QLabel("Priority"))
+        self.priority_combo = QComboBox()
+        for val, label in PRIORITY_LABELS.items():
+            self.priority_combo.addItem(label, val)
+        if self.item:
+            idx = self.priority_combo.findData(self.item.priority)
+            if idx >= 0:
+                self.priority_combo.setCurrentIndex(idx)
+        col1.addWidget(self.priority_combo)
+        row.addLayout(col1)
+
+        col2 = QVBoxLayout()
+        col2.addWidget(QLabel("Category"))
+        self.cat_combo = QComboBox()
+        self.cat_combo.setEditable(True)
+        self.cat_combo.addItems(DEFAULT_TODO_CATEGORIES)
+        if self.item and self.item.category:
+            self.cat_combo.setCurrentText(self.item.category)
+        col2.addWidget(self.cat_combo)
+        row.addLayout(col2)
+
+        col3 = QVBoxLayout()
+        col3.addWidget(QLabel("Due date"))
+        self.due_check = QCheckBox("Set")
+        self.due_edit = QDateEdit()
+        self.due_edit.setCalendarPopup(True)
+        if self.item and self.item.due_date:
+            self.due_check.setChecked(True)
+            parts = self.item.due_date.split("-")
+            self.due_edit.setDate(QDate(int(parts[0]), int(parts[1]), int(parts[2])))
+        else:
+            self.due_check.setChecked(False)
+            today = date.today()
+            self.due_edit.setDate(QDate(today.year, today.month, today.day))
+        self.due_check.toggled.connect(lambda c: self.due_edit.setEnabled(c))
+        self.due_edit.setEnabled(self.due_check.isChecked())
+        due_row = QHBoxLayout()
+        due_row.addWidget(self.due_check)
+        due_row.addWidget(self.due_edit, 1)
+        col3.addLayout(due_row)
+        row.addLayout(col3)
+
+        layout.addLayout(row)
+
+        layout.addWidget(QLabel("Notes"))
+        self.notes_edit = QTextEdit()
+        self.notes_edit.setMaximumHeight(60)
+        self.notes_edit.setPlaceholderText("Optional notes...")
+        if self.item:
+            self.notes_edit.setPlainText(self.item.notes)
+        layout.addWidget(self.notes_edit)
+
+        sep = QFrame()
+        sep.setObjectName("separator")
+        sep.setFrameShape(QFrame.Shape.HLine)
+        layout.addWidget(sep)
+
+        btn_row = QHBoxLayout()
+        btn_row.addStretch()
+        cancel_btn = QPushButton("Cancel")
+        cancel_btn.setObjectName("secondary")
+        cancel_btn.clicked.connect(self.reject)
+        btn_row.addWidget(cancel_btn)
+        save_btn = QPushButton("Save")
+        save_btn.clicked.connect(self.accept)
+        btn_row.addWidget(save_btn)
+        layout.addLayout(btn_row)
+
+    def get_data(self) -> dict:
+        due = ""
+        if self.due_check.isChecked():
+            qd = self.due_edit.date()
+            due = f"{qd.year():04d}-{qd.month():02d}-{qd.day():02d}"
+        return {
+            "title": self.title_edit.text().strip() or "Untitled",
+            "priority": self.priority_combo.currentData(),
+            "due_date": due,
+            "category": self.cat_combo.currentText(),
+            "notes": self.notes_edit.toPlainText(),
+        }
+
+
+class TodoItemWidget(QFrame):
+    """A single todo item rendered as a compact card."""
+
+    def __init__(self, item: TodoItem, parent_panel, palette: dict | None = None, priority_colors: dict | None = None):
+        super().__init__()
+        self.item = item
+        self.panel = parent_panel
+        self.setCursor(Qt.CursorShape.PointingHandCursor)
+        palette = palette or {}
+        priority_colors = priority_colors or _priority_colors(palette)
+
+        layout = QHBoxLayout(self)
+        layout.setContentsMargins(8, 4, 8, 4)
+        layout.setSpacing(6)
+
+        # Checkbox
+        self.check = QCheckBox()
+        self.check.setChecked(item.done)
+        self.check.toggled.connect(self._on_toggle)
+        layout.addWidget(self.check)
+
+        # Priority dot
+        if item.priority > 0:
+            dot = QLabel(PRIORITY_ICONS[item.priority])
+            color = priority_colors[item.priority]
+            dot.setStyleSheet(f"color: {color}; font-weight: bold; font-size: 11px;")
+            dot.setFixedWidth(20)
+            layout.addWidget(dot)
+
+        # Title + metadata
+        info = QVBoxLayout()
+        info.setSpacing(0)
+        info.setContentsMargins(0, 0, 0, 0)
+
+        title = QLabel(item.title)
+        font_style = "font-size: 12px; font-weight: bold;"
+        if item.done:
+            font_style += " text-decoration: line-through; opacity: 0.6;"
+        title.setStyleSheet(font_style)
+        info.addWidget(title)
+
+        # Metadata row
+        meta_parts = []
+        if item.category:
+            meta_parts.append(item.category)
+        if item.due_date and not item.done:
+            # Don't repeat due date here — we have a dedicated label on the right
+            pass
+        elif item.due_date:
+            meta_parts.append(f"Due: {item.due_date}")
+        if meta_parts:
+            meta = QLabel(" \u00b7 ".join(meta_parts))
+            meta.setObjectName("subtitle")
+            meta.setStyleSheet("font-size: 10px;")
+            info.addWidget(meta)
+
+        layout.addLayout(info, 1)
+
+        # Due date label (right-aligned)
+        if item.due_date:
+            today = date.today()
+            try:
+                due = date.fromisoformat(item.due_date)
+                delta = (due - today).days
+                if delta < 0 and not item.done:
+                    due_text = f"Overdue {-delta}d"
+                    due_color = palette.get("red", "#f38ba8")
+                elif delta == 0:
+                    due_text = "Due Today"
+                    due_color = palette.get("yellow", "#f9e2af")
+                else:
+                    due_text = f"Due {due.strftime('%b %d')}"
+                    due_color = palette.get("muted", "#7f849c")
+
+                due_lbl = QLabel(due_text)
+                due_lbl.setStyleSheet(
+                    f"font-size: 10px; font-weight: bold; color: {due_color}; "
+                    f"padding: 1px 4px;"
+                )
+                due_lbl.setAlignment(Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter)
+                layout.addWidget(due_lbl)
+            except ValueError:
+                pass
+
+        # Edit button
+        edit_btn = QPushButton("Edit")
+        edit_btn.setObjectName("secondary")
+        edit_btn.setFixedSize(40, 22)
+        edit_btn.setStyleSheet("font-size: 10px; padding: 2px 6px;")
+        edit_btn.clicked.connect(self._on_edit)
+        layout.addWidget(edit_btn)
+
+        # Priority color stripe on left
+        border_color = priority_colors.get(item.priority, "transparent")
+        style_parts = []
+        if item.priority > 0:
+            style_parts.append(f"border-left: 3px solid {border_color};")
+            style_parts.append("border-radius: 4px;")
+
+        # Overdue background tint (15% alpha of palette red)
+        if item.due_date and not item.done:
+            try:
+                due = date.fromisoformat(item.due_date)
+                if due < today:
+                    red_hex = palette.get("red", "#f38ba8")
+                    r, g, b = _hex_to_rgb(red_hex)
+                    style_parts.append(f"background-color: rgba({r},{g},{b}, 38);")
+            except ValueError:
+                pass
+
+        if style_parts:
+            self.setStyleSheet(
+                "TodoItemWidget { " + " ".join(style_parts) + " }"
+            )
+
+    def _on_toggle(self, checked):
+        self.panel._toggle_item(self.item.id)
+
+    def _on_edit(self):
+        self.panel._edit_item(self.item)
+
+    def mouseDoubleClickEvent(self, ev):
+        self.panel._edit_item(self.item)
+
+
+class TodoPanel(QWidget):
+
+    def __init__(self, todo_store=None, parent=None):
+        super().__init__(parent)
+        self.store = todo_store or TodoStore()
+        self._palette: dict = {}
+        self._build_ui()
+        self._refresh()
+
+    def set_palette(self, palette: dict):
+        self._palette = palette
+        self._refresh()
+
+    def _build_ui(self):
+        layout = QVBoxLayout(self)
+        layout.setContentsMargins(12, 8, 12, 8)
+        layout.setSpacing(6)
+
+        # Header
+        header = QHBoxLayout()
+        title = QLabel("Tasks")
+        title.setObjectName("sectionTitle")
+        header.addWidget(title)
+
+        self.count_label = QLabel("0 tasks")
+        self.count_label.setObjectName("subtitle")
+        header.addWidget(self.count_label)
+
+        header.addStretch()
+
+        self.filter_combo = QComboBox()
+        self.filter_combo.addItems(["All", "Pending", "Completed"])
+        self.filter_combo.setFixedWidth(90)
+        self.filter_combo.currentTextChanged.connect(self._refresh)
+        header.addWidget(self.filter_combo)
+
+        btn_add = QPushButton("+ Task")
+        btn_add.clicked.connect(self._add_item)
+        header.addWidget(btn_add)
+
+        btn_clear = QPushButton("Clear Done")
+        btn_clear.setObjectName("secondary")
+        btn_clear.clicked.connect(self._clear_done)
+        header.addWidget(btn_clear)
+
+        layout.addLayout(header)
+
+        # Search + category filter row
+        search_row = QHBoxLayout()
+        search_row.setSpacing(4)
+        self.search_input = QLineEdit()
+        self.search_input.setPlaceholderText("Search tasks...")
+        self.search_input.setClearButtonEnabled(True)
+        self.search_input.textChanged.connect(self._refresh)
+        search_row.addWidget(self.search_input, 1)
+
+        self.cat_filter_combo = QComboBox()
+        self.cat_filter_combo.addItem("All Categories")
+        self.cat_filter_combo.setFixedWidth(130)
+        self.cat_filter_combo.currentTextChanged.connect(self._refresh)
+        search_row.addWidget(self.cat_filter_combo)
+        layout.addLayout(search_row)
+
+        # Quick add — supports !high/!med/!low and due:YYYY-MM-DD/today/tomorrow
+        quick_row = QHBoxLayout()
+        quick_row.setSpacing(4)
+        self.quick_input = QLineEdit()
+        self.quick_input.setPlaceholderText(
+            "Quick add: Buy milk !high due:tomorrow  (Enter to add)")
+        self.quick_input.returnPressed.connect(self._quick_add)
+        quick_row.addWidget(self.quick_input, 1)
+        layout.addLayout(quick_row)
+
+        # Task list
+        self._list_container = QWidget()
+        self._list_layout = QVBoxLayout(self._list_container)
+        self._list_layout.setContentsMargins(0, 0, 0, 0)
+        self._list_layout.setSpacing(2)
+
+        scroll = QScrollArea()
+        scroll.setWidgetResizable(True)
+        scroll.setWidget(self._list_container)
+        scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+        layout.addWidget(scroll, 1)
+
+        # Footer stats
+        footer = QHBoxLayout()
+        self.stats_label = QLabel("")
+        self.stats_label.setObjectName("subtitle")
+        footer.addWidget(self.stats_label)
+        footer.addStretch()
+        layout.addLayout(footer)
+
+    def _refresh(self):
+        # Clear list
+        while self._list_layout.count():
+            child = self._list_layout.takeAt(0)
+            if child.widget():
+                child.widget().deleteLater()
+
+        filter_mode = self.filter_combo.currentText()
+        items = self.store.get_all(include_done=(filter_mode != "Pending"))
+
+        if filter_mode == "Completed":
+            items = [i for i in items if i.done]
+
+        # Rebuild category filter combo while preserving selection
+        selected_cat = self.cat_filter_combo.currentText()
+        self.cat_filter_combo.blockSignals(True)
+        self.cat_filter_combo.clear()
+        self.cat_filter_combo.addItem("All Categories")
+        all_cats = sorted({i.category for i in self.store.get_all() if i.category})
+        for cat in all_cats:
+            self.cat_filter_combo.addItem(cat)
+        idx = self.cat_filter_combo.findText(selected_cat)
+        self.cat_filter_combo.setCurrentIndex(idx if idx >= 0 else 0)
+        self.cat_filter_combo.blockSignals(False)
+
+        # Apply category filter
+        cat_filter = self.cat_filter_combo.currentText()
+        if cat_filter and cat_filter != "All Categories":
+            items = [i for i in items if i.category == cat_filter]
+
+        # Apply search filter (case-insensitive, searches title + notes + category)
+        query = self.search_input.text().strip().lower()
+        if query:
+            items = [
+                i for i in items
+                if query in i.title.lower()
+                or query in (i.notes or "").lower()
+                or query in (i.category or "").lower()
+            ]
+
+        # Sort: overdue incomplete first, then priority desc, then created_at asc
+        today_iso = date.today().isoformat()
+
+        def _sort_key(item: TodoItem):
+            is_overdue_incomplete = (
+                not item.done
+                and bool(item.due_date)
+                and item.due_date < today_iso
+            )
+            if item.done:
+                group = 2
+            elif is_overdue_incomplete:
+                group = 0
+            else:
+                group = 1
+            return (group, -item.priority, item.created_at or "")
+
+        items.sort(key=_sort_key)
+
+        pcolors = _priority_colors(self._palette)
+        for item in items:
+            widget = TodoItemWidget(item, self, self._palette, pcolors)
+            self._list_layout.addWidget(widget)
+
+        self._list_layout.addStretch()
+
+        counts = self.store.get_counts()
+        shown = len(items)
+        total  = counts["total"]
+        self.count_label.setText(
+            f"{shown} of {total} tasks" if shown != total else f"{total} tasks")
+        self.stats_label.setText(
+            f"{counts['pending']} pending \u00b7 {counts['done']} completed"
+        )
+
+    def _quick_add(self):
+        import re as _re
+        text = self.quick_input.text().strip()
+        if not text:
+            return
+
+        # Parse priority tags: !high (3), !med (2), !low (1)
+        priority = 0
+        for tag, val in [("!high", 3), ("!med", 2), ("!low", 1)]:
+            if tag in text.lower():
+                text = _re.sub(_re.escape(tag), "", text, flags=_re.IGNORECASE).strip()
+                priority = val
+                break  # only first tag counts
+
+        # Parse due date: due:today / due:tomorrow / due:YYYY-MM-DD
+        due_date = ""
+        m = _re.search(r'due:(\S+)', text, _re.IGNORECASE)
+        if m:
+            raw = m.group(1).lower()
+            today = date.today()
+            if raw == "today":
+                due_date = today.isoformat()
+            elif raw in ("tomorrow", "tmr", "tmrw"):
+                due_date = (today + timedelta(days=1)).isoformat()
+            else:
+                try:
+                    datetime.strptime(raw, "%Y-%m-%d")
+                    due_date = raw
+                except ValueError:
+                    pass  # unrecognised format — ignore silently
+            text = (text[:m.start()] + " " + text[m.end():]).strip()
+
+        if text:
+            self.store.add(title=text, priority=priority, due_date=due_date)
+            self.quick_input.clear()
+            self._refresh()
+
+    def _add_item(self):
+        dlg = TodoDialog(self)
+        if dlg.exec():
+            data = dlg.get_data()
+            self.store.add(**data)
+            self._refresh()
+
+    def _edit_item(self, item: TodoItem):
+        dlg = TodoDialog(self, item)
+        if dlg.exec():
+            data = dlg.get_data()
+            item.title = data["title"]
+            item.priority = data["priority"]
+            item.due_date = data["due_date"]
+            item.category = data["category"]
+            item.notes = data["notes"]
+            self.store.update(item)
+            self._refresh()
+
+    def _toggle_item(self, item_id: str):
+        self.store.toggle_done(item_id)
+        self._refresh()
+
+    def _clear_done(self):
+        items = self.store.get_all()
+        done_items = [i for i in items if i.done]
+        if not done_items:
+            return
+        reply = QMessageBox.question(
+            self, "Clear Completed",
+            f"Remove {len(done_items)} completed task(s)?",
+            QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
+        )
+        if reply == QMessageBox.StandardButton.Yes:
+            for item in done_items:
+                self.store.delete(item.id)
+            self._refresh()
+```
+
+### `src\ui\modules\work_panel.py`
+
+```python
+"""Work Panel — daily write-up generator with centralised AI client injection."""
+
+from __future__ import annotations
+
+from datetime import date
+from pathlib import Path
+
+from PyQt6.QtCore import Qt, QTimer, pyqtSignal
+from PyQt6.QtGui import QFont
+from PyQt6.QtWidgets import (
+    QWidget, QVBoxLayout, QHBoxLayout, QLabel, QPushButton,
+    QTextEdit, QFrame, QScrollArea, QCheckBox,
+    QApplication, QPlainTextEdit, QSplitter, QMessageBox, QDialog,
+)
+
+from src.config import load_config
+from src.data.activity_store import ActivityStore, Activity, ACTIVITY_COLORS, DEFAULT_COLOR
+from src.utils.llm import LLMClient, LLMResult, LLMSignals, DEFAULT_MODEL, save_llm_config
+
+
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+#  Helpers
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+_JP_WEEKDAYS = ["月", "火", "水", "木", "金", "土", "日"]
+
+
+def _jp_date(d: date) -> str:
+    wd = _JP_WEEKDAYS[d.weekday()]
+    return f"{d.year}年{d.month}月{d.day}日（{wd}）"
+
+
+def _jp_duration(minutes: int) -> str:
+    if minutes <= 0:
+        return ""
+    h, m = divmod(minutes, 60)
+    if h and m:
+        return f"{h}時間{m}分"
+    return f"{h}時間" if h else f"{m}分"
+
+
+def _build_report(jp_date_str: str, selected: list[tuple[str, int]],
+                  renraku: str, ashita: str, ai_content: str = "") -> str:
+    lines = [f"【日付】{jp_date_str}", "【本日の作業内容】"]
+    if ai_content.strip():
+        lines += [ln for ln in ai_content.strip().splitlines()]
+    else:
+        for name, mins in selected:
+            dur = _jp_duration(mins)
+            lines.append(f"・{name}（{dur}）" if dur else f"・{name}")
+    lines.append("【連絡事項】")
+    lines += [ln for ln in renraku.strip().splitlines()]
+    lines.append("【明日の予定】")
+    lines += [ln for ln in ashita.strip().splitlines()]
+    return "\n".join(lines)
+
+
+def _build_llm_prompt(activities: list[tuple[str, int, str]]) -> list[dict]:
+    items = []
+    for name, mins, notes in activities:
+        dur       = _jp_duration(mins) or "不明"
+        note_text = notes.strip() if notes.strip() else "（メモなし）"
+        items.append(f"・{name}（{dur}）: {note_text}")
+    system = (
+        "あなたはソフトウェアエンジニアの日報作成を支援するアシスタントです。"
+        "ビジネス向けの丁寧で簡潔な日本語で記述してください。"
+    )
+    user = (
+        "以下の作業内容（英語のメモ付き）を元に、日報の【本日の作業内容】セクションの"
+        "箇条書きを作成してください。\n\n"
+        "【ルール】\n"
+        "- 各項目は「・」で始める\n"
+        "- 作業時間を括弧内に記載（例：2時間、1時間30分）\n"
+        "- 英語のメモは自然なビジネス日本語に意訳する\n"
+        "- 1項目につき1〜2文で簡潔にまとめる\n"
+        "- ヘッダー（【本日の作業内容】）は出力しない、箇条書きのみ出力する\n\n"
+        "作業リスト:\n" + "\n".join(items)
+    )
+    return [{"role": "system", "content": system},
+            {"role": "user",   "content": user}]
+
+
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+#  Activity check row
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+class _ActivityCheckRow(QWidget):
+    def __init__(self, activity: Activity, palette: dict, parent=None):
+        super().__init__(parent)
+        self.activity = activity
+        self.setFixedHeight(32)
+
+        layout = QHBoxLayout(self)
+        layout.setContentsMargins(4, 2, 8, 2)
+        layout.setSpacing(8)
+
+        self.check = QCheckBox()
+        self.check.setChecked(True)
+        layout.addWidget(self.check)
+
+        color_str = ACTIVITY_COLORS.get(activity.activity, DEFAULT_COLOR)
+        dot = QLabel("●")
+        dot.setStyleSheet(f"color:{color_str};font-size:10px;")
+        dot.setFixedWidth(14)
+        layout.addWidget(dot)
+
+        name_lbl = QLabel(activity.activity)
+        name_lbl.setStyleSheet("font-size:12px;font-weight:bold;")
+        layout.addWidget(name_lbl, 1)
+
+        muted = palette.get("muted", "#7f849c")
+        time_lbl = QLabel(f"{activity.start_time}–{activity.end_time}")
+        time_lbl.setStyleSheet(f"font-size:10px;color:{muted};")
+        layout.addWidget(time_lbl)
+
+        dur = activity.duration_minutes
+        dur_lbl = QLabel(_jp_duration(dur) if dur > 0 else "—")
+        dur_lbl.setStyleSheet(f"font-size:11px;color:{muted};min-width:64px;")
+        dur_lbl.setAlignment(Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter)
+        layout.addWidget(dur_lbl)
+
+        if activity.notes and activity.notes.strip():
+            note_dot = QLabel("[note]")
+            note_dot.setStyleSheet(f"font-size:9px;color:{muted};")
+            note_dot.setToolTip(activity.notes.strip())
+            layout.addWidget(note_dot)
+
+    def is_checked(self) -> bool:
+        return self.check.isChecked()
+
+    def row_data(self) -> tuple[str, int]:
+        return (self.activity.activity, self.activity.duration_minutes)
+
+    def row_data_with_notes(self) -> tuple[str, int, str]:
+        return (self.activity.activity,
+                self.activity.duration_minutes,
+                self.activity.notes or "")
+
+
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+#  WorkPanel
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+class WorkPanel(QWidget):
+    """Daily 日報 write-up panel with optional AI generation.
+
+    The LLMClient is owned by MainWindow and injected here.
+    When settings change in the NetworkDialog, MainWindow calls
+    set_llm_client() to push the new client in.
+    """
+
+    llm_config_changed = pyqtSignal()   # emitted after local settings save
+
+    def __init__(self, llm_client: "LLMClient | None" = None, parent=None):
+        super().__init__(parent)
+        self._palette:    dict                    = {}
+        self._llm_client: LLMClient | None        = llm_client
+        self.store                                = ActivityStore()
+        self._rows:       list[_ActivityCheckRow] = []
+        self._ai_content  = ""
+        self._ai_busy     = False
+        # Kept on self — prevents GC before daemon thread fires
+        self._signals     = LLMSignals()
+        self._signals.result.connect(self._on_ai_result)
+        self._signals.error.connect(self._on_ai_error)
+
+        self._build_ui()
+        self._load_drafts()
+        self._refresh()
+
+        self._auto_timer = QTimer(self)
+        self._auto_timer.setInterval(60_000)
+        self._auto_timer.timeout.connect(self._refresh)
+        self._auto_timer.start()
+
+    # ── Public API ──────────────────────────────────
+
+    def set_llm_client(self, client: "LLMClient | None") -> None:
+        self._llm_client = client
+        status = "connected" if client else "no API key configured"
+        self._ai_status.setText(f"AI: {status}")
+        QTimer.singleShot(3000, lambda: self._ai_status.setText(""))
+
+    def set_palette(self, palette: dict) -> None:
+        self._palette = palette
+        self._refresh()
+
+    # ── Build UI ────────────────────────────────────
+
+    def _build_ui(self):
+        root = QVBoxLayout(self)
+        root.setContentsMargins(14, 10, 14, 10)
+        root.setSpacing(8)
+
+        # ── Header ──────────────────────────────────
+        hdr = QHBoxLayout()
+        title = QLabel("Work Panel — 日報作成")
+        title.setObjectName("sectionTitle")
+        hdr.addWidget(title)
+        hdr.addStretch()
+
+        self._date_lbl = QLabel()
+        self._date_lbl.setStyleSheet("font-size:12px;font-weight:bold;")
+        hdr.addWidget(self._date_lbl)
+
+        # Text-label buttons — no emoji, always renders
+        settings_btn = QPushButton("AI Settings")
+        settings_btn.setObjectName("secondary")
+        settings_btn.setFixedHeight(28)
+        settings_btn.setToolTip("Configure OpenRouter API key and model")
+        settings_btn.clicked.connect(self._open_settings)
+        hdr.addWidget(settings_btn)
+
+        refresh_btn = QPushButton("Refresh")
+        refresh_btn.setObjectName("secondary")
+        refresh_btn.setFixedHeight(28)
+        refresh_btn.setToolTip("Reload today's activities")
+        refresh_btn.clicked.connect(self._refresh)
+        hdr.addWidget(refresh_btn)
+
+        root.addLayout(hdr)
+
+        sep = QFrame(); sep.setFrameShape(QFrame.Shape.HLine)
+        sep.setObjectName("separator")
+        root.addWidget(sep)
+
+        # ── Main splitter ───────────────────────────
+        splitter = QSplitter(Qt.Orientation.Horizontal)
+        splitter.setChildrenCollapsible(False)
+
+        # LEFT pane
+        left = QWidget()
+        left_l = QVBoxLayout(left)
+        left_l.setContentsMargins(0, 0, 8, 0)
+        left_l.setSpacing(8)
+
+        # Activity list header with All / None buttons
+        act_hdr = QHBoxLayout()
+        act_title = QLabel("Today's Activities")
+        act_title.setStyleSheet("font-size:12px;font-weight:bold;")
+        act_hdr.addWidget(act_title)
+        act_hdr.addStretch()
+
+        all_btn = QPushButton("Select All")
+        all_btn.setObjectName("secondary")
+        all_btn.setFixedHeight(26)
+        all_btn.clicked.connect(lambda: self._set_all_checked(True))
+        act_hdr.addWidget(all_btn)
+
+        none_btn = QPushButton("Select None")
+        none_btn.setObjectName("secondary")
+        none_btn.setFixedHeight(26)
+        none_btn.clicked.connect(lambda: self._set_all_checked(False))
+        act_hdr.addWidget(none_btn)
+
+        left_l.addLayout(act_hdr)
+
+        # Scrollable checklist
+        self._act_container = QWidget()
+        self._act_layout = QVBoxLayout(self._act_container)
+        self._act_layout.setContentsMargins(0, 0, 0, 0)
+        self._act_layout.setSpacing(1)
+
+        act_scroll = QScrollArea()
+        act_scroll.setWidgetResizable(True)
+        act_scroll.setWidget(self._act_container)
+        act_scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+        act_scroll.setFrameShape(QFrame.Shape.NoFrame)
+        act_scroll.setMinimumHeight(100)
+        act_scroll.setMaximumHeight(240)
+        left_l.addWidget(act_scroll)
+
+        # AI generate row
+        ai_row = QHBoxLayout()
+        self._ai_btn = QPushButton("AI Generate Japanese Write-up")
+        self._ai_btn.setFixedHeight(30)
+        self._ai_btn.setToolTip(
+            "Uses the configured LLM to write polished Japanese descriptions\n"
+            "from your activity notes. Configure via AI Settings above.")
+        self._ai_btn.clicked.connect(self._run_ai)
+        ai_row.addWidget(self._ai_btn, 1)
+
+        self._clear_ai_btn = QPushButton("Clear AI")
+        self._clear_ai_btn.setObjectName("secondary")
+        self._clear_ai_btn.setFixedHeight(30)
+        self._clear_ai_btn.setToolTip("Revert to auto-generated bullets")
+        self._clear_ai_btn.clicked.connect(self._clear_ai)
+        self._clear_ai_btn.setVisible(False)
+        ai_row.addWidget(self._clear_ai_btn)
+        left_l.addLayout(ai_row)
+
+        self._ai_status = QLabel("")
+        self._ai_status.setStyleSheet("font-size:10px;")
+        self._ai_status.setWordWrap(True)
+        left_l.addWidget(self._ai_status)
+
+        sep2 = QFrame(); sep2.setFrameShape(QFrame.Shape.HLine)
+        sep2.setObjectName("separator")
+        left_l.addWidget(sep2)
+
+        ren_lbl = QLabel("【連絡事項】")
+        ren_lbl.setStyleSheet("font-size:12px;font-weight:bold;")
+        left_l.addWidget(ren_lbl)
+        self._renraku_edit = QPlainTextEdit()
+        self._renraku_edit.setPlaceholderText("Communications, blockers, notices…")
+        self._renraku_edit.setFixedHeight(75)
+        self._renraku_edit.textChanged.connect(self._update_preview)
+        left_l.addWidget(self._renraku_edit)
+
+        ash_lbl = QLabel("【明日の予定】")
+        ash_lbl.setStyleSheet("font-size:12px;font-weight:bold;")
+        left_l.addWidget(ash_lbl)
+        self._ashita_edit = QPlainTextEdit()
+        self._ashita_edit.setPlaceholderText(
+            "e.g.\nバックアップ手順書の仕上げに集中する\nコードレビューの対応")
+        self._ashita_edit.setMinimumHeight(90)
+        self._ashita_edit.textChanged.connect(self._update_preview)
+        left_l.addWidget(self._ashita_edit, 1)
+
+        save_btn = QPushButton("Save Draft")
+        save_btn.setObjectName("secondary")
+        save_btn.setFixedHeight(28)
+        save_btn.clicked.connect(self._save_drafts)
+        left_l.addWidget(save_btn)
+
+        splitter.addWidget(left)
+
+        # RIGHT pane
+        right = QWidget()
+        right_l = QVBoxLayout(right)
+        right_l.setContentsMargins(8, 0, 0, 0)
+        right_l.setSpacing(6)
+
+        prev_hdr = QHBoxLayout()
+        prev_title = QLabel("Preview")
+        prev_title.setStyleSheet("font-size:12px;font-weight:bold;")
+        prev_hdr.addWidget(prev_title)
+        prev_hdr.addStretch()
+
+        copy_btn = QPushButton("Copy to Clipboard")
+        copy_btn.setFixedHeight(28)
+        copy_btn.clicked.connect(self._copy_to_clipboard)
+        prev_hdr.addWidget(copy_btn)
+        right_l.addLayout(prev_hdr)
+
+        self._preview = QTextEdit()
+        self._preview.setReadOnly(True)
+        pf = QFont()
+        pf.setFamilies(["Meiryo UI", "Yu Gothic UI", "Segoe UI", "sans-serif"])
+        pf.setPixelSize(13)
+        self._preview.setFont(pf)
+        self._preview.setStyleSheet(
+            "QTextEdit{border:1px solid palette(mid);border-radius:6px;padding:8px;}")
+        right_l.addWidget(self._preview, 1)
+
+        export_btn = QPushButton("Export to Vault")
+        export_btn.setObjectName("secondary")
+        export_btn.setFixedHeight(28)
+        export_btn.clicked.connect(self._export_to_vault)
+        right_l.addWidget(export_btn)
+
+        splitter.addWidget(right)
+        splitter.setSizes([440, 360])
+        root.addWidget(splitter, 1)
+
+        self._feedback_lbl = QLabel("")
+        self._feedback_lbl.setStyleSheet("font-size:11px;")
+        root.addWidget(self._feedback_lbl)
+
+    # ── Data ────────────────────────────────────────
+
+    def _refresh(self):
+        today = date.today()
+        self._date_lbl.setText(_jp_date(today))
+        activities = self.store.get_for_date(today.isoformat())
+
+        while self._act_layout.count():
+            child = self._act_layout.takeAt(0)
+            if child.widget():
+                child.widget().deleteLater()
+        self._rows = []
+
+        if activities:
+            for act in activities:
+                row = _ActivityCheckRow(act, self._palette)
+                row.check.stateChanged.connect(self._update_preview)
+                self._rows.append(row)
+                self._act_layout.addWidget(row)
+        else:
+            muted = self._palette.get("muted", "#7f849c")
+            lbl = QLabel("No activities logged today yet.")
+            lbl.setStyleSheet(f"font-size:11px;color:{muted};padding:6px 2px;")
+            lbl.setWordWrap(True)
+            self._act_layout.addWidget(lbl)
+
+        self._act_layout.addStretch()
+        self._update_preview()
+
+    def _update_preview(self):
+        selected = [r.row_data() for r in self._rows if r.is_checked()]
+        self._preview.setPlainText(_build_report(
+            _jp_date(date.today()),
+            selected,
+            self._renraku_edit.toPlainText(),
+            self._ashita_edit.toPlainText(),
+            self._ai_content,
+        ))
+
+    def _set_all_checked(self, checked: bool):
+        for row in self._rows:
+            row.check.setChecked(checked)
+
+    # ── AI generation ───────────────────────────────
+
+    def _run_ai(self):
+        if self._ai_busy:
+            return
+        if self._llm_client is None:
+            QMessageBox.information(
+                self, "API Key Required",
+                "No OpenRouter API key configured.\n\n"
+                "Click 'AI Settings' to add your key and model ID,\n"
+                "or use Network Settings (Ctrl+Shift+N) → AI tab."
+            )
+            return
+        checked = [r for r in self._rows if r.is_checked()]
+        if not checked:
+            self._flash("No activities selected.", ms=2500)
+            return
+
+        self._ai_busy = True
+        self._ai_btn.setEnabled(False)
+        self._ai_status.setText("Generating Japanese write-up…")
+
+        self._llm_client.complete_async(
+            _build_llm_prompt([r.row_data_with_notes() for r in checked]),
+            on_result=self._signals.result.emit,
+            on_error=self._signals.error.emit,
+            max_tokens=800,
+            temperature=0.35,
+        )
+
+    def _on_ai_result(self, result: LLMResult):
+        self._ai_busy = False
+        self._ai_btn.setEnabled(True)
+        self._ai_content = result.text.strip()
+        self._clear_ai_btn.setVisible(True)
+        self._ai_status.setText(f"Done — {result.timing_summary()}")
+        self._update_preview()
+
+    def _on_ai_error(self, err: str):
+        self._ai_busy = False
+        self._ai_btn.setEnabled(True)
+        self._ai_status.setText(f"Error: {err}")
+
+    def _clear_ai(self):
+        self._ai_content = ""
+        self._clear_ai_btn.setVisible(False)
+        self._ai_status.setText("")
+        self._update_preview()
+
+    # ── Settings ────────────────────────────────────
+
+    def _open_settings(self):
+        """Open a minimal inline settings dialog for the AI key/model."""
+        from PyQt6.QtWidgets import (
+            QDialogButtonBox, QLineEdit, QFormLayout, QDialog
+        )
+
+        dlg = QDialog(self)
+        dlg.setWindowTitle("AI Settings — OpenRouter")
+        dlg.setMinimumWidth(460)
+        dlg.setModal(True)
+
+        layout = QVBoxLayout(dlg)
+        layout.setSpacing(10)
+        layout.setContentsMargins(14, 12, 14, 12)
+
+        info = QLabel(
+            "Get a free key at openrouter.ai/keys  |  "
+            "Find model IDs at openrouter.ai/models  |  "
+            "Free-tier models end in :free"
+        )
+        info.setWordWrap(True)
+        info.setStyleSheet("font-size:11px;")
+        layout.addWidget(info)
+
+        form = QFormLayout(); form.setSpacing(8)
+        cfg = load_config()
+
+        key_edit = QLineEdit()
+        key_edit.setPlaceholderText("sk-or-v1-…")
+        key_edit.setEchoMode(QLineEdit.EchoMode.Password)
+        key_edit.setText(cfg.get("openrouter_api_key", ""))
+        form.addRow("API Key:", key_edit)
+
+        model_edit = QLineEdit()
+        model_edit.setPlaceholderText("e.g. qwen/qwen3-6b-plus:free")
+        model_edit.setText(cfg.get("openrouter_model", DEFAULT_MODEL))
+        form.addRow("Model ID:", model_edit)
+        layout.addLayout(form)
+
+        # Test row
+        test_row = QHBoxLayout()
+        test_btn = QPushButton("Test Connection")
+        test_btn.setObjectName("secondary")
+        test_lbl = QLabel("")
+        test_lbl.setWordWrap(True)
+        test_row.addWidget(test_btn)
+        test_row.addWidget(test_lbl, 1)
+        layout.addLayout(test_row)
+
+        # Keep signals alive on the dialog
+        dlg._test_signals = LLMSignals()
+
+        def _do_test():
+            key   = key_edit.text().strip()
+            model = model_edit.text().strip() or DEFAULT_MODEL
+            if not key:
+                test_lbl.setText("Enter an API key first.")
+                return
+            test_btn.setEnabled(False)
+            test_lbl.setText("Testing…")
+            def _ok(r: LLMResult):
+                test_lbl.setText(f"Connected — {r.timing_summary()}")
+                test_btn.setEnabled(True)
+            def _err(e: str):
+                test_lbl.setText(f"Error: {e}")
+                test_btn.setEnabled(True)
+            dlg._test_signals.result.connect(_ok)
+            dlg._test_signals.error.connect(_err)
+            LLMClient(api_key=key, model=model).complete_async(
+                [{"role": "user", "content": "Say hello in one word."}],
+                on_result=dlg._test_signals.result.emit,
+                on_error=dlg._test_signals.error.emit,
+                max_tokens=16,
+            )
+
+        test_btn.clicked.connect(_do_test)
+
+        btn_box = QDialogButtonBox(
+            QDialogButtonBox.StandardButton.Save |
+            QDialogButtonBox.StandardButton.Cancel
+        )
+        btn_box.accepted.connect(dlg.accept)
+        btn_box.rejected.connect(dlg.reject)
+        layout.addWidget(btn_box)
+
+        if dlg.exec() == QDialog.DialogCode.Accepted:
+            save_llm_config(key_edit.text().strip(),
+                            model_edit.text().strip() or DEFAULT_MODEL)
+            self.llm_config_changed.emit()
+
+    # ── Drafts ──────────────────────────────────────
+
+    def _load_drafts(self):
+        cfg     = load_config()
+        drafts  = cfg.get("work_panel_drafts", {})
+        day_key = date.today().isoformat()
+        saved   = drafts.get(day_key, {})
+        self._renraku_edit.setPlainText(saved.get("renraku", ""))
+        self._ashita_edit.setPlainText(saved.get("ashita", ""))
+
+    def _save_drafts(self):
+        from src.config import load_config, save_config
+        cfg     = load_config()
+        drafts  = cfg.get("work_panel_drafts", {})
+        day_key = date.today().isoformat()
+        cutoff  = date.today().toordinal() - 14
+        drafts  = {k: v for k, v in drafts.items()
+                   if date.fromisoformat(k).toordinal() >= cutoff}
+        drafts[day_key] = {
+            "renraku": self._renraku_edit.toPlainText(),
+            "ashita":  self._ashita_edit.toPlainText(),
+        }
+        cfg["work_panel_drafts"] = drafts
+        save_config(cfg)
+        self._flash("Draft saved.")
+
+    # ── Clipboard / export ───────────────────────────
+
+    def _copy_to_clipboard(self):
+        text = self._preview.toPlainText()
+        if text:
+            QApplication.clipboard().setText(text)
+            self._flash("Copied to clipboard.")
+
+    def _export_to_vault(self):
+        cfg        = load_config()
+        vault_path = cfg.get("obsidian_vault_path", "")
+        if not vault_path or not Path(vault_path).is_dir():
+            QMessageBox.warning(self, "No Vault",
+                "Set an Obsidian vault path first (Notes → Set Vault).")
+            return
+        today   = date.today()
+        out_dir = (Path(vault_path) / "Daily Reports"
+                   / str(today.year)
+                   / f"{today.month:02d} - {today.strftime('%B')}")
+        out_dir.mkdir(parents=True, exist_ok=True)
+        filename = f"{today.isoformat()} 日報.md"
+        (out_dir / filename).write_text(
+            self._preview.toPlainText(), encoding="utf-8")
+        self._flash(
+            f"Saved to Daily Reports/{today.year}/{today.month:02d}/…/{filename}",
+            ms=4000)
+
+    def _flash(self, msg: str, ms: int = 3000):
+        self._feedback_lbl.setText(msg)
+        QTimer.singleShot(ms, lambda: self._feedback_lbl.setText(""))
+```
+
+### `src\ui\themes\__init__.py`
+
+```python
+"""Theme definitions and management."""
+
+from src.ui.themes.styles import THEMES, get_theme_names
+
+__all__ = ["THEMES", "get_theme_names"]
+
+```
+
+### `src\ui\themes\styles.py`
+
+```python
+"""Theme stylesheets for PyQt6.
+
+Themes included:
+  Dark   — Catppuccin Mocha, Tokyo Night, Dracula, Monokai Pro, One Dark Pro, Rosé Pine
+  Medium — Nord, Gruvbox Dark
+  Light  — Catppuccin Latte, Solarized Light
+
+Arrow rendering:
+  All dropdown / spinner arrows use inline SVG data-URIs so they render
+  correctly in Qt6. The CSS border-trick (width:0; height:0; border-left…)
+  creates triangles in web browsers but has no effect in Qt's QSS engine —
+  the borders appear on a zero-size box and produce nothing visible.
+"""
+
+
+# ─────────────────────────────────────────────────────────
+#  SVG arrow helper
+# ─────────────────────────────────────────────────────────
+
+def _svg_arrow(direction: str, color: str) -> str:
+    """Return a QSS url() value for an inline SVG triangle arrow.
+
+    direction: 'down' | 'up'
+    color    : hex string e.g. '#cdd6f4'
+    """
+    col = color.replace("#", "%23")
+    # 10×6 triangle
+    if direction == "down":
+        pts = "0,0 10,0 5,6"    # ▼
+    else:                        # "up"
+        pts = "0,6 10,6 5,0"    # ▲
+    svg = (
+        "%3Csvg xmlns='http://www.w3.org/2000/svg' "
+        "width='10' height='6'%3E"
+        f"%3Cpolygon points='{pts}' fill='{col}'/%3E"
+        "%3C/svg%3E"
+    )
+    return f'url("data:image/svg+xml,{svg}")'
+
+
+# ─────────────────────────────────────────────────────────
+#  Theme builder
+# ─────────────────────────────────────────────────────────
+
+def _rgba(hex_color: str, alpha: int) -> str:
+    """Convert a hex color string to a QSS rgba() value.
+
+    Qt's QSS uses 0-255 for the alpha channel (not 0.0-1.0 like web CSS).
+    """
+    h = hex_color.lstrip("#")
+    r, g, b = int(h[0:2], 16), int(h[2:4], 16), int(h[4:6], 16)
+    return f"rgba({r}, {g}, {b}, {alpha})"
+
+
+def _build_theme(c: dict) -> str:
+    """Generate a full QSS stylesheet from a color palette dict.
+
+    If the palette contains a ``panel_alpha`` key (int, 0-255), all panel
+    background surfaces are rendered with that opacity level so an animated
+    background (e.g. Matrix rain) bleeds through.
+    """
+    # Pre-compute SVG arrow URLs for each needed state
+    _adn    = _svg_arrow("down", c["fg"])           # dropdown arrow, normal
+    _adn_h  = _svg_arrow("down", c["accent_fg"])    # dropdown arrow, on hover
+    _adn_on = _svg_arrow("up",   c["fg"])           # dropdown arrow, open (flip)
+    _aup    = _svg_arrow("up",   c["fg"])           # spinbox up arrow
+    _aup_h  = _svg_arrow("up",   c["accent_fg"])
+    _adn2   = _svg_arrow("down", c["fg"])           # spinbox down arrow (alias)
+    _adn2_h = _svg_arrow("down", c["accent_fg"])
+
+    # Semi-transparent surface colours for themes with panel_alpha
+    pa = c.get("panel_alpha", 255)
+    _bg      = _rgba(c["bg"],         pa)       if pa < 255 else c["bg"]
+    _surf    = _rgba(c["surface"],    pa)       if pa < 255 else c["surface"]
+    _hdr     = _rgba(c["header_bg"],  min(pa + 25, 255)) if pa < 255 else c["header_bg"]
+    _alt     = _rgba(c["alt_row"],    pa)       if pa < 255 else c["alt_row"]
+    _hover   = _rgba(c["hover"],      min(pa + 30, 255)) if pa < 255 else c["hover"]
+
+    return f"""
+/* ━━━━ Base ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+QMainWindow, QWidget {{
+    background-color: {_bg};
+    color: {c['fg']};
+    font-family: "Segoe UI", "Meiryo UI", "Ubuntu", "Noto Sans", "DejaVu Sans", "Liberation Sans", sans-serif, "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji", "Noto Sans Symbols2";
+    font-size: 12px;
+}}
+
+/* Transparent scroll-area viewport so inner widgets set their own bg */
+QScrollArea > QWidget > QWidget {{
+    background-color: transparent;
+}}
+
+/* ━━━━ Menu bar ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+QMenuBar {{
+    background-color: {_hdr};
+    color: {c['fg']};
+    border-bottom: 1px solid {c['border']};
+    padding: 2px 4px;
+    font-size: 12px;
+}}
+QMenuBar::item {{
+    background-color: transparent;
+    padding: 4px 10px;
+    border-radius: 4px;
+}}
+QMenuBar::item:selected {{
+    background-color: {c['accent']};
+    color: {c['accent_fg']};
+}}
+QMenuBar::item:pressed {{
+    background-color: {c['accent_pressed']};
+    color: {c['accent_fg']};
+}}
+
+QMenu {{
+    background-color: {_surf};
+    color: {c['fg']};
+    border: 1px solid {c['border']};
+    border-radius: 6px;
+    padding: 4px;
+}}
+QMenu::item {{
+    padding: 5px 24px 5px 12px;
+    border-radius: 3px;
+}}
+QMenu::item:selected {{
+    background-color: {c['accent']};
+    color: {c['accent_fg']};
+}}
+QMenu::separator {{
+    height: 1px;
+    background-color: {c['border']};
+    margin: 4px 8px;
+}}
+
+/* ━━━━ Tab widget ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+QTabWidget::pane {{
+    border: 1px solid {c['border']};
+    border-radius: 6px;
+    background-color: {c['surface']};
+    top: -1px;
+}}
+QTabWidget[documentMode="true"]::pane {{
+    border: none;
+    border-top: 1px solid {c['border']};
+    background-color: transparent;
+    border-radius: 0;
+}}
+QTabBar {{
+    background-color: transparent;
+}}
+QTabBar::tab {{
+    background-color: transparent;
+    color: {c['muted']};
+    padding: 7px 16px;
+    border: none;
+    border-bottom: 2px solid transparent;
+    min-width: 60px;
+    font-size: 12px;
+}}
+QTabBar::tab:selected {{
+    color: {c['fg']};
+    border-bottom: 2px solid {c['accent']};
+    font-weight: bold;
+}}
+QTabBar::tab:hover:!selected {{
+    color: {c['fg']};
+    background-color: {c['hover']};
+    border-radius: 4px 4px 0 0;
+}}
+QTabBar::tab:disabled {{
+    color: {c['border']};
+}}
+
+/* ━━━━ Text inputs ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+QLineEdit, QTextEdit, QPlainTextEdit {{
+    background-color: {_surf};
+    color: {c['fg']};
+    border: 1px solid {c['border']};
+    border-radius: 4px;
+    padding: 4px 6px;
+    selection-background-color: {c['accent']};
+    selection-color: {c['accent_fg']};
+}}
+QLineEdit:focus, QTextEdit:focus, QPlainTextEdit:focus {{
+    border: 1px solid {c['accent']};
+    outline: none;
+}}
+QLineEdit[readOnly="true"] {{
+    background-color: {_bg};
+    color: {c['muted']};
+}}
+
+/* ━━━━ Push buttons ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+QPushButton {{
+    background-color: {c['accent']};
+    color: {c['accent_fg']};
+    border: none;
+    border-radius: 5px;
+    padding: 5px 14px;
+    font-weight: bold;
+    font-size: 12px;
+}}
+QPushButton:hover {{
+    background-color: {c['accent_hover']};
+}}
+QPushButton:pressed {{
+    background-color: {c['accent_pressed']};
+}}
+QPushButton:disabled {{
+    background-color: {c['border']};
+    color: {c['muted']};
+}}
+QPushButton:flat {{
+    background-color: transparent;
+    border: none;
+    color: {c['fg']};
+    font-weight: normal;
+}}
+QPushButton:flat:hover {{
+    background-color: {c['hover']};
+}}
+
+/* Destructive (delete) */
+QPushButton#destructive {{
+    background-color: {c['red']};
+    color: #ffffff;
+}}
+QPushButton#destructive:hover {{
+    background-color: {c['red_hover']};
+}}
+QPushButton#destructive:pressed {{
+    background-color: {c['red']};
+}}
+
+/* Secondary (muted/ghost) — high contrast */
+QPushButton#secondary {{
+    background-color: {c['surface']};
+    color: {c['fg']};
+    border: 1px solid {c['border']};
+    font-weight: normal;
+}}
+QPushButton#secondary:hover {{
+    background-color: {c['hover']};
+    border-color: {c['accent']};
+    color: {c['fg']};
+}}
+QPushButton#secondary:pressed {{
+    background-color: {c['border']};
+}}
+QPushButton#secondary:disabled {{
+    color: {c['muted']};
+    border-color: {c['border']};
+}}
+
+/* ━━━━ Tool buttons (color swatches, weekday pickers) ━━━━ */
+QToolButton {{
+    background-color: {_surf};
+    color: {c['fg']};
+    border: 1px solid {c['border']};
+    border-radius: 4px;
+    padding: 3px 6px;
+    font-size: 11px;
+}}
+QToolButton:hover {{
+    background-color: {_hover};
+    border-color: {c['accent']};
+}}
+QToolButton:checked {{
+    background-color: {c['accent']};
+    color: {c['accent_fg']};
+    border-color: {c['accent']};
+    font-weight: bold;
+}}
+QToolButton:pressed {{
+    background-color: {c['accent_pressed']};
+    color: {c['accent_fg']};
+}}
+QToolButton::menu-indicator {{
+    image: none;
+}}
+
+/* ━━━━ Lists ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+QListWidget {{
+    background-color: {_surf};
+    border: 1px solid {c['border']};
+    border-radius: 6px;
+    padding: 4px;
+    outline: none;
+}}
+QListWidget::item {{
+    padding: 5px 4px;
+    border-radius: 4px;
+}}
+QListWidget::item:selected {{
+    background-color: {c['accent']};
+    color: {c['accent_fg']};
+}}
+QListWidget::item:hover:!selected {{
+    background-color: {_hover};
+}}
+
+/* ━━━━ Tables ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+QTableWidget {{
+    background-color: {_surf};
+    border: 1px solid {c['border']};
+    border-radius: 6px;
+    gridline-color: {c['border']};
+    outline: none;
+    alternate-background-color: {_alt};
+}}
+QTableWidget::item {{
+    padding: 4px;
+}}
+QTableWidget::item:selected {{
+    background-color: {c['accent']};
+    color: {c['accent_fg']};
+}}
+QHeaderView::section {{
+    background-color: {_hdr};
+    color: {c['fg']};
+    padding: 5px 6px;
+    border: none;
+    border-bottom: 2px solid {c['accent']};
+    border-right: 1px solid {c['border']};
+    font-weight: bold;
+    font-size: 11px;
+}}
+QHeaderView::section:last {{
+    border-right: none;
+}}
+
+/* ━━━━ Combo boxes ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+QComboBox {{
+    background-color: {_surf};
+    color: {c['fg']};
+    border: 1px solid {c['border']};
+    border-radius: 4px;
+    padding: 4px 6px;
+    padding-right: 28px;
+    min-width: 70px;
+    font-size: 12px;
+}}
+QComboBox:hover {{
+    border-color: {c['accent']};
+}}
+QComboBox:focus {{
+    border-color: {c['accent']};
+}}
+QComboBox::drop-down {{
+    subcontrol-origin: border;
+    subcontrol-position: top right;
+    width: 26px;
+    background-color: {c['border']};
+    border-left: 1px solid {c['border']};
+    border-top-right-radius: 4px;
+    border-bottom-right-radius: 4px;
+}}
+QComboBox::drop-down:hover {{
+    background-color: {c['accent']};
+}}
+QComboBox::down-arrow {{
+    image: {_adn};
+    width: 10px;
+    height: 6px;
+}}
+/* Popup open (drop-down stays pressed while popup is visible) */
+QComboBox::drop-down:pressed QComboBox::down-arrow {{
+    image: {_adn_on};
+}}
+
+QComboBox::down-arrow:hover {{
+    image: {_adn_h};
+}}
+QComboBox QAbstractItemView {{
+    background-color: {c['surface']};
+    color: {c['fg']};
+    selection-background-color: {c['accent']};
+    selection-color: {c['accent_fg']};
+    border: 1px solid {c['border']};
+    border-radius: 4px;
+    padding: 2px;
+    outline: none;
+}}
+
+/* ━━━━ Spin boxes, Date/Time edits ━━━━━━━━━━━━━━━ */
+QDateEdit, QTimeEdit, QSpinBox, QDoubleSpinBox {{
+    background-color: {_surf};
+    color: {c['fg']};
+    border: 1px solid {c['border']};
+    border-radius: 4px;
+    padding: 4px 6px;
+    font-size: 12px;
+}}
+QDateEdit:hover, QTimeEdit:hover, QSpinBox:hover, QDoubleSpinBox:hover {{
+    border-color: {c['accent']};
+}}
+QDateEdit:focus, QTimeEdit:focus, QSpinBox:focus, QDoubleSpinBox:focus {{
+    border-color: {c['accent']};
+}}
+
+/* Calendar / time popup drop-down button */
+QDateEdit::drop-down, QTimeEdit::drop-down {{
+    subcontrol-origin: border;
+    subcontrol-position: top right;
+    width: 26px;
+    background-color: {c['border']};
+    border-left: 1px solid {c['border']};
+    border-top-right-radius: 4px;
+    border-bottom-right-radius: 4px;
+}}
+QDateEdit::drop-down:hover, QTimeEdit::drop-down:hover {{
+    background-color: {c['accent']};
+}}
+QDateEdit::down-arrow, QTimeEdit::down-arrow {{
+    image: {_adn};
+    width: 10px;
+    height: 6px;
+}}
+QDateEdit::down-arrow:hover, QTimeEdit::down-arrow:hover {{
+    image: {_adn_h};
+}}
+
+/* Spinbox increment buttons — applied to every QAbstractSpinBox subclass.
+   QSS does not inherit selectors across subclasses, so each one is named
+   explicitly to keep arrows visible on time/date editors too. */
+QSpinBox::up-button, QDoubleSpinBox::up-button,
+QDateEdit::up-button, QTimeEdit::up-button, QDateTimeEdit::up-button {{
+    subcontrol-origin: border;
+    subcontrol-position: top right;
+    width: 20px;
+    background-color: {c['border']};
+    border-left: 1px solid {c['border']};
+    border-bottom: 1px solid {c['border']};
+    border-top-right-radius: 4px;
+}}
+QSpinBox::up-button:hover, QDoubleSpinBox::up-button:hover,
+QDateEdit::up-button:hover, QTimeEdit::up-button:hover, QDateTimeEdit::up-button:hover {{
+    background-color: {c['accent']};
+}}
+QSpinBox::up-button:pressed, QDoubleSpinBox::up-button:pressed,
+QDateEdit::up-button:pressed, QTimeEdit::up-button:pressed, QDateTimeEdit::up-button:pressed {{
+    background-color: {c['accent_pressed']};
+}}
+QSpinBox::up-arrow, QDoubleSpinBox::up-arrow,
+QDateEdit::up-arrow, QTimeEdit::up-arrow, QDateTimeEdit::up-arrow {{
+    image: {_aup};
+    width: 8px;
+    height: 5px;
+}}
+QSpinBox::up-arrow:hover, QDoubleSpinBox::up-arrow:hover,
+QDateEdit::up-arrow:hover, QTimeEdit::up-arrow:hover, QDateTimeEdit::up-arrow:hover {{
+    image: {_aup_h};
+}}
+QSpinBox::down-button, QDoubleSpinBox::down-button,
+QDateEdit::down-button, QTimeEdit::down-button, QDateTimeEdit::down-button {{
+    subcontrol-origin: border;
+    subcontrol-position: bottom right;
+    width: 20px;
+    background-color: {c['border']};
+    border-left: 1px solid {c['border']};
+    border-bottom-right-radius: 4px;
+}}
+QSpinBox::down-button:hover, QDoubleSpinBox::down-button:hover,
+QDateEdit::down-button:hover, QTimeEdit::down-button:hover, QDateTimeEdit::down-button:hover {{
+    background-color: {c['accent']};
+}}
+QSpinBox::down-button:pressed, QDoubleSpinBox::down-button:pressed,
+QDateEdit::down-button:pressed, QTimeEdit::down-button:pressed, QDateTimeEdit::down-button:pressed {{
+    background-color: {c['accent_pressed']};
+}}
+QSpinBox::down-arrow, QDoubleSpinBox::down-arrow,
+QDateEdit::down-arrow, QTimeEdit::down-arrow, QDateTimeEdit::down-arrow {{
+    image: {_adn2};
+    width: 8px;
+    height: 5px;
+}}
+QSpinBox::down-arrow:hover, QDoubleSpinBox::down-arrow:hover,
+QDateEdit::down-arrow:hover, QTimeEdit::down-arrow:hover, QDateTimeEdit::down-arrow:hover {{
+    image: {_adn2_h};
+}}
+
+/* Calendar popup widget (the QCalendarWidget) */
+QCalendarWidget QWidget {{
+    background-color: {c['surface']};
+    color: {c['fg']};
+}}
+QCalendarWidget QAbstractItemView:enabled {{
+    background-color: {c['surface']};
+    color: {c['fg']};
+    selection-background-color: {c['accent']};
+    selection-color: {c['accent_fg']};
+}}
+QCalendarWidget QAbstractItemView:disabled {{
+    color: {c['muted']};
+}}
+QCalendarWidget QToolButton {{
+    background-color: transparent;
+    color: {c['fg']};
+    border: none;
+    font-weight: bold;
+    font-size: 13px;
+    padding: 4px 8px;
+}}
+QCalendarWidget QToolButton:hover {{
+    background-color: {c['hover']};
+    border-radius: 4px;
+}}
+QCalendarWidget #qt_calendar_navigationbar {{
+    background-color: {c['header_bg']};
+    border-bottom: 1px solid {c['border']};
+    padding: 4px;
+}}
+
+/* ━━━━ Checkboxes ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+QCheckBox {{
+    spacing: 8px;
+    color: {c['fg']};
+    font-size: 12px;
+}}
+QCheckBox::indicator {{
+    width: 18px;
+    height: 18px;
+    border-radius: 4px;
+    border: 2px solid {c['border']};
+    background-color: {c['surface']};
+}}
+QCheckBox::indicator:hover {{
+    border-color: {c['accent']};
+}}
+QCheckBox::indicator:checked {{
+    background-color: {c['accent']};
+    border-color: {c['accent']};
+}}
+QCheckBox::indicator:checked:hover {{
+    background-color: {c['accent_hover']};
+}}
+
+/* ━━━━ Progress bar ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+QProgressBar {{
+    background-color: {c['surface']};
+    border: 1px solid {c['border']};
+    border-radius: 4px;
+    text-align: center;
+    color: {c['fg']};
+    font-size: 11px;
+    min-height: 10px;
+}}
+QProgressBar::chunk {{
+    background-color: {c['accent']};
+    border-radius: 4px;
+}}
+
+/* ━━━━ Labels ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+QLabel#sectionTitle {{
+    font-size: 15px;
+    font-weight: bold;
+    color: {c['fg']};
+}}
+QLabel#subtitle {{
+    font-size: 11px;
+    color: {c['muted']};
+}}
+QLabel#statusOk {{
+    color: {c['green']};
+    font-size: 12px;
+    font-weight: bold;
+}}
+QLabel#statusWarn {{
+    color: {c['yellow']};
+    font-size: 12px;
+    font-weight: bold;
+}}
+
+/* ━━━━ Separators ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+QFrame#separator {{
+    background-color: {c['border']};
+    max-height: 1px;
+    border: none;
+}}
+
+/* ━━━━ Splitter ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+QSplitter::handle {{
+    background-color: {c['border']};
+    width: 2px;
+    margin: 4px 2px;
+}}
+QSplitter::handle:hover {{
+    background-color: {c['accent']};
+}}
+
+/* ━━━━ Scroll bars ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+QScrollBar:vertical {{
+    background-color: transparent;
+    width: 8px;
+    margin: 0;
+}}
+QScrollBar::handle:vertical {{
+    background-color: {c['border']};
+    border-radius: 4px;
+    min-height: 24px;
+}}
+QScrollBar::handle:vertical:hover {{
+    background-color: {c['muted']};
+}}
+QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical,
+QScrollBar::add-page:vertical, QScrollBar::sub-page:vertical {{
+    height: 0;
+    background: transparent;
+}}
+QScrollBar:horizontal {{
+    background-color: transparent;
+    height: 8px;
+    margin: 0;
+}}
+QScrollBar::handle:horizontal {{
+    background-color: {c['border']};
+    border-radius: 4px;
+    min-width: 24px;
+}}
+QScrollBar::handle:horizontal:hover {{
+    background-color: {c['muted']};
+}}
+QScrollBar::add-line:horizontal, QScrollBar::sub-line:horizontal,
+QScrollBar::add-page:horizontal, QScrollBar::sub-page:horizontal {{
+    width: 0;
+    background: transparent;
+}}
+
+/* ━━━━ Tooltips ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+QToolTip {{
+    background-color: {c['surface']};
+    color: {c['fg']};
+    border: 1px solid {c['border']};
+    border-radius: 4px;
+    padding: 5px 8px;
+    font-size: 12px;
+}}
+
+/* ━━━━ Dialogs ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+QDialog {{
+    background-color: {_bg};
+}}
+QMessageBox {{
+    background-color: {_bg};
+}}
+QMessageBox QLabel {{
+    color: {c['fg']};
+    font-size: 13px;
+}}
+
+/* ━━━━ Status bar ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+QStatusBar {{
+    background-color: {c['header_bg']};
+    color: {c['muted']};
+    border-top: 1px solid {c['border']};
+    font-size: 11px;
+    padding: 1px 6px;
+}}
+QStatusBar::item {{
+    border: none;
+}}
+
+/* ━━━━ Group boxes ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+QGroupBox {{
+    border: 1px solid {c['border']};
+    border-radius: 6px;
+    margin-top: 14px;
+    padding-top: 8px;
+    font-weight: bold;
+    color: {c['fg']};
+}}
+QGroupBox::title {{
+    subcontrol-origin: margin;
+    left: 10px;
+    padding: 0 4px;
+    color: {c['accent']};
+    font-size: 12px;
+}}
+"""
+
+
+# ─────────────────────────────────────────────────────────
+#  Dark themes
+# ─────────────────────────────────────────────────────────
+
+# Catppuccin Mocha — deep purple-dark, blue accent
+_CATPPUCCIN_DARK = {
+    "bg": "#1e1e2e",        "surface": "#313244",   "border": "#45475a",
+    "fg": "#cdd6f4",        "muted": "#7f849c",      "hover": "#3b3d54",
+    "accent": "#89b4fa",    "accent_fg": "#1e1e2e",
+    "accent_hover": "#a0c5ff", "accent_pressed": "#74a4ea",
+    "red": "#f38ba8",       "red_hover": "#f5a0b8",
+    "green": "#a6e3a1",     "yellow": "#f9e2af",
+    "header_bg": "#181825", "alt_row": "#252538",
+}
+
+# Tokyo Night — navy-dark, electric blue accent
+_TOKYO_NIGHT = {
+    "bg": "#1a1b26",        "surface": "#24283b",   "border": "#414868",
+    "fg": "#c0caf5",        "muted": "#565f89",      "hover": "#2d3348",
+    "accent": "#7aa2f7",    "accent_fg": "#1a1b26",
+    "accent_hover": "#93b4fb", "accent_pressed": "#6090e5",
+    "red": "#f7768e",       "red_hover": "#f88fa0",
+    "green": "#9ece6a",     "yellow": "#e0af68",
+    "header_bg": "#16161e", "alt_row": "#1f2335",
+}
+
+# Dracula — classic dark purple
+_DRACULA = {
+    "bg": "#282a36",        "surface": "#343746",   "border": "#44475a",
+    "fg": "#f8f8f2",        "muted": "#8090c0",      "hover": "#3d4059",
+    "accent": "#bd93f9",    "accent_fg": "#282a36",
+    "accent_hover": "#cda7ff", "accent_pressed": "#ad83e9",
+    "red": "#ff5555",       "red_hover": "#ff7070",
+    "green": "#50fa7b",     "yellow": "#f1fa8c",
+    "header_bg": "#21222c", "alt_row": "#2f303e",
+}
+
+# Monokai Pro — warm dark, golden accent
+_MONOKAI = {
+    "bg": "#2d2a2e",        "surface": "#403e41",   "border": "#5b595c",
+    "fg": "#fcfcfa",        "muted": "#a9a7a7",      "hover": "#4a4849",
+    "accent": "#ffd866",    "accent_fg": "#2d2a2e",
+    "accent_hover": "#ffe085", "accent_pressed": "#e0be50",
+    "red": "#ff6188",       "red_hover": "#ff7a9c",
+    "green": "#a9dc76",     "yellow": "#ffd866",
+    "header_bg": "#221f22", "alt_row": "#353135",
+}
+
+# One Dark Pro — Atom-inspired neutral dark
+_ONE_DARK = {
+    "bg": "#282c34",        "surface": "#353b45",   "border": "#4b5263",
+    "fg": "#abb2bf",        "muted": "#7a8294",      "hover": "#3e4452",
+    "accent": "#61afef",    "accent_fg": "#282c34",
+    "accent_hover": "#7bbef5", "accent_pressed": "#519fd5",
+    "red": "#e06c75",       "red_hover": "#e88090",
+    "green": "#98c379",     "yellow": "#e5c07b",
+    "header_bg": "#21252b", "alt_row": "#2c313c",
+}
+
+# Rosé Pine — muted, nature-inspired dark
+_ROSE_PINE = {
+    "bg": "#191724",        "surface": "#26233a",   "border": "#403d52",
+    "fg": "#e0def4",        "muted": "#908caa",      "hover": "#2d2b3e",
+    "accent": "#c4a7e7",    "accent_fg": "#191724",
+    "accent_hover": "#d4b9f0", "accent_pressed": "#b498d4",
+    "red": "#eb6f92",       "red_hover": "#f08098",
+    "green": "#9ccfd8",     "yellow": "#f6c177",
+    "header_bg": "#12111f", "alt_row": "#201e2e",
+}
+
+# ─────────────────────────────────────────────────────────
+#  Medium themes
+# ─────────────────────────────────────────────────────────
+
+# Nord — arctic teal palette
+_NORD = {
+    "bg": "#2e3440",        "surface": "#3b4252",   "border": "#4c566a",
+    "fg": "#eceff4",        "muted": "#9199aa",      "hover": "#434c5e",
+    "accent": "#88c0d0",    "accent_fg": "#2e3440",
+    "accent_hover": "#9bcfde", "accent_pressed": "#79b0c0",
+    "red": "#bf616a",       "red_hover": "#cc7079",
+    "green": "#a3be8c",     "yellow": "#ebcb8b",
+    "header_bg": "#272c36", "alt_row": "#333a47",
+}
+
+# Gruvbox Dark — warm earthy tones
+_GRUVBOX = {
+    "bg": "#282828",        "surface": "#3c3836",   "border": "#665c54",
+    "fg": "#ebdbb2",        "muted": "#bdae93",      "hover": "#504945",
+    "accent": "#fabd2f",    "accent_fg": "#282828",
+    "accent_hover": "#ffd045", "accent_pressed": "#d9a520",
+    "red": "#fb4934",       "red_hover": "#ff6147",
+    "green": "#b8bb26",     "yellow": "#fabd2f",
+    "header_bg": "#1d2021", "alt_row": "#32302f",
+}
+
+# ─────────────────────────────────────────────────────────
+#  Light themes
+# ─────────────────────────────────────────────────────────
+
+# Catppuccin Latte — soft warm light
+_CATPPUCCIN_LIGHT = {
+    "bg": "#eff1f5",        "surface": "#ffffff",   "border": "#bcc0cc",
+    "fg": "#4c4f69",        "muted": "#7c7f93",      "hover": "#dce0ea",
+    "accent": "#1e66f5",    "accent_fg": "#ffffff",
+    "accent_hover": "#4080f7", "accent_pressed": "#1650d0",
+    "red": "#d20f39",       "red_hover": "#e0304f",
+    "green": "#40a02b",     "yellow": "#df8e1d",
+    "header_bg": "#e6e9ef", "alt_row": "#f4f5f8",
+}
+
+# Solarized Light — high-readability warm ivory
+_SOLARIZED_LIGHT = {
+    "bg": "#fdf6e3",        "surface": "#eee8d5",   "border": "#d3cbbb",
+    "fg": "#657b83",        "muted": "#93a1a1",      "hover": "#e2dac8",
+    "accent": "#268bd2",    "accent_fg": "#fdf6e3",
+    "accent_hover": "#3aa0e8", "accent_pressed": "#1a6da0",
+    "red": "#dc322f",       "red_hover": "#e04545",
+    "green": "#859900",     "yellow": "#b58900",
+    "header_bg": "#ece7d6", "alt_row": "#f5f0e2",
+}
+
+
+# ─────────────────────────────────────────────────────────
+#  Hacker / Terminal themes
+# ─────────────────────────────────────────────────────────
+
+# Hacker — neon green on near-black; inspired by classic terminal aesthetics
+_HACKER = {
+    "bg": "#0d0d0d",        "surface": "#1a1a1a",   "border": "#2d2d2d",
+    "fg": "#e0e0e0",        "muted": "#606060",      "hover": "#222222",
+    "accent": "#39ff14",    "accent_fg": "#000000",
+    "accent_hover": "#55ff30", "accent_pressed": "#2acc0a",
+    "red": "#ff3355",       "red_hover": "#ff5577",
+    "green": "#39ff14",     "yellow": "#ffdd00",
+    "header_bg": "#080808", "alt_row": "#141414",
+}
+
+# Matrix — phosphor green on pure black; iconic digital-rain palette.
+# Colours are tuned to match the film's organic phosphor-screen aesthetic —
+# muted sage green for UI text rather than blinding neon, with just enough
+# glow to feel authentically "in the Matrix."
+# panel_alpha < 255 activates rgba() semi-transparent surfaces so the
+# animated rain background glows through every panel and widget.
+_MATRIX = {
+    "bg": "#000000",        "surface": "#001500",   "border": "#003800",
+    "fg": "#9fd896",        "muted": "#3e6e3a",      "hover": "#002100",
+    "accent": "#35b055",    "accent_fg": "#000000",
+    "accent_hover": "#45c865", "accent_pressed": "#268040",
+    "red": "#cc2233",       "red_hover": "#e03344",
+    "green": "#35b055",     "yellow": "#88dd00",
+    "header_bg": "#000a00", "alt_row": "#000d00",
+    "panel_alpha": 190,     # panels ~75% opaque — rain glows through
+}
+
+
+# ─────────────────────────────────────────────────────────
+#  Build registry
+# ─────────────────────────────────────────────────────────
+
+_ALL_PALETTES = {
+    # Dark
+    "Catppuccin Dark":  _CATPPUCCIN_DARK,
+    "Tokyo Night":      _TOKYO_NIGHT,
+    "Dracula":          _DRACULA,
+    "Monokai Pro":      _MONOKAI,
+    "One Dark Pro":     _ONE_DARK,
+    "Rose Pine":        _ROSE_PINE,
+    # Medium
+    "Nord":             _NORD,
+    "Gruvbox Dark":     _GRUVBOX,
+    # Terminal
+    "Hacker":           _HACKER,
+    "Matrix":           _MATRIX,
+    # Light
+    "Catppuccin Light": _CATPPUCCIN_LIGHT,
+    "Solarized Light":  _SOLARIZED_LIGHT,
+}
+
+THEMES   = {name: _build_theme(pal) for name, pal in _ALL_PALETTES.items()}
+PALETTES = dict(_ALL_PALETTES)
+
+
+def get_theme_names() -> list[str]:
+    return list(THEMES.keys())
+```
+
+### `src\ui\widgets\__init__.py`
+
+```python
+"""Reusable UI widgets."""
+
+from src.ui.widgets.network_dialog import NetworkDialog
+
+__all__ = ["NetworkDialog"]
+
+```
+
+### `src\ui\widgets\matrix_rain.py`
+
+```python
+"""Matrix digital-rain background widget.
+
+Renders the classic phosphor-green digital rain as the *background* of the
+application's central widget area.  The panels (sidebar, stack) sit on top;
+they use semi-transparent ``rgba()`` backgrounds in the Matrix stylesheet so
+the rain glows through every surface.
+
+Architecture
+------------
+``MatrixRainWidget`` is a plain ``QWidget`` child of the central widget.  It is
+always positioned to fill its parent exactly, and ``lower()`` places it at the
+very bottom of the z-order so every other panel sits in front of it.
+
+``WA_TransparentForMouseEvents`` is set so no click, scroll, or key press is
+intercepted — they all reach the panels in front.
+
+``setAutoFillBackground(False)`` prevents Qt from painting a solid colour over
+the rain surface before our own ``paintEvent`` runs.
+
+Rendering
+---------
+A ``QPixmap`` is used as a phosphor screen.  Each 40 ms tick:
+
+1. A semi-transparent black rectangle fades all existing glyphs toward black
+   (phosphor decay / trailing glow effect).
+2. Each active stream is advanced and its head + trail characters are drawn
+   in successively dimmer greens.
+3. New streams are randomly spawned in idle columns.
+
+Polish (v2)
+-----------
+  • Soft glow halo around the head character (oversize alpha-low draw)
+    gives the leading glyph an authentic phosphor-bloom look.
+  • Each stream gets its own mild charset bias so some streams skew more
+    katakana, others more digits — adds visual variety.
+  • Mutation roll is precomputed per tick (one random.random() per stream
+    instead of one per cell-per-stream) — roughly halves random call volume.
+  • Pixmap is only (re)allocated when the widget is actively running, so
+    benign Qt resize events while hidden no longer churn memory.
+  • Cooldown range tightened so wider monitors don't feel sparse.
+
+Font
+----
+Tries "Matrix Code NFI" first (download free — search that exact name for the
+most authentic look), then falls back through MS Gothic -> Meiryo UI ->
+Noto Sans JP -> Courier New.  Half-width katakana (U+FF66-U+FF9D) renders
+correctly in all of those families.
+"""
+
+from __future__ import annotations
+
+import random
+from dataclasses import dataclass, field
+from typing import Optional
+
+from PyQt6.QtCore import Qt, QTimer
+from PyQt6.QtGui import (
+    QColor, QFont, QFontDatabase, QPainter, QPixmap,
+)
+from PyQt6.QtWidgets import QWidget
+
+
+# ── Character palette ─────────────────────────────────────────────────────
+_KATAKANA = [chr(c) for c in range(0xFF66, 0xFF9E)]   # half-width katakana
+_DIGITS   = list("0123456789")
+_SYMBOLS  = list(":;|=+*#@!")
+_CHARSET  = _KATAKANA + _DIGITS + _SYMBOLS
+
+# Per-stream charset variants — biases toward different glyph mixes so the
+# rain feels less uniform.  Each variant is a flat list ready for random.choice.
+_VARIANT_KATAKANA = _KATAKANA * 3 + _DIGITS + _SYMBOLS  # heavy katakana
+_VARIANT_BALANCED = _CHARSET                            # default mix
+_VARIANT_DIGITS   = _KATAKANA + _DIGITS * 4 + _SYMBOLS  # digit-heavy
+_VARIANT_SYMBOLS  = _KATAKANA + _DIGITS + _SYMBOLS * 4  # symbol-heavy
+_VARIANTS = (_VARIANT_KATAKANA, _VARIANT_BALANCED, _VARIANT_DIGITS, _VARIANT_SYMBOLS)
+
+
+# ── Stream dataclass ──────────────────────────────────────────────────────
+
+@dataclass
+class _Stream:
+    col:     int                # left-edge pixel x (snapped to cell grid)
+    row:     float              # current head row (float for sub-cell smoothness)
+    speed:   float              # rows per tick
+    length:  int                # trail depth in cells
+    chars:   list = field(default_factory=list)  # one char per trail cell
+    charset: list = field(default_factory=list)  # which palette this stream draws from
+    mut_p:   float = 0.18       # per-cell mutation probability for this stream
+
+
+# ── Widget ────────────────────────────────────────────────────────────────
+
+class MatrixRainWidget(QWidget):
+    """Full-parent-fill background widget that paints Matrix digital rain.
+
+    Drop this widget as a child of your central widget and call lower()
+    after all other children are added.
+    """
+
+    # Phosphor colour palette — tuned for the movie aesthetic:
+    # warm near-white tip, organic mid-green trail, not pure neon
+    _C_HEAD = QColor(210, 255, 200, 255)   # warm near-white — leading char
+    _C_HOT  = QColor(0,   192,  60, 255)   # bright phosphor — 1-2 behind head
+    _C_MID  = QColor(0,   145,  38, 225)   # mid trail
+    _C_DIM  = QColor(0,    88,  22, 170)   # lower trail
+    _C_TAIL = QColor(0,    44,  10,  95)   # tail end, barely visible
+
+    # Soft halo behind the head to suggest phosphor bloom
+    _C_GLOW = QColor(120, 255, 140,  55)
+
+    _BAND   = 3    # cells per colour band — wider bands look better at larger size
+    _FADE   = 16   # black-wash alpha per tick — slightly lower = longer, lazier trails
+
+    def __init__(self, parent: QWidget, cell_size: int = 22):
+        super().__init__(parent)
+        self._cell      = cell_size
+        self._streams:   list[_Stream]     = []
+        self._cooldowns: dict[int, int]    = {}
+        self._pixmap:    Optional[QPixmap] = None
+
+        self._timer = QTimer(self)
+        self._timer.setInterval(40)   # 25 fps
+        self._timer.timeout.connect(self._tick)
+
+        self.setAttribute(Qt.WidgetAttribute.WA_TransparentForMouseEvents, True)
+        self.setAttribute(Qt.WidgetAttribute.WA_NoSystemBackground,         True)
+        self.setAutoFillBackground(False)
+
+        self._font      = self._make_font(cell_size)
+        self._head_font = self._make_head_font(cell_size)
+        self.hide()
+
+    # ── Public API ────────────────────────────────────────────────────────
+
+    def start(self) -> None:
+        """Fill parent, push to back of z-order, begin animating."""
+        self._fit_to_parent()
+        self._reset_pixmap()
+        self._streams.clear()
+        self._cooldowns.clear()
+        self.show()
+        self.lower()
+        self._timer.start()
+
+    def stop(self) -> None:
+        self._timer.stop()
+        self.hide()
+        # Free the pixmap when hidden — no need to keep a screen-sized buffer
+        # around when the user is on a non-Matrix theme.
+        self._pixmap = None
+
+    def is_running(self) -> bool:
+        return self._timer.isActive()
+
+    def sync_size(self) -> None:
+        """Call from the parent widget's resizeEvent."""
+        self._fit_to_parent()
+        if self.is_running():
+            self._reset_pixmap()
+            self.lower()
+
+    # ── Internal helpers ──────────────────────────────────────────────────
+
+    def _fit_to_parent(self) -> None:
+        if self.parent():
+            pw = self.parent().width()
+            ph = self.parent().height()
+            self.setGeometry(0, 0, pw, ph)
+
+    @staticmethod
+    def _make_font(size: int) -> QFont:
+        families = QFontDatabase.families()
+        for name in ("Matrix Code NFI", "MS Gothic", "Meiryo UI",
+                     "Noto Sans JP", "Courier New"):
+            if name in families or name == "Courier New":
+                f = QFont(name, max(size - 4, 8))
+                f.setStyleHint(QFont.StyleHint.Monospace)
+                return f
+        f = QFont()
+        f.setFixedPitch(True)
+        f.setPointSize(max(size - 4, 8))
+        return f
+
+    @staticmethod
+    def _make_head_font(size: int) -> QFont:
+        """Slightly larger font for the head glow halo."""
+        families = QFontDatabase.families()
+        for name in ("Matrix Code NFI", "MS Gothic", "Meiryo UI",
+                     "Noto Sans JP", "Courier New"):
+            if name in families or name == "Courier New":
+                f = QFont(name, max(size - 1, 10))
+                f.setStyleHint(QFont.StyleHint.Monospace)
+                f.setBold(True)
+                return f
+        f = QFont()
+        f.setFixedPitch(True)
+        f.setPointSize(max(size - 1, 10))
+        f.setBold(True)
+        return f
+
+    def _reset_pixmap(self) -> None:
+        w = max(self.width(),  1)
+        h = max(self.height(), 1)
+        self._pixmap = QPixmap(w, h)
+        self._pixmap.fill(QColor(0, 0, 0, 255))
+
+    def _col_xs(self) -> list:
+        return list(range(0, max(self.width() - self._cell, 1), self._cell))
+
+    def _n_rows(self) -> int:
+        return max(self.height() // self._cell, 1)
+
+    def _spawn(self, col: int) -> None:
+        length  = random.randint(12, 38)   # longer trails suit the bigger cell size
+        charset = random.choice(_VARIANTS)
+        # Streams that are "calmer" feel slower-moving; pair speed with mutation rate
+        speed   = random.uniform(0.18, 0.55)
+        mut_p   = random.uniform(0.10, 0.22)
+        self._streams.append(_Stream(
+            col     = col,
+            row     = 0.0,
+            speed   = speed,
+            length  = length,
+            chars   = [random.choice(charset) for _ in range(length)],
+            charset = charset,
+            mut_p   = mut_p,
+        ))
+
+    def _maybe_spawn(self) -> None:
+        active = {s.col for s in self._streams}
+        for col in self._col_xs():
+            if col in active:
+                continue
+            if col in self._cooldowns:
+                self._cooldowns[col] -= 1
+                if self._cooldowns[col] > 0:
+                    continue
+                del self._cooldowns[col]
+            if random.random() < 0.05:    # slightly higher spawn chance — denser feel
+                self._spawn(col)
+
+    def _draw_stream(self, p: QPainter, s: _Stream) -> None:
+        head = int(s.row)
+        nr   = self._n_rows()
+        cell = self._cell
+        # Cache locals — avoids attribute lookups in the hot loop
+        c_head, c_hot, c_mid, c_dim, c_tail = (
+            self._C_HEAD, self._C_HOT, self._C_MID, self._C_DIM, self._C_TAIL,
+        )
+        band = self._BAND
+        align = Qt.AlignmentFlag.AlignCenter
+
+        for i, ch in enumerate(s.chars):
+            row = head - i
+            if row < 0:
+                continue
+            if row >= nr:
+                break
+            if   i == 0:           colour = c_head
+            elif i < band:         colour = c_hot
+            elif i < band * 2:     colour = c_mid
+            elif i < band * 3:     colour = c_dim
+            else:                  colour = c_tail
+            p.setPen(colour)
+            p.drawText(s.col, row * cell, cell, cell, align, ch)
+
+        # Soft glow halo behind the head — drawn last so it sits on top.
+        # The larger bold font + low alpha gives a phosphor-bloom feel.
+        if 0 <= head < nr and s.chars:
+            p.setFont(self._head_font)
+            p.setPen(self._C_GLOW)
+            p.drawText(s.col - cell // 4, head * cell - cell // 4,
+                       cell + cell // 2, cell + cell // 2,
+                       align, s.chars[0])
+            p.setFont(self._font)
+
+    # ── Qt overrides ──────────────────────────────────────────────────────
+
+    def resizeEvent(self, _) -> None:
+        # Only allocate a fresh pixmap if we're actually rendering — avoids
+        # expensive surface re-creation when the widget is hidden.
+        if self.is_running():
+            self._reset_pixmap()
+            valid = set(self._col_xs())
+            self._streams = [s for s in self._streams if s.col in valid]
+
+    def paintEvent(self, _) -> None:
+        if self._pixmap is None:
+            return
+        p = QPainter(self)
+        p.drawPixmap(0, 0, self._pixmap)
+        p.end()
+
+    # ── Animation tick ────────────────────────────────────────────────────
+
+    def _tick(self) -> None:
+        if self._pixmap is None:
+            return
+
+        p = QPainter(self._pixmap)
+        p.setFont(self._font)
+
+        # Phosphor decay: semi-transparent black wash
+        p.fillRect(0, 0, self._pixmap.width(), self._pixmap.height(),
+                   QColor(0, 0, 0, self._FADE))
+
+        # Advance and draw each stream
+        dead: list = []
+        n_rows = self._n_rows()
+        for idx, s in enumerate(self._streams):
+            # Mutate roughly mut_p of the cells per tick — but precomputing the
+            # threshold and using random.random() once per cell still beats the
+            # old pattern slightly because we don't do attribute lookups.
+            charset = s.charset
+            mut_p   = s.mut_p
+            chars   = s.chars
+            for ci in range(len(chars)):
+                if random.random() < mut_p:
+                    chars[ci] = random.choice(charset)
+            s.row += s.speed
+            self._draw_stream(p, s)
+            if s.row - s.length > n_rows:
+                dead.append(idx)
+                # Tighter cooldown range — denser feel, especially on wide screens
+                self._cooldowns[s.col] = random.randint(5, 35)
+
+        p.end()
+
+        for idx in reversed(dead):
+            self._streams.pop(idx)
+
+        self._maybe_spawn()
+        self.update()
+```
+
+### `src\ui\widgets\nav_button.py`
+
+```python
+"""Reusable theme-aware navigation arrow button.
+
+Draws its arrow via QPainter — no glyph/font lookup whatsoever.
+Works identically on every OS, every font configuration, every theme.
+
+Usage:
+    btn = NavButton("left")               # 28×28 single arrow
+    btn = NavButton("right", size=24)     # custom size
+    btn = NavButton("left", double=True)  # double arrow  «  style
+    btn.clicked.connect(my_slot)
+
+    # When theme changes:
+    btn.refresh(palette_dict)
+"""
+
+from PyQt6.QtCore import Qt, QPointF
+from PyQt6.QtGui import (
+    QPainter, QColor, QBrush, QPen, QPolygonF,
+)
+from PyQt6.QtWidgets import QPushButton
+
+
+# Module-level defaults (Catppuccin Dark) — overridden immediately when the
+# first theme is applied via refresh().
+_DEFAULTS: dict[str, str] = {
+    "surface":        "#313244",
+    "hover":          "#3b3d54",
+    "border":         "#45475a",
+    "fg":             "#cdd6f4",
+    "accent":         "#89b4fa",
+    "accent_fg":      "#1e1e2e",
+    "accent_pressed": "#74a4ea",
+}
+
+
+class NavButton(QPushButton):
+    """Theme-aware navigation arrow button rendered with QPainter.
+
+    Parameters
+    ----------
+    direction : str
+        One of ``'left'``, ``'right'``, ``'up'``, ``'down'``.
+    size : int
+        Width and height in pixels (the button is always square).
+    double : bool
+        When True, draws two chevrons (‹‹ / ›› style) for year-jump buttons.
+    tooltip : str
+        Optional tooltip text.
+    """
+
+    def __init__(
+        self,
+        direction: str,
+        size: int = 28,
+        double: bool = False,
+        tooltip: str = "",
+        parent=None,
+    ):
+        super().__init__(parent)
+        self._direction = direction
+        self._double = double
+        self._hovered = False
+        self._pressed_state = False
+        self._c: dict[str, str] = dict(_DEFAULTS)
+
+        self.setFixedSize(size, size)
+        self.setText("")           # pure painter — no text label
+        self.setFlat(True)         # suppress default QPushButton chrome
+        self.setAttribute(Qt.WidgetAttribute.WA_Hover, True)
+        self.setCursor(Qt.CursorShape.PointingHandCursor)
+        if tooltip:
+            self.setToolTip(tooltip)
+
+    # ── Public API ───────────────────────────────────────────────────────────
+
+    def refresh(self, palette: dict) -> None:
+        """Apply new palette colors and schedule a repaint."""
+        for key in _DEFAULTS:
+            if key in palette:
+                self._c[key] = palette[key]
+        self.update()
+
+    # ── Qt overrides ─────────────────────────────────────────────────────────
+
+    def enterEvent(self, e) -> None:
+        self._hovered = True
+        self.update()
+
+    def leaveEvent(self, e) -> None:
+        self._hovered = False
+        self.update()
+
+    def mousePressEvent(self, e) -> None:
+        self._pressed_state = True
+        self.update()
+        super().mousePressEvent(e)
+
+    def mouseReleaseEvent(self, e) -> None:
+        self._pressed_state = False
+        self.update()
+        super().mouseReleaseEvent(e)
+
+    def paintEvent(self, _) -> None:
+        p = QPainter(self)
+        p.setRenderHint(QPainter.RenderHint.Antialiasing)
+        w, h = self.width(), self.height()
+
+        # ── Background fill ──────────────────────────────────────────────────
+        if self._pressed_state:
+            bg = QColor(self._c["accent"])
+            bg.setAlpha(210)
+        elif self._hovered:
+            bg = QColor(self._c["accent"])
+            bg.setAlpha(38)
+        else:
+            bg = QColor(self._c["surface"])
+
+        p.setBrush(QBrush(bg))
+        p.setPen(Qt.PenStyle.NoPen)
+        p.drawRoundedRect(1, 1, w - 2, h - 2, 4, 4)
+
+        # ── Border ───────────────────────────────────────────────────────────
+        border_col = QColor(
+            self._c["accent"] if (self._hovered or self._pressed_state)
+            else self._c["border"]
+        )
+        p.setPen(QPen(border_col, 1))
+        p.setBrush(Qt.BrushStyle.NoBrush)
+        p.drawRoundedRect(0, 0, w - 1, h - 1, 4, 4)
+
+        # ── Arrow(s) ─────────────────────────────────────────────────────────
+        arrow_col = QColor(
+            self._c["accent_fg"] if self._pressed_state
+            else (self._c["accent"] if self._hovered else self._c["fg"])
+        )
+        p.setPen(Qt.PenStyle.NoPen)
+        p.setBrush(QBrush(arrow_col))
+
+        if self._double:
+            self._draw_double(p, w, h)
+        else:
+            self._draw_single(p, w / 2.0, h / 2.0, w, h)
+
+        p.end()
+
+    # ── Drawing helpers ───────────────────────────────────────────────────────
+
+    def _arrow_pts(
+        self, cx: float, cy: float, w: int, h: int
+    ) -> list[QPointF]:
+        """Return triangle vertices for a single chevron centred at (cx, cy)."""
+        s = min(w, h) * 0.18          # half the arrow's cross-axis span
+        r = min(w, h) * 0.14          # depth along the pointing axis
+        d = self._direction
+        if d == "left":
+            return [QPointF(cx + r, cy - s), QPointF(cx + r, cy + s), QPointF(cx - r, cy)]
+        if d == "right":
+            return [QPointF(cx - r, cy - s), QPointF(cx - r, cy + s), QPointF(cx + r, cy)]
+        if d == "up":
+            return [QPointF(cx - s, cy + r), QPointF(cx + s, cy + r), QPointF(cx, cy - r)]
+        # down
+        return [QPointF(cx - s, cy - r), QPointF(cx + s, cy - r), QPointF(cx, cy + r)]
+
+    def _draw_single(
+        self, p: QPainter, cx: float, cy: float, w: int, h: int
+    ) -> None:
+        pts = self._arrow_pts(cx, cy, w, h)
+        p.drawPolygon(QPolygonF(pts))
+
+    def _draw_double(self, p: QPainter, w: int, h: int) -> None:
+        """Draw two small chevrons offset along the pointing axis."""
+        gap = min(w, h) * 0.22        # spacing between the two chevrons
+        cx, cy = w / 2.0, h / 2.0
+        d = self._direction
+        if d in ("left", "right"):
+            off = QPointF(gap / 2 if d == "right" else -gap / 2, 0)
+        else:
+            off = QPointF(0, gap / 2 if d == "down" else -gap / 2)
+
+        for sign in (-1, 1):
+            ocx = cx + off.x() * sign
+            ocy = cy + off.y() * sign
+            pts = self._arrow_pts(ocx, ocy, w, h)
+            p.drawPolygon(QPolygonF(pts))
+```
+
+### `src\ui\widgets\network_dialog.py`
+
+```python
+"""Network settings dialog — configure sync, view peers, manage connections, AI/LLM.
+
+Tabs
+────
+  ⚙  Settings  : Sync subnet/port/interval/timeout, peer table, force scan/sync, log
+  📓  Obsidian  : Vault path, sync toggle, REST API key/URL
+  🤖  AI / LLM  : llama.cpp server host, connection test, multi-pass council toggle
+"""
+
+import socket
+import threading
+
+from PyQt6.QtCore import Qt, QTimer, pyqtSignal
+from PyQt6.QtWidgets import (
+    QAbstractItemView, QCheckBox, QDialog, QFileDialog, QFormLayout,
+    QFrame, QGridLayout, QHBoxLayout, QHeaderView, QLabel, QLineEdit,
+    QMessageBox, QPushButton, QScrollArea, QSpinBox, QTableWidget, QComboBox,
+    QTableWidgetItem, QTabWidget, QTextEdit, QVBoxLayout, QWidget,
+)
+
+from src.config import load_config, save_config
+from src.utils.llm import (
+    LLAMA_DEFAULT_HOST,
+    CouncilResult,
+    CouncilSignals,
+    LLMClient,
+    LLMResult,
+    LLMSignals,
+    LightCouncil,
+    COUNCIL_DEFAULT_CONCURRENCY,
+    set_request_concurrency,
+)
+
+
+class NetworkDialog(QDialog):
+    """Network and sync settings with live peer status, log viewer, and AI config."""
+
+    # Emitted after AI settings are saved so MainWindow can reload the client
+    llm_settings_saved = pyqtSignal()
+
+    def __init__(self, parent=None, sync_engine=None):
+        super().__init__(parent)
+        self.cfg         = load_config()
+        self.sync_engine = sync_engine
+        self.setWindowTitle("Network & AI Settings")
+        self.setMinimumSize(660, 580)
+        self.resize(740, 640)
+        self._build_ui()
+        self._load_values()
+        if self.sync_engine:
+            self._refresh_peers()
+
+    # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    #  UI construction
+    # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+    def _build_ui(self):
+        root = QVBoxLayout(self)
+        root.setContentsMargins(0, 0, 0, 0)
+        root.setSpacing(0)
+
+        tabs = QTabWidget()
+        root.addWidget(tabs, 1)
+
+        tabs.addTab(self._build_settings_tab(), "⚙  Settings")
+        tabs.addTab(self._build_obsidian_tab(), "📓  Obsidian")
+        tabs.addTab(self._build_ai_tab(),       "🤖  AI / LLM")
+
+        # Close button
+        btn_row = QHBoxLayout()
+        btn_row.setContentsMargins(12, 8, 12, 12)
+        btn_row.addStretch()
+        close_btn = QPushButton("Close")
+        close_btn.clicked.connect(self.accept)
+        btn_row.addWidget(close_btn)
+        root.addLayout(btn_row)
+
+    # ── Tab: Settings ─────────────────────────────────
+
+    def _build_settings_tab(self) -> QWidget:
+        tab = QWidget()
+        layout = QVBoxLayout(tab)
+        layout.setContentsMargins(12, 12, 12, 12)
+        layout.setSpacing(10)
+
+        sync_title = QLabel("Sync Settings")
+        sync_title.setObjectName("sectionTitle")
+        layout.addWidget(sync_title)
+
+        local_ip = self._get_local_ip()
+        ip_lbl = QLabel(f"Local IP: {local_ip}")
+        ip_lbl.setObjectName("subtitle")
+        layout.addWidget(ip_lbl)
+
+        form = QGridLayout()
+        form.setSpacing(8)
+        form.setColumnStretch(1, 1)
+
+        form.addWidget(QLabel("Subnet:"), 0, 0)
+        self.subnet_edit = QLineEdit()
+        self.subnet_edit.setPlaceholderText("192.168.0")
+        self.subnet_edit.setMaximumWidth(200)
+        form.addWidget(self.subnet_edit, 0, 1)
+
+        form.addWidget(QLabel("Sync port:"), 1, 0)
+        self.port_spin = QSpinBox()
+        self.port_spin.setRange(1024, 65535)
+        self.port_spin.setMaximumWidth(120)
+        form.addWidget(self.port_spin, 1, 1)
+
+        form.addWidget(QLabel("Interval (seconds):"), 2, 0)
+        self.interval_spin = QSpinBox()
+        self.interval_spin.setRange(30, 3600)
+        self.interval_spin.setSingleStep(30)
+        self.interval_spin.setMaximumWidth(120)
+        form.addWidget(self.interval_spin, 2, 1)
+
+        form.addWidget(QLabel("Scan timeout (ms):"), 3, 0)
+        self.timeout_spin = QSpinBox()
+        self.timeout_spin.setRange(50, 2000)
+        self.timeout_spin.setSingleStep(50)
+        self.timeout_spin.setMaximumWidth(120)
+        form.addWidget(self.timeout_spin, 3, 1)
+
+        layout.addLayout(form)
+
+        save_row = QHBoxLayout()
+        save_row.addStretch()
+        save_btn = QPushButton("Save Sync Settings")
+        save_btn.clicked.connect(self._save_settings)
+        save_row.addWidget(save_btn)
+        layout.addLayout(save_row)
+
+        sep = QFrame()
+        sep.setFrameShape(QFrame.Shape.HLine)
+        sep.setObjectName("separator")
+        layout.addWidget(sep)
+
+        peers_title = QLabel("Peers")
+        peers_title.setObjectName("sectionTitle")
+        layout.addWidget(peers_title)
+
+        peer_btns = QHBoxLayout()
+        for label, slot in [
+            ("Refresh",      self._refresh_peers),
+            ("Add Peer…",    self._add_manual_peer),
+            ("Ping Selected",self._ping_selected),
+            ("Force Scan",   self._force_scan),
+            ("Force Sync",   self._force_sync),
+        ]:
+            btn = QPushButton(label)
+            btn.setObjectName("secondary")
+            btn.clicked.connect(slot)
+            peer_btns.addWidget(btn)
+        peer_btns.addStretch()
+        layout.addLayout(peer_btns)
+
+        self._peer_table = QTableWidget(0, 4)
+        self._peer_table.setHorizontalHeaderLabels(["IP", "Hostname", "Status", "Fails"])
+        hh = self._peer_table.horizontalHeader()
+        hh.setSectionResizeMode(0, QHeaderView.ResizeMode.Stretch)
+        hh.setSectionResizeMode(1, QHeaderView.ResizeMode.Stretch)
+        hh.setSectionResizeMode(2, QHeaderView.ResizeMode.ResizeToContents)
+        hh.setSectionResizeMode(3, QHeaderView.ResizeMode.ResizeToContents)
+        self._peer_table.setEditTriggers(QAbstractItemView.EditTrigger.NoEditTriggers)
+        self._peer_table.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectRows)
+        self._peer_table.setFixedHeight(120)
+        layout.addWidget(self._peer_table)
+
+        log_lbl = QLabel("Sync Log")
+        log_lbl.setObjectName("subtitle")
+        layout.addWidget(log_lbl)
+
+        self.log_view = QTextEdit()
+        self.log_view.setReadOnly(True)
+        self.log_view.setMaximumHeight(110)
+        layout.addWidget(self.log_view)
+
+        layout.addStretch()
+        return tab
+
+    # ── Tab: Obsidian ─────────────────────────────────
+
+    def _build_obsidian_tab(self) -> QWidget:
+        tab = QWidget()
+        layout = QVBoxLayout(tab)
+        layout.setContentsMargins(12, 12, 12, 12)
+        layout.setSpacing(10)
+
+        title = QLabel("Obsidian Integration")
+        title.setObjectName("sectionTitle")
+        layout.addWidget(title)
+
+        desc = QLabel(
+            "Configure your Obsidian vault path and REST API settings.\n"
+            "The vault path is used to sync markdown files between computers.\n"
+            "The REST API connects to the Obsidian Local REST API plugin."
+        )
+        desc.setObjectName("subtitle")
+        desc.setWordWrap(True)
+        layout.addWidget(desc)
+
+        obs_form = QFormLayout()
+        obs_form.setSpacing(8)
+
+        vault_row = QHBoxLayout()
+        self.vault_path_edit = QLineEdit()
+        self.vault_path_edit.setPlaceholderText("/path/to/your/vault")
+        vault_row.addWidget(self.vault_path_edit)
+        browse_btn = QPushButton("Browse…")
+        browse_btn.setObjectName("secondary")
+        browse_btn.setFixedWidth(90)
+        browse_btn.clicked.connect(self._browse_vault)
+        vault_row.addWidget(browse_btn)
+        obs_form.addRow("Vault Path:", vault_row)
+
+        self.vault_sync_check = QCheckBox("Enable vault file sync")
+        obs_form.addRow("", self.vault_sync_check)
+
+        self.api_key_edit = QLineEdit()
+        self.api_key_edit.setPlaceholderText("Obsidian REST API key (optional)")
+        self.api_key_edit.setEchoMode(QLineEdit.EchoMode.Password)
+        obs_form.addRow("REST API Key:", self.api_key_edit)
+
+        self.api_url_edit = QLineEdit()
+        self.api_url_edit.setPlaceholderText("http://127.0.0.1:27123")
+        obs_form.addRow("REST API URL:", self.api_url_edit)
+
+        layout.addLayout(obs_form)
+        layout.addStretch()
+
+        save_row = QHBoxLayout()
+        save_row.addStretch()
+        save_btn = QPushButton("Save Obsidian Settings")
+        save_btn.clicked.connect(self._save_obsidian_settings)
+        save_row.addWidget(save_btn)
+        layout.addLayout(save_row)
+
+        return tab
+
+    # ── Tab: AI / LLM ────────────────────────────────
+
+    def _build_ai_tab(self) -> QWidget:
+        # Wrap in a scroll area so it survives small windows
+        outer = QWidget()
+        outer_layout = QVBoxLayout(outer)
+        outer_layout.setContentsMargins(0, 0, 0, 0)
+
+        scroll = QScrollArea()
+        scroll.setWidgetResizable(True)
+        scroll.setFrameShape(QFrame.Shape.NoFrame)
+        outer_layout.addWidget(scroll)
+
+        inner = QWidget()
+        layout = QVBoxLayout(inner)
+        layout.setContentsMargins(12, 12, 12, 12)
+        layout.setSpacing(14)
+
+        # ── Server connection ──────────────────────────
+        title = QLabel("llama.cpp Server")
+        title.setObjectName("sectionTitle")
+        layout.addWidget(title)
+
+        desc = QLabel(
+            "LocalSync connects to your llama.cpp server for all AI features. "
+            "The model is selected server-side — no model name is needed here."
+        )
+        desc.setObjectName("subtitle")
+        desc.setWordWrap(True)
+        layout.addWidget(desc)
+
+        conn_form = QFormLayout()
+        conn_form.setSpacing(10)
+        self.llama_host_edit = QLineEdit()
+        self.llama_host_edit.setPlaceholderText(LLAMA_DEFAULT_HOST)
+        conn_form.addRow("Server Host:", self.llama_host_edit)
+        layout.addLayout(conn_form)
+
+        test_row = QHBoxLayout()
+        self._ai_test_btn = QPushButton("Test Connection")
+        self._ai_test_btn.setObjectName("secondary")
+        self._ai_test_btn.clicked.connect(self._test_ai)
+        test_row.addWidget(self._ai_test_btn)
+        self._ai_test_lbl = QLabel("")
+        self._ai_test_lbl.setWordWrap(True)
+        test_row.addWidget(self._ai_test_lbl, 1)
+        layout.addLayout(test_row)
+
+        # ── Multi-pass council ─────────────────────────
+        sep = QFrame()
+        sep.setObjectName("separator")
+        sep.setFrameShape(QFrame.Shape.HLine)
+        layout.addWidget(sep)
+
+        council_title = QLabel("Multi-Pass Council")
+        council_title.setObjectName("sectionTitle")
+        layout.addWidget(council_title)
+
+        council_desc = QLabel(
+            "When enabled, AI responses are generated in three parallel passes at "
+            "different temperature settings — Precise (0.2), Balanced (0.6), and "
+            "Creative (1.0) — then synthesised into a single answer. "
+            "Produces richer results but uses more tokens and takes longer."
+        )
+        council_desc.setObjectName("subtitle")
+        council_desc.setWordWrap(True)
+        layout.addWidget(council_desc)
+
+        self._council_check = QCheckBox("Enable multi-pass council")
+        layout.addWidget(self._council_check)
+
+        # Mode selector — Deliberate (default) runs the synthesis pass after
+        # the 3 parallel passes; Quick skips it and returns the longest
+        # non-empty pass directly.  Roughly halves wall-clock time.
+        from src.utils.llm import COUNCIL_SYNTHESIS_MODES
+        mode_row = QHBoxLayout()
+        mode_row.setContentsMargins(20, 0, 0, 0)
+        mode_lbl = QLabel("Mode:")
+        mode_row.addWidget(mode_lbl)
+        self._council_mode_combo = QComboBox()
+        for m in COUNCIL_SYNTHESIS_MODES:
+            self._council_mode_combo.addItem(m)
+        mode_row.addWidget(self._council_mode_combo)
+        mode_hint = QLabel(
+            "Deliberate = synthesis pass · Quick = longest non-empty pass wins (faster)"
+        )
+        mode_hint.setObjectName("subtitle")
+        mode_hint.setWordWrap(True)
+        mode_row.addWidget(mode_hint, 1)
+        layout.addLayout(mode_row)
+
+        # Concurrent request slot count — should match the llama.cpp
+        # `--parallel` flag. The whole app respects this via a global
+        # semaphore, so a council burst from one panel won't starve another.
+        slots_row = QHBoxLayout()
+        slots_row.setContentsMargins(20, 0, 0, 0)
+        slots_row.addWidget(QLabel("Server slots:"))
+        self._council_slots_spin = QSpinBox()
+        self._council_slots_spin.setRange(1, 16)
+        self._council_slots_spin.setValue(COUNCIL_DEFAULT_CONCURRENCY)
+        self._council_slots_spin.setToolTip(
+            "Maximum simultaneous requests to the llama.cpp server.\n"
+            "Match this to the server's --parallel flag (typically 2-3)."
+        )
+        slots_row.addWidget(self._council_slots_spin)
+        slots_hint = QLabel(
+            "Match this to your llama.cpp server's --parallel flag."
+        )
+        slots_hint.setObjectName("subtitle")
+        slots_hint.setWordWrap(True)
+        slots_row.addWidget(slots_hint, 1)
+        layout.addLayout(slots_row)
+
+        council_test_row = QHBoxLayout()
+        self._council_test_btn = QPushButton("Test Council")
+        self._council_test_btn.setObjectName("secondary")
+        self._council_test_btn.clicked.connect(self._test_council)
+        council_test_row.addWidget(self._council_test_btn)
+        self._council_test_lbl = QLabel("")
+        self._council_test_lbl.setWordWrap(True)
+        council_test_row.addWidget(self._council_test_lbl, 1)
+        layout.addLayout(council_test_row)
+
+        layout.addStretch()
+
+        save_row = QHBoxLayout()
+        save_row.addStretch()
+        save_btn = QPushButton("Save AI Settings")
+        save_btn.clicked.connect(self._save_ai_settings)
+        save_row.addWidget(save_btn)
+        layout.addLayout(save_row)
+
+        scroll.setWidget(inner)
+        return outer
+
+    # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    #  Load / Save
+    # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+    def _load_values(self):
+        # Sync
+        self.subnet_edit.setText(self.cfg.get("sync_subnet", "192.168.0"))
+        self.port_spin.setValue(self.cfg.get("sync_port", 47678))
+        self.interval_spin.setValue(self.cfg.get("sync_interval", 60))
+        self.timeout_spin.setValue(self.cfg.get("scan_timeout_ms", 300))
+        # Obsidian
+        self.vault_path_edit.setText(self.cfg.get("obsidian_vault_path", ""))
+        self.vault_sync_check.setChecked(self.cfg.get("obsidian_sync_enabled", False))
+        self.api_key_edit.setText(self.cfg.get("obsidian_api_key", ""))
+        self.api_url_edit.setText(
+            self.cfg.get("obsidian_api_url", "http://127.0.0.1:27123"))
+        # AI
+        self.llama_host_edit.setText(
+            self.cfg.get("llama_host", LLAMA_DEFAULT_HOST))
+        self._council_check.setChecked(self.cfg.get("council_enabled", False))
+        from src.utils.llm import COUNCIL_DEFAULT_MODE, COUNCIL_SYNTHESIS_MODES
+        saved_mode = self.cfg.get("council_mode", COUNCIL_DEFAULT_MODE)
+        if saved_mode not in COUNCIL_SYNTHESIS_MODES:
+            saved_mode = COUNCIL_DEFAULT_MODE
+        self._council_mode_combo.setCurrentText(saved_mode)
+        self._council_slots_spin.setValue(int(self.cfg.get(
+            "council_concurrency", COUNCIL_DEFAULT_CONCURRENCY)))
+
+    def _save_settings(self):
+        self.cfg["sync_subnet"]     = self.subnet_edit.text().strip() or "192.168.0"
+        self.cfg["sync_port"]       = self.port_spin.value()
+        self.cfg["sync_interval"]   = self.interval_spin.value()
+        self.cfg["scan_timeout_ms"] = self.timeout_spin.value()
+        save_config(self.cfg)
+        if self.sync_engine:
+            self.sync_engine.reload_config()
+        QMessageBox.information(self, "Saved", "Sync settings saved.")
+
+    def _save_ai_settings(self):
+        self.cfg["llama_host"]         = self.llama_host_edit.text().strip() or LLAMA_DEFAULT_HOST
+        self.cfg["council_enabled"]    = self._council_check.isChecked()
+        self.cfg["council_mode"]       = self._council_mode_combo.currentText()
+        self.cfg["council_concurrency"]= int(self._council_slots_spin.value())
+        save_config(self.cfg)
+        # Apply concurrency live so the next request hits the new cap
+        # without requiring a restart.
+        set_request_concurrency(self.cfg["council_concurrency"])
+        self.llm_settings_saved.emit()
+        QMessageBox.information(self, "Saved", "AI settings saved.")
+
+    def _save_obsidian_settings(self):
+        self.cfg["obsidian_vault_path"]   = self.vault_path_edit.text().strip()
+        self.cfg["obsidian_sync_enabled"] = self.vault_sync_check.isChecked()
+        self.cfg["obsidian_api_key"]      = self.api_key_edit.text().strip()
+        self.cfg["obsidian_api_url"]      = (
+            self.api_url_edit.text().strip() or "http://127.0.0.1:27123")
+        save_config(self.cfg)
+        QMessageBox.information(
+            self, "Saved",
+            "Obsidian settings saved.\n"
+            "Restart the app for vault path changes to take effect.")
+
+    # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    #  AI tests
+    # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+    def _test_ai(self):
+        host = self.llama_host_edit.text().strip() or LLAMA_DEFAULT_HOST
+        self._ai_test_btn.setEnabled(False)
+        self._ai_test_lbl.setText("Testing…")
+        # Stored on self to prevent GC before thread fires
+        self._ai_test_signals = LLMSignals()
+
+        def _on_ok(result: LLMResult):
+            self._ai_test_lbl.setText(f"✓ Connected — {result.elapsed_ms} ms")
+            self._ai_test_btn.setEnabled(True)
+
+        def _on_err(err: str):
+            self._ai_test_lbl.setText(f"✗ {err}")
+            self._ai_test_btn.setEnabled(True)
+
+        self._ai_test_signals.result.connect(_on_ok)
+        self._ai_test_signals.error.connect(_on_err)
+
+        LLMClient(host=host).complete_async(
+            [{"role": "user", "content": "Reply with only the word OK."}],
+            max_tokens = 8,
+            on_result  = self._ai_test_signals.result.emit,
+            on_error   = self._ai_test_signals.error.emit,
+        )
+
+    def _test_council(self):
+        host = self.llama_host_edit.text().strip() or LLAMA_DEFAULT_HOST
+        self._council_test_btn.setEnabled(False)
+        self._council_test_lbl.setText("Running 3 passes… (may take a moment)")
+        # Stored on self to prevent GC before thread fires
+        self._council_test_signals = CouncilSignals()
+
+        def _on_ok(result: CouncilResult):
+            self._council_test_lbl.setText(f"✓ Council OK — {result.summary()}")
+            self._council_test_btn.setEnabled(True)
+
+        def _on_err(err: str):
+            self._council_test_lbl.setText(f"✗ {err}")
+            self._council_test_btn.setEnabled(True)
+
+        self._council_test_signals.result.connect(_on_ok)
+        self._council_test_signals.error.connect(_on_err)
+
+        LightCouncil(host=host).complete_async(
+            [{"role": "user", "content": "In one sentence, what is 2 + 2?"}],
+            max_tokens = 64,
+            on_result  = self._council_test_signals.result.emit,
+            on_error   = self._council_test_signals.error.emit,
+        )
+
+    # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    #  Peers
+    # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+    def _refresh_peers(self):
+        if not self.sync_engine:
+            return
+        peers = self.sync_engine.get_peer_list()
+        self._update_peer_table(peers)
+
+    def _update_peer_table(self, peers: list[dict]):
+        self._peer_table.setRowCount(len(peers))
+        for row, peer in enumerate(peers):
+            self._peer_table.setItem(row, 0, QTableWidgetItem(peer.get("ip", "")))
+            self._peer_table.setItem(row, 1, QTableWidgetItem(peer.get("hostname", "")))
+            self._peer_table.setItem(row, 2, QTableWidgetItem(peer.get("status", "")))
+            self._peer_table.setItem(row, 3, QTableWidgetItem(str(peer.get("fail_count", 0))))
+
+    def _add_manual_peer(self):
+        text, ok = _input_dialog(self, "Add Peer", "Enter peer IP address:")
+        if ok and text.strip() and self.sync_engine:
+            self.sync_engine.add_manual_peer(text.strip())
+            self._append_log(f"Added manual peer: {text.strip()}")
+            QTimer.singleShot(500, self._refresh_peers)
+
+    def _ping_selected(self):
+        rows = self._peer_table.selectedItems()
+        if not rows:
+            return
+        row      = rows[0].row()
+        ip_item  = self._peer_table.item(row, 0)
+        if not ip_item or not self.sync_engine:
+            return
+        ip = ip_item.text()
+
+        def do_ping():
+            ok, info = self.sync_engine.ping_peer(ip)
+            self._append_log(
+                f"Ping {ip}: OK ({info})" if ok else f"Ping {ip}: FAILED ({info})")
+        threading.Thread(target=do_ping, daemon=True).start()
+
+    def _force_scan(self):
+        if self.sync_engine:
+            self._append_log("Forcing subnet scan…")
+            self.sync_engine.force_scan()
+
+    def _force_sync(self):
+        if self.sync_engine:
+            self._append_log("Forcing immediate sync…")
+            self.sync_engine.force_sync()
+
+    # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    #  Obsidian helpers
+    # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+    def _browse_vault(self):
+        path = QFileDialog.getExistingDirectory(
+            self, "Select Obsidian Vault", self.vault_path_edit.text())
+        if path:
+            self.vault_path_edit.setText(path)
+
+    # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    #  Utilities
+    # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+    def _append_log(self, msg: str):
+        self.log_view.append(msg)
+        sb = self.log_view.verticalScrollBar()
+        sb.setValue(sb.maximum())
+
+    @staticmethod
+    def _get_local_ip() -> str:
+        try:
+            s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+            s.connect(("192.168.0.1", 1))
+            ip = s.getsockname()[0]
+            s.close()
+            return ip
+        except Exception:
+            return "unknown"
+
+
+# ── Minimal input dialog helper ───────────────────────────────────────────────
+
+def _input_dialog(parent, title: str, label: str, default: str = "") -> tuple[str, bool]:
+    dlg = QDialog(parent)
+    dlg.setWindowTitle(title)
+    dlg.setMinimumWidth(360)
+    layout = QVBoxLayout(dlg)
+    layout.addWidget(QLabel(label))
+    edit = QLineEdit(default)
+    layout.addWidget(edit)
+    btn_row = QHBoxLayout()
+    ok_btn     = QPushButton("OK")
+    cancel_btn = QPushButton("Cancel")
+    cancel_btn.setObjectName("secondary")
+    ok_btn.clicked.connect(dlg.accept)
+    cancel_btn.clicked.connect(dlg.reject)
+    btn_row.addStretch()
+    btn_row.addWidget(cancel_btn)
+    btn_row.addWidget(ok_btn)
+    layout.addLayout(btn_row)
+    accepted = dlg.exec() == QDialog.DialogCode.Accepted
+    return edit.text(), accepted
+```
+
+### `src\utils\__init__.py`
+
+```python
+"""Shared utilities."""
+
+from src.utils.timestamps import now_utc, parse_ts
+from src.utils.paths import normalize_path, ensure_parent
+from src.utils.llm import (
+    LLMClient, LLMSignals, LLMResult,
+    LightCouncil, LLMCouncil, CouncilSignals, CouncilResult,
+    load_llm_client, save_llm_config,
+    load_council_config, save_council_config,
+    LLAMA_DEFAULT_HOST, OLLAMA_DEFAULT_HOST,
+)
+
+__all__ = [
+    "now_utc", "parse_ts", "normalize_path", "ensure_parent",
+    "LLMClient", "LLMSignals", "LLMResult",
+    "LightCouncil", "LLMCouncil", "CouncilSignals", "CouncilResult",
+    "load_llm_client", "save_llm_config",
+    "load_council_config", "save_council_config",
+    "LLAMA_DEFAULT_HOST", "OLLAMA_DEFAULT_HOST",
+]
+```
+
+### `src\utils\llm.py`
+
+```python
+"""LLM client — llama.cpp server backend with lightweight multi-pass council.
+
+Uses only stdlib (urllib + json + threading) — no extra dependencies.
+
+The llama.cpp server exposes an OpenAI-compatible /v1/chat/completions endpoint.
+No model selection is needed — the model is locked server-side.
+
+Exports
+-------
+LLMResult       : dataclass returned by every successful call
+LLMSignals      : QObject with result/error pyqtSignals (thread-safe bridge)
+LLMClient       : thin /v1/chat/completions client
+CouncilResult   : dataclass returned by a multi-pass council run
+CouncilSignals  : QObject with result/error pyqtSignals for council
+LightCouncil    : 3-pass council (Precise / Balanced / Creative) + synthesis
+LLMCouncil      : alias for LightCouncil (backwards compat)
+load_llm_client       : config helper → LLMClient
+load_council_config   : config helper → LightCouncil | None
+save_llm_config       : persist host to config
+save_council_config   : persist council enabled flag + mode + concurrency
+LLAMA_DEFAULT_HOST    : default server URL
+COUNCIL_SYNTHESIS_MODES : list of available council modes for the UI
+COUNCIL_MODE_DELIBERATE : N parallel passes + synthesis call (richer, slower)
+COUNCIL_MODE_QUICK      : N parallel passes, longest non-empty wins (faster)
+COUNCIL_DEFAULT_CONCURRENCY : default number of parallel in-flight requests
+
+v0.8.0 — Async, progressive council
+───────────────────────────────────
+  • CouncilSignals now emits a `member_started` and `member_completed` signal
+    as each pass kicks off / returns, so the UI can paint cards live instead
+    of waiting for the slowest pass.
+  • A module-level Semaphore (`_REQUEST_SLOTS`) caps concurrent in-flight
+    completions across the entire app to match the llama.cpp server's
+    configured parallelism — set via `set_request_concurrency()` or the
+    `council_concurrency` config key (default: COUNCIL_DEFAULT_CONCURRENCY).
+  • LightCouncil schedules synthesis as soon as all members complete and
+    runs it through the same semaphore, so a long-running council from one
+    panel cannot starve a chat call from another.
+"""
+
+from __future__ import annotations
+
+import json
+import logging
+import threading
+import time
+import urllib.error
+import urllib.request
+from concurrent.futures import ThreadPoolExecutor, as_completed
+from dataclasses import dataclass, field
+from typing import Callable
+
+from PyQt6.QtCore import QObject, pyqtSignal
+
+logger = logging.getLogger(__name__)
+
+# ── Server defaults ────────────────────────────────────────────────────────────
+LLAMA_DEFAULT_HOST  = "http://192.168.0.30:8080"
+# Legacy alias — any code that still references OLLAMA_DEFAULT_HOST will not break
+OLLAMA_DEFAULT_HOST = LLAMA_DEFAULT_HOST
+DEFAULT_MODEL       = ""   # model is server-side; kept for legacy compat only
+
+# ── Council modes ─────────────────────────────────────────────────────────────
+COUNCIL_MODE_DELIBERATE = "Deliberate"
+COUNCIL_MODE_QUICK      = "Quick"
+COUNCIL_SYNTHESIS_MODES = [COUNCIL_MODE_DELIBERATE, COUNCIL_MODE_QUICK]
+COUNCIL_DEFAULT_MODE    = COUNCIL_MODE_DELIBERATE
+
+# ── Server concurrency ────────────────────────────────────────────────────────
+# llama.cpp servers are typically configured for 2-3 in-flight slots
+# (the `--parallel` flag). Cap the whole app to that many concurrent
+# completions so a council burst from one panel cannot starve another.
+COUNCIL_DEFAULT_CONCURRENCY = 3
+_REQUEST_SLOTS = threading.BoundedSemaphore(COUNCIL_DEFAULT_CONCURRENCY)
+_CURRENT_CONCURRENCY = COUNCIL_DEFAULT_CONCURRENCY
+
+
+def set_request_concurrency(n: int) -> None:
+    """Reset the global request semaphore to allow `n` simultaneous calls.
+
+    Safe to call at any time — pending requests already inside the semaphore
+    will continue to use the previous slot count until they release.
+    """
+    global _REQUEST_SLOTS, _CURRENT_CONCURRENCY
+    n = max(1, min(int(n), 16))
+    if n == _CURRENT_CONCURRENCY:
+        return
+    _REQUEST_SLOTS = threading.BoundedSemaphore(n)
+    _CURRENT_CONCURRENCY = n
+
+
+def get_request_concurrency() -> int:
+    return _CURRENT_CONCURRENCY
+
+# ── Council pass definitions: (name, temperature, system_prompt) ──────────────
+COUNCIL_PASSES: list[tuple[str, float, str]] = [
+    (
+        "Precise",
+        0.2,
+        "You are a precise, analytical assistant. "
+        "Respond with factual, well-structured, and concise information. "
+        "Prioritise accuracy over creativity.",
+    ),
+    (
+        "Balanced",
+        0.6,
+        "You are a balanced, thorough assistant. "
+        "Provide well-reasoned, comprehensive responses that cover multiple angles.",
+    ),
+    (
+        "Creative",
+        1.0,
+        "You are a creative, lateral-thinking assistant. "
+        "Explore unconventional angles, fresh perspectives, and novel approaches.",
+    ),
+]
+SYNTHESIS_TEMPERATURE = 0.4
+
+
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+#  Dataclasses
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+@dataclass
+class LLMResult:
+    """Returned by every successful LLM call."""
+    text:       str
+    model:      str = ""
+    elapsed_ms: int = 0
+    tokens_in:  int = 0
+    tokens_out: int = 0
+
+    def timing_summary(self) -> str:
+        parts = [f"{self.elapsed_ms / 1000:.1f}s"]
+        total = self.tokens_in + self.tokens_out
+        if total:
+            parts.append(f"{total} tok ({self.tokens_in}↑ {self.tokens_out}↓)")
+        if self.model:
+            parts.append(self.model.split("/")[-1])
+        return " · ".join(parts)
+
+
+@dataclass
+class CouncilResult:
+    """Returned by a successful LightCouncil run."""
+    members: list[LLMResult] = field(default_factory=list)
+    final:   LLMResult       = field(default_factory=lambda: LLMResult(text=""))
+    failed:  list[str]       = field(default_factory=list)
+    mode:    str             = COUNCIL_DEFAULT_MODE
+
+    def summary(self) -> str:
+        ok  = len(self.members)
+        bad = len(self.failed)
+        base = f"{ok} passes OK" + (f", {bad} failed" if bad else "")
+        return f"{base} · {self.mode}"
+
+
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+#  Qt signal bridges
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+class LLMSignals(QObject):
+    """QObject whose signals marshal LLM callbacks onto the Qt main thread.
+
+    Always store an instance on *self* (not a local variable) so the
+    underlying C++ object is not garbage-collected before the worker thread fires.
+    """
+    result = pyqtSignal(LLMResult)
+    error  = pyqtSignal(str)
+
+
+class CouncilSignals(QObject):
+    """Thread-safe Qt bridge for a council run.
+
+    Signals
+    -------
+    member_started   (str)              — pass name about to be sent
+    member_completed (str, LLMResult)   — pass returned successfully
+    member_failed    (str, str)         — pass name, error message
+    synthesis_started ()                — synthesis pass kicked off (Deliberate only)
+    result           (CouncilResult)    — final consolidated result
+    error            (str)              — fatal error (e.g. all passes failed)
+
+    Storing CouncilSignals on `self` (not a local) is required so the
+    underlying QObject lives long enough for the worker thread to fire.
+    """
+    member_started    = pyqtSignal(str)
+    member_completed  = pyqtSignal(str, LLMResult)
+    member_failed     = pyqtSignal(str, str)
+    synthesis_started = pyqtSignal()
+    result            = pyqtSignal(CouncilResult)
+    error             = pyqtSignal(str)
+
+
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+#  LLMClient
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+class LLMClient:
+    """Thin OpenAI-compatible /v1/chat/completions client for a llama.cpp server.
+
+    The model is locked server-side; the `model` parameter is optional and
+    only sent if explicitly set (some server configs require it, most ignore it).
+    """
+
+    def __init__(
+        self,
+        host:    str = LLAMA_DEFAULT_HOST,
+        timeout: int = 120,
+        # Legacy params — accepted but not required
+        model:   str = "",
+        api_key: str = "",
+    ):
+        self.host    = host.rstrip("/")
+        self.timeout = timeout
+        self.model   = model    # stored for display / legacy compat only
+        self.api_key = api_key  # stored for legacy compat; not sent
+
+    def complete(
+        self,
+        messages:    list[dict],
+        max_tokens:  int   = 1024,
+        temperature: float = 0.7,
+        system:      str   = "",
+    ) -> LLMResult:
+        """Send a chat completion request and return an LLMResult.
+
+        If `system` is provided it is prepended as a system message, replacing
+        any existing system message at position 0.
+        """
+        msgs = list(messages)
+        if system:
+            # Prepend (or replace) the system message
+            if msgs and msgs[0].get("role") == "system":
+                msgs[0] = {"role": "system", "content": system}
+            else:
+                msgs.insert(0, {"role": "system", "content": system})
+
+        url     = f"{self.host}/v1/chat/completions"
+        payload: dict = {
+            "messages":    msgs,
+            "max_tokens":  max_tokens,
+            "temperature": temperature,
+            "stream":      False,
+        }
+        if self.model:
+            payload["model"] = self.model
+
+        body = json.dumps(payload).encode()
+        req  = urllib.request.Request(
+            url,
+            data=body,
+            headers={"Content-Type": "application/json"},
+            method="POST",
+        )
+
+        t0 = time.perf_counter()
+        # Respect the global server-capacity semaphore. Callers from
+        # different panels share the same pool so we don't overrun the
+        # llama.cpp `--parallel` setting.
+        with _REQUEST_SLOTS:
+            try:
+                with urllib.request.urlopen(req, timeout=self.timeout) as resp:
+                    data = json.loads(resp.read().decode())
+            except urllib.error.HTTPError as exc:
+                raise RuntimeError(f"HTTP {exc.code}: {exc.reason}") from exc
+            except urllib.error.URLError as exc:
+                raise RuntimeError(f"Connection failed: {exc.reason}") from exc
+
+        elapsed = int((time.perf_counter() - t0) * 1000)
+
+        choices = data.get("choices") or []
+        if not choices:
+            raise RuntimeError("Empty response from llama.cpp server")
+
+        content = ((choices[0].get("message") or {}).get("content") or "").strip()
+        usage   = data.get("usage") or {}
+
+        return LLMResult(
+            text       = content,
+            model      = data.get("model", ""),
+            elapsed_ms = elapsed,
+            tokens_in  = usage.get("prompt_tokens", 0),
+            tokens_out = usage.get("completion_tokens", 0),
+        )
+
+    def complete_async(
+        self,
+        messages:    list[dict],
+        max_tokens:  int   = 1024,
+        temperature: float = 0.7,
+        system:      str   = "",
+        on_result:   "Callable[[LLMResult], None] | None" = None,
+        on_error:    "Callable[[str], None] | None"       = None,
+    ) -> None:
+        """Fire-and-forget async wrapper around complete()."""
+        def _worker():
+            try:
+                r = self.complete(messages, max_tokens, temperature, system)
+                if on_result:
+                    on_result(r)
+            except Exception as exc:
+                logger.warning("LLMClient async failed: %s", exc)
+                if on_error:
+                    on_error(str(exc))
+
+        threading.Thread(target=_worker, daemon=True).start()
+
+
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+#  LightCouncil  (3 temperature passes + optional synthesis)
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+class LightCouncil:
+    """Three parallel passes at different temperatures.
+
+    All calls hit the same llama.cpp server; the model is server-side locked.
+
+    Passes
+    ------
+    Precise  (temp 0.2) — analytical, structured, accurate
+    Balanced (temp 0.6) — well-rounded, thorough
+    Creative (temp 1.0) — lateral, divergent, exploratory
+
+    Modes
+    -----
+    Deliberate (default)
+        After the 3 parallel passes complete, a synthesis pass (temp 0.4)
+        sees all three responses and produces the final consolidated answer.
+        Wall-clock ≈ slowest pass + synthesis pass.
+
+    Quick
+        After the 3 parallel passes complete, the longest non-empty response
+        is returned as the final answer. No second LLM round-trip.
+        Wall-clock ≈ slowest pass.
+    """
+
+    def __init__(
+        self,
+        host:         str = LLAMA_DEFAULT_HOST,
+        timeout:      int = 120,
+        default_mode: str = COUNCIL_DEFAULT_MODE,
+        # Legacy params — accepted but silently ignored
+        council_models:    "list[str] | None" = None,
+        deliberator_model: str                = "",
+        synthesis_mode:    str                = "",
+        synthesis_model:   str                = "",
+        tool_runner:       None               = None,
+        role_overrides:    None               = None,
+        api_key:           str                = "",
+    ):
+        self.host    = host.rstrip("/")
+        self.timeout = timeout
+        self._client = LLMClient(host=self.host, timeout=self.timeout)
+
+        # Default mode used when complete() is called without an explicit mode
+        self.default_mode = (
+            default_mode if default_mode in COUNCIL_SYNTHESIS_MODES
+            else COUNCIL_DEFAULT_MODE
+        )
+
+        # Legacy compat attributes used by some call sites
+        self.council_models  = []
+        self.synthesis_model = ""
+        self.synthesis_mode  = synthesis_mode or self.default_mode
+        self.api_key         = ""
+
+    # ── Internal ──────────────────────────────────────────────────────────────
+
+    def _run_pass(
+        self,
+        name:         str,
+        temperature:  float,
+        system:       str,
+        messages:     list[dict],
+        max_tokens:   int,
+        on_started:   "Callable[[str], None] | None"           = None,
+        on_completed: "Callable[[str, LLMResult], None] | None" = None,
+        on_failed:    "Callable[[str, str], None] | None"      = None,
+    ) -> tuple[str, "LLMResult | None", str]:
+        """Run one council pass. Returns (name, result_or_None, error_str).
+
+        Optional callbacks fire as the request enters/leaves the wire so that
+        callers can stream progress to the UI without waiting for the slowest
+        pass to finish.
+        """
+        if on_started:
+            try: on_started(name)
+            except Exception: logger.exception("Council on_started raised")
+        try:
+            r = self._client.complete(
+                messages,
+                max_tokens  = max_tokens,
+                temperature = temperature,
+                system      = system,
+            )
+            r.model = name
+            if on_completed:
+                try: on_completed(name, r)
+                except Exception: logger.exception("Council on_completed raised")
+            return name, r, ""
+        except Exception as exc:
+            err = str(exc)
+            if on_failed:
+                try: on_failed(name, err)
+                except Exception: logger.exception("Council on_failed raised")
+            return name, None, err
+
+    def _run_parallel_passes(
+        self,
+        messages:     list[dict],
+        max_tokens:   int,
+        on_started:   "Callable[[str], None] | None"           = None,
+        on_completed: "Callable[[str, LLMResult], None] | None" = None,
+        on_failed:    "Callable[[str, str], None] | None"      = None,
+    ) -> tuple[list[LLMResult], list[str]]:
+        """Run all configured passes in parallel. Returns (members, failures).
+
+        Each pass is throttled by the global server-capacity semaphore inside
+        LLMClient.complete; the executor itself runs all passes immediately so
+        that whichever pass enters the semaphore first starts work right away.
+        """
+        members: list[LLMResult] = []
+        failed:  list[str]       = []
+
+        with ThreadPoolExecutor(max_workers=len(COUNCIL_PASSES)) as pool:
+            futures = {
+                pool.submit(
+                    self._run_pass, name, temp, system, messages, max_tokens,
+                    on_started, on_completed, on_failed,
+                ): name
+                for name, temp, system in COUNCIL_PASSES
+            }
+            for fut in as_completed(futures):
+                name, result, err = fut.result()
+                if result:
+                    members.append(result)
+                else:
+                    failed.append(f"{name}: {err}")
+                    logger.warning("Council pass %s failed: %s", name, err)
+
+        # Sort by defined pass order so callers see consistent ordering
+        order = {name: i for i, (name, _, _) in enumerate(COUNCIL_PASSES)}
+        members.sort(key=lambda r: order.get(r.model, 99))
+        return members, failed
+
+    # ── Public API ────────────────────────────────────────────────────────────
+
+    def complete(
+        self,
+        messages:     list[dict],
+        max_tokens:   int    = 1024,
+        temperature:  float  = 0.6,   # ignored — each pass uses its own temperature
+        mode:         "str | None" = None,
+        on_member_started:   "Callable[[str], None] | None"           = None,
+        on_member_completed: "Callable[[str, LLMResult], None] | None" = None,
+        on_member_failed:    "Callable[[str, str], None] | None"      = None,
+        on_synthesis_started: "Callable[[], None] | None"             = None,
+    ) -> CouncilResult:
+        """Run all passes in parallel, then either synthesise or pick longest.
+
+        Parameters
+        ----------
+        mode
+            Override the council's default mode for this call. One of
+            COUNCIL_MODE_DELIBERATE or COUNCIL_MODE_QUICK. If None, uses
+            self.default_mode.
+        on_member_started / on_member_completed / on_member_failed
+            Optional progress callbacks fired from worker threads as each
+            council pass begins, completes, or errors out. Use these to
+            stream cards into the UI as they arrive.
+        on_synthesis_started
+            Fired right before the (Deliberate-mode) synthesis pass is sent.
+        """
+        active_mode = mode or self.default_mode
+        if active_mode not in COUNCIL_SYNTHESIS_MODES:
+            active_mode = COUNCIL_DEFAULT_MODE
+
+        members, failed = self._run_parallel_passes(
+            messages, max_tokens,
+            on_started   = on_member_started,
+            on_completed = on_member_completed,
+            on_failed    = on_member_failed,
+        )
+
+        if not members:
+            raise RuntimeError(
+                "All council passes failed:\n" + "\n".join(failed)
+            )
+
+        # ── QUICK mode: skip synthesis, pick longest non-empty ──────────────
+        if active_mode == COUNCIL_MODE_QUICK:
+            non_empty = [m for m in members if (m.text or "").strip()]
+            picked    = max(non_empty, key=lambda r: len(r.text)) if non_empty else members[0]
+            final     = LLMResult(
+                text       = picked.text,
+                model      = f"{picked.model} (quick)",
+                elapsed_ms = picked.elapsed_ms,
+                tokens_in  = sum(m.tokens_in  for m in members),
+                tokens_out = sum(m.tokens_out for m in members),
+            )
+            return CouncilResult(members=members, final=final,
+                                 failed=failed, mode=active_mode)
+
+        # ── DELIBERATE mode: build synthesis prompt and run a 4th pass ──────
+        synth_lines = [
+            "You are a synthesiser. Below are responses from three reasoning passes "
+            "with different styles. Combine their insights into a single, well-structured "
+            "answer. Resolve any conflicts by favouring accuracy. Be concise and clear.\n"
+        ]
+        for r in members:
+            synth_lines.append(f"### {r.model} pass\n{r.text}\n")
+        synth_lines.append(
+            "\nNow write the final consolidated answer in clear, well-structured prose."
+        )
+
+        if on_synthesis_started:
+            try: on_synthesis_started()
+            except Exception: logger.exception("Council on_synthesis_started raised")
+
+        try:
+            final = self._client.complete(
+                messages,
+                max_tokens  = max_tokens,
+                temperature = SYNTHESIS_TEMPERATURE,
+                system      = "\n".join(synth_lines),
+            )
+            final.model = "Synthesis"
+        except Exception as exc:
+            logger.warning("Synthesis pass failed, falling back to best member: %s", exc)
+            best  = max(members, key=lambda r: len(r.text or ""))
+            final = LLMResult(
+                text       = best.text,
+                model      = f"{best.model} (synthesis failed)",
+                elapsed_ms = best.elapsed_ms,
+            )
+
+        return CouncilResult(members=members, final=final,
+                             failed=failed, mode=active_mode)
+
+    def complete_async(
+        self,
+        messages:             list[dict],
+        max_tokens:           int   = 1024,
+        temperature:          float = 0.6,
+        mode:                 "str | None"                              = None,
+        on_result:            "Callable[[CouncilResult], None] | None"  = None,
+        on_error:             "Callable[[str], None] | None"            = None,
+        on_member_started:    "Callable[[str], None] | None"            = None,
+        on_member_completed:  "Callable[[str, LLMResult], None] | None" = None,
+        on_member_failed:     "Callable[[str, str], None] | None"       = None,
+        on_synthesis_started: "Callable[[], None] | None"               = None,
+    ) -> None:
+        """Fire-and-forget async wrapper around complete().
+
+        Per-member callbacks fire from background threads as each pass
+        starts / finishes, allowing the UI to render member cards as they
+        arrive instead of after the slowest pass returns.
+        """
+        def _worker():
+            try:
+                r = self.complete(
+                    messages, max_tokens, temperature, mode=mode,
+                    on_member_started   = on_member_started,
+                    on_member_completed = on_member_completed,
+                    on_member_failed    = on_member_failed,
+                    on_synthesis_started = on_synthesis_started,
+                )
+                if on_result:
+                    on_result(r)
+            except Exception as exc:
+                logger.warning("LightCouncil async failed: %s", exc)
+                if on_error:
+                    on_error(str(exc))
+
+        threading.Thread(target=_worker, daemon=True).start()
+
+
+# Legacy alias — keeps any remaining LLMCouncil references working unchanged
+LLMCouncil = LightCouncil
+
+
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+#  Config helpers
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+def load_llm_client() -> "LLMClient | None":
+    """Return a configured LLMClient pointed at the llama.cpp server."""
+    from src.config import load_config
+    cfg  = load_config()
+    host = cfg.get("llama_host", LLAMA_DEFAULT_HOST).strip() or LLAMA_DEFAULT_HOST
+    return LLMClient(host=host)
+
+
+def save_llm_config(
+    host:    str = LLAMA_DEFAULT_HOST,
+    # Legacy params — silently ignored
+    model:   str = "",
+    api_key: str = "",
+) -> None:
+    """Persist llama.cpp host to config."""
+    from src.config import load_config, save_config
+    cfg = load_config()
+    cfg["llama_host"] = host.strip() or LLAMA_DEFAULT_HOST
+    save_config(cfg)
+
+
+def load_council_config() -> "LightCouncil | None":
+    """Return a configured LightCouncil, or None if council is disabled.
+
+    Also re-applies the saved request concurrency to the global semaphore
+    so changes from the Network → AI tab take effect on the next call.
+    """
+    from src.config import load_config
+    cfg = load_config()
+    set_request_concurrency(int(cfg.get("council_concurrency",
+                                        COUNCIL_DEFAULT_CONCURRENCY)))
+    if not cfg.get("council_enabled", False):
+        return None
+    host = cfg.get("llama_host", LLAMA_DEFAULT_HOST).strip() or LLAMA_DEFAULT_HOST
+    mode = cfg.get("council_mode", COUNCIL_DEFAULT_MODE)
+    return LightCouncil(host=host, default_mode=mode)
+
+
+def save_council_config(
+    enabled:    bool,
+    mode:       str = COUNCIL_DEFAULT_MODE,
+    concurrency: int = COUNCIL_DEFAULT_CONCURRENCY,
+    # Legacy params — silently ignored
+    models:          "list[str] | None" = None,
+    synthesis_model: str                = "",
+    synthesis_mode:  str                = "",
+    tools_enabled:   bool               = False,
+    role_overrides:  "dict | None"      = None,
+) -> None:
+    """Persist council enabled flag, mode, and concurrency to config."""
+    from src.config import load_config, save_config
+    cfg = load_config()
+    cfg["council_enabled"]     = enabled
+    cfg["council_mode"]        = mode if mode in COUNCIL_SYNTHESIS_MODES else COUNCIL_DEFAULT_MODE
+    cfg["council_concurrency"] = max(1, min(int(concurrency), 16))
+    save_config(cfg)
+    set_request_concurrency(cfg["council_concurrency"])
+```
+
+### `src\utils\paths.py`
+
+```python
+"""Cross-platform path utilities."""
+
+from pathlib import Path, PurePosixPath
+
+
+def normalize_path(path: str | Path) -> str:
+    """Convert a path to forward-slash form for consistent storage."""
+    return PurePosixPath(Path(path)).as_posix()
+
+
+def ensure_parent(path: Path):
+    """Create parent directories if they don't exist."""
+    path.parent.mkdir(parents=True, exist_ok=True)
+
+```
+
+### `src\utils\timestamps.py`
+
+```python
+"""Timestamp utilities for sync and data."""
+
+from datetime import datetime, timezone
+
+
+def now_utc() -> str:
+    """ISO-8601 UTC timestamp string."""
+    return datetime.now(timezone.utc).isoformat()
+
+
+def parse_ts(ts: str) -> datetime:
+    """Parse an ISO-8601 timestamp string."""
+    return datetime.fromisoformat(ts)
+
+```
+
+### `tests\__init__.py`
+
+```python
+"""Tests for LocalSync."""
+
+```

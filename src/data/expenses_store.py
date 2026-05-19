@@ -650,6 +650,58 @@ class ExpensesStore:
 
     # ── Aggregates ────────────────────────────────────────────────────────────
 
+    def get_item_period_stats(self, start_date: str, end_date: str) -> list[dict]:
+        """Per-item purchase stats (count, avg price, total cost) for a date range.
+
+        Returns list of dicts sorted by count descending:
+          {name, normalized_name, count, avg_price, total_cost, currency, last_seen_date}
+        """
+        conn = get_connection()
+        try:
+            rows = conn.execute(
+                """SELECT ri.name, r.currency, ri.unit_price, ri.qty,
+                          ri.line_total, r.date
+                   FROM receipt_items ri
+                   JOIN receipts r ON ri.receipt_id = r.id
+                   WHERE r.deleted = 0 AND r.date >= ? AND r.date <= ?
+                   ORDER BY r.date""",
+                (start_date, end_date),
+            ).fetchall()
+        finally:
+            conn.close()
+
+        # Group by normalized name — use the most-recent display name
+        groups: dict[str, dict] = {}
+        for r in rows:
+            norm = _normalize(r["name"])
+            if not norm:
+                continue
+            if norm not in groups:
+                groups[norm] = {
+                    "name":     r["name"],
+                    "currency": r["currency"] or "JPY",
+                    "prices":   [],
+                    "totals":   [],
+                    "dates":    [],
+                }
+            groups[norm]["prices"].append(float(r["unit_price"] or 0.0))
+            groups[norm]["totals"].append(float(r["line_total"] or 0.0))
+            groups[norm]["dates"].append(r["date"] or "")
+
+        result = []
+        for norm, g in sorted(groups.items(), key=lambda kv: -len(kv[1]["prices"])):
+            prices = g["prices"]
+            result.append({
+                "name":            g["name"],
+                "normalized_name": norm,
+                "count":           len(prices),
+                "avg_price":       sum(prices) / len(prices) if prices else 0.0,
+                "total_cost":      sum(g["totals"]),
+                "currency":        g["currency"],
+                "last_seen_date":  max(g["dates"]) if g["dates"] else "",
+            })
+        return result
+
     def summary(self, start: str, end: str,
                 rate: float = 150.0) -> dict:
         """Period summary across both receipt and standalone expenses."""

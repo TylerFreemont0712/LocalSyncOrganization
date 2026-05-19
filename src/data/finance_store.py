@@ -41,6 +41,9 @@ class Transaction:
     deleted: bool = False
     currency: str = "USD"
     is_job_pay: bool = False
+    # Exchange rate at the moment this JPY transaction was entered.
+    # 0 means "legacy row — fall back to the current live rate."
+    rate_at_entry: float = 0.0
 
 
 @dataclass
@@ -51,11 +54,15 @@ class JobPreset:
     category: str = "Main Job"
     updated_at: str = ""
     deleted: bool = False
-    # pay_unit: "flat" (single payment), "hour" (rate × hours), "minute" (rate × minutes)
+    # pay_unit:
+    #   "flat"         – fixed payment per log entry
+    #   "hour"         – rate × decimal hours
+    #   "minute"       – rate × decimal minutes
+    #   "audio_second" – rate is per *audio hour*; input is raw seconds
     pay_unit: str = "flat"
 
 
-PAY_UNITS = ("flat", "hour", "minute")
+PAY_UNITS = ("flat", "hour", "minute", "audio_second")
 
 
 @dataclass
@@ -74,12 +81,14 @@ class FinanceStore:
 
     def add_transaction(self, date: str, amount: float, txn_type: str,
                         category: str = "Side Job", description: str = "",
-                        currency: str = "USD", is_job_pay: bool = False) -> Transaction:
+                        currency: str = "USD", is_job_pay: bool = False,
+                        rate_at_entry: float = 0.0) -> Transaction:
         txn = Transaction(
             id=str(uuid.uuid4()),
             date=date, amount=amount, type=txn_type,
             category=category, description=description,
             updated_at=now_utc(), currency=currency, is_job_pay=is_job_pay,
+            rate_at_entry=rate_at_entry,
         )
         self._upsert(txn)
         return txn
@@ -151,10 +160,15 @@ class FinanceStore:
 
     def get_goal_income(self, start_date: str, end_date: str,
                         usd_jpy_rate: float = 150.0) -> float:
+        """Side-job income for the date range, normalised to USD.
+
+        For JPY rows that have a locked rate_at_entry the historical rate is
+        used; legacy rows (rate_at_entry == 0) fall back to the live rate.
+        """
         conn = get_connection()
         try:
             rows = conn.execute(
-                "SELECT amount, currency FROM transactions "
+                "SELECT amount, currency, rate_at_entry FROM transactions "
                 "WHERE deleted=0 AND type='income' AND is_job_pay=0 "
                 "AND date >= ? AND date <= ?",
                 (start_date, end_date),
@@ -163,16 +177,17 @@ class FinanceStore:
             conn.close()
         total = 0.0
         for r in rows:
-            total += r["amount"] / usd_jpy_rate if r["currency"] == "JPY" else r["amount"]
+            total += self._to_usd(r["amount"], r["currency"],
+                                  r["rate_at_entry"], usd_jpy_rate)
         return total
 
     def get_period_income_usd(self, start_date: str, end_date: str,
                               usd_jpy_rate: float = 150.0) -> float:
-        """All income (side + main job) for a date range, normalized to USD."""
+        """All income (side + main job) for a date range, normalised to USD."""
         conn = get_connection()
         try:
             rows = conn.execute(
-                "SELECT amount, currency FROM transactions "
+                "SELECT amount, currency, rate_at_entry FROM transactions "
                 "WHERE deleted=0 AND type='income' "
                 "AND date >= ? AND date <= ?",
                 (start_date, end_date),
@@ -181,7 +196,8 @@ class FinanceStore:
             conn.close()
         total = 0.0
         for r in rows:
-            total += r["amount"] / usd_jpy_rate if r["currency"] == "JPY" else r["amount"]
+            total += self._to_usd(r["amount"], r["currency"],
+                                  r["rate_at_entry"], usd_jpy_rate)
         return total
 
     def get_side_income(self, year: int, month: int,
@@ -194,17 +210,36 @@ class FinanceStore:
         )
 
     def get_all_time_earned_usd(self, usd_jpy_rate: float = 150.0) -> float:
+        """All-time income normalised to USD.
+
+        JPY rows use rate_at_entry (locked at entry time) so the total does
+        not drift as the live rate changes.  Legacy rows with rate_at_entry=0
+        fall back to the supplied live rate.
+        """
         conn = get_connection()
         try:
             rows = conn.execute(
-                "SELECT amount, currency FROM transactions WHERE deleted=0 AND type='income'"
+                "SELECT amount, currency, rate_at_entry "
+                "FROM transactions WHERE deleted=0 AND type='income'"
             ).fetchall()
         finally:
             conn.close()
         total = 0.0
         for r in rows:
-            total += r["amount"] / usd_jpy_rate if r["currency"] == "JPY" else r["amount"]
+            total += self._to_usd(r["amount"], r["currency"],
+                                  r["rate_at_entry"], usd_jpy_rate)
         return total
+
+    # ── Internal helpers ──────────────────────────────────────────────────────
+
+    @staticmethod
+    def _to_usd(amount: float, currency: str,
+                rate_at_entry: float, live_rate: float) -> float:
+        """Convert *amount* to USD using the locked or live rate."""
+        if currency == "JPY":
+            rate = rate_at_entry if rate_at_entry else live_rate
+            return amount / rate if rate else 0.0
+        return amount
 
     def _upsert(self, txn: Transaction):
         conn = get_connection()
@@ -212,16 +247,17 @@ class FinanceStore:
             conn.execute(
                 """INSERT INTO transactions
                    (id, date, amount, type, category, description,
-                    updated_at, deleted, currency, is_job_pay)
-                   VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    updated_at, deleted, currency, is_job_pay, rate_at_entry)
+                   VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                    ON CONFLICT(id) DO UPDATE SET
                    date=excluded.date, amount=excluded.amount, type=excluded.type,
                    category=excluded.category, description=excluded.description,
                    updated_at=excluded.updated_at, deleted=excluded.deleted,
-                   currency=excluded.currency, is_job_pay=excluded.is_job_pay""",
+                   currency=excluded.currency, is_job_pay=excluded.is_job_pay,
+                   rate_at_entry=excluded.rate_at_entry""",
                 (txn.id, txn.date, txn.amount, txn.type, txn.category,
                  txn.description, txn.updated_at, int(txn.deleted),
-                 txn.currency, int(txn.is_job_pay)),
+                 txn.currency, int(txn.is_job_pay), txn.rate_at_entry),
             )
             conn.commit()
         finally:
@@ -229,6 +265,10 @@ class FinanceStore:
 
     @staticmethod
     def _row_to_txn(row) -> Transaction:
+        try:
+            rate_at_entry = float(row["rate_at_entry"] or 0.0)
+        except (IndexError, KeyError, TypeError):
+            rate_at_entry = 0.0
         return Transaction(
             id=row["id"], date=row["date"], amount=row["amount"],
             type=row["type"], category=row["category"],
@@ -236,6 +276,7 @@ class FinanceStore:
             deleted=bool(row["deleted"]),
             currency=row["currency"] if row["currency"] else "USD",
             is_job_pay=bool(row["is_job_pay"]),
+            rate_at_entry=rate_at_entry,
         )
 
     # ── Job Presets ───────────────────────────────────────────────────────────
@@ -278,26 +319,51 @@ class FinanceStore:
 
     def log_preset(self, preset: JobPreset, count: int = 1,
                    units: float = 1.0,
-                   on_date: str | None = None) -> list[Transaction]:
+                   on_date: str | None = None,
+                   rate_at_entry: float = 0.0) -> list[Transaction]:
         """Log a preset as income.
 
-        For "flat" presets the amount is preset.amount_usd × count.
-        For "hour"/"minute" presets it is preset.amount_usd × units (count
-        is treated as 1 to avoid double-multiplication).
+        pay_unit behaviour:
+          flat         – amount_usd × count  (one log per count)
+          hour         – amount_usd × units hours  (single log)
+          minute       – amount_usd × units minutes  (single log)
+          audio_second – amount_usd is the rate per *audio hour*;
+                         units is the raw number of seconds processed;
+                         payment = amount_usd × (units / 3600)  (single log)
         """
-        day = on_date or _date.today().isoformat()
+        day  = on_date or _date.today().isoformat()
         is_job_pay = (preset.category == "Main Job")
         unit = (preset.pay_unit or "flat").lower()
 
         if unit == "hour":
             amount = preset.amount_usd * float(units)
-            desc   = f"[Job] {preset.name} ({units:g}h @ ${preset.amount_usd:,.2f}/hr)"
+            desc   = (f"[Job] {preset.name} "
+                      f"({units:g}h @ ${preset.amount_usd:,.2f}/hr)")
             n_logs = 1
+
         elif unit == "minute":
             amount = preset.amount_usd * float(units)
-            desc   = f"[Job] {preset.name} ({units:g}m @ ${preset.amount_usd:,.2f}/min)"
+            desc   = (f"[Job] {preset.name} "
+                      f"({units:g}m @ ${preset.amount_usd:,.2f}/min)")
             n_logs = 1
-        else:
+
+        elif unit == "audio_second":
+            secs = int(units)
+            audio_hours = secs / 3600.0
+            amount = preset.amount_usd * audio_hours
+            # Format seconds as Xm Ys (or Xh Ym Zs if > 1 h)
+            mins_total, secs_rem = divmod(secs, 60)
+            hrs_part,   mins_rem = divmod(mins_total, 60)
+            if hrs_part > 0:
+                time_str = f"{hrs_part}h {mins_rem}m {secs_rem}s"
+            else:
+                time_str = f"{mins_rem}m {secs_rem}s"
+            desc   = (f"[Job] {preset.name} "
+                      f"({secs}s = {time_str} "
+                      f"@ ${preset.amount_usd:,.2f}/audio hr)")
+            n_logs = 1
+
+        else:  # flat
             amount = preset.amount_usd
             desc   = f"[Job] {preset.name}"
             n_logs = max(int(count), 1)
@@ -312,6 +378,7 @@ class FinanceStore:
                 description=desc,
                 currency="USD",
                 is_job_pay=is_job_pay,
+                rate_at_entry=0.0,   # USD — no conversion needed
             ))
         return txns
 
@@ -336,7 +403,6 @@ class FinanceStore:
 
     @staticmethod
     def _row_to_preset(row) -> JobPreset:
-        # pay_unit may be missing from rows on databases predating the migration
         try:
             unit = row["pay_unit"] or "flat"
         except (IndexError, KeyError):

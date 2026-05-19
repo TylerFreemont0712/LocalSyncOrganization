@@ -873,6 +873,8 @@ class DashboardPanel(QWidget):
             if ev_date > thirty_days:
                 continue
             delta = (ev_date - today).days
+            if delta < 0:          # ← skip events that have already passed
+                continue
             if delta == 0:   days_text = "Today"
             elif delta == 1: days_text = "Tomorrow"
             else:            days_text = f"In {delta}d"
@@ -897,6 +899,8 @@ class DashboardPanel(QWidget):
             try:
                 ev_date = datetime.fromisoformat(ev.start_time).date()
                 delta = (ev_date - today).days
+                if delta < 0:    # ← skip past recurring events that leaked through
+                    continue
                 if delta == 0:   days_text = "Today"
                 elif delta == 1: days_text = "Tomorrow"
                 else:            days_text = f"In {delta}d"

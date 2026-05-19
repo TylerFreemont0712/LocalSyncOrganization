@@ -55,7 +55,8 @@ def _migrate(conn: sqlite3.Connection):
         conn.execute("ALTER TABLE transactions ADD COLUMN currency TEXT DEFAULT 'USD'")
     if "is_job_pay" not in txn_cols:
         conn.execute("ALTER TABLE transactions ADD COLUMN is_job_pay INTEGER DEFAULT 0")
-
+    if "rate_at_entry" not in txn_cols:
+        conn.execute("ALTER TABLE transactions ADD COLUMN rate_at_entry REAL DEFAULT 0")
     # ── job_presets ───────────────────────────────────────────────────────────
     jp_cols = {r["name"] for r in conn.execute("PRAGMA table_info(job_presets)").fetchall()}
     if "pay_unit" not in jp_cols:

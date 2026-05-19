@@ -364,24 +364,36 @@ class CalendarStore:
     # ── Major events ──────────────────────────────────
 
     def get_next_major_events(self, from_date: date, limit: int = 4) -> list[tuple]:
-        """Return next `limit` upcoming major events as (event_date, title, category, color).
+        """Return next `limit` upcoming major events as (event_date, title, category, color, id, is_birthday).
 
         Sources:
-        1. Events with category in ('birthday', 'trip', 'holiday', 'major').
-        2. Birthdays table (next annual occurrence).
+        1. Non-recurring events with category in ('birthday','trip','holiday','major')
+           starting on or after from_date.
+        2. Recurring major events expanded to find the next occurrence after from_date
+           (looks up to 366 days ahead so yearly holidays always appear).
+        3. Birthdays table (next annual occurrence).
         Results are sorted by date ascending.
         """
         results: list[tuple] = []
+        seen_ids: set[str] = set()
 
-        # Regular events with a major category
         conn = get_connection()
         try:
+            # Non-recurring major events on/after from_date
             rows = conn.execute(
                 """SELECT * FROM events WHERE deleted=0
                    AND category IN ('birthday','trip','holiday','major')
+                   AND recurrence = ''
                    AND start_time >= ?
                    ORDER BY start_time""",
                 (from_date.isoformat(),),
+            ).fetchall()
+            # All recurring major events (we will expand to find next occurrence)
+            rec_rows = conn.execute(
+                """SELECT * FROM events WHERE deleted=0
+                   AND category IN ('birthday','trip','holiday','major')
+                   AND recurrence != ''
+                   ORDER BY start_time""",
             ).fetchall()
         finally:
             conn.close()
@@ -392,7 +404,23 @@ class CalendarStore:
                 ev_date = datetime.fromisoformat(ev.start_time).date()
             except Exception:
                 continue
-            results.append((ev_date, ev.title, ev.category, ev.color, ev.id, False))
+            if ev.id not in seen_ids:
+                results.append((ev_date, ev.title, ev.category, ev.color, ev.id, False))
+                seen_ids.add(ev.id)
+
+        # Expand recurring major events to find the next occurrence after from_date.
+        # Look up to 366 days so even a yearly holiday that just passed is found
+        # for the following year.
+        lookahead_end = from_date + timedelta(days=366)
+        for row in rec_rows:
+            ev = self._row_to_event(row)
+            if ev.id in seen_ids:
+                continue
+            occurrences = expand_recurring_to_range(ev, from_date, lookahead_end)
+            if occurrences:
+                next_occ = occurrences[0]
+                results.append((next_occ, ev.title, ev.category, ev.color, ev.id, False))
+                seen_ids.add(ev.id)
 
         # Birthday table — find next annual occurrence
         today = from_date
